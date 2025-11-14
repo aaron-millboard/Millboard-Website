@@ -1,0 +1,31 @@
+.is--style-guide.page {
+    --color--style-guide: #fa69f8;
+
+    .page-header {
+        background-color: var(--color--style-guide);
+    }
+
+    .wp-block-heading {
+        color: var(--color--style-guide);
+    }
+}
+
+.style-guide {
+    &__width-layout {
+        --block-margin--y: var(--space--m) !important;
+
+        display: grid;
+        min-height: 10rem;
+        border: 2px dashed var(--color--style-guide);
+
+        // .style-guide__width-layout {
+        //     height: 5rem;
+        //     background: var(--color--white);
+        //     margin-block: var(--space--m);
+        // }
+
+        span {
+            margin: auto;
+        }
+    }
+}
