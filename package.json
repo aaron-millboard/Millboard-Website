@@ -11,7 +11,7 @@
         "dev": "npm run pot && webpack --config build/webpack.config.js --mode=development",
         "start": "npm run pot && webpack --config build/webpack.config.js --mode=development --watch",
         "deploy": "npm install && composer install --no-dev && npm run build",
-        "pot": "wp i18n make-pot . granola.pot --exclude=node_modules,vendor,assets,build",
+        "pot": "vendor/bin/wp i18n make-pot . granola.pot --exclude=node_modules,vendor,assets,build",
         "lint:php": "vendor/bin/phpcs .",
         "fix:php": "vendor/bin/phpcbf .",
         "fix:styles": "",

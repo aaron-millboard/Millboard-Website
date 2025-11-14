@@ -10,7 +10,8 @@
     "require-dev": {
         "php-stubs/acf-pro-stubs": "*",
         "php-stubs/wordpress-stubs": "*",
-        "phpcompatibility/php-compatibility": "^9.3"
+        "phpcompatibility/php-compatibility": "^9.3",
+        "wp-cli/i18n-command": "*"
     },
     "autoload": {
         "psr-4": {
