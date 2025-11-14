@@ -7,67 +7,68 @@
 
 $colors: (
     'base': (
-        'darkgreen': (
-            'color': #1e4545,
-            'foreground': 'white',
+        'mist': (
+            'color': #dedcd2,
+            'foreground': 'black',
             'properties': (
-                '--link--color': 'white',
-                '--link--color--hover': 'white',
+                '--link--color': 'black',
+                '--link--color--hover': 'black',
             ),
         ),
-        'lightgreen': (
-            'color': #9db9b9,
+        'springwood': (
+            'color': #f9f7f1,
             'foreground': 'black',
             'properties': (
                 '--link--color': var(--color--black),
                 '--link--color--hover': var(--color--black),
             ),
         ),
-        'blue': (
-            'color': #1d324e,
+        'charcoal': (
+            'color': #575756,
             'foreground': 'white',
             'properties': (
                 '--link--color': var(--color--white),
                 '--link--color--hover': var(--color--white),
             ),
         ),
-        'peach': (
-            'color': #ebca98,
-            'foreground': 'darkgreen',
+        'olivegreen': (
+            'color': #799513,
+            'foreground': 'black',
             'properties': (
-                '--link--color': var(--color--darkgreen),
-                '--link--color--hover': var(--color--darkgreen),
+                '--link--color': var(--color--black),
+                '--link--color--hover': var(--color--black),
             ),
         ),
-        'lightblue': (
-            'color': #87d1d5,
+        'wenge': (
+            'color': #62554d,
+            'foreground': 'white',
+            'properties': (
+                '--link--color': var(--color--white),
+                '--link--color--hover': var(--color--white),
+            ),
         ),
-        'red': (
-            'color': #ad474b,
+        'sustainabilitygreen': (
+            'color': #333c12,
             'foreground': 'white',
             'properties': (
                 '--link--color': 'white',
                 '--link--color--hover': 'white',
             ),
-        ),
-        'green': (
-            'color': #27a800,
-            'foreground': 'white',
         ),
         'white': (
-            'color': #fff,
-            'foreground': 'darkgreen',
+            'color': #f9f7f1,
+            'foreground': 'black',
         ),
         'black': (
-            'color': #222,
+            'color': #151716,
             'foreground': 'white',
             'properties': (
                 '--link--color': 'white',
                 '--link--color--hover': 'white',
             ),
         ),
-        'grey': (
-            'color': #444,
+        'red': (
+            'color': #a50d09,
             'foreground': 'white',
             'properties': (
                 '--link--color': 'white',
@@ -75,25 +76,34 @@ $colors: (
             ),
         ),
         'brand-1': (
-            'namedColor': 'darkgreen',
+            'namedColor': 'mist',
         ),
         'brand-2': (
-            'namedColor': 'lightgreen',
+            'namedColor': 'springwood',
         ),
         'brand-3': (
-            'namedColor': 'peach',
+            'namedColor': 'charcoal',
+        ),
+        'brand-4': (
+            'namedColor': 'olivegreen',
+        ),
+        'brand-5': (
+            'namedColor': 'wenge',
+        ),
+        'brand-6': (
+            'namedColor': 'sustainabilitygreen',
         ),
         'foreground': (
-            'namedColor': 'darkgreen',
+            'namedColor': 'black',
         ),
         'background': (
-            'namedColor': 'white',
+            'namedColor': 'mist',
         ),
         'error': (
             'namedColor': 'red',
         ),
         'valid': (
-            'namedColor': 'green',
+            'namedColor': 'olivegreen',
         )
     ),
     // Alternative themes, e.g. 'dark-mode'.

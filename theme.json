@@ -38,19 +38,19 @@
             "link": false,
             "palette": [
                 {
-                    "name": "Dark Green",
-                    "slug": "darkgreen",
-                    "color": "#1e4545"
+                    "name": "Springwood",
+                    "slug": "brand-2",
+                    "color": "#f9f7f1"
                 },
                 {
-                    "name": "Light Green",
-                    "slug": "lightgreen",
-                    "color": "#9db9b9"
+                    "name": "Olive Green",
+                    "slug": "brand-4",
+                    "color": "#799513"
                 },
                 {
-                    "name": "Peach",
-                    "slug": "peach",
-                    "color": "#ebca98"
+                    "name": "Wenge",
+                    "slug": "brand-5",
+                    "color": "#62554d"
                 }
             ],
             "text": false
