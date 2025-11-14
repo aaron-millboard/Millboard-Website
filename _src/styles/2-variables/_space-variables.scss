@@ -3,19 +3,26 @@
 // ---------------------------------------------------
 
 @mixin space-variables {
-    --space--5xs: #{px-to-rem(4px)};
-    --space--4xs: #{px-to-rem(8px)};
-    --space--3xs: #{px-to-rem(12px)};
-    --space--2xs: #{px-to-rem(16px)};
-    --space--xs: #{px-to-rem(20px)};
-    --space--s: #{px-to-rem(24px)};
-    --space--m: #{px-to-rem(32px)};
-    --space--l: #{px-to-rem(40px)};
-    --space--xl: #{px-to-rem(48px)};
-    --space--2xl: #{px-to-rem(56px)};
-    --space--3xl: #{px-to-rem(64px)};
-    --space--4xl: #{px-to-rem(96px)};
-    --space--5xl: #{px-to-rem(128px)};
+    // --space--4xs: #{px-to-rem(4px)};
+    // --space--3xs: #{px-to-rem(8px)};
+    // --space--2xs: #{px-to-rem(16px)};
+    // --space--xs: #{px-to-rem(18px)};
+    // --space--s: #{px-to-rem(20px)};
+    // --space--m: #{px-to-rem(24px)};
+    // --space--l: #{px-to-rem(34px)};
+    // --space--xl: #{px-to-rem(56px)};
+    // --space--2xl: #{px-to-rem(90px)};
+    // --space--3xl: #{px-to-rem(146px)};
+    --space--4xs: #{rfs(4, 4)};
+    --space--3xs: #{rfs(8, 8)};
+    --space--2xs: #{rfs(16, 16)};
+    --space--xs: #{rfs(18, 18)};
+    --space--s: #{rfs(20, 20)};
+    --space--m: #{rfs(20, 24)};
+    --space--l: #{rfs(28, 34)};
+    --space--xl: #{rfs(32, 56)};
+    --space--2xl: #{rfs(48, 90)};
+    --space--3xl: #{rfs(60, 146)};
 
     // Default padding on the sides of the page.
     --space--container-padding: var(--space--xs);
@@ -25,16 +32,6 @@
 
     // Default vertical spacing between larger components and blocks
     --space--layout: var(--space--xl);
-
-    // Each of these responsive spaces start one size below
-    // and move up one step at the 'small' breakpoint
-    --space--responsive--xs: var(--space--2xs);
-    --space--responsive--s: var(--space--xs);
-    --space--responsive--m: var(--space--s);
-    --space--responsive--l: var(--space--m);
-    --space--responsive--xl: var(--space--l);
-    --space--responsive--2xl: var(--space--xl);
-    --space--responsive--3xl: var(--space--2xl);
 }
 
 @mixin space-variables--mq {
@@ -42,13 +39,5 @@
         --space--container-padding: var(--space--m);
 
         --space--layout: var(--space--3xl);
-
-        --space--responsive--xs: var(--space--xs);
-        --space--responsive--s: var(--space--s);
-        --space--responsive--m: var(--space--m);
-        --space--responsive--l: var(--space--l);
-        --space--responsive--xl: var(--space--xl);
-        --space--responsive--2xl: var(--space--2xl);
-        --space--responsive--3xl: var(--space--3xl);
     }
 }

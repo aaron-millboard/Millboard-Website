@@ -10,11 +10,11 @@
 }
 
 @mixin typestyle-small {
-    font-size: rfs(14, 14.5);
+    font-size: rfs(16, 16);
 }
 
 @mixin typestyle-large {
-    font-size: rfs(18, 20);
+    font-size: rfs(17, 18);
 }
 
 @mixin typestyle-meta {
@@ -23,9 +23,9 @@
 }
 
 @mixin heading-attributes {
-    font-family: var(--type--2--font-family);
-    font-weight: var(--type--2--font-weight);
-    line-height: var(--type--2--line-height);
+    line-height: 1.36;
+    font-weight: var(--type--1--font-weight);
+    letter-spacing: 0.14em; // 14%
 
     // Make a tags that are children of headings inherit styling
     a {
@@ -43,35 +43,39 @@
 @mixin typestyle-h1 {
     @include heading-attributes;
 
-    font-size: rfs(28, 55);
+    font-size: rfs(36, 56);
+    text-transform: uppercase;
 }
 
 @mixin typestyle-h2 {
     @include heading-attributes;
 
-    font-size: rfs(26, 44);
+    font-size: rfs(28, 48);
+    text-transform: uppercase;
 }
 
 @mixin typestyle-h3 {
     @include heading-attributes;
 
-    font-size: rfs(23, 35);
+    font-size: rfs(24, 36);
 }
 
 @mixin typestyle-h4 {
     @include heading-attributes;
 
-    font-size: rfs(20, 28);
+    font-size: rfs(20, 32);
 }
 
 @mixin typestyle-h5 {
     @include heading-attributes;
 
-    font-size: rfs(18, 22);
+    font-size: rfs(18, 28);
+    font-weight: var(--type--1--font-weight--bold);
 }
 
 @mixin typestyle-h6 {
     @include heading-attributes;
 
-    font-size: var(--type--font-size--base);
+    font-size: rfs(14, 15);
+    font-weight: var(--type--1--font-weight--bold);
 }

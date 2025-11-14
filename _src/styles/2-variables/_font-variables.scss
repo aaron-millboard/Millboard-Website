@@ -1,18 +1,10 @@
 // Define our font-face stacks here.
 @mixin font-variables {
-    // @font-face {
-    //     font-display: fallback;
-    //     font-family: 'Example';
-    //     font-style: normal;
-    //     font-weight: normal;
-    //     src: url('./static/subset-Example-Regular.woff2') format('woff2');
-    // }
-
-    // @font-face {
-    //     font-display: fallback;
-    //     font-family: 'Example';
-    //     font-style: italic;
-    //     font-weight: normal;
-    //     src: url('./static/subset-Example-Italic.woff2') format('woff2');
-    // }
+     @font-face {
+         font-display: fallback;
+         font-family: 'F37 Ginger';
+         font-style: normal;
+         font-weight: normal;
+         src: url('./static/f37-ginger-light.otf') format('opentype');
+     }
 }
