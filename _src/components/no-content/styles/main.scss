@@ -1,0 +1,8 @@
+.no-content {
+    &__message {
+        max-width: var(--width--xs);
+        margin-right: auto;
+        margin-left: auto;
+        text-align: center;
+    }
+}

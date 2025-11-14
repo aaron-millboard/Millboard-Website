@@ -1,0 +1,17 @@
+@mixin media-embed {
+    display: grid;
+    gap: var(--space--xs);
+    text-align: center;
+
+    .blocks > & {
+        margin-top: var(--space--responsive--l);
+        margin-bottom: var(--space--responsive--l);
+    }
+
+    figcaption {
+        @include typestyle-small;
+        @include align-width--xxs;
+
+        margin: 0 auto;
+    }
+}

@@ -1,0 +1,26 @@
+{
+    "name": "wholegrain/granola",
+    "description": "Granola is a WordPress starter theme with a modern workflow",
+    "require": {
+        "php": "^8.1",
+        "squizlabs/php_codesniffer": "3.*",
+        "johnbillion/extended-cpts": "^5.0.2",
+        "wp-coding-standards/wpcs": "^3.0"
+    },
+    "require-dev": {
+        "php-stubs/acf-pro-stubs": "*",
+        "php-stubs/wordpress-stubs": "*",
+        "phpcompatibility/php-compatibility": "^9.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "Granola\\": "Granola/",
+            "Theme\\": "Theme/"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
+    }
+}

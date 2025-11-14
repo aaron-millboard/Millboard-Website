@@ -1,0 +1,50 @@
+{
+    "name": "granola",
+    "version": "3.0.0",
+    "description": "Wholegrain Digital's WordPress development framework",
+    "private": true,
+    "author": "Wholegrain Digital",
+    "license": "MIT",
+    "scripts": {
+        "setup": "npm install && composer install && npm run build",
+        "build": "npm run pot && webpack --config build/webpack.config.js --mode=production",
+        "dev": "npm run pot && webpack --config build/webpack.config.js --mode=development",
+        "start": "npm run pot && webpack --config build/webpack.config.js --mode=development --watch",
+        "deploy": "npm install && composer install --no-dev && npm run build",
+        "pot": "wp i18n make-pot . granola.pot --exclude=node_modules,vendor,assets,build",
+        "lint:php": "vendor/bin/phpcs .",
+        "fix:php": "vendor/bin/phpcbf .",
+        "fix:styles": "",
+        "fix:scripts": "",
+        "fix": "npm run fix:php && npm run fix:styles && npm run fix:scripts",
+        "php:compat": "phpcs -p --colors --standard=vendor/phpcompatibility/php-compatibility/PHPCompatibility --ignore='assets/*,node_modules/*,vendor/*' --extensions=php --runtime-set testVersion 8.2 ."
+    },
+    "type": "module",
+    "engines": {
+        "node": ">=25.1.0",
+        "npm": ">=11.6.0"
+    },
+    "devDependencies": {
+        "autoprefixer": "^10.2.5",
+        "browser-sync-webpack-plugin": "^2.4.0",
+        "copy-webpack-plugin": "^13.0.1",
+        "css-loader": "^7.1.2",
+        "cssnano": "^7.1.2",
+        "fast-glob": "^3.3.3",
+        "glob-import-loader": "^1.2.0",
+        "mini-css-extract-plugin": "^2.7.0",
+        "postcss": "^8.3.0",
+        "postcss-loader": "^7.0.0",
+        "sass": "^1.50.0",
+        "sass-loader": "^16.0.6",
+        "sass-mq": "^6.0.0",
+        "webpack": "^5",
+        "webpack-cli": "^6.0.1",
+        "webpack-manifest-plugin": "^6.0.1",
+        "webpack-remove-empty-scripts": "^1.1.1"
+    },
+    "dependencies": {
+        "lodash.debounce": "^4.0.8",
+        "normalize.css": "^8.0.1"
+    }
+}

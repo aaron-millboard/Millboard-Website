@@ -1,0 +1,10 @@
+{
+    "recommendations": [
+        "valeryanm.vscode-phpsab",
+        "bmewburn.vscode-intelephense-client",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "syler.sass-indented",
+        "stylelint.vscode-stylelint"
+    ]
+}

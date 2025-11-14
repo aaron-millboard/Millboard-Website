@@ -1,0 +1,25 @@
+{
+    "$schema": "https://advancedcustomfields.com/schemas/json/main/block.json",
+    "apiVersion": 2,
+    "name": "cookies-preferences",
+    "title": "Cookies Preferences",
+    "category": "granola-blocks",
+    "icon": "privacy",
+    "keywords": [],
+    "acf": {
+        "mode": "preview",
+        "renderCallback": "\\Granola\\Component::acf_render_callback",
+        "postTypes": [
+            "page"
+        ]
+    },
+    "supports": {
+        "align": false,
+        "anchor": true,
+        "color": {
+            "background": false,
+            "text": false
+        },
+        "mode": false
+    }
+}

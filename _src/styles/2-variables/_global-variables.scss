@@ -1,0 +1,82 @@
+// stylelint-disable order/order
+
+@mixin global-variables {
+    // ---------------------------------------------------
+    // Site
+    // ---------------------------------------------------
+    --site--scroll-padding-top: var(--site-header--bottom);
+
+    // ---------------------------------------------------
+    // Border
+    // ---------------------------------------------------
+    --border-radius--s: 3px;
+    --border-radius--m: 10px;
+
+    --border-width--s: 2px;
+    --border-width--m: 4px;
+
+    --border--1: var(--border-width--s) solid var(--color--brand-1);
+
+    // ---------------------------------------------------
+    // Focus
+    // ---------------------------------------------------
+    --focus--color: var(--color--brand-1);
+    --focus--1--offset: 5px;
+    --focus--1--width: 3px;
+
+    // ---------------------------------------------------
+    // Selection
+    // ---------------------------------------------------
+    --selection-color: var(--color--background);
+    --selection-background: var(--color--foreground);
+
+    // ---------------------------------------------------
+    // Text Decoration
+    // ---------------------------------------------------
+    // --text-decoration-thickness: 0.064em;
+    --text-underline-offset: 0.14em;
+
+    // ---------------------------------------------------
+    // Box Shadow
+    // ---------------------------------------------------
+    --box-shadow--1: 0 3px 9px hsla(var(--color--brand-1--hsl), 0.15);
+    --box-shadow--1--hover: 0 3px 20px 3px hsla(var(--color--brand-1--hsl), 0.15);
+    --box-shadow--2: 0 2px 7px hsla(var(--color--black--hsl), 0.1);
+    // --box-shadow--2--hover: 0 2px 7px hsla(var(--color--black--hsl), 0.1);
+
+    // ---------------------------------------------------
+    // Transitions
+    // ---------------------------------------------------
+    --transition--duration: 200ms;
+    --transition--ease: #{ease('out-quart')};
+
+    // ---------------------------------------------------
+    // Grids
+    // ---------------------------------------------------
+    --grid--column-gap: var(--space--responsive--m);
+    --grid--row-gap: var(--grid--column-gap);
+    --grid--columns: 1;
+    --grid--auto-fit--min: #{px-to-rem(300)};
+
+    // ---------------------------------------------------
+    // Horizontal rule styling
+    // ---------------------------------------------------
+    --hr--color: var(--color--brand-1);
+    --hr--thickness: 2px;
+}
+
+@mixin global-variables--mq {
+    // ---------------------------------------------------
+    // Grids
+    // ---------------------------------------------------
+    @include mq(medium) {
+        --grid--columns: 2;
+    }
+
+    @include mq(large) {
+        --grid--columns: 4;
+    }
+}
+
+// Used by components to set overflow and border-radius
+$rounded-corners: true;

@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+
+<ruleset name="Granola Coding Standards">
+    <description>Granola's PHP coding standards</description>
+
+    <!-- The base rules: PSR-12 -->
+    <rule ref="PSR12">
+        <exclude name="PSR1.Methods.CamelCapsMethodName"/>
+    </rule>
+
+    <!-- WordPress-style variables and method names (snake_case) -->
+    <rule ref="WordPress.NamingConventions.ValidFunctionName"/>
+    <rule ref="WordPress.NamingConventions.ValidVariableName"/>
+
+    <!-- Ignore line length warnings for comments -->
+    <rule ref="Generic.Files.LineLength">
+        <properties>
+            <property name="ignoreComments" value="true" />
+        </properties>
+    </rule>
+
+    <!-- Only check PHP files -->
+    <arg name="extensions" value="php"/>
+
+    <!-- Excludes -->
+    <exclude-pattern>assets/</exclude-pattern>
+    <exclude-pattern>node_modules/</exclude-pattern>
+    <exclude-pattern>vendor/</exclude-pattern>
+
+    <!-- Configuration options -->
+    <arg value="nps"/>
+    <arg name="colors"/>
+</ruleset>

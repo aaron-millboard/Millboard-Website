@@ -1,0 +1,47 @@
+// ---------------------------------------------------
+// Align classes - width.
+// ---------------------------------------------------
+.alignnone {
+    max-width: none;
+}
+
+.alignwide {
+    @include align-width--l;
+}
+
+.alignfull {
+    @include align-width--full;
+}
+
+// ---------------------------------------------------
+// Align classes - position.
+// ---------------------------------------------------
+.aligncenter {
+    display: block;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+.alignright {
+    @include align--right;
+}
+
+.alignleft {
+    @include align--left;
+}
+
+// ---------------------------------------------------
+// Align classes - text
+// ---------------------------------------------------
+
+.has-text-align-left {
+    text-align: left;
+}
+
+.has-text-align-center {
+    text-align: center;
+}
+
+.has-text-align-right {
+    text-align: right;
+}

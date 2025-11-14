@@ -1,0 +1,89 @@
+.cookies-notice {
+    --transition--time: 250ms;
+
+    position: fixed;
+    z-index: var(--z-index--cookies-notice);
+    right: var(--space--xs);
+    bottom: var(--space--xs);
+    display: flex;
+    width: calc(100% - var(--space--xs) * 2);
+    max-height: 80vh;
+    flex-flow: column nowrap;
+    align-items: flex-end;
+    justify-content: flex-end;
+    pointer-events: none;
+
+    &[aria-hidden='true'] {
+        visibility: hidden;
+    }
+
+    &__banner {
+        overflow: auto;
+        width: auto;
+        max-width: var(--width--xxs);
+        flex-direction: column;
+        align-items: center;
+        padding: var(--space--l);
+        border-radius: var(--border-radius--m);
+        box-shadow: 0 0 50px 5px hsla(var(--color--black--hsl), 0.2);
+        opacity: 1;
+        pointer-events: initial;
+        transform: translateY(0);
+        transition:
+            opacity var(--transition--time),
+            transform var(--transition--time),
+            visibility var(--transition--time);
+
+        @include mq(medium) {
+            flex-direction: row;
+            justify-content: space-between;
+        }
+
+        [aria-hidden='true'] & {
+            opacity: 0;
+            transform: translateY(100%);
+            visibility: hidden;
+        }
+
+        &:focus {
+            outline: none; // Fret not, this doesn't need any additional visible styles, the element is assigned tabindex -1 in JS
+        }
+    }
+
+    &__heading {
+        @include typestyle-h4;
+
+        margin-bottom: var(--space--xs);
+    }
+
+    &__description {
+        @include no-first-last-margin;
+
+        flex: 0 1 auto;
+        margin-bottom: var(--space--s);
+
+        @include mq(medium) {
+            margin-right: var(--space--container-padding);
+            margin-bottom: 0;
+        }
+
+        p {
+            margin-top: var(--space--s);
+            margin-bottom: var(--space--s);
+        }
+
+        a {
+            @include link;
+        }
+    }
+
+    &--expanded {
+        .cookies-preferences__consent-groups-toggler {
+            display: none;
+        }
+    }
+
+    .cookies-preferences__alert {
+        @include visually-hidden;
+    }
+}

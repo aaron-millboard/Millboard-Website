@@ -1,0 +1,279 @@
+.site-header__navigation {
+    --menu-item--gap: 0;
+    --menu-item--arrow-size: #{px-to-rem(13)};
+
+    --submenu--z-index: 1;
+    // --submenu-item--gap: var(--space--m); // defaults to --menu-item--gap
+    --submenu--translate-y: #{px-to-rem(-5)}; // transitions to 0 on expand.
+    --submenu--arrow-height: #{px-to-rem(10)};
+    --submenu--transition-duration: 200ms;
+    --submenu--transition-ease: ease-out;
+    --submenu--padding-x: var(--space--2xs);
+    --submenu--padding-y: var(--space--xs);
+    --submenu--box-shadow: var(--box-shadow--2);
+    --submenu--border-radius: var(--border-radius--m);
+    --submenu--dropdown--max-width: #{px-to-rem(400)};
+    --submenu--dropdown--min-width: #{px-to-rem(275)};
+
+    $submenu-color: 'brand-2';
+
+    align-self: start;
+
+    @include mq('site-header') {
+        --menu-item--arrow-size: #{px-to-rem(10)};
+        --menu-item--gap: var(--space--s);
+
+        --submenu-item--gap: var(--space--s);
+        --submenu--padding-x: var(--space--base);
+        --submenu--padding-y: var(--space--base);
+
+        display: flex;
+        height: 100%;
+        flex-flow: row nowrap;
+        align-self: start;
+        padding: 0;
+    }
+
+    // -----------------------------------------------------------------
+    // Default styling for all links that don't have an override.
+    // -----------------------------------------------------------------
+    a {
+        @include link--2;
+
+        display: inline-flex;
+
+        @include mq($until: 'site-header') {
+            @include typestyle-h3;
+        }
+
+        &:not([href]) {
+            cursor: default;
+        }
+    }
+
+    .menu {
+        &__inner {
+            display: flex;
+        }
+
+        &-list {
+            display: grid;
+            width: 100%;
+            align-items: stretch;
+            gap: var(--menu-item--gap);
+            text-align: left;
+
+            @include mq('site-header') {
+                position: static;
+                border-bottom: 0;
+                grid-auto-flow: column;
+                text-align: center;
+            }
+        }
+    }
+
+    .menu-item {
+        display: block;
+
+        // -------------------------------------------------------------
+        // Top level menu items.
+        // -------------------------------------------------------------
+        &--depth-0 {
+            @include mq('site-header') {
+                position: relative;
+                display: flex;
+                align-items: stretch;
+            }
+        }
+
+        &__wrap {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+
+            @include mq($until: 'site-header') {
+                min-height: px-to-rem(44);
+            }
+        }
+
+        // -------------------------------------------------------------
+        // Dropdown menu items
+        // -------------------------------------------------------------
+        &--has-children {
+            &:hover,
+            &:focus,
+            &.is-submenu-expanded {
+                > a {
+                    // background-color: var(--link--background-color--hover);
+                    color: var(--link--color--hover);
+                }
+            }
+        }
+
+        // -------------------------------------------------------------
+        // The active menu item.
+        // -------------------------------------------------------------
+        &--current {
+            > .menu-item__wrap {
+                /* stylelint-disable selector-max-compound-selectors */
+                > a {
+                    &:not([href*='#']) {
+                        text-decoration: underline;
+                        text-decoration-thickness: var(--text-decoration-thickness, auto);
+                    }
+                }
+                /* stylelint-enable selector-max-compound-selectors */
+            }
+        }
+    }
+
+    // -----------------------------------------------------------------
+    // Default styling for all submenus.
+    // -----------------------------------------------------------------
+    .sub-menu {
+        z-index: var(--submenu--z-index);
+        margin-top: var(--menu-item--gap);
+        opacity: 0;
+        pointer-events: none;
+        transition: transition(opacity, transform, visibility);
+        visibility: hidden;
+
+        @include mq('site-header') {
+            margin-top: 0;
+        }
+
+        a {
+            @include mq($until: 'site-header') {
+                @include typestyle-h4;
+            }
+        }
+
+        &:not([hidden]) {
+            --submenu--z-index: 2;
+
+            opacity: 1;
+            pointer-events: auto;
+            visibility: visible;
+
+            > a {
+                // background-color: var(--link--background-color--hover);
+                color: var(--link--color--hover);
+            }
+        }
+
+        .menu-list {
+            display: grid;
+            padding-left: var(--submenu--padding-x);
+            gap: var(--submenu-item--gap, var(--menu-item--gap));
+
+            @include mq('site-header') {
+                padding: var(--submenu--padding-y) var(--submenu--padding-x);
+                grid-auto-flow: row;
+            }
+        }
+
+        // -------------------------------------------------------------
+        // Top level submenu only.
+        // -------------------------------------------------------------
+        &--depth-0 {
+            @include mq('site-header') {
+                @include color-context($submenu-color);
+
+                position: absolute;
+                top: calc(100% + var(--submenu--arrow-height));
+                left: 50%;
+                display: block;
+                min-width: var(--submenu--dropdown--min-width);
+                max-width: var(--submenu--dropdown--max-width);
+                border-radius: var(--submenu--border-radius);
+                margin-top: 0;
+                background: var(--color--background);
+                box-shadow: var(--submenu--box-shadow);
+                transform: translate(-50%, var(--submenu--translate-y));
+
+                // Create a small arrow at the top of the submenu.
+                &::before {
+                    position: absolute;
+                    top: 0;
+                    left: 50%;
+                    width: var(--submenu--arrow-height);
+                    height: var(--submenu--arrow-height);
+                    background: var(--color--background);
+                    content: '';
+                    transform: scaleX(1.3) translate(-50%, -50%) rotate(45deg);
+                }
+
+                // Fills in the gap between the menu item and the
+                // dropdown so that the mouse doesn't lose hover
+                // going between them.
+                &::after {
+                    position: absolute;
+                    top: calc(var(--submenu--arrow-height) * -1);
+                    left: 0;
+                    width: 100%;
+                    height: var(--submenu--arrow-height);
+                    content: '';
+                    opacity: 0;
+                }
+            }
+
+            &:not([hidden]) {
+                --submenu--translate-y: 0px;
+            }
+        }
+
+        // -------------------------------------------------------------
+        // Nested submenu -- depth 1.
+        // -------------------------------------------------------------
+        &--depth-1 {
+            @include mq('site-header') {
+                --submenu--padding-x: var(--space--xs);
+                --submenu--padding-y: var(--space--xs);
+            }
+
+            .menu-list {
+                @include mq('site-header') {
+                    padding: var(--submenu--padding-y) var(--submenu--padding-x) 0;
+                }
+            }
+        }
+    }
+
+    .sub-menu-toggler {
+        @include mask-icon;
+
+        display: flex;
+        width: px-to-rem(44); // minumum clickable area should be 44px
+        height: px-to-rem(44); // minumum clickable area should be 44px
+        align-items: center;
+        align-self: stretch;
+        justify-content: flex-start;
+        padding: 0;
+        background-color: transparent;
+        color: currentColor;
+        padding-inline-start: 0.3em;
+
+        @include mq('site-header') {
+            width: auto;
+            height: auto;
+            padding: 10px;
+        }
+
+        &::after {
+            display: inline-block;
+            width: var(--menu-item--arrow-size, 1em);
+            height: var(--menu-item--arrow-size, 1em);
+            mask-image: url(#{asset-path('images/icons/chevron-down.svg')});
+        }
+
+        > * {
+            pointer-events: none;
+        }
+
+        &[aria-expanded='true'] {
+            &::after {
+                transform: rotate(180deg);
+            }
+        }
+    }
+}

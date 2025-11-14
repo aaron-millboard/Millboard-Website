@@ -1,0 +1,6 @@
+.menu {
+    &-list {
+        @include list-reset-hard;
+        @include list-reset-hard--li;
+    }
+}

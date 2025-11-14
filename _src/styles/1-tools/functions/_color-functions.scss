@@ -1,0 +1,74 @@
+@use 'sass:color';
+
+/// Helper function to retrieve a color defined in variables.
+/// Useful for removing random colors used in the code base
+///
+/// @param {string} $color - The name of the color as defined in the sass map
+///
+/// @example scss
+///    color: color('red');
+///
+/// @access public
+
+@function get-color-theme-map($theme) {
+    @if map-has-key($colors, $theme) {
+        @return map-get($colors, $theme);
+    } @else {
+        @error 'Color theme not defined: `#{$theme}`';
+    }
+}
+
+@function get-named-color-map($color, $theme: 'base') {
+    $color-theme-map: get-color-theme-map($theme);
+
+    @if map-has-key($color-theme-map, $color) {
+        $color-map: map-get($color-theme-map, $color);
+
+        @if map-has-key($color-map, 'namedColor') {
+            @return get-named-color-map(map-get($color-map, 'namedColor'), $theme);
+        } @else {
+            @return map-get($color-theme-map, $color);
+        }
+    }
+
+    @error 'Color not defined in theme: "#{$color}" in "#{$theme}"';
+}
+
+@function get-named-color-hex($color, $theme: 'base') {
+    $color-map: get-named-color-map($color, $theme);
+
+    @if map-has-key($color-map, 'namedColor') {
+        @return get-named-color-hex(map-get($color-map, 'namedColor'), $theme);
+    } @else if map-has-key($color-map, 'color') {
+        @return map-get($color-map, 'color');
+    } @else {
+        @error 'Color not defined in color map: "#{$color}" in "#{$theme}"';
+    }
+}
+
+@function foreground-color($color, $theme: 'base') {
+    $colormap: get-named-color-map($color, $theme);
+
+    $color-value: map-get($colormap, 'foreground');
+
+    // If it's a non-hex string, check if it's a named color.
+    @if type-of($color-value) == 'string' and str-index($color-value, '#') != 0 and map-has-key(get-color-theme-map($theme), $color-value) {
+        $color-value: get-named-color-hex($color-value);
+    }
+
+    @return $color-value;
+}
+
+// Convert a hex value to comma-separated rgb values
+// In: #000
+// Out: 0,0,0
+@function rgb-from-hex($hex) {
+    @return color.red($hex), color.green($hex), color.blue($hex);
+}
+
+// Convert a hex value to comma-separated hsl values
+// In: #000
+// Out: 0,0,0
+@function hsl-from-hex($hex) {
+    @return color.channel($hex, 'hue', $space: hsl), color.channel($hex, 'saturation', $space: hsl), color.channel($hex, 'lightness', $space: hsl);
+}

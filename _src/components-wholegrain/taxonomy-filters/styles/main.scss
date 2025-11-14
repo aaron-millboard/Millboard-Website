@@ -1,0 +1,39 @@
+@import '../../../core';
+
+.taxonomy-filters {
+    --block--margin-bottom: calc(var(--block--margin-bottom) / 2);
+
+    display: grid;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space--s);
+
+    @include mq(medium) {
+        grid-auto-flow: column;
+    }
+
+    + * {
+        margin-top: calc(var(--block--margin-top) / 2);
+    }
+
+    .blocks > & {
+        margin-top: var(--space--xl);
+        margin-bottom: var(--space--xl);
+    }
+
+    &__label {
+        text-align: center;
+    }
+
+    &__list {
+        --grid--column-gap: var(--space--s);
+
+        justify-content: center;
+    }
+
+    &__item {
+        &--current {
+            @include button--theme-2;
+        }
+    }
+}

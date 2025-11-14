@@ -1,0 +1,104 @@
+.header-search {
+    --input--placeholder-color: hsla(var(--color--white--hsl), 0.8);
+    --header-search--icon-size: 1em;
+
+    $this: &;
+
+    display: block;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--submenu--transition-duration) var(--submenu--transition-ease),
+        transform var(--submenu--transition-duration) var(--submenu--transition-ease),
+        visibility var(--submenu--transition-duration);
+    visibility: hidden;
+
+    &:not([hidden]) {
+        --submenu--z-index: 2;
+
+        display: block;
+        opacity: 1;
+        pointer-events: auto;
+        visibility: visible;
+
+        > a {
+            // background-color: var(--link--background-color--hover);
+            color: var(--link--color--hover);
+        }
+    }
+
+    &__inner {
+        @include align-width--l;
+
+        display: flex;
+        align-items: center;
+        margin: 0 auto;
+        gap: var(--space--xs);
+        justify-items: center;
+        padding-block: var(--space--s);
+        transition: transition(color, background-color, border-color, box-shadow, transform);
+
+        @include mq(small) {
+            padding-block: var(--space--s);
+        }
+
+        &:focus-within {
+            --input--color--focus: var(--color--brand-1);
+            --input--placeholder-color: hsla(var(--color--brand-1--hsl), 0.8);
+
+            #{$this}__label {
+                opacity: 0;
+                pointer-events: none;
+                visibility: hidden;
+            }
+
+            #{$this}__submit {
+                position: relative;
+                opacity: 1;
+                pointer-events: all;
+                visibility: visible;
+            }
+        }
+    }
+
+    &__input {
+        --input--background-color: transparent;
+        --input--background-color--focus: transparent;
+
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+
+        @include interact {
+            box-shadow: unset;
+        }
+    }
+
+    &__submit {
+        display: block;
+        flex: 0 0 auto;
+
+        @include mq($until: 'site-header') {
+            @include button--icon;
+            @include button--square;
+
+            border-radius: 999px;
+            margin: 0;
+            color: var(--color--foreground);
+            cursor: pointer;
+
+            &::after {
+                mask-image: url(#{asset-path('images/icons/chevron-right.svg')});
+                mask-size: var(--header-search--icon-size);
+
+                @include mq('site-header') {
+                    mask-image: url(#{asset-path('images/icons/search.svg')});
+                }
+            }
+        }
+
+        @include mq('site-header') {
+            @include button;
+            @include button--interaction;
+        }
+    }
+}

@@ -1,0 +1,9 @@
+.skip-link {
+    position: absolute;
+
+    &:focus,
+    &:active {
+        top: var(--space--s);
+        left: var(--space--s);
+    }
+}

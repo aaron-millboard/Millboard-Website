@@ -1,0 +1,65 @@
+// ---
+// Scrollbar styling!
+// The support can be inconsistent across browsers and devices, so use these with a pinch of salt.
+// The mixins themselves are wrappers for the (poorly supported at time of writing) scrollbar-color and scrollbar-width properties.
+// ---
+// More context...
+// scrollbar-color and scrollbar-width are non-prefixed CSS properties, but as of writing support is limited to Firefox:
+// - scrollbar-color overview: https://developer.mozilla.org/en-US/docs/Web/CSS/scrollbar-color
+// - scrollbar-color browser compatibility: https://developer.mozilla.org/en-US/docs/Web/CSS/scrollbar-color#browser_compatibility
+// - scrollbar-width overview: https://developer.mozilla.org/en-US/docs/Web/CSS/scrollbar-width
+// - scrollbar-width browser compatibility: https://developer.mozilla.org/en-US/docs/Web/CSS/scrollbar-width#browser_compatibility
+// Fortunately we can cover a bunch of other browsers with some webkit prefixed props:
+// - ::-webkit-scrollbar overview: https://developer.mozilla.org/en-US/docs/Web/CSS/::-webkit-scrollbar
+// - ::-webkit-scrollbar browser compatibility: https://developer.mozilla.org/en-US/docs/Web/CSS/::-webkit-scrollbar#browser_compatibility
+// ---
+@mixin scrollbar-color ($track, $thumb: transparent) {
+    @if ($thumb == transparent) {
+        scrollbar-color: $track $thumb;
+    } @else {
+        scrollbar-color: $track;
+    }
+
+    // See relevant section of MDN docs for differences between these.
+    // https://developer.mozilla.org/en-US/docs/Web/CSS/::-webkit-scrollbar#css_scrollbar_selectors
+    &::-webkit-scrollbar {
+        background-color: $track;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background-color: $thumb;
+    }
+
+    &::-webkit-scrollbar-track {
+        background-color: $track;
+    }
+
+    &::-webkit-scrollbar-track-piece {
+        background-color: $track;
+    }
+}
+
+@mixin scrollbar-width ($width: 11px, $thumb-radius: 11px) {
+    @if $width == 0px {
+        scrollbar-width: none;
+
+        &::-webkit-scrollbar {
+            display: none;
+        }
+    } @else {
+        @if $width < 8px {
+            scrollbar-width: thin;
+        } @else {
+            scrollbar-width: auto;
+        }
+
+        &::-webkit-scrollbar {
+            width: $width;
+            height: $width;
+        }
+
+        &::-webkit-scrollbar-thumb {
+            border-radius: $thumb-radius;
+        }
+    }
+}

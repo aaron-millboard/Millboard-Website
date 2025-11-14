@@ -1,0 +1,32 @@
+{
+    "$schema": "https://advancedcustomfields.com/schemas/json/main/block.json",
+    "apiVersion": 2,
+    "name": "template-loop",
+    "title": "Template Loop",
+    "category": "granola-blocks",
+    "icon": "controls-repeat",
+    "keywords": [],
+    "acf": {
+        "mode": "edit",
+        "renderCallback": "\\Granola\\Component::acf_render_callback",
+        "postTypes": [
+            "granola-template"
+        ],
+        "align": "full"
+    },
+    "supports": {
+        "align": false,
+        "anchor": true,
+        "color": {
+            "text": false
+        },
+        "mode": false,
+        "multiple": false
+    },
+    "attributes": {
+        "align": {
+            "type": "string",
+            "default": "full"
+        }
+    }
+}

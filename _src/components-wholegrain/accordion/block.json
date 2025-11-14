@@ -1,0 +1,25 @@
+{
+    "$schema": "https://advancedcustomfields.com/schemas/json/main/block.json",
+    "apiVersion": 2,
+    "name": "accordion",
+    "title": "Accordion",
+    "description": "An accordion block",
+    "category": "granola-blocks",
+    "icon": "arrow-down-alt2",
+    "keywords": [],
+    "acf": {
+        "mode": "auto",
+        "renderCallback": "\\Granola\\Component::acf_render_callback",
+        "postTypes": [
+            "page",
+            "post",
+            "granola-template"
+        ]
+    },
+    "supports": {
+        "anchor": true,
+        "color": {
+            "text": false
+        }
+    }
+}

@@ -1,0 +1,57 @@
+.blocks {
+    display: flow-root; // clear alignright/left floats.
+    margin-bottom: var(--blocks--margin-bottom);
+
+    // Default width & margins for all child elements.
+    > * {
+        max-width: var(--block--max-width);
+        margin-right: var(--block--margin-right, auto);
+        margin-left: var(--block--margin-left, auto);
+
+        &:where(.alignwide) {
+            --block--max-width: var(--width--responsive--l);
+        }
+
+        &:where(.alignfull) {
+            --block--max-width: 100%;
+        }
+
+        &:where(.alignnone) {
+            --block--max-width: none;
+        }
+    }
+
+    // Default layout spacing for blocks.
+    > :where([class*='wp-block']) {
+        margin-top: var(--block--margin-top);
+        margin-bottom: var(--block--margin-bottom);
+
+        &:first-child {
+            --block--margin-top: 0;
+        }
+
+        &:last-child {
+            --block--margin-bottom: 0;
+        }
+
+        &:where([class*='has-background'].alignfull) {
+            // Pull blocks together if they are both full-width and have backgrounds.
+            + :where([class*='has-background'].alignfull) {
+                @include layout-margin-pull;
+            }
+
+            // Pull the footer up to the last block if the block is full-width and has a background.
+            &:last-child {
+                --block--margin-bottom: calc(var(--blocks--margin-bottom) * -1);
+            }
+        }
+    }
+
+    > .alignright {
+        @include block-align--right;
+    }
+
+    > .alignleft {
+        @include block-align--left;
+    }
+}

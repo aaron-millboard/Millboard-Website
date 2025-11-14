@@ -1,0 +1,5 @@
+.site-main {
+    @include no-first-last-margin;
+
+    flex: 1;
+}

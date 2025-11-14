@@ -1,0 +1,4 @@
+.responsive-embed {
+    @include responsive-embed;
+    @include responsive-embed--inner;
+}

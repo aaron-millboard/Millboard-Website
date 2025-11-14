@@ -1,0 +1,28 @@
+@mixin blocks-variables {
+    // ---------------------------------------------------
+    // Block context variables
+    // ---------------------------------------------------
+    --blocks--margin-top: var(--space--responsive--2xl);
+    --blocks--margin-bottom: var(--space--responsive--2xl);
+
+    --block--margin-top: var(--space--layout);
+    --block--margin-bottom: var(--space--layout);
+    --block--padding-y: var(--space--l);
+    --block--padding-x: var(--space--container-padding);
+    --block--max-width: var(--width--responsive--s);
+
+    --block--header--margin-bottom: var(--space--base);
+    --block--footer--margin-top: var(--space--base);
+}
+
+@mixin blocks-variables--mq {
+    @include mq(small) {
+        --block--padding-y: var(--space--responsive--2xl);
+    }
+
+    @include mq(medium) {
+        --block--padding-x: var(--space--responsive--xl);
+    }
+}
+
+$blocks--center-align-headers: true; // Aligns all block headers centrally

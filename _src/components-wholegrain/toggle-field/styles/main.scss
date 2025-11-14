@@ -1,0 +1,102 @@
+// Inspo by Kitty Giraudel: https://kittygiraudel.com/2021/04/05/an-accessible-toggle/
+
+.toggle-field {
+    --toggle-field--background-color: hsla(var(--color--foreground--hsl), 0.45); // TODO: Get color-context working for --color--foreground--hsl, etc.
+    --toggle-field--icon-color: var(--color--foreground);
+    --toggle-field--indicator-color: var(--color--white);
+    --toggle-field--indicator-diameter: 1.6em;
+    --toggle-field--indicator-offset: 0.3em;
+
+    --toggle-field--background-color--on: var(--color--green);
+    --toggle-field--icon-color--on: var(--color--white);
+    --toggle-field--indicator-color--on: var(--color--white);
+
+    $this: &;
+
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    margin: 0 auto;
+    cursor: pointer;
+    gap: 1ch;
+
+    &__indicator {
+        position: relative;
+        display: inline-flex;
+        overflow: hidden;
+        width: calc(var(--toggle-field--indicator-diameter) * 2 + var(--toggle-field--indicator-offset) * 2);
+        height: calc(var(--toggle-field--indicator-diameter) + var(--toggle-field--indicator-offset) * 2);
+        flex: 0 0 auto;
+        align-items: center;
+        justify-content: space-around;
+        border-radius: 100vw;
+        margin: 2px;
+        background-color: var(--toggle-field--background-color);
+        color: var(--toggle-field--icon-color);
+        pointer-events: none;
+        user-select: none;
+
+        @media (prefers-reduced-motion: no-preference) {
+            transition:
+                background-color 250ms,
+                color 250ms,
+                transform 250ms;
+        }
+
+        &::before {
+            position: absolute;
+            z-index: 1;
+            top: 50%;
+            left: var(--toggle-field--indicator-offset);
+            width: var(--toggle-field--indicator-diameter);
+            height: var(--toggle-field--indicator-diameter);
+            border-radius: 100%;
+            background-color: var(--toggle-field--indicator-color);
+            content: '';
+            transform: translate(0, -50%);
+            transition: inherit;
+        }
+
+        svg {
+            height: 40%;
+            margin: auto;
+
+            [fill] {
+                color: currentColor;
+                fill: currentColor;
+            }
+        }
+    }
+
+    [type='checkbox'] {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+
+        &:checked + #{$this}__indicator {
+            --toggle-field--background-color: var(--toggle-field--background-color--on);
+            --toggle-field--icon-color: var(--toggle-field--icon-color--on);
+            --toggle-field--indicator-color: var(--toggle-field--indicator-color--on);
+
+            &::before {
+                background-position: center;
+                background-repeat: no-repeat;
+                transform: translate(100%, -50%);
+            }
+        }
+    }
+
+    &:focus #{$this}__indicator,
+    [type='checkbox']:focus + #{$this}__indicator {
+        outline: 3px solid var(--color--foreground);
+        outline-offset: 2px;
+    }
+
+    &:focus,
+    &:focus:not(:focus-visible) #{$this}__indicator,
+    [type='checkbox']:focus:not(:focus-visible) + #{$this}__indicator {
+        outline: 0;
+    }
+}

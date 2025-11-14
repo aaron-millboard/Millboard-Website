@@ -1,0 +1,46 @@
+{
+    "key": "group_60e6b6e610d64",
+    "title": "Google Tag Manager",
+    "fields": [
+        {
+            "key": "field_60e6b6e616342",
+            "label": "Google Tag Manager ID",
+            "name": "gtm_id",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "placeholder": "GTM-XXXXXXX",
+            "prepend": "",
+            "append": ""
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "options_page",
+                "operator": "==",
+                "value": "acf-options-integrations"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "Options Page",
+    "show_in_rest": 0,
+    "granola_save_location": "gtm",
+    "modified": 1699630246
+}

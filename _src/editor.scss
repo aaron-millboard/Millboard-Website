@@ -1,0 +1,81 @@
+// ----------------------------------------------
+// ----------------------------------------------
+// Editor styles
+// ----------------------------------------------
+// ----------------------------------------------
+
+// ----------------------------------------------
+// Identify this css file as the main editor css file
+// ----------------------------------------------
+$asset-path-prefix: './';
+
+// ----------------------------------------------
+// Core helpers
+// ----------------------------------------------
+@import './core';
+
+// CSS output begins here
+
+// ----------------------------------------------
+// Generic
+// Custom properties, normalize, font-face, etc.
+// ----------------------------------------------
+@import './styles/4-common/normalize';
+@import './styles/4-common/custom-properties';
+@import './styles/4-common/font-face';
+// @import './styles/4-common/focus';
+@import './styles/4-common/selection';
+@import './styles/4-common/box-sizing';
+
+// ----------------------------------------------
+// Elements
+// Bare HTML elements
+// ----------------------------------------------
+body {
+    // gets converted to .editor-styles-wrapper
+    --block--margin-top: var(--space--xl);
+    --block--margin-bottom: var(--space--xl);
+
+    @include typestyle-base;
+
+    &:not(.mce-content-body) {
+        background-color: var(--color--background);
+        color: var(--color--foreground);
+    }
+}
+
+@import './styles/5-elements/a-elements';
+@import './styles/5-elements/blockquote-elements';
+// @import './styles/5-elements/body-element';
+@import './styles/5-elements/button-elements';
+@import './styles/5-elements/figure-elements';
+@import './styles/5-elements/hr-elements';
+@import './styles/5-elements/html-element';
+// @import './styles/5-elements/list-elements';
+// @import './styles/5-elements/iframe-elements';
+@import './styles/5-elements/img-elements';
+// @import './styles/5-elements/svg-elements';
+@import './styles/5-elements/table-elements';
+@import './styles/5-elements/type-elements';
+
+.acf-block-preview {
+    @import './styles/5-elements/form-elements';
+}
+
+// ----------------------------------------------
+// Objects
+// Reusable design patterns
+// ----------------------------------------------
+@import './styles/6-pattern-classes/';
+
+// ----------------------------------------------
+// Components
+// ----------------------------------------------
+@import './components*/**/styles/main.scss';
+@import './components*/**/styles/block.scss';
+@import './components*/**/styles/editor.scss';
+
+// ----------------------------------------------
+// Utilities/Trumps
+// ----------------------------------------------
+@import './styles/7-utilities/';

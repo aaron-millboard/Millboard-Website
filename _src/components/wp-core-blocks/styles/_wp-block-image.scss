@@ -1,0 +1,15 @@
+.wp-block-image {
+    @include media-embed;
+
+    > img {
+        margin: 0 auto;
+    }
+
+    &:not(.alignfull) {
+        > img {
+            @include rounded-corners;
+
+            box-shadow: var(--box-shadow--1);
+        }
+    }
+}

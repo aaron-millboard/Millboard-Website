@@ -1,0 +1,137 @@
+@use 'sass:color';
+
+// ---------------------------------------------------
+// Colors
+// ---------------------------------------------------
+// Gutenberg color palette colors also need to be set in granola/config.php
+
+$colors: (
+    'base': (
+        'darkgreen': (
+            'color': #1e4545,
+            'foreground': 'white',
+            'properties': (
+                '--link--color': 'white',
+                '--link--color--hover': 'white',
+            ),
+        ),
+        'lightgreen': (
+            'color': #9db9b9,
+            'foreground': 'black',
+            'properties': (
+                '--link--color': var(--color--black),
+                '--link--color--hover': var(--color--black),
+            ),
+        ),
+        'blue': (
+            'color': #1d324e,
+            'foreground': 'white',
+            'properties': (
+                '--link--color': var(--color--white),
+                '--link--color--hover': var(--color--white),
+            ),
+        ),
+        'peach': (
+            'color': #ebca98,
+            'foreground': 'darkgreen',
+            'properties': (
+                '--link--color': var(--color--darkgreen),
+                '--link--color--hover': var(--color--darkgreen),
+            ),
+        ),
+        'lightblue': (
+            'color': #87d1d5,
+        ),
+        'red': (
+            'color': #ad474b,
+            'foreground': 'white',
+            'properties': (
+                '--link--color': 'white',
+                '--link--color--hover': 'white',
+            ),
+        ),
+        'green': (
+            'color': #27a800,
+            'foreground': 'white',
+        ),
+        'white': (
+            'color': #fff,
+            'foreground': 'darkgreen',
+        ),
+        'black': (
+            'color': #222,
+            'foreground': 'white',
+            'properties': (
+                '--link--color': 'white',
+                '--link--color--hover': 'white',
+            ),
+        ),
+        'grey': (
+            'color': #444,
+            'foreground': 'white',
+            'properties': (
+                '--link--color': 'white',
+                '--link--color--hover': 'white',
+            ),
+        ),
+        'brand-1': (
+            'namedColor': 'darkgreen',
+        ),
+        'brand-2': (
+            'namedColor': 'lightgreen',
+        ),
+        'brand-3': (
+            'namedColor': 'peach',
+        ),
+        'foreground': (
+            'namedColor': 'darkgreen',
+        ),
+        'background': (
+            'namedColor': 'white',
+        ),
+        'error': (
+            'namedColor': 'red',
+        ),
+        'valid': (
+            'namedColor': 'green',
+        )
+    ),
+    // Alternative themes, e.g. 'dark-mode'.
+    //
+    // 'dark-mode': (
+    //     'brand-1': (
+    //         'namedColor': 'darkgreen',
+    //     ),
+    //     'brand-2': (
+    //         'namedColor': 'lightgreen',
+    //     ),
+    //     'brand-3': (
+    //         'namedColor': 'peach',
+    //     ),
+    //     'foreground': (
+    //         'namedColor': 'white',
+    //     ),
+    //     'background': (
+    //         'namedColor': 'darkgreen',
+    //     ),
+    // )
+);
+
+// Output colors at :root or under theme classes.
+// Color custom properties look like this: --color--brand-1
+// Toggle '.theme--#{$theme}' on the HTML element.
+@mixin color-variables {
+    @each $theme, $colormaps in $colors {
+        $selector: '&.theme--#{$theme}'; // Parent selector added so that the 'theme--dark-mode' class can be added to HTML el.
+
+        @if $theme == 'base' {
+            $selector: '&';
+        }
+
+        #{$selector} {
+            @each $colorname, $colormap in $colormaps {
+                @include theme-color-props($colorname, $theme);
+            }
+        }
+    }
+}

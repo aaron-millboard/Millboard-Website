@@ -1,0 +1,132 @@
+// ---------------------------------------------------
+// General alignment mixins.
+// ---------------------------------------------------
+@mixin align-width($width, $responsive: true) {
+    @if ($responsive) {
+        max-width: var(--width--responsive--#{$width});
+    } @else {
+        max-width: var(--width--#{$width});
+    }
+
+    margin-right: auto;
+    margin-left: auto;
+}
+
+@mixin align-width--full {
+    max-width: 100%;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+@mixin align--right {
+    max-width: var(--width--responsive--s);
+    margin: var(--space--responsive--m) auto;
+
+    @include mq(medium) {
+        max-width: calc(var(--width--s) / 2);
+        margin-top: var(--space--l);
+        margin-right: calc(50% - (var(--width--s) / 2));
+        margin-bottom: var(--space--l);
+        margin-left: var(--space--l);
+        float: right;
+    }
+}
+
+@mixin align--left {
+    max-width: var(--width--responsive--s);
+    margin: var(--space--responsive--m) auto;
+
+    @include mq(medium) {
+        max-width: calc(var(--width--s) / 2);
+        margin-top: var(--space--l);
+        margin-right: var(--space--l);
+        margin-bottom: var(--space--l);
+        margin-left: calc(50% - (var(--width--s) / 2));
+        float: left;
+    }
+}
+
+// ---------------------------------------------------
+// Block alignment mixins.
+// ---------------------------------------------------
+@mixin block-align-width($width, $responsive: true) {
+    @if ($responsive) {
+        --block--max-width: var(--width--responsive--#{$width});
+    } @else {
+        --block--max-width: var(--width--#{$width});
+    }
+}
+
+@mixin block-align-width--full {
+    --block--max-width: 100%;
+}
+
+@mixin block-align--right {
+    --block--max-width: var(--width--xs);
+
+    @include mq(medium) {
+        --block--max-width: calc(var(--width--s) / 2);
+        --block--margin-top: var(--space--l);
+        --block--margin-right: calc(50% - (var(--width--s) / 2));
+        --block--margin-bottom: var(--space--l);
+        --block--margin-left: var(--space--l);
+    }
+}
+
+@mixin block-align--left {
+    --block--max-width: var(--width--xs);
+
+    @include mq(medium) {
+        --block--max-width: calc(var(--width--s) / 2);
+        --block--margin-top: var(--space--l);
+        --block--margin-right: var(--space--l);
+        --block--margin-bottom: var(--space--l);
+        --block--margin-left: calc(50% - (var(--width--s) / 2));
+    }
+}
+
+// ---------------------------------------------------
+// Width 'alignment' mixins.
+// ---------------------------------------------------
+@mixin align-width--xxs($responsive: true) {
+    @include align-width('xxs', $responsive);
+}
+
+@mixin align-width--xs($responsive: true) {
+    @include align-width('xs', $responsive);
+}
+
+@mixin align-width--s($responsive: true) {
+    @include align-width('s', $responsive);
+}
+
+@mixin align-width--m($responsive: true) {
+    @include align-width('m', $responsive);
+}
+
+@mixin align-width--l($responsive: true) {
+    @include align-width('l', $responsive);
+}
+
+// ---------------------------------------------------
+// block 'alignment' mixins.
+// ---------------------------------------------------
+@mixin block-align-width--xxs($responsive: true) {
+    @include block-align-width('xxs', $responsive);
+}
+
+@mixin block-align-width--xs($responsive: true) {
+    @include block-align-width('xs', $responsive);
+}
+
+@mixin block-align-width--s($responsive: true) {
+    @include block-align-width('s', $responsive);
+}
+
+@mixin block-align-width--m($responsive: true) {
+    @include block-align-width('m', $responsive);
+}
+
+@mixin block-align-width--l($responsive: true) {
+    @include block-align-width('l', $responsive);
+}

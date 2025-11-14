@@ -1,0 +1,33 @@
+{
+    "editor.rulers": [
+        120,
+    ],
+    "less.validate": false,
+    "scss.validate": false,
+    "css.validate": false,
+    "stylelint.validate": [
+        "css",
+        "scss"
+    ],
+    "editor.codeActionsOnSave": {
+        "source.fixAll.stylelint": "explicit",
+    },
+    "[scss]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[php]": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "valeryanm.vscode-phpsab",
+    },
+    "[javascript]": {
+        "editor.formatOnSave": false,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.codeActionsOnSave": {
+            "source.formatDocument": "explicit",
+            "source.fixAll.eslint": "explicit"
+        },
+    },
+    "intelephense.stubs": [
+        "wordpress"
+    ],
+}

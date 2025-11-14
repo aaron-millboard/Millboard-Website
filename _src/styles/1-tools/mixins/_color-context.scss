@@ -1,0 +1,72 @@
+@charset 'UTF-8';
+@use 'sass:color';
+@use 'sass:map';
+
+/// Get color props for a named theme colour (hex, hsl, h, s, and l) and assign to given prop. Default theme: 'base'.
+///
+/// @example scss
+///    @include color-props('brand-1-alias', 'brand-1', 'dark-mode');
+///
+/// @access public
+///
+
+@mixin color-props($prop-name, $theme-color-name, $theme: 'base') {
+    $color-prop-name: '--color--#{$prop-name}';
+    $value: get-named-color-hex($theme-color-name, $theme);
+
+    #{$color-prop-name}: #{$value};
+    #{$color-prop-name}--hsl: #{hsl-from-hex($value)};
+
+    #{$color-prop-name}--h: #{color.channel($value, 'hue', $space: hsl)};
+    #{$color-prop-name}--s: #{color.channel($value, 'saturation', $space: hsl)};
+    #{$color-prop-name}--l: #{color.channel($value, 'lightness', $space: hsl)};
+}
+
+/// Get color props for a named theme colour (hex, hsl, h, s, and l). Default theme: 'base'.
+///
+/// @example scss
+///    @include theme-color-props('brand-1', 'dark-mode');
+///
+/// @access public
+///
+
+@mixin theme-color-props($theme-color-name, $theme: 'base') {
+    @include color-props($theme-color-name, $theme-color-name, $theme);
+}
+
+/// Provides background and foreground color custom properties
+/// based on the background color passed in.
+///
+/// @example scss
+///    @include color-context('brand-1');
+///
+/// @access public
+///
+
+@mixin color-context($background-color-name, $theme: 'base') {
+    $colormap: get-named-color-map($background-color-name, $theme);
+    $foreground-color-name: map.get($colormap, 'foreground');
+
+    @if ($background-color-name != 'background') {
+        // Set background color context to given color
+        @include color-props('background', $background-color-name, $theme);
+
+        background-color: var(--color--background);
+    }
+
+    @if ($foreground-color-name) {
+        @include color-props('foreground', $foreground-color-name, $theme);
+
+        color: var(--color--foreground);
+    }
+
+    @if (map.get($colormap, 'properties')) {
+        $properties: map.get($colormap, 'properties');
+
+        @each $property, $value in $properties {
+            $theme-name: nth($theme, 1);
+
+            #{$property}: #{$value};
+        }
+    }
+}
