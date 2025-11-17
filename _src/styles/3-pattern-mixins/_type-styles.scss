@@ -33,17 +33,10 @@
     }
 }
 
-@mixin typestyle-hero {
-    @include heading-attributes;
-
-    font-size: rfs(36, 85);
-    line-height: 1.2;
-}
-
 @mixin typestyle-h1 {
     @include heading-attributes;
 
-    font-size: rfs(36, 56);
+    font-size: rfs(32, 56);
     text-transform: uppercase;
 }
 
@@ -63,19 +56,21 @@
 @mixin typestyle-h4 {
     @include heading-attributes;
 
-    font-size: rfs(20, 32);
+    font-size: rfs(22, 32);
 }
 
 @mixin typestyle-h5 {
     @include heading-attributes;
 
     font-size: rfs(18, 28);
-    font-weight: var(--type--1--font-weight--bold);
+    font-family: var(--type--3--font-family);
+    font-weight: var(--type--3--font-weight);
 }
 
 @mixin typestyle-h6 {
     @include heading-attributes;
 
     font-size: rfs(14, 15);
-    font-weight: var(--type--1--font-weight--bold);
+    font-family: var(--type--3--font-family);
+    font-weight: var(--type--3--font-weight);
 }

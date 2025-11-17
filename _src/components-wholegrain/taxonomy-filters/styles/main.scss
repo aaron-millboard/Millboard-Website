@@ -33,7 +33,6 @@
 
     &__item {
         &--current {
-            @include button--theme-2;
         }
     }
 }

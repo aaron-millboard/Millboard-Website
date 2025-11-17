@@ -8,25 +8,31 @@
     border-width: var(--button--border-width);
     border-style: solid;
     border-color: var(--button--border-color);
-    border-radius: var(--button--border-radius);
     background-color: var(--button--background-color);
     color: var(--button--color);
     cursor: pointer;
     font-size: var(--button--font-size, inherit);
+    font-weight: var(--type--2--font-weight);
+    font-family: var(--type--2--font-family);
     gap: var(--button--gap);
-    line-height: inherit;
+    line-height: normal;
+    letter-spacing: 1.92px;
     text-align: center;
     text-decoration: none; // [1]
+    text-transform: uppercase;
     transition: transition(color, background-color, border-color, box-shadow, transform);
     user-select: none;
 
-    .has-brand-1-background-color &:not(.has-background) {
-        --button--background-color--hover: var(--color--brand-1);
-        --button--border-color--hover: var(--color--brand-2);
-    }
-
-    .has-brand-2-background-color &:not(.has-background) {
-        @include button--theme-2;
+    // Override hover colors:
+    // Wenge
+    // Olivegreen
+    .has-brand-5-background-color,
+    .has-brand-4-background-color {
+        &:not(.has-background) {
+            --button--background-color--hover: var(--color--white);
+            --button--border-color--hover: var(--color--white);
+            --button--color--hover: var(--color--black);
+        }
     }
 }
 
@@ -42,34 +48,6 @@
         @include focus--1;
     }
 }
-
-@mixin button--theme-2 {
-    --button--background-color: var(--color--brand-3);
-    --button--border-color: var(--color--brand-3);
-    --button--color: var(--color--brand-1);
-
-    --button--background-color--hover: var(--color--brand-1);
-    --button--border-color--hover: var(--color--brand-1);
-    --button--color--hover: var(--color--brand-3);
-}
-
-// @mixin button--theme-3 {
-//     --button--background-color: var(--color--brand-1);
-//     --button--border-color: var(--color--brand-1);
-//     --button--color: var(--color--white);
-
-//     --button--background-color--hover: hsl(
-//         var(--color--brand-1--h),
-//         calc(var(--color--brand-1--s) * 0.75),
-//         calc(var(--color--brand-1--l) * 0.75)
-//     );
-//     --button--border-color--hover: hsl(
-//         var(--color--brand-1--h),
-//         calc(var(--color--brand-1--s) * 0.75),
-//         calc(var(--color--brand-1--l) * 0.75)
-//     );
-//     --button--color--hover: var(--color--white);
-// }
 
 @mixin button--small {
     --button--padding-y: var(--button--small--padding-y);

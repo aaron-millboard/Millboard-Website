@@ -182,6 +182,7 @@ function filter_args(array $args): ?array
 
     if (!empty($args['primary_call_to_action'])) {
         $args['primary_call_to_action']['classes'] = 'g-button';
+        $args['primary_call_to_action']['content'] = $args['primary_call_to_action']['title'];
     }
 
     if (!empty($args['background']) && $args['background'] !== 'none') {
