@@ -3,6 +3,11 @@
  */
 wp.domReady(() => {
     wp.blocks.registerBlockStyle('core/heading', {
+        name: 'typestyle-uppercase',
+        label: 'Uppercase',
+    });
+
+    wp.blocks.registerBlockStyle('core/heading', {
         name: 'typestyle-h2',
         label: 'H2 Appearance',
     });
