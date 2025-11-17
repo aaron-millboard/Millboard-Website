@@ -1,6 +1,6 @@
 {
-    "short_name": "Granola",
-    "name": "Granola",
+    "short_name": "Millboard",
+    "name": "Millboard",
     "icons": [
         {
             "src": "../images/icon-512.png",
@@ -16,8 +16,8 @@
         }
     ],
     "start_url": "/",
-    "background_color": "#1e4545",
+    "background_color": "#dedcd2",
     "display": "standalone",
     "scope": "/",
-    "theme_color": "#1e4545"
+    "theme_color": "#dedcd2"
 }
