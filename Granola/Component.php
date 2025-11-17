@@ -133,7 +133,7 @@ class Component extends Partial
 
         \wp_enqueue_script(
             "$name-scripts",
-            \Granola\Asset::URL($js_path, true),
+            \Granola\Asset::URL($js_path, false),
             \apply_filters("granola/partial/$name/enqueue_script_dependencies", []),
             \apply_filters("granola/partial/$name/enqueue_script_in_footer", false),
         );
@@ -173,7 +173,7 @@ class Component extends Partial
 
         \wp_enqueue_style(
             "$name-styles",
-            \Granola\Asset::URL($css_path, true),
+            \Granola\Asset::URL($css_path, false),
             \apply_filters("granola/partial/$name/enqueue_style_dependencies", []),
         );
     }
