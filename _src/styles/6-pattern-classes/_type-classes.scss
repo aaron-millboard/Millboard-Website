@@ -31,3 +31,7 @@
 .is-style-typestyle-meta {
     @include typestyle-meta;
 }
+
+.is-style-typestyle-uppercase {
+    text-transform: uppercase;
+}
