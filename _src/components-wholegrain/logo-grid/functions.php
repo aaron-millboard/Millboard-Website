@@ -10,7 +10,7 @@ function filter_args(array $args): ?array
     $args = array_merge([
         'classes' => [],
         'columns' => '',
-        'display' => 'grid',
+        'layout' => 'grid',
         'items' => [],
     ], $args);
 
@@ -19,12 +19,12 @@ function filter_args(array $args): ?array
     // ---------------------------------------
     $args['classes'] = array_merge([
         'logo-grid',
-        'cards',
         'wp-block',
         'animate',
     ], $args['classes']);
 
-    $args['classes'][] = 'logo-grid--' . $args['display'];
+    // Add type
+    $args['classes'][] = 'logo-grid--' . $args['layout'];
 
     // Generate items array.
     if (!empty($args['logos'])) {

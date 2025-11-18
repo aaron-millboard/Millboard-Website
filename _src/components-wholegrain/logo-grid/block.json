@@ -10,17 +10,10 @@
     "acf": {
         "mode": "edit",
         "renderCallback": "\\Granola\\Component::acf_render_callback",
-        "postTypes": [
-            "page",
-            "post",
-            "granola-template"
-        ]
+        "postTypes": ["page", "post", "granola-template"]
     },
     "supports": {
-        "align": [
-            "wide",
-            "full"
-        ],
+        "align": ["wide", "full"],
         "anchor": true,
         "color": {
             "text": false
