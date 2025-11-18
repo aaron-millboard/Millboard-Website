@@ -15,6 +15,8 @@ function filter_args(array $args): ?array
         'heading' => null,
         'max_depth' => null,
         'theme_location' => null,
+        'heading_button' => false,
+        'expandable_element_attributes' => [],
     ], $args);
 
     // ---------------------------------------
@@ -96,6 +98,27 @@ function filter_args(array $args): ?array
     // Set menu heading from theme_location.
     if ($args['heading'] === true) {
         $args['heading'] = \wp_get_nav_menu_name($args['theme_location']);
+    }
+
+    // -------------------------------------------------------------------------
+    // Heading button.
+    // -------------------------------------------------------------------------
+    if ($args['heading_button'] === true) {
+        $args['button'] = [
+            'content' => __('Expand menu for ' . $args['heading']),
+            'visually_hidden_text' => true,
+            'classes' => ['menu__heading__button', 'g-button', 'g-button--square', 'g-button--arrow'],
+            'attributes' => [
+                'aria-expanded' => 'false',
+                'aria-controls' => 'menu-' . $args['theme_location'],
+            ],
+        ];
+
+        $args['expandable_element_attributes'] = [
+            'id' => 'menu-' . $args['theme_location'],
+            'hidden' => true,
+            'aria-hidden' => 'true',
+        ];
     }
 
     // -------------------------------------------------------------------------

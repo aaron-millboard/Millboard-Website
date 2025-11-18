@@ -6,6 +6,7 @@
             "key": "field_5e68c242a5c1e",
             "label": "Social Networks",
             "name": "social_networks",
+            "aria-label": "",
             "type": "repeater",
             "instructions": "",
             "required": 0,
@@ -15,17 +16,19 @@
                 "class": "",
                 "id": ""
             },
-            "wpml_cf_preferences": 1,
-            "collapsed": "",
+            "layout": "table",
+            "pagination": 0,
             "min": 0,
             "max": 0,
-            "layout": "table",
-            "button_label": "",
+            "collapsed": "",
+            "button_label": "Add Network",
+            "rows_per_page": 20,
             "sub_fields": [
                 {
                     "key": "field_5e68c24aa5c1f",
                     "label": "Network",
                     "name": "network",
+                    "aria-label": "",
                     "type": "select",
                     "instructions": "",
                     "required": 0,
@@ -37,23 +40,29 @@
                     },
                     "choices": {
                         "facebook": "Facebook",
-                        "twitter": "Twitter",
+                        "x": "X",
                         "youtube": "Youtube",
                         "instagram": "Instagram",
-                        "linkedin": "LinkedIn"
+                        "linkedin": "LinkedIn",
+                        "pinterest": "Pinterest"
                     },
                     "default_value": false,
-                    "allow_null": 0,
-                    "multiple": 0,
-                    "ui": 0,
                     "return_format": "array",
+                    "multiple": 0,
+                    "allow_null": 0,
+                    "allow_in_bindings": 1,
+                    "ui": 0,
                     "ajax": 0,
-                    "placeholder": ""
+                    "placeholder": "",
+                    "create_options": 0,
+                    "save_options": 0,
+                    "parent_repeater": "field_5e68c242a5c1e"
                 },
                 {
                     "key": "field_5e68c262a5c20",
                     "label": "URL",
                     "name": "url",
+                    "aria-label": "",
                     "type": "url",
                     "instructions": "",
                     "required": 1,
@@ -65,7 +74,8 @@
                     },
                     "wpml_cf_preferences": 1,
                     "default_value": "",
-                    "placeholder": ""
+                    "placeholder": "",
+                    "parent_repeater": "field_5e68c242a5c1e"
                 }
             ]
         }
@@ -87,5 +97,8 @@
     "hide_on_screen": "",
     "active": true,
     "description": "Options Page",
-    "modified": 1641492420
+    "show_in_rest": 0,
+    "display_title": "",
+    "granola_save_location": 0,
+    "modified": 1763464517
 }

@@ -1,0 +1,8 @@
+.list-reset {
+    @include list-reset;
+
+    &--hard {
+        @include list-reset-hard;
+        @include list-reset-hard--li;
+    }
+}

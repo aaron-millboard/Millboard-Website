@@ -35,3 +35,7 @@
 .is-style-typestyle-uppercase {
     text-transform: uppercase;
 }
+
+.is-style-typestyle-small {
+    @include typestyle-small;
+}
