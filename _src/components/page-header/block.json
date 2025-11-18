@@ -20,7 +20,7 @@
         "align": false,
         "anchor": true,
         "color": {
-            "background": false,
+            "background": true,
             "text": false
         },
         "mode": false,

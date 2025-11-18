@@ -60,7 +60,7 @@ function filter_args(array $args): ?array
             }
 
             if (!empty($object->query['s'])) {
-                $args['subheading'] = sprintf(
+                $args['preheading'] = sprintf(
                     // translators: query string.
                     \__("Showing results for '%s'", 'granola'),
                     $object->query['s']
@@ -95,14 +95,6 @@ function filter_args(array $args): ?array
                     \__('Published on %s ', 'granola'),
                     \get_the_date(\get_option('date_format'), $object->ID)
                 );
-
-                $args['labels'] = \Theme\Meta\ObjectMeta::get_object_labels($object->ID, [
-                    'limit' => 3,
-                    'taxonomies' => ['category']
-                ]);
-
-                $args['background'] = false;
-                $args['image_position'] = 'inset';
 
                 $args['type'] = 'article';
 
@@ -156,15 +148,6 @@ function filter_args(array $args): ?array
             ];
         }
 
-        if ($args['image_position'] === 'inset') {
-            $args['image']['size'] = 'medium';
-            $args['classes'][] = 'has-inset-image';
-        } else {
-            $args['image']['size'] = 'granola_super';
-            $args['classes'][] = 'has-background';
-            $args['classes'][] = 'has-background-image';
-        }
-
         // Loading, set to eager
         $args['image']['loading'] = 'eager';
     }
@@ -180,9 +163,28 @@ function filter_args(array $args): ?array
         ];
     }
 
-    if (!empty($args['primary_call_to_action'])) {
-        $args['primary_call_to_action']['classes'] = 'g-button';
-        $args['primary_call_to_action']['content'] = $args['primary_call_to_action']['title'];
+    if (!empty($args['description'])) {
+        $args['description'] = [
+            'content' => $args['description'],
+            'classes' => [
+                'page-header__description-text'
+            ],
+        ];
+    }
+
+    if (!empty($args['cta'])) {
+        $args['cta'] = [
+            'title'    => $args['cta']['title'] ?? '',
+            'url'      => $args['cta']['url'] ?? '',
+            'attributes' => [
+                'target' => $args['cta']['target'] ?? '',
+                'rel'    => $args['cta']['rel'] ?? '',
+            ],
+            'classes' => [
+                'page-header__cta',
+                'g-button'
+            ],
+        ];
     }
 
     if (!empty($args['background']) && $args['background'] !== 'none') {
@@ -192,10 +194,6 @@ function filter_args(array $args): ?array
 
     if (!empty($args['type'])) {
         $args['classes'][] = 'page-header--type--' . $args['type'];
-    }
-
-    if (!empty($args['image_overlay_opacity'])) {
-        $args['attributes']['style']['--page-header--overlay-opacity'] = $args['image_overlay_opacity'] . '%';
     }
 
     if (!empty($args['show_breadcrumbs'])) {

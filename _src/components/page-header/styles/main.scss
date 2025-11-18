@@ -1,143 +1,137 @@
 .page-header {
-    --page-header--spacing: var(--space--m);
-    --page-header--inset-image--size: #{px-to-rem(100)};
-    --page-header--padding-top: var(--space--responsive--l);
-    --page-header--padding-bottom: var(--space--responsive--s);
-    --page-header--heading--max-width: 16em;
-    --page-header--subheading--max-width: 40em;
-    --page-header--align: center;
-    --page-header--text-align: center;
-    --page-header--grid-alignment-x: center;
+    --page-header--padding-top: var(--space--xs);
+    --page-header--padding-bottom: var(--space--xl);
     --page-header--overlay-opacity: 20%;
+    --page-header--gradient-color: rgba(0, 0, 0, 0.3);
 
     --block--margin-bottom: var(--space--responsive--2xl);
 
+    --button--border-color: var(--color--foreground);
+    --button--color: var(--color--foreground);
+
     $this: &;
-    $internal-z-index: 100; // Local stacking.
+    position: relative;
 
     @include no-first-last-margin;
 
-    position: relative;
-    display: grid;
-    align-items: center;
-    justify-content: center;
-    grid-template-columns: var(--width--responsive--l);
-    isolation: isolate; // Create local stacking context.
-    justify-items: var(--page-header--grid-alignment-x);
+    &__inner {
+        max-width: var(--width--responsive--l);
+        margin-left: auto;
+        margin-right: auto;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: var(--space--2xl);
+        padding-top: var(--page-header--padding-top);
+        padding-bottom: 0;
 
-    @include mq(large) {
-        --page-header--inset-image--size: #{px-to-rem(150)};
-    }
-
-    &.has-background {
-        --page-header--padding-top: var(--space--layout);
-        --page-header--padding-bottom: var(--space--layout);
-
-        &.has-breadcrumbs {
-            @include mq($until: large) {
-                --page-header--padding-top: var(--space--2xl);
-                --page-header--padding-bottom: var(--space--2xl);
-            }
+        @include mq(large) {
+            gap: var(--space--l);
         }
     }
 
-    &__inner {
+    &__wrapper {
         position: relative;
-        z-index: $internal-z-index; // Above background image.
         display: grid;
-        flex-flow: column nowrap;
-        padding-top: var(--page-header--padding-top);
-        padding-bottom: var(--page-header--padding-bottom);
-        justify-items: var(--page-header--grid-alignment-x);
-        text-align: var(--page-header--text-align);
+        grid-template-columns: 1fr;
+
+        @include mq(large) {
+            grid-template-columns: 1fr 0.5fr 1fr;
+        }
+    }
+
+    &__content {
+        display: flex;
+        height: 100%;
+        flex-direction: column;
+        gap: var(--space--s);
+        padding-bottom: var(--space--m);
+
+        &--first {
+            @include mq(medium) {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        &--last {
+            padding-left: 0;
+            justify-content: end;
+            gap: 0;
+            padding-bottom: var(--space--2xl);
+            @include mq(large) {
+                padding-left: calc(100% / 3 + var(--space--2xl));
+                padding-bottom: var(--space--xl);
+            }
+        }
+
+        @include mq(large) {
+            display: flex;
+            padding-bottom: var(--space--xl);
+            gap: var(--space--l);
+        }
+    }
+
+    &__header {
+        z-index: 2;
     }
 
     &__heading {
-        max-width: var(--page-header--heading--max-width);
         margin-top: 0;
         margin-bottom: 0;
+        margin-top: var(--space--3xs);
     }
 
-    &__subheading {
+    &__preheading {
         @include no-first-last-margin;
+        @include typestyle-h6;
+        text-transform: uppercase;
+    }
 
-        max-width: var(--page-header--subheading--max-width);
-        margin-top: var(--page-header--spacing, var(--space--base));
+    &__description {
+        @include typestyle-small;
+        margin: 0;
+    }
+
+    &__spacer {
+        display: none;
+        width: auto;
+        height: px-to-rem(680);
+
+        @include mq(large) {
+            display: block;
+        }
+    }
+
+    &__image {
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        height: auto;
+        pointer-events: none;
+        z-index: 1;
+
+        &-inner {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        @include mq(large) {
+            width: px-to-rem(680);
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+    }
+
+    &__cta {
+        width: max-content;
     }
 
     .breadcrumbs {
         padding-top: var(--space--responsive--m);
         margin-left: 0;
-    }
-
-    &__meta {
-        margin-top: var(--page-header--spacing, var(--space--base));
-    }
-
-    &__labels {
-        --grid--row-gap: var(--space--xs);
-        --grid--column-gap: var(--space--xs);
-
-        margin-top: var(--page-header--spacing, var(--space--base));
-
-        .flex-list {
-            justify-content: center;
-        }
-    }
-
-    &__ctas {
-        margin-top: var(--page-header--spacing, var(--space--base));
-    }
-
-    &__inset-image {
-        margin-bottom: var(--space--base);
-
-        &-inner {
-            width: var(--page-header--inset-image--size);
-            height: var(--page-header--inset-image--size);
-            border-radius: 999px;
-            margin-right: auto;
-            margin-left: auto;
-            box-shadow: var(--box-shadow--1);
-        }
-    }
-
-    &__background-image {
-        position: absolute;
-        inset: 0;
-
-        &-inner {
-            width: 100%;
-            height: 100%;
-
-            &::after {
-                position: absolute;
-                background-color: var(--color--black);
-                content: '';
-                inset: 0;
-                mix-blend-mode: multiply;
-                opacity: var(--page-header--overlay-opacity);
-            }
-        }
-    }
-
-    &:not(#{$this}--type--article) {
-        .breadcrumbs {
-            @include align-width--l;
-
-            position: absolute;
-            z-index: $internal-z-index + 1; // Above background image and header.
-            top: 0;
-            width: 100%;
-            inset-inline: 0;
-            text-align: left;
-        }
-    }
-
-    &--type--article {
-        #{$this}__heading {
-            @include typestyle-h2;
-        }
     }
 
     .blocks & {
@@ -148,5 +142,60 @@
                 margin-top: calc(var(--space--responsive--xl) * -1);
             }
         }
+    }
+
+    &__background {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        z-index: 0;
+
+        &-left {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 50%;
+            height: 100%;
+            background: radial-gradient(
+                ellipse at left center,
+                var(--page-header--gradient-color) 0%,
+                color-mix(in srgb, var(--page-header--gradient-color) 33%, transparent) 40%,
+                transparent 70%
+            );
+        }
+        
+        &-top {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 50%;
+            background: radial-gradient(
+                ellipse at top center,
+                var(--page-header--gradient-color) 0%,
+                color-mix(in srgb, var(--page-header--gradient-color) 50%, transparent) 30%,
+                transparent 60%
+            );
+        }
+
+        &-bottom {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 50%;
+            background: radial-gradient(
+                ellipse at bottom center,
+                var(--page-header--gradient-color) 0%,
+                color-mix(in srgb, var(--page-header--gradient-color) 33%, transparent) 40%,
+                transparent 70%
+            );
+        }
+    }
+    
+    // Adjust gradient color for brand backgrounds
+    &.has-brand-6-background-color
+    {
+        --page-header--gradient-color: rgba(255, 255, 255, 0.15);
     }
 }

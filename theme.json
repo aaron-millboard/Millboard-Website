@@ -51,6 +51,11 @@
                     "name": "Wenge",
                     "slug": "brand-5",
                     "color": "#62554d"
+                },
+                {
+                    "name": "Sustainably Green",
+                    "slug": "brand-6",
+                    "color": "#333C12"
                 }
             ],
             "text": false
