@@ -9,7 +9,7 @@ export default class SiteFooter {
             return;
         }
 
-        this.menuEls = this.el.querySelectorAll('.menu-list[aria-hidden="true"]');
+        this.menuEls = this.el.querySelectorAll('.menu-list');
         this.expandableEls = {};
 
         this.init();
@@ -28,6 +28,8 @@ export default class SiteFooter {
 
                     if (index === 0) {
                         expandableEl.expand();
+                    } else {
+                        expandableEl.collapse();
                     }
                 }
             });

@@ -116,8 +116,6 @@ function filter_args(array $args): ?array
 
         $args['expandable_element_attributes'] = [
             'id' => 'menu-' . $args['theme_location'],
-            'hidden' => true,
-            'aria-hidden' => 'true',
         ];
     }
 

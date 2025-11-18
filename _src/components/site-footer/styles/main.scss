@@ -37,7 +37,7 @@
     // Menus.
     // -------------------------------------------------------------------------
     &__menus {
-        --grid--row-gap: var(--space--l);
+        --grid--row-gap: var(--space--xl);
 
         @include site-footer-divider();
         @include grid(1, 2, 5);
@@ -100,11 +100,15 @@
             visibility: hidden;
         }
 
+        &[aria-expanded="true"] {
+            rotate: -90deg;
+        }
+
         &-wrap {
             @include mq($until: medium) {
                 display: flex;
                 justify-content: space-between;
-                align-items: center;
+                align-items: flex-start;
             }
         }
     }
