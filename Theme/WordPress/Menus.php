@@ -20,6 +20,9 @@ class Menus
             'header' => \_x('Header', 'Menu name', 'granola'),
             'footer-1' => \_x('Footer 1', 'Menu name', 'granola'),
             'footer-2' => \_x('Footer 2', 'Menu name', 'granola'),
+            'footer-3' => \_x('Footer 3', 'Menu name', 'granola'),
+            'footer-4' => \_x('Footer 4', 'Menu name', 'granola'),
+            'footer-5' => \_x('Footer 5', 'Menu name', 'granola'),
         ]);
     }
 }

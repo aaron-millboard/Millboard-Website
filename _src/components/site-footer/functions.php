@@ -10,7 +10,27 @@ function filter_args(array $args): ?array
     $args = array_merge([
         'background_color' => 'brand-2',
         'classes' => [],
+        'site_name' => get_bloginfo('name'),
+        'year' => date('Y'),
+        'copyright_label' => '',
+        'wholegrain_label' => sprintf(
+            __('A website for people and planet by %s', 'granola'),
+            \Granola\Component::get('link', [
+                'url' => 'https://wholegraindigital.com',
+                'content' => 'Wholegrain',
+                'target' => '_blank',
+            ]),
+        ),
+        'menus' => range(1, 5),
     ], $args);
+
+
+    $args['copyright_label'] = sprintf(
+        // translators: 1: site name. 2: year.
+        __('%1$s © %2$s ', 'granola'),
+        $args['site_name'],
+        $args['year'],
+    );
 
     // -------------------------------------------------------------------------
     // Required classes.
@@ -18,26 +38,6 @@ function filter_args(array $args): ?array
     $args['classes'] = array_merge([
         'site-footer',
     ], $args['classes']);
-
-    if (have_rows('footer_images', 'option')) {
-        $args['content']['images'] = [];
-
-        while (have_rows('footer_images', 'options')) {
-            the_row();
-
-            if (!empty(get_sub_field('image'))) {
-                $image = get_sub_field('image');
-                $image['size'] = 'medium';
-            }
-
-            if (!empty($image)) {
-                $args['content']['images'][] = [
-                    'image' => $image ?? null,
-                    'link' => get_sub_field('link') ?? null,
-                ];
-            }
-        }
-    }
 
     // -------------------------------------------------------------------------
     // Return the filtered args.

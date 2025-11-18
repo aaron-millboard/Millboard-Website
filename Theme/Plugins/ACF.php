@@ -45,7 +45,6 @@ class ACF
         $options_pages = [
             \_x('General', 'ACF options page name', 'granola'),
             \_x('Header', 'ACF options page name', 'granola'),
-            \_x('Footer', 'ACF options page name', 'granola'),
             \_x('Integrations', 'ACF options page name', 'granola'),
         ];
 
