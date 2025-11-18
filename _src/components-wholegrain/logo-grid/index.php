@@ -18,21 +18,51 @@
                 </div>
             <?php } ?>
 
-            <div class="logo-grid__items">
-                <?php foreach ($args['items'] as $item) { ?>
-                    <?php if (!empty($item['link'])) { ?>
-                        <?= \Granola\Component::get('link', array_merge($item['link'], [
-                            'classes' => ['logo-grid__item', 'img-fit'],
-                            'content' => \Granola\Component::get('image', $item['image']),
-                            'content_filter' => false,
-                        ])); ?>
-                    <?php } else { ?>
-                        <div class="logo-grid__item img-fit">
-                            <?= \Granola\Component::get('image', $item['image']); ?>
+            <div class="logo-grid__items-wrapper">
+
+                <div class="logo-grid__items-prewrapper">
+
+                    <div class="logo-grid__items">
+                        <?php foreach ($args['items'] as $item) { ?>
+                            <?php if (!empty($item['link'])) { ?>
+                                <?= \Granola\Component::get('link', array_merge($item['link'], [
+                                    'classes' => ['logo-grid__item'],
+                                    'content' => \Granola\Component::get('image', $item['image']),
+                                    'content_filter' => false,
+                                ])); ?>
+                            <?php } else { ?>
+                                <div class="logo-grid__item">
+                                    <?= \Granola\Component::get('image', $item['image']); ?>
+                                </div>
+                            <?php } ?>
+                        <?php } ?>
+                    </div>
+
+                    <?php
+                    // Clone items for marquee layout only
+                    if ($args['layout'] === 'marquee') {
+                        ?>
+                        <div class="logo-grid__items logo-grid__items--clone">
+                        <?php foreach ($args['items'] as $index => $item) { ?>
+                                <?php if (!empty($item['link'])) { ?>
+                                    <?= \Granola\Component::get('link', array_merge($item['link'], [
+                                        'classes' => ['logo-grid__item'],
+                                        'content' => \Granola\Component::get('image', $item['image']),
+                                        'content_filter' => false,
+                                    ])); ?>
+                                <?php } else { ?>
+                                    <div class="logo-grid__item">
+                                        <?= \Granola\Component::get('image', $item['image']); ?>
+                                    </div>
+                                <?php } ?>
+                        <?php } ?>
                         </div>
                     <?php } ?>
-                <?php } ?>
+
+                </div>
+
             </div>
+
         </div>
     </section>
 <?php } ?>

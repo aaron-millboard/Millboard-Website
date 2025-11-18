@@ -4,14 +4,14 @@
     --logo-grid--box-shadow: var(--box-shadow--1);
     --logo-grid--box-shadow--hover: var(--box-shadow--1--hover);
     --logo-grid--spacing: var(--space--base);
-    --logo-grid--item--aspect-ratio: 28 / 13;
+    --logo-grid--item--aspect-ratio: 18 / 12;
 
     $this: &;
 
     @include layout-margin;
 
     @include mq('medium') {
-        --logo-grid--item--aspect-ratio: 28 / 13;
+        --logo-grid--item--aspect-ratio: 18 / 12;
     }
 
     &.has-background {
@@ -26,8 +26,6 @@
 
     &__header {
         @include no-first-last-margin;
-
-        margin-bottom: var(--block--header--margin-bottom);
     }
 
     &__heading {
@@ -41,8 +39,8 @@
 
     &__subheading {
         @include no-first-last-margin;
-        @include align-width--xxs(false);
-
+        @include typestyle-h6;
+        text-transform: uppercase;
         margin-block: var(--space--base);
 
         @if ($blocks--center-align-headers) {
@@ -53,42 +51,47 @@
 
     &__inner {
         @include align-width--l;
-    }
-
-    &__container {
-        position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: var(--space--l);
     }
 
     &__items {
         --grid--columns: 2;
+        --grid--column-gap: var(--space--2xs);
+        --grid--row-gap: var(--space--2xs);
 
         @include flex-grid;
-
         width: 100%;
 
         @include mq('medium') {
-            --grid--columns: 3;
-            --grid--column-gap: var(--space--responsive--s);
-            --grid--row-gap: var(--space--responsive--s);
-
-            max-width: var(--width--responsive--wide);
+            --grid--columns: 4;
             justify-content: center;
+            --grid--column-gap: var(--space--s);
+            --grid--row-gap: var(--space--s);
         }
 
         @include mq('large') {
-            --grid--columns: 4;
+            --grid--columns: 5;
         }
 
         @include mq('xlarge') {
-            --grid--columns: 5;
+            --grid--columns: 6;
         }
+
     }
 
     &__item {
+        display: flex;
+
+        width: calc(100% / var(--grid--columns) - var(--grid--column-gap));
+        align-items: center;
+        justify-content: center;
         aspect-ratio: var(--logo-grid--item--aspect-ratio);
 
         > * {
             object-fit: contain;
         }
     }
+
 }
