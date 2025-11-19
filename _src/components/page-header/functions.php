@@ -9,7 +9,7 @@ function filter_args(array $args): ?array
     // ---------------------------------------
     $args = array_merge([
         'classes' => [],
-        'source' => 'post', // post, custom
+        'source' => 'current', // post, custom
         'object' => null,
         'type' => 'page',
         'background' => 'brand-1',
@@ -101,7 +101,9 @@ function filter_args(array $args): ?array
         if ($object instanceof \WP_Post) {
 
             // Manage heading default (post title)
-            $args['heading'] = $object->post_title;
+            if(empty($args['heading'])) {
+                $args['heading'] = $object->post_title;
+            }
 
             // Manage featured image default
             if (empty($args['image'])) {
