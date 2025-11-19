@@ -8,6 +8,7 @@ ul {
     li {
         &::marker {
             color: var(--list--marker-color, currentColor);
+            font-size: 1.25em;
         }
     }
 }
