@@ -1,0 +1,54 @@
+@import '../../../core';
+@import '../testimonial-item/styles/_testimonial-item.scss';
+// @import '../../column/styles/column.scss';
+
+.testimonials {
+    $this: &;
+
+    // -------------------------------------------------------------------------
+    // Single testimonial styles.
+    // -------------------------------------------------------------------------
+    &[data-testimonials-count='1'] {
+        .testimonial-item {
+            @include mq($until: medium) {
+                margin-bottom: var(--space--s);
+            }
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Slider styles.
+    // -------------------------------------------------------------------------
+    .slider {
+        --button--size: #{px-to-rem(40)};
+
+        @include mq($until: medium) {
+            display: flex;
+            flex-flow: column;
+        }
+
+        @include mq(medium, $until: large) {
+            min-height: calc(var(--testimonials-content-container-height) + var(--space--3xl));
+        }
+
+        // Slider UI styles.
+        // Positioning props are calculated in the Testimonials JS class.
+        &__ui {
+            @include mq($until: medium) {
+                order: 2;
+                align-self: center;
+                margin-block: var(--space--s);
+            }
+
+            @include mq(medium) {
+                position: absolute;
+                top: calc(var(--testimonials-content-container-height) + var(--space--xl));
+                left: var(--testimonials--content-container--offset-left);
+            }
+
+            @include mq(large) {
+                top: calc(50% + (var(--testimonials-content-container-height) / 2) + var(--space--xl));
+            }
+        }
+    }
+}
