@@ -1,10 +1,9 @@
  import Testimonials from './Testimonials.js';
 
  window.addEventListener('DOMContentLoaded', () => {
-     const items = document.querySelectorAll('.testimonials');
+     const items = document.querySelectorAll('.testimonials:has(.slider)');
 
      [...items].forEach((item) => {
-        console.log(item);
          new Testimonials(item);
      });
  });

@@ -19,10 +19,21 @@ export default class Testimonials extends Slider {
      * Render the testimonials.
      * This will now include the calculation of the position properties of the testimonials.
      */
-    render() {
-        super.render();
+    onResize() {
+        super.onResize();
 
-        this.calculatePositionProperties();
+        // If the current index is greater than 0, update the CSS properties after the transition duration.
+        if (this.currentIndex !== 0) {
+            this.goTo(0);
+
+            // Update CSS properties after the transition duration.
+            setTimeout(() => {
+                this.calculatePositionProperties();
+            }, parseInt(this.args.transitionDuration, 10) * 1);
+        } else {
+            // Update CSS properties immediately.
+            this.calculatePositionProperties();
+        }
     }
 
     /**
@@ -41,7 +52,6 @@ export default class Testimonials extends Slider {
             if (index === 0) {
                 this.navPositionWidth = currentSlideContentContainer.getBoundingClientRect().left;
                 this.element.style.setProperty('--testimonials--content-container--offset-left', `${this.navPositionWidth}px`);
-
             }
 
             // Get the width and height of the content container.

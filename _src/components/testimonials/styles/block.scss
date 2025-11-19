@@ -27,7 +27,7 @@
             flex-flow: column;
         }
 
-        @include mq(medium, $until: large) {
+        @include mq(medium, $until: xlarge) {
             min-height: calc(var(--testimonials-content-container-height) + var(--space--3xl));
         }
 
@@ -46,7 +46,7 @@
                 left: var(--testimonials--content-container--offset-left);
             }
 
-            @include mq(large) {
+            @include mq(xlarge) {
                 top: calc(50% + (var(--testimonials-content-container-height) / 2) + var(--space--xl));
             }
         }
