@@ -62,8 +62,8 @@
                 [
                     {
                         "field": "block_page_header_source",
-                        "operator": "==",
-                        "value": "custom"
+                        "operator": "!=",
+                        "value": "post"
                     }
                 ]
             ]
