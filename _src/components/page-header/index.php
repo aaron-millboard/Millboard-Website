@@ -1,58 +1,71 @@
 <header <?= \Granola\Helpers::build_attributes($args['attributes']); ?>>
     <div class="page-header__inner">
-        <?php if (!empty($args['image']) && $args['image_position'] === 'inset') { ?>
-            <div class="page-header__inset-image">
-                <div class="page-header__inset-image-inner img-fit">
-                    <?= \Granola\Component::get('image', $args['image']); ?>
+
+        <!-- Breadcrumbs -->
+        <?php if (!empty($args['show_breadcrumbs'])) { ?>
+            <div class="page-header__breadcrumbs">
+                <?= \Granola\Component::get('breadcrumbs'); ?>
+            </div>
+        <?php } ?>
+
+        <div class="page-header__wrapper">
+
+            <div class="page-header__image-wrapper">
+                <?php if (!empty($args['image'])) { ?>
+                    <div class="page-header__image">
+                        <div class="page-header__image-inner img-fit">
+                            <?= \Granola\Component::get('image', $args['image']); ?>
+                        </div>
+                    </div>
+                <?php } ?>
+            </div>
+
+            <div class="page-header__content page-header__content--first">
+
+                <div class="page-header__header">
+
+                    <?php if (!empty($args['preheading'])) { ?>
+                        <div class="page-header__preheading">
+                            <?= wp_kses_post($args['preheading']); ?>
+                        </div>
+                    <?php } ?>
+
+                    <?php if (!empty($args['heading'])) { ?>
+                        <?= \Granola\Component::get('heading', $args['heading']); ?>
+                    <?php } ?>
+
                 </div>
-            </div>
-        <?php } ?>
 
-        <?php if (!empty($args['heading'])) { ?>
-            <?= \Granola\Component::get('heading', $args['heading']); ?>
-        <?php } ?>
-
-        <?php if (!empty($args['subheading'])) { ?>
-            <div class="page-header__subheading">
-                <?= wp_kses_post($args['subheading']); ?>
-            </div>
-        <?php } ?>
-
-        <?php if (!empty($args['meta'])) { ?>
-            <div class="page-header__meta is-style-typestyle-meta">
-                <?= wp_kses_post($args['meta']); ?>
-            </div>
-        <?php } ?>
-
-        <?php if (!empty($args['labels'])) { ?>
-            <div class="page-header__labels">
-                <div class="page-header__labels__items flex-list">
-                    <?php foreach ($args['labels'] as $label) {
-                        echo \Granola\Component::get('link', [
-                            'title' => $label['name'],
-                            'url' => $label['url'],
-                            'classes' => [
-                                'g-button',
-                                'g-button--label',
-                            ],
-                        ]);
-                    } ?>
+            <?php
+                // We are closing the first content div here if the type is 'page' and opening a new one for the rest of the content
+                if($args['type'] == 'page'):
+            ?>
                 </div>
-            </div>
-        <?php } ?>
+                <div class="page-header__content page-header__content--last">
+            <?php endif; ?>
 
-        <?php if (!empty($args['primary_call_to_action'])) { ?>
-            <div class="page-header__ctas">
-                <?= \Granola\Component::get('link', $args['primary_call_to_action']); ?>
+                <?php if (!empty($args['description'])) { ?>
+                    <div class="page-header__description">
+                        <?= wp_kses_post($args['description']['content']); ?>
+                    </div>
+                <?php } ?>
+
+                <?php if (!empty($args['cta'])) { ?>
+                    <?= \Granola\Component::get('link', $args['cta']); ?>
+                <?php } ?>
+
             </div>
-        <?php } ?>
+
+        </div>
+
     </div>
 
-    <?php if (!empty($args['image']) && $args['image_position'] === 'background') { ?>
-        <div class="page-header__background-image">
-            <div class="page-header__background-image-inner img-fit">
-                <?= \Granola\Component::get('image', $args['image']); ?>
-            </div>
+    <?php if (!empty($args['bg_gradient'])) { ?>
+        <div class="page-header__background">
+            <div class="page-header__background-left"></div>
+            <div class="page-header__background-top"></div>
+            <div class="page-header__background-bottom"></div>
         </div>
     <?php } ?>
+
 </header>

@@ -17,7 +17,7 @@ function filter_args(array $args): ?array
         'classes' => [],
     ], $args);
 
-    $args['content'] = $args['content'] ?? $args['title'];
+    $args['content'] = $args['content'] ?: $args['title'];
 
     // ---------------------------------------
     // Bail early - return null for no output.
