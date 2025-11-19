@@ -148,6 +148,12 @@
             @include mq(large) {
                 height: px-to-rem(680);
             }
+
+            &--no-image {
+                @include mq(large) {
+                    height: auto;
+                }
+            }
         }
 
         #{$this}__image {

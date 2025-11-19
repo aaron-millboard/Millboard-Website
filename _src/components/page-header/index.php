@@ -10,7 +10,7 @@
 
         <div class="page-header__wrapper">
 
-            <div class="page-header__image-wrapper">
+            <div class="page-header__image-wrapper <?php if (empty($args['image'])) { echo 'page-header__image-wrapper--no-image'; } ?>">
                 <?php if (!empty($args['image'])) { ?>
                     <div class="page-header__image">
                         <div class="page-header__image-inner img-fit">
