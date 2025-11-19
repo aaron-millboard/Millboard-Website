@@ -4,6 +4,13 @@ namespace Granola;
 
 class Helpers
 {
+    /**
+     * An array of ID counters for each prefix.
+     *
+     * @var array
+     */
+    public static $id_counters = [];
+
     public static function starts_with($haystack, $needle): bool
     {
         $length = strlen($needle);
@@ -148,5 +155,28 @@ class Helpers
         }
 
         return \is_tax($taxonomy, $term) || \is_category($term) || \is_tag($term);
+    }
+
+
+    /**
+     * Generates an incremental ID that is independent per each different prefix.
+     *
+     * Expands the functionality of `wp_unique_prefixed_id` so the counter can be reset.
+     * Using wp_unique_prefixed_id() generates new IDs the second time page content is generated (i.e. in anchor links).
+     *
+     * @link https://developer.wordpress.org/reference/functions/wp_unique_prefixed_id/
+     *
+     * @param string $prefix
+     * @return string
+     */
+    public static function unique_prefixed_id(string $prefix = ''): string
+    {
+        if (!isset(self::$id_counters[ $prefix ])) {
+            self::$id_counters[ $prefix ] = 0;
+        }
+
+        $id = ++self::$id_counters[ $prefix ];
+
+        return $prefix . (string) $id;
     }
 }

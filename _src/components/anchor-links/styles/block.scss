@@ -1,0 +1,123 @@
+@import '../../../core';
+
+.anchor-links {
+    --transition--duration: 500ms;
+    --anchor-links--max-width: #{px-to-rem(375)};
+
+    $this: &;
+
+    display: block;
+    pointer-events: all;
+    transform-origin: top center;
+    transition: transition(opacity, transform);
+
+    // The wrapper which handles our sticky positioning.
+    &__wrapper {
+        position: sticky;
+        z-index: var(--z-index--backdrop);
+        top: calc(-1px + (var(--wp--admin-bar-height) * -1)); // Allow for wp-admin bar.
+        pointer-events: none;
+    }
+
+    // Hide the element.
+    &[hidden] {
+        display: block;
+    }
+
+    &__inner {
+        display: grid;
+        padding: var(--space--3xs) var(--space--s);
+        border: 0.5px solid var(--color--charcoal);
+        gap: var(--sapce--3xs);
+        max-width: var(--anchor-links--max-width);
+
+        @include mq(medium) {
+            margin-left: auto;
+        }
+    }
+
+    &__items {
+        --list--item--spacing: var(--space--3xs);
+
+        padding: var(--space--xs) 0 var(--space--3xs);
+        margin: 0;
+
+        @include mq(medium) {
+            padding: var(--space--xs) 0 var(--space--s);
+        }
+    }
+
+    &__item {
+        --button--size: var(--space--s);
+
+        display: flex;
+        align-items: center;
+        gap: var(--space--3xs);
+
+        @include mq(medium) {
+            line-height: 34px;
+        }
+
+        &::before {
+            display: block;
+            width: var(--button--size);
+            height: #{px-to-rem(3)};
+            background-color: var(--color--brand-4);
+            content: '';
+        }
+    }
+
+    &__link {
+        @include link--2;
+
+        flex-flow: row;
+        font-weight: var(--type--1--font-weight--bold);
+
+        @include mq('site-header') {
+            --button--size: #{px-to-rem(30)};
+        }
+
+        span {
+
+            pointer-events: none;
+        }
+    }
+
+    &__heading {
+        display: flex;
+        margin: 0;
+    }
+
+    &__toggle {
+        --accordion--button--size: #{px-to-rem(40)};
+        --accordion--icon--size: #{px-to-rem(24)};
+
+        @include button-reset-hard;
+
+        display: grid;
+        flex: 1 1 auto;
+        align-items: center;
+        grid-template-areas: 'content button';
+        grid-template-columns: 1fr auto;
+        text-align: left;
+
+        &::after {
+            display: block;
+            width: var(--accordion--button--size);
+            height: var(--accordion--button--size);
+            background-color: var(--color--black);
+            content: '';
+            grid-area: button;
+            mask-image: url(#{asset-path('images/icons/chevron-down.svg')});
+            mask-position: center;
+            mask-repeat: no-repeat;
+            mask-size: var(--accordion--icon--size);
+        }
+
+        &[aria-expanded='true'] {
+            &::after {
+                transform: scale(-1)
+            }
+        }
+    }
+}

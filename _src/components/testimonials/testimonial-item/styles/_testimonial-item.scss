@@ -18,7 +18,7 @@
             align-items: flex-start;
         }
 
-        @include mq(large) {
+        @include mq(xlarge) {
             align-items: center;
         }
     }

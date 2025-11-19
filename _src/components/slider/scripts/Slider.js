@@ -66,8 +66,6 @@ export default class Slider {
         // Bail early if no slides
         if (!this.totalSlides) return;
 
-        console.log(this);
-
         // Initialize component
         this.init();
     }

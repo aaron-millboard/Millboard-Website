@@ -1,0 +1,26 @@
+{
+    "$schema": "https://advancedcustomfields.com/schemas/json/main/block.json",
+    "apiVersion": 2,
+    "name": "anchor-links",
+    "title": "Anchor Links",
+    "category": "granola-blocks",
+    "icon": "pressthis",
+    "keywords": [
+        "sticky navigation",
+        "table of contents",
+        "toc"
+    ],
+    "acf": {
+        "mode": "edit",
+        "renderCallback": "\\Granola\\Component::acf_render_callback"
+    },
+    "supports": {
+        "anchor": true,
+        "align": false,
+        "color": {
+            "text": false
+        },
+        "mode": false
+    },
+    "attributes": {}
+}
