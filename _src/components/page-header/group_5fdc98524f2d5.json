@@ -1,79 +1,133 @@
 {
-    "key": "group_5fdc98524f2d5",
+    "key": "block_page_header",
     "title": "Block - Page Header",
     "fields": [
         {
-            "key": "field_6081b528ad15a",
+            "key": "block_page_header_tab_content",
             "label": "Header Content",
             "type": "tab"
         },
         {
-            "key": "field_6081b547ad15b",
-            "label": "Preheading",
-            "name": "preheading",
-            "type": "text"
+            "key": "block_page_header_source",
+            "label": "Content source",
+            "name": "source",
+            "type": "select",
+            "choices": {
+                "current": "Current page/post",
+                "post": "Featured Post",
+                "custom": "Custom content (page layout)"
+            }
         },
         {
-            "key": "field_63ef6ed7be236",
+            "key": "block_page_header_object",
+            "label": "Select post",
+            "name": "object",
+            "type": "post_object",
+            "post_type": [
+                "post",
+                "page",
+                "case-study"
+            ],
+            "conditional_logic": [
+                [
+                    {
+                        "field": "block_page_header_source",
+                        "operator": "==",
+                        "value": "post"
+                    }
+                ]
+            ]
+        },
+        {
+            "key": "block_page_header_preheading",
+            "label": "Preheading",
+            "name": "preheading",
+            "type": "text",
+            "conditional_logic": [
+                [
+                    {
+                        "field": "block_page_header_source",
+                        "operator": "!=",
+                        "value": "post"
+                    }
+                ]
+            ]
+        },
+        {
+            "key": "block_page_header_heading",
             "label": "Heading",
             "name": "heading",
-            "type": "text"
+            "type": "text",
+            "conditional_logic": [
+                [
+                    {
+                        "field": "block_page_header_source",
+                        "operator": "==",
+                        "value": "custom"
+                    }
+                ]
+            ]
         },
         {
-            "key": "field_6081b547ad15b",
-            "label": "Preheading",
-            "name": "preheading",
-            "type": "text"
-        },
-        {
-            "key": "field_6081ad15b123",
+            "key": "block_page_header_description",
             "label": "Description",
             "name": "description",
             "type": "wysiwyg",
-            "instructions": "",
             "media_upload": 0,
             "tabs": "all",
-            "toolbar": "basic"
+            "toolbar": "basic",
+            "conditional_logic": [
+                [
+                    {
+                        "field": "block_page_header_source",
+                        "operator": "!=",
+                        "value": "post"
+                    }
+                ]
+            ]
         },
         {
-            "key": "field_6081b581ad15c",
+            "key": "block_page_header_cta",
             "label": "Call to Action",
             "name": "cta",
-            "aria-label": "",
             "type": "link",
-            "instructions": "",
-            "required": 0,
-            "conditional_logic": 0,
-            "wrapper": {
-                "width": "",
-                "class": "",
-                "id": ""
-            },
-            "return_format": "array"
+            "return_format": "array",
+            "conditional_logic": [
+                [
+                    {
+                        "field": "block_page_header_source",
+                        "operator": "!=",
+                        "value": "post"
+                    }
+                ]
+            ]
         },
         {
-            "key": "field_63ef6ef8071ff",
-            "label": "Media",
-            "name": "",
-            "aria-label": "",
-            "type": "tab",
-            "instructions": "",
-            "required": 0,
-            "conditional_logic": 0,
-            "wrapper": {
-                "width": "",
-                "class": "",
-                "id": ""
-            },
-            "placement": "top",
-            "endpoint": 0
+            "key": "block_page_header_tab_settings",
+            "label": "Settings",
+            "type": "tab"
         },
         {
-            "key": "field_63ef6f1307200",
+            "key": "block_page_header_bg_gradient",
+            "label": "Add gradient to background?",
+            "name": "bg_gradient",
+            "type": "true_false"
+        },
+        {
+            "key": "block_page_header_image",
             "label": "Image",
             "name": "image",
             "type": "image",
-            "return_format": "array"
+            "return_format": "array",
+            "conditional_logic": [
+                [
+                    {
+                        "field": "block_page_header_source",
+                        "operator": "==",
+                        "value": "custom"
+                    }
+                ]
+            ]
         }
     ],
     "location": [
