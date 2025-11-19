@@ -160,7 +160,9 @@ function filter_args(array $args): ?array
     $args['content']['heading'] = [
         'content' => $args['content']['heading'],
         'classes' => ['g-card__heading'],
+        'el' => isset($args['has_parent_heading']) && $args['has_parent_heading'] ? 'h3' : 'h2',
     ];
+
 
     // Add the URL to the heading.
     if (!empty($args['content']['url'])) {

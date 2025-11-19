@@ -15,7 +15,7 @@
     &__wrapper {
         position: sticky;
         z-index: var(--z-index--backdrop);
-        top: calc(-1px + (var(--wp--admin-bar-height) * -1)); // Allow for wp-admin bar.
+        top: calc(-1px + var(--wp--admin-bar-height) + var(--space--xs)); // Allow for wp-admin bar.
         pointer-events: none;
     }
 
@@ -73,12 +73,7 @@
         flex-flow: row;
         font-weight: var(--type--1--font-weight--bold);
 
-        @include mq('site-header') {
-            --button--size: #{px-to-rem(30)};
-        }
-
         span {
-
             pointer-events: none;
         }
     }
