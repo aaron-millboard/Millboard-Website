@@ -91,6 +91,10 @@ function filter_args(array $args): ?array
             if (!empty($args['card_image_fit']) && $args['card_image_fit'] !== 'default') {
                 $args['items'][$key]['image_fit'] = $args['card_image_fit'];
             }
+
+            if (!empty($args['heading'])) {
+                $args['items'][$key]['has_parent_heading'] = true;
+            }
         }
     }
 
