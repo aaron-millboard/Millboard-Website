@@ -45,7 +45,7 @@ $base-font-size: 18px;
     --list--item--spacing: calc(var(--space--base) / 2);
     --list--indent: 0px;
     --list--nested-indent: 1.5em;
-    // --list--marker-color: var(--color--brand-2); // defaults to currentColor
+    --list--marker-color: var(--color--brand-4); // defaults to currentColor
 }
 
 @mixin type-variables--mq {
