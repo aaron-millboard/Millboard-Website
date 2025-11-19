@@ -24,7 +24,7 @@ function filter_args(?array $args): ?array
     // -------------------------------------------------------------------------
     $args['classes'] = array_merge([
         'anchor-links__wrapper',
-        'alignfull',
+        'alignwide',
     ], $args['classes']);
 
     // Move all styling to inner element.
