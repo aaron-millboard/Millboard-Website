@@ -1,0 +1,66 @@
+@import '../../../../core';
+
+.testimonial-item {
+    $this: &;
+
+    @include align-width--l;
+
+
+
+    &__inner {
+        --grid--row-gap: var(--space--l);
+
+        @include grid(1, 2);
+
+        @include mq(medium) {
+            --grid--column-gap: var(--space--2xl);
+
+            align-items: flex-start;
+        }
+
+        @include mq(large) {
+            align-items: center;
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Image
+    // -------------------------------------------------------------------------
+    &__image {
+        aspect-ratio: 1 / 1;
+
+        &-inner {
+            aspect-ratio: 1 / 1;
+
+            > * {
+                height: 100%;
+                width: auto;
+                max-width: initial;
+            }
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Testimonial
+    // -------------------------------------------------------------------------
+    &__testimonial {
+        font-family: var(--type--2--font-family);
+        font-weight: var(--type--2--font-weight);
+        font-size: #{rfs(20, 24)};
+        margin-bottom: var(--space--s);
+    }
+
+    &__name {
+        font-family: var(--type--2--font-family);
+        font-weight: var(--type--2--font-weight);
+        text-transform: uppercase;
+        font-size: #{rfs(14, 15)};
+        opacity: 0.8;
+    }
+
+    &__affiliation {
+        font-size: #{rfs(14, 15)};
+        text-transform: uppercase;
+        opacity: 0.8;
+    }
+}

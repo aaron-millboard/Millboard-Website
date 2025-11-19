@@ -1,0 +1,154 @@
+@import '../../../core';
+
+.slider {
+    --slider-items-in-view: 1;
+    --slider-total-slides: 1;
+    --slider-slide-width: 100%;
+    --slider-translate-x: 0%;
+    --slider-transition-duration: 300ms;
+
+    // Pips.
+    --slider--pip--width: #{px-to-rem(28)};
+    --slider--pip--height: #{px-to-rem(8)};
+
+    $this: &;
+
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+
+    &:has(#{$this}__pips) {
+        #{$this}__track {
+            // margin-bottom: var(--space--l); // Gives space for pips below slide content.
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Track container
+    // -------------------------------------------------------------------------
+    &__track {
+        --transition--duration: var(--slider-transition-duration);
+
+        display: flex;
+        width: calc((var(--slider-total-slides) / var(--slider-items-in-view)) * 100%);
+        transform: translateX(var(--slider-translate-x));
+        transition: transition(transform);
+
+        &--transitioning {
+            // Additional transition styles can be added here
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Individual slides
+    // -------------------------------------------------------------------------
+    &__slide {
+        position: relative;
+        width: calc(100% / var(--slider-total-slides));
+        min-height: 1px; // Prevent collapse
+        flex: 0 0 calc(100% / var(--slider-total-slides)); // Keep from shrinking
+        transition: transition(visibility); // Delay visibility transition to avoid flickering.
+
+        // Hide slides that are not in view.
+        &[aria-hidden='true'] {
+            visibility: hidden;
+        }
+    }
+
+    &__ui {
+        pointer-events: none;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: var(--space--3xs);
+
+        > * {
+            z-index: 10;
+            pointer-events: all;
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Navigation buttons
+    // -------------------------------------------------------------------------
+    &__navigation {
+        --button--background-color: var(--color--background);
+        --button--border-color: transparent;
+
+        margin: auto;
+        pointer-events: all;
+
+        &-container {
+            display: flex;
+            pointer-events: none;
+        }
+
+        &:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        &--previous {
+            --slider--navigation--left: var(--space--container-padding);
+
+            rotate: 180deg;
+        }
+
+        &--next {
+            --slider--navigation--right: var(--space--container-padding);
+            --slider--navigation--icon-transform: rotate(-180deg);
+        }
+
+        > * {
+            pointer-events: none;
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Pips navigation
+    // -------------------------------------------------------------------------
+    &__pips {
+        display: inline-flex;
+        align-self: flex-end;
+        justify-content: center;
+        gap: var(--space--4xs);
+        grid-column: 1 / -1;
+        margin-inline: auto;
+
+        > * {
+            display: flex;
+        }
+    }
+
+    &__pip {
+        --button--border-radius: 100px;
+        --button--padding-y: 0;
+        --button--padding-x: 0;
+
+        display: inline-block;
+        width: var(--slider--pip--width);
+        height: var(--slider--pip--height);
+        margin: auto;
+
+        &[aria-selected='true'] {
+            background: var(--color--accent);
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Counter display
+    // -------------------------------------------------------------------------
+    &__counter {
+        z-index: 10;
+        margin-top: 0.3ch;
+    }
+
+    // -------------------------------------------------------------------------
+    // Reduced motion support
+    // -------------------------------------------------------------------------
+    &[data-reduced-motion='true'] {
+        .slider__track {
+            transition: none;
+        }
+    }
+}
