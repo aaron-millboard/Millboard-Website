@@ -1,0 +1,43 @@
+.g-card.media-object {
+    --media-object--inner-padding-x: var(--space--xs);
+    --media-object--inner-padding-y: var(--space--xs);
+
+    &[data-media] {
+        --media-object--gap: var(--space--xs);
+    }
+
+    //---------------------------------------------------
+    // Person card
+    //---------------------------------------------------
+    &[data-type='person'] {
+        --media-object--media--ratio: 1 / 1;
+        --media-object--inner-padding-y: 0;
+        --media-object--inner-padding-x: 0;
+
+        &[data-media] {
+            --media-object--media--border-radius: var(--border-width--m);
+
+            @include mq(medium) {
+                --media-object--media--ratio: 1 / 1;
+            }
+
+            &[data-orientation='horizontal'] {
+                --media-object--grid-template-columns: #{px-to-rem(94)} 1fr;
+            }
+        }
+
+        .media-object {
+            &__heading {
+                font-size: inherit;
+            }
+
+            &__subheading {
+                text-transform: uppercase;
+            }
+
+            &__header {
+                --flex-column--gap: 0;
+            }
+        }
+    }
+}

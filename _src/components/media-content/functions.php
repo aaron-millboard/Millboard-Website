@@ -17,8 +17,9 @@ function filter_args(array $args): ?array
         'media_type' => 'image',
         'media_side' => 'left',
         'image' => [],
-        'reverse' => false,
         'media' => '',
+        // Media Object arguments.
+        'orientation' => 'horizontal',
     ], $args);
 
     // ---------------------------------------
@@ -29,12 +30,14 @@ function filter_args(array $args): ?array
         'wp-block',
     ], $args['classes']);
 
-    $args['classes'][] = 'media-content--' . $args['media_side'];
-    $args['classes'][] = 'media-content--media-type--' . $args['media_type'];
+    $args['media_position'] = $args['media_side'] === 'left' ? 'before' : 'after';
 
+    // Handle buttons.
     if (!empty($args['button_1'])) {
-        $args['button_1']['classes'] = [
-            'g-button',
+        $args['buttons'][] = [
+            'url' => $args['button_1']['url'],
+            'target' => $args['button_1']['target'],
+            'content' => $args['button_1']['title'],
         ];
     }
 
@@ -44,6 +47,7 @@ function filter_args(array $args): ?array
     if (!empty($args['image'])) {
         $args['image']['size'] = 'super';
         $args['image']['sizes'] = '(max-width: 768px) 100vw, 50vw';
+        $args['media'] = $args['image'];
     }
 
     // -------------------------------------------------------------------------
@@ -56,14 +60,13 @@ function filter_args(array $args): ?array
         ];
     }
 
-    // -------------------------------------------------------------------------
-    // Set media args as necessary.
-    // -------------------------------------------------------------------------
-    $type = $args['media_type'];
-    if (!empty($type) && !empty($args[$type])) {
-        $args['media'] = $args[$type];
-    }
 
+    // -------------------------------------------------------------------------
+    // Smaller sizes.
+    // -------------------------------------------------------------------------
+    if ($args['align'] === 'center') {
+        $args['heading_class'] = 'is-style-typestyle-h4';
+    }
     // -------------------------------------------------------------------------
     // Return the filtered args.
     // -------------------------------------------------------------------------

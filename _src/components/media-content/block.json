@@ -9,17 +9,13 @@
     "keywords": [],
     "acf": {
         "mode": "edit",
-        "renderCallback": "\\Granola\\Component::acf_render_callback",
-        "postTypes": [
-            "page",
-            "post",
-            "granola-template"
-        ]
+        "renderCallback": "\\Granola\\Component::acf_render_callback"
     },
     "supports": {
         "align": [
             "wide",
-            "full"
+            "full",
+            "center"
         ],
         "anchor": true,
         "color": {

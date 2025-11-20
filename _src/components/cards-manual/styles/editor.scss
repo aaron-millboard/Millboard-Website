@@ -1,0 +1,15 @@
+.cards-manual {
+    --input--border-radius: 0px;
+
+    .cards__items {
+        --grid--column-gap: var(--space--xs);
+
+        @include grid(2);
+
+        > * {
+            width: 100%;
+            border: 3px dashed var(--color--sand);
+            margin: 0 !important;
+        }
+    }
+}

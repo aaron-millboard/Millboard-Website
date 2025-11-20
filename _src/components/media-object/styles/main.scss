@@ -1,0 +1,177 @@
+.media-object {
+    // Layout.
+    --media-object--gap: 0px;
+    --media-object--content--gap: var(--space--4xs);
+    --media-object--media--ratio: initial;
+    --media-object--flex-flow: column;
+    --media-object--grid-template-columns: 1fr;
+    --media-object--grid-template-rows: 1fr;
+    --media-object--content--justify-content: flex-start;
+    --media-object--text-align: left;
+
+    // Padding.
+    --media-object--inner-padding-x: 0px;
+    --media-object--inner-padding-y: 0px;
+
+    // Media.
+    --media-object--media--width: 100%;
+
+    // Overrides
+    --heading--margin-bottom: 0;
+
+    $this: &;
+    $internal-z-index: 100; // Local stacking.
+
+    @include link--2;
+
+    position: relative;
+    overflow: clip;
+    border: var(--media-object--border, none);
+    border-radius: var(--media-object--border-radius, 0);
+    isolation: isolate; // Create local stacking context.
+    text-align: var(--media-object--text-align);
+
+    @include mq($until: medium) {
+        --media-object--media--min-height: #{px-to-rem(300)};
+    }
+
+    @include mq(large) {
+        --icon--size: #{px-to-rem(72)};
+    }
+
+    // -------------------------------------------------------------------------
+    // Background, add padding.
+    // -------------------------------------------------------------------------
+    &.has-background {
+        --media-object--inner-padding-x: var(--space--m);
+        --media-object--inner-padding-y: var(--space--m);
+    }
+
+    &__inner {
+        display: flex;
+        display: grid;
+        height: 100%;
+        flex-flow: var(--media-object--flex-flow);
+        gap: var(--media-object--gap);
+        grid-template-columns: var(--media-object--grid-template-columns);
+        grid-template-rows: var(--media-object--grid-template-rows);
+    }
+
+    &__media {
+        overflow: clip;
+        min-width: var(--media-object--media--width);
+        min-height: var(--media-object--media--min-height, initial);
+        border-radius: var(--media-object--media--border-radius, 0);
+        aspect-ratio: var(--media-object--media--ratio);
+
+        > * {
+            transition: transition(opacity);
+        }
+    }
+
+    &__content {
+        --flex-column--gap: var(--media-object--content--gap);
+
+        width: 100%;
+        justify-content: var(--media-object--content--justify-content);
+        padding-block: var(--media-object--inner-padding-y);
+        padding-inline: var(--media-object--inner-padding-x);
+    }
+
+    &__buttons,
+    &__labels,
+    &__meta {
+        justify-content: var(--media-object--content--justify-content);
+    }
+
+    // -------------------------------------------------------------------------
+    // Layout. Horizontal or Vertical.
+    // -------------------------------------------------------------------------
+    &[data-orientation='vertical'] {
+        --media-object--media--min-height: #{px-to-rem(300)};
+        // @include mq(medium) {
+        // --media-object--grid-template-rows: 1fr 1fr;
+        // --media-object--media--ratio: 3 / 2; // Set the aspect ratio for horizontal layout.
+        // }
+
+        &[data-media] {
+            @include mq(medium) {
+                --media-object--grid-template-rows: max-content auto;
+            }
+        }
+    }
+
+    &[data-orientation='horizontal'] {
+        @include mq(medium) {
+            --media-object--flex-flow: row;
+            --media-object--grid-template-rows: 1fr;
+        }
+
+        // With media.
+        &[data-media] {
+            @include mq(medium) {
+                --media-object--grid-template-columns: 1fr 1fr;
+                --media-object--media--ratio: initial; // Reset aspect ratio on horizontal layout.
+            }
+        }
+
+        // Before media.
+        &[data-media-position='before'] {
+            @include mq(medium) {
+                #{$this}__content {
+                    padding: var(--media-object--inner-padding-y) var(--media-object--inner-padding-x)
+                        var(--media-object--inner-padding-y) 0;
+                }
+            }
+        }
+
+        // After media.
+        &[data-media-position='after'] {
+            @include mq(medium) {
+                #{$this}__content {
+                    padding: var(--media-object--inner-padding-y) 0 var(--media-object--inner-padding-y)
+                        var(--media-object--inner-padding-x);
+                }
+            }
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Link.
+    // -------------------------------------------------------------------------
+    &[data-link] {
+        // Ported from card styles, review.
+        @include interact {
+            --border--1: var(--border-width--s) solid var(--color--foreground);
+
+            #{$this}__media {
+                > * {
+                    opacity: 0.8;
+                }
+            }
+        }
+        // Set other links inside the media-object above the heading link.
+        .video-item,
+        a {
+            position: relative;
+            z-index: $internal-z-index * 2;
+        }
+
+        #{$this}__heading {
+            a {
+                position: static;
+
+                // Add clickable psuedo elemnets
+                &::before {
+                    position: absolute;
+                    z-index: $internal-z-index; // Below other interactive elements.
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    content: '';
+                }
+            }
+        }
+    }
+}

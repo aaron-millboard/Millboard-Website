@@ -1,0 +1,36 @@
+{
+    "$schema": "https://advancedcustomfields.com/schemas/json/main/block.json",
+    "apiVersion": 2,
+    "name": "acf/cards-manual",
+    "title": "Manual Cards",
+    "category": "granola-blocks",
+    "icon": "schedule",
+    "description": "Use to present manually managed content as cards.",
+    "keywords": [
+        "custom",
+        "cards"
+    ],
+    "acf": {
+        "mode": "preview",
+        "renderCallback": "\\Granola\\Component::acf_render_callback"
+    },
+    "supports": {
+        "align": [
+            "wide",
+            "full",
+            "center"
+        ],
+        "anchor": true,
+        "color": {
+            "text": false
+        },
+        "mode": false,
+        "jsx": true
+    },
+    "attributes": {
+        "align": {
+            "type": "string",
+            "default": "wide"
+        }
+    }
+}
