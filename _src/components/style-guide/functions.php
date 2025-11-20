@@ -39,7 +39,7 @@ function add_cards_block_to_site_main($args): ?array
 
     if (!empty($style_guide_sub_pages)) {
         $args['content'] = $args['content'] .
-            \Granola\Component::get('cards', [
+            \Granola\Component::get('cards-automatic', [
                 'card_source' => 'selected',
                 'selected' => $style_guide_sub_pages,
                 'heading' => __('Style Guide: Blocks & Layouts', 'granola'),
