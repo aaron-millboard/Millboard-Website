@@ -105,3 +105,38 @@ function set_cards_background_color_palette(\WP_Theme_JSON_Data $theme_json): \W
 
     return \Granola\Helpers::override_theme_json_with_new_palette_for_block('acf/cards-automatic', $new_palette, $theme_json);
 }
+
+/**
+ * Remove the "media|attachment" post type from the selected relationship field.
+ *
+ * @param array $field The field array.
+ * @return array The filtered field array.
+ */
+function remove_attachment_post_type_from_selected_relationship_field($field)
+{
+    $registered_post_types = \get_post_types([
+        'public' => true,
+        '_builtin' => false,
+    ], 'objects');
+
+    $post_types = array_map(function ($post_type) {
+        return $post_type->name;
+    }, $registered_post_types);
+
+
+    $post_types = array_values($post_types);
+
+    // Add page post type.
+    $post_types[] = 'page';
+
+    // Maybe add post post type.
+    $deactivate_posts_post_type = \apply_filters('granola/config/deactivate_posts_post_type', false);
+
+    if (!$deactivate_posts_post_type) {
+        $post_types[] = 'post';
+    }
+
+    $field['post_type'] = $post_types;
+
+    return $field;
+}

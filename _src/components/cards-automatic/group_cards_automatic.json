@@ -143,11 +143,7 @@
                 "id": ""
             },
             "choices": {
-                "journal": "Journal",
-                "case-study": "Case Studies",
-                "person": "People",
-                "job": "Jobs",
-                "event": "Events"
+                "post": "Posts"
             },
             "default_value": false,
             "return_format": "value",
@@ -216,17 +212,22 @@
                 "class": "",
                 "id": ""
             },
-            "post_type": "",
+            "post_type": [
+                "event"
+            ],
+            "post_status": "",
             "taxonomy": "",
             "filters": [
                 "search",
                 "post_type",
                 "taxonomy"
             ],
-            "elements": "",
+            "return_format": "object",
             "min": "",
             "max": "",
-            "return_format": "object",
+            "allow_in_bindings": 1,
+            "elements": "",
+            "bidirectional": 0,
             "bidirectional_target": []
         },
         {
@@ -296,6 +297,7 @@
     "active": true,
     "description": "",
     "show_in_rest": 0,
+    "display_title": "",
     "granola_save_location": 0,
-    "modified": 1758537784
+    "modified": 1763639522
 }
