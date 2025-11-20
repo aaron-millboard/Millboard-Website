@@ -5,6 +5,8 @@ export default class Accordion {
         this.el = element;
 
         this.items = this.el.querySelectorAll('.js-expandable-element');
+        this.allowMultiple = this.el.dataset.allowMultiple === 'true';
+        this.expandableElements = [];
 
         // Bail early - no accordion items.
         if (this.items.length < 1) {
@@ -20,6 +22,11 @@ export default class Accordion {
                 setHiddenAttribute: false, // handled manually below.
                 on: {
                     expandbegin: () => {
+                        // If allow_multiple is false, close all other accordion items before expanding this one
+                        if (!this.allowMultiple) {
+                            this.closeOtherItems(expandableElement);
+                        }
+
                         item.removeAttribute('hidden');
                     },
                     expandend: () => {
@@ -36,8 +43,21 @@ export default class Accordion {
                 },
             });
 
+            // Store reference to expandable element for managing multiple items
+            this.expandableElements.push(expandableElement);
+
             if (!expandableElement.isExpanded()) {
-                item.style.height = '0px'; // set height to ensure initial transition works.
+                expandableElement.collapse();
+            } else {
+                expandableElement.expand();
+            }
+        });
+    }
+
+    closeOtherItems(currentElement) {
+        this.expandableElements.forEach((expandableElement) => {
+            if (expandableElement !== currentElement && expandableElement.isExpanded()) {
+                expandableElement.collapse();
             }
         });
     }

@@ -179,4 +179,36 @@ class Helpers
 
         return $prefix . (string) $id;
     }
+
+    /**
+     * Builds an InnerBlocks tag.
+     * See https://www.billerickson.net/innerblocks-with-acf-blocks/ for more on InnerBlocks.
+     *
+     * @param array $attributes An array of InnerBlocks attributes.
+     * @return string An InnerBlocks tag.
+     */
+    public static function build_inner_blocks_tag(array $attributes = []): string
+    {
+        if (!is_array($attributes) || empty($attributes)) {
+            return '';
+        }
+
+        $html = '<InnerBlocks ';
+
+        foreach ($attributes as $key => $value) {
+            if ($value === true) {
+                $html .= \esc_html($key) . ' ';
+            } elseif (!empty($value)) {
+                if (is_array($value)) {
+                    $value = \wp_json_encode($value);
+                }
+
+                $html .= \esc_html($key) . '="' . \esc_attr($value) . '" ';
+            }
+        }
+
+        $html .= '/>';
+
+        return $html;
+    }
 }

@@ -1,9 +1,12 @@
 {
     "$schema": "https://advancedcustomfields.com/schemas/json/main/block.json",
     "apiVersion": 2,
-    "name": "acf/accordion",
-    "title": "Accordion",
-    "description": "An accordion block",
+    "name": "acf/accordion-item",
+    "parent": [
+        "acf/accordion"
+    ],
+    "title": "Accordion Item",
+    "description": "An accordion item block",
     "category": "granola-blocks",
     "icon": "arrow-down-alt2",
     "keywords": [],
@@ -15,6 +18,7 @@
         "anchor": true,
         "color": {
             "text": false
-        }
+        },
+        "align": false
     }
 }
