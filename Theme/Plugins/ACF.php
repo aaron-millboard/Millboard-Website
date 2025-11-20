@@ -162,6 +162,12 @@ class ACF
             ]),
         ];
 
+        $toolbars['Heading'] = [
+            1 => \apply_filters('granola/acf/fields/wysiwyg/toolbars/extended', [
+                'bold',
+            ]),
+        ];
+
         return $toolbars;
     }
 
