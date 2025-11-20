@@ -157,7 +157,6 @@ class Helpers
         return \is_tax($taxonomy, $term) || \is_category($term) || \is_tag($term);
     }
 
-
     /**
      * Generates an incremental ID that is independent per each different prefix.
      *
@@ -178,6 +177,61 @@ class Helpers
         $id = ++self::$id_counters[ $prefix ];
 
         return $prefix . (string) $id;
+    }
+
+
+    /**
+     * Override the theme.json color palette for a specific block.
+     *
+     * @param string $block_name The block name to override.
+     * @param array $new_pallete The new pallete to pass in.
+     * @param \WP_Theme_JSON_Data $theme_json The theme.json object.
+     * @return \WP_Theme_JSON_Data The original, or the overridden one.
+    */
+    public static function override_theme_json_with_new_palette_for_block($block_name, $new_pallete, $theme_json)
+    {
+        if (empty($block_name) || empty($new_pallete)) {
+            return $theme_json;
+        }
+
+        $theme_json_override = [
+        'version' => 3,
+        'settings' => [
+            'blocks' => [
+                $block_name => [
+                    'color' => [
+                        'palette' => [
+                            'theme' => $new_pallete
+                        ]
+                    ]
+                ]
+            ]
+        ]
+        ];
+
+        return $theme_json->update_with($theme_json_override);
+    }
+
+
+    /**
+     * Recursively merges arrays, allowing nested arrays to be properly merged.
+     * Unlike array_merge(), this function will merge nested arrays instead of replacing them.
+     *
+     * @param array $defaults The default values array.
+     * @param array $args The arguments array to merge with defaults.
+     * @return array The recursively merged array.
+     */
+    public static function array_merge_recursive_distinct(array $defaults, array $args): array
+    {
+        foreach ($args as $key => $value) {
+            if (is_array($value) && isset($defaults[$key]) && is_array($defaults[$key])) {
+                $defaults[$key] = self::array_merge_recursive_distinct($defaults[$key], $value);
+            } else {
+                $defaults[$key] = $value;
+            }
+        }
+
+        return $defaults;
     }
 
     /**

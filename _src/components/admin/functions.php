@@ -18,3 +18,19 @@ function enqueue_admin_bar_styles()
         false
     );
 }
+
+/**
+ * Enqueue custom CSS for the WP admin.
+ */
+function enqueue_admin_styles()
+{
+    $env = \Granola\Paths::resolve('.env.js');
+    $is_production = !file_exists($env);
+
+    \wp_enqueue_style(
+        'granola-admin-styles',
+        \Granola\Asset::URL('components/admin/styles/admin-styles.css', $is_production),
+        [],
+        false
+    );
+}

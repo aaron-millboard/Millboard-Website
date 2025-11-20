@@ -1,0 +1,26 @@
+@import '../../../core';
+
+.media-content {
+    --media-object--media--min-height: #{px-to-rem(300)};
+
+    $this: &;
+    $media-object: '.media-object';
+
+    @include mq(medium) {
+        --media-object--gap: var(--space--l);
+        --media-object--content--justify-content: center;
+    }
+
+    &:not(.has-background) {
+        --media-object--gap: var(--space--s);
+
+        &[data-width='xl'] #{$media-object}__content {
+            padding-inline: var(--space--container-padding);
+        }
+    }
+
+    &.has-background {
+        --media-object--inner-padding-x: 0;
+    }
+
+}

@@ -1,0 +1,32 @@
+
+.cards {
+    --grid--column-gap: var(--space--s);
+    --grid--row-gap: var(--grid--column-gap);
+
+    $this: &;
+
+    &__header {
+        margin-bottom: var(--space--s);
+    }
+
+    &__items {
+        @include grid(1, 2, 3);
+
+        justify-content: center;
+
+        @include mq(large) {
+            --grid--columns: var(--cards--best-column-fit);
+        }
+    }
+
+    &__footer {
+        margin-top: var(--space--s);
+
+    }
+
+    &__buttons {
+        --flex-column--gap: var(--space--xs);
+
+        flex-flow: row wrap;
+    }
+}

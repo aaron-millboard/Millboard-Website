@@ -1,0 +1,10 @@
+// Style the wysiwyg fields for the heading and subheading fields.
+.acf-field[data-type='wysiwyg'] {
+    &[data-name='heading'],
+    &[data-name='subheading'] {
+        iframe {
+            height: 100px !important;
+            min-height: 100px;
+        }
+    }
+}

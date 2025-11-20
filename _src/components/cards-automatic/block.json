@@ -1,23 +1,25 @@
 {
     "$schema": "https://advancedcustomfields.com/schemas/json/main/block.json",
     "apiVersion": 2,
-    "name": "cards",
-    "title": "Cards",
+    "name": "acf/cards-automatic",
+    "title": "Cards Automatic",
     "category": "granola-blocks",
-    "icon": "schedule",
-    "keywords": [],
+    "description": "Use to present content from the rest of the site as cards. For instance, recent posts, or a selected list of posts.",
+    "icon": "tide",
+    "keywords": [
+        "cards",
+        "automatic",
+        "custom"
+    ],
     "acf": {
         "mode": "auto",
-        "renderCallback": "\\Granola\\Component::acf_render_callback",
-        "postTypes": [
-            "page",
-            "granola-template"
-        ]
+        "renderCallback": "\\Granola\\Component::acf_render_callback"
     },
     "supports": {
         "align": [
             "wide",
-            "full"
+            "full",
+            "center"
         ],
         "anchor": true,
         "color": {
