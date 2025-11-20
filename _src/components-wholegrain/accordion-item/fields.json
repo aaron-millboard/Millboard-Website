@@ -1,0 +1,50 @@
+{
+    "key": "block_accordion_item",
+    "title": "Block - Accordion Item",
+    "fields": [
+        {
+            "key": "block_accordion_item_opened",
+            "label": "Open by default",
+            "name": "is_opened",
+            "type": "true_false",
+            "instructions": "If enabled, the accordion item will be open when the page loads.",
+            "ui": 1,
+            "ui_on_text": "Yes",
+            "ui_off_text": "No",
+            "default_value": 0
+        },
+        {
+            "key": "block_accordion_item_title",
+            "label": "Title",
+            "name": "title",
+            "type": "text",
+            "instructions": "The title of the accordion item."
+        },
+        {
+            "key": "block_accordion_item_content",
+            "label": "Content",
+            "name": "content",
+            "type": "wysiwyg",
+            "instructions": "The content of the accordion item.",
+            "tabs": "all",
+            "toolbar": "full",
+            "media_upload": 0
+        },
+        {
+            "key": "block_accordion_item_cta",
+            "label": "Call to Action",
+            "name": "cta",
+            "type": "link",
+            "return_format": "array"
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "block",
+                "operator": "==",
+                "value": "acf\/accordion-item"
+            }
+        ]
+    ]
+}

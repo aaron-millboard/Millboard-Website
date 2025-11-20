@@ -1,0 +1,112 @@
+.accordion__item {
+
+    --accordion--button--size: #{px-to-rem(40)};
+    --accordion--icon--size: #{px-to-rem(16)};
+    --accordion--border--color: var(--color--brand-1);
+
+    $this: &;
+    
+    border-top: var(--border-width--m) solid var(--accordion--border--color);
+    transition: all 0.2s ease-in-out;
+
+    &:has(&__trigger[aria-expanded='true']) {
+        --accordion--border--color: var(--color--brand-4);
+    }
+
+    &__trigger {
+        @include button-reset-hard;
+
+        display: grid;
+        width: 100%;
+        align-items: center;
+        justify-content: space-between;
+        margin: 0;
+        background: none;
+        color: var(--color--foreground);
+        column-gap: var(--space--m);
+        grid-template-areas: 'content button';
+        grid-template-columns: 1fr var(--accordion--button--size);
+        text-align: left;
+        padding: var(--space--s) 0;
+        transition: all 0.2s ease-in-out;
+
+        .g-button__hidder {
+            z-index: -1;
+        }
+
+        &[aria-expanded='true'] {
+            &::after {
+                transform: rotate(180deg);
+            }
+        }
+
+        #{$this}__heading {
+            @include heading-attributes;
+            font-size: rfs(20, 24);
+            font-weight: 600;
+            letter-spacing: normal;
+            padding: 0;
+            margin: 0;
+            transition: all 0.2s ease-in-out;
+        }
+
+        &::before {
+            position: absolute;
+            background-color: var(--color--brand-1);
+            display: block;
+            width: var(--accordion--button--size);
+            height: var(--accordion--button--size);
+            content: '';
+            grid-area: button;
+            right: 0;
+            z-index: 0;
+        }
+
+        &::after {
+            display: block;
+            width: var(--accordion--button--size);
+            height: var(--accordion--button--size);
+            content: '';
+            grid-area: button;
+            z-index: 1;
+        }
+
+        &::after {
+            background-color: var(--color--foreground);
+            content: '';
+            mask-image: url(#{asset-path('images/icons/chevron-down.svg')});
+            mask-position: center;
+            mask-repeat: no-repeat;
+            mask-size: var(--accordion--icon--size);
+            transition: transition(transform);
+        }
+    }
+
+    &__heading {
+        pointer-events: none;
+    }
+
+    &__panel {
+        overflow: hidden;
+        transition: transition(height);
+        transition-duration: calc(var(--transition--duration) * 2);
+
+        &__inner {
+            margin-top: var(--space--4xs);
+            display: flex;
+            flex-direction: column;
+            padding-bottom: var(--space--m);
+            gap: var(--space--m);
+
+            p {
+                margin: 0;
+            }
+
+            &__cta {
+                margin-top: 0;
+                width: max-content;
+            }
+        }
+    }
+
+}

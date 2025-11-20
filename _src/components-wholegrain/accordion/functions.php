@@ -9,7 +9,10 @@ function filter_args(array $args): ?array
     // ---------------------------------------
     $args = array_merge([
         'classes' => [],
-        'content' => '',
+        'preheading' => '',
+        'heading' => '',
+        'cta' => [],
+        'allow_multiple' => true, // Default to allowing multiple open items
     ], $args);
 
     // ---------------------------------------
@@ -18,51 +21,53 @@ function filter_args(array $args): ?array
     $args['classes'] = array_merge([
         'accordion',
         'wp-block',
+        'alignfull',
     ], $args['classes']);
 
-    if (!empty($args['heading'])) {
-        $args['heading'] = [
-            'content' => $args['heading'],
-            'classes' => ['accordion__heading'],
+    // ---------------------------------------
+    // Set up main wrapper attributes
+    // ---------------------------------------
+    $args['attributes']['data-allow-multiple'] = $args['allow_multiple'] ? 'true' : 'false';
+
+
+
+    if (!empty($args['description'])) {
+        $args['description'] = [
+            'content' => $args['description'],
+            'classes' => [
+                'page-header__description-text'
+            ],
         ];
     }
 
-    if (!empty($args['accordion_items'])) {
-        $args['accordion_items'] = array_map(function ($item) {
-            $item['panel_id'] = wp_unique_id('accordion-panel-');
-            $item['button_id'] = wp_unique_id('accordion-button-');
-
-            $item['button'] = [
-                'id' => $item['button_id'],
-                'classes' => [
-                    'accordion__item__header',
-                    'js-accordion-button'
-                ],
-                'attributes' => [
-                    'aria-expanded' => 'false',
-                    'aria-controls' => $item['panel_id'],
-                ],
-                'content' => \Granola\Component::get('heading', [
-                    'el' => 'h3',
-                    'content' => $item['title'],
-                    'classes' => ['accordion__item__heading']
-                ]),
-            ];
-
-            $item['panel_attributes'] = [
-                'id' => $item['panel_id'],
-                'class' => \Granola\Helpers::build_classes([
-                    'accordion__item__panel',
-                    'js-expandable-element'
-                ]),
-                'hidden' => true,
-                'aria-hidden' => 'true',
-                'aria-labelledby' => $item['button_id']
-            ];
-
-            return $item;
-        }, $args['accordion_items']);
+    if (!empty($args['cta'])) {
+        $args['cta'] = [
+            'title'    => $args['cta']['title'] ?? '',
+            'url'      => $args['cta']['url'] ?? '',
+            'attributes' => [
+                'target' => $args['cta']['target'] ?? '',
+                'rel'    => $args['cta']['rel'] ?? '',
+            ],
+            'classes' => [
+                'accordion__header__cta',
+                'g-button'
+            ],
+        ];
     }
+
+    // ---------------------------------------
+    // Set up the innerblocks tag.
+    // ---------------------------------------
+    $innerblocks_attrs = [
+        'class' => 'accordion__items',
+        'allowedBlocks' => ['acf/accordion-item'],
+        'template' => [
+            ['acf/accordion-item'],
+        ],
+        'templateLock' => false,
+    ];
+
+    $args['innerblocks_tag'] = \Granola\Helpers::build_inner_blocks_tag($innerblocks_attrs);
 
     // -------------------------------------------------------------------------
     // Return the filtered args.
