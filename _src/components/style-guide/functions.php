@@ -27,7 +27,7 @@ function add_cards_block_to_site_main($args): ?array
     }
 
     // If we are not the correct page, return args.
-    if ($current_page_id !== $style_guide_page_id && $page_parent !== $style_guide_page_id) {
+    if ($current_page_id !== $style_guide_page_id) {
         return $args;
     }
 
@@ -43,7 +43,7 @@ function add_cards_block_to_site_main($args): ?array
                 'card_source' => 'selected',
                 'selected' => $style_guide_sub_pages,
                 'heading' => __('Style Guide: Blocks & Layouts', 'granola'),
-                'align' => 'full',
+                'align' => 'wide',
                 'columns' => 3,
                 'attributes' => [
                     'data-width' => 'xl',
