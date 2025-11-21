@@ -53,13 +53,37 @@ function filter_args(array $args): ?array
     if (!empty($item->children) && (empty($args['max_depth']) || $args['depth'] + 1 < $args['max_depth'])) {
         $args['display_submenu'] = true;
 
+        // Check if mega menu is enabled (only for depth 0 items)
+        $mega_menu_enabled = $args['depth'] === 0 && \get_field('mega_menu_enabled', $item);
+        $args['is_mega_menu'] = $mega_menu_enabled;
+        $args['classes'][] = $mega_menu_enabled ? 'menu-item--mega-menu' : '';
+
+        // Check if we have global CTA in mega menu dropdown
+        $args['mega_menu_cta'] = $mega_menu_enabled ? \get_field('mega_menu_cta', $item) : false;
+
+        $sub_menu_classes = [
+            'sub-menu',
+            'sub-menu--depth-' . $args['depth'],
+            'js-expandable-element',
+        ];
+
+        if ($mega_menu_enabled) {
+            $sub_menu_classes[] = 'sub-menu--mega';
+
+            // Check if widget column is enabled
+            $args['mega_menu_widget_enabled'] = \get_field('mega_menu_widget_enabled', $item);
+
+            if ($args['mega_menu_widget_enabled']) {
+                $args['mega_menu_widget'] = [
+                    'image' => \get_field('mega_menu_widget_image', $item),
+                    'cta' => \get_field('mega_menu_widget_cta', $item),
+                ];
+            }
+        }
+
         $args['sub-menu-attributes'] = [
             'id' => 'sub-menu-' . $item->ID,
-            'class' => \Granola\Helpers::build_classes([
-                'sub-menu',
-                'sub-menu--depth-' . $args['depth'],
-                'js-expandable-element',
-            ]),
+            'class' => \Granola\Helpers::build_classes($sub_menu_classes),
 
             // Initially hide sub-menus.
             'hidden' => true,
@@ -76,6 +100,14 @@ function filter_args(array $args): ?array
                 'id' => 'sub-menu-' . $item->ID . '-toggler',
             ],
         ];
+    }
+
+    // Get menu item image (for depth 1 items in mega menu)
+    if ($args['depth'] === 1) {
+        $item_image_id = \get_field('mega_menu_item_image', $item);
+        if ($item_image_id) {
+            $args['item_image'] = $item_image_id;
+        }
     }
 
     // Add multiple

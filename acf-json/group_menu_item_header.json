@@ -1,0 +1,28 @@
+{
+    "key": "group_menu_item",
+    "title": "Mega Menu Settings",
+    "fields": [
+        {
+            "key": "field_mega_menu_item_image",
+            "label": "Menu Item Image",
+            "name": "mega_menu_item_image",
+            "type": "image",
+            "instructions": "Optional image for this menu item (displays in mega menu)",
+            "return_format": "id"
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "nav_menu_item",
+                "operator": "==",
+                "value": "location\/header"
+            },
+            {
+                "param": "menu_level",
+                "operator": "==",
+                "value": "1"
+            }
+        ]
+    ]
+}

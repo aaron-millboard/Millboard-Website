@@ -48,6 +48,11 @@ function filter_args(array $args): ?array
      */
     $menu_items = [];
     foreach ($unsorted_items as $item) {
+        // Check for permanently active field (for 'top' menu location)
+        if ($args['theme_location'] === 'top' && \get_field('permanently_active', $item)) {
+            $item->classes[] = 'is-active';
+        }
+        
         $menu_items[$item->ID] = $item;
     }
 

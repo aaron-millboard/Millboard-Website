@@ -91,8 +91,22 @@ export default class SiteHeader {
 
                     expandableEl.collapse();
 
+                    const linkEl = dropdown.parent.querySelector('a');
+                    const subMenuLinks = dropdown.parent.querySelectorAll('.sub-menu a');
+
                     dropdown.parent.addEventListener('mouseenter', (e) => this.handleSubMenuParentEvent(e));
                     dropdown.parent.addEventListener('mouseleave', (e) => this.handleSubMenuParentEvent(e));
+                    
+                    if (linkEl) {
+                        linkEl.addEventListener('focusin', (e) => this.handleSubMenuParentEvent(e));
+                        linkEl.addEventListener('focusout', (e) => this.handleSubMenuParentEvent(e));
+                    }
+
+                    // Add focus listeners to all submenu links
+                    subMenuLinks.forEach((link) => {
+                        link.addEventListener('focusin', (e) => this.handleSubMenuParentEvent(e));
+                        link.addEventListener('focusout', (e) => this.handleSubMenuParentEvent(e));
+                    });
                 }
             });
         }
@@ -233,16 +247,46 @@ export default class SiteHeader {
             return;
         }
 
-        const expandableElTarget = event.target.querySelector('.js-expandable-element');
+        let expandableElTarget;
+        let menuItem;
+        
+        // For focus events, we need to find the expandable element from the focused link's parent
+        if (event.type === 'focusin' || event.type === 'focusout') {
+            menuItem = event.target.closest('.menu-item');
+            expandableElTarget = menuItem ? menuItem.querySelector('.js-expandable-element') : null;
+        } else {
+            // For mouse events, the target is the parent menu item
+            menuItem = event.target;
+            expandableElTarget = event.target.querySelector('.js-expandable-element');
+        }
+
+        if (!expandableElTarget) {
+            return;
+        }
+
         const { expandableEl } = this.subMenuDropdowns[expandableElTarget.id] ?? {};
 
         if (!(expandableEl instanceof ExpandableElement)) {
             return;
         }
 
+        // For focusout, check if focus is moving within the submenu
+        if (event.type === 'focusout') {
+            // Use setTimeout to allow relatedTarget to be set
+            setTimeout(() => {
+                const newFocusedElement = document.activeElement;
+                const isMovingToSubmenu = menuItem && menuItem.contains(newFocusedElement);
+                
+                if (!isMovingToSubmenu && expandableEl.isExpanded()) {
+                    expandableEl.collapse();
+                }
+            }, 0);
+            return;
+        }
+
         if (event.type === 'mouseleave' && expandableEl.isExpanded()) {
             expandableEl.collapse();
-        } else if (event.type === 'mouseenter' && !expandableEl.isExpanded()) {
+        } else if ((event.type === 'mouseenter' || event.type === 'focusin') && !expandableEl.isExpanded()) {
             expandableEl.expand();
         }
     }

@@ -1,0 +1,93 @@
+{
+    "key": "group_mega_menu",
+    "title": "Mega Menu Settings",
+    "fields": [
+        {
+            "key": "field_mega_menu_enabled",
+            "label": "Enable Mega Menu",
+            "name": "mega_menu_enabled",
+            "type": "true_false",
+            "instructions": "Enable mega menu layout for this menu item's submenu",
+            "ui": 1
+        },
+        {
+            "key": "field_mega_menu_cta",
+            "label": "Enable big CTA?",
+            "name": "mega_menu_cta",
+            "type": "link",
+            "conditional_logic": [
+                [
+                    {
+                        "field": "field_mega_menu_enabled",
+                        "operator": "==",
+                        "value": "1"
+                    }
+                ]
+            ],
+            "default_value": 0,
+            "ui": 1
+        },
+        {
+            "key": "field_mega_menu_widget_enabled",
+            "label": "Enable Widget (3rd Column)",
+            "name": "mega_menu_widget_enabled",
+            "type": "true_false",
+            "conditional_logic": [
+                [
+                    {
+                        "field": "field_mega_menu_enabled",
+                        "operator": "==",
+                        "value": "1"
+                    }
+                ]
+            ],
+            "default_value": 0,
+            "ui": 1
+        },
+        {
+            "key": "field_mega_menu_widget_image",
+            "label": "Widget Image",
+            "name": "mega_menu_widget_image",
+            "type": "image",
+            "return_format": "id",
+            "conditional_logic": [
+                [
+                    {
+                        "field": "field_mega_menu_widget_enabled",
+                        "operator": "==",
+                        "value": "1"
+                    }
+                ]
+            ]
+        },
+        {
+            "key": "field_mega_menu_widget_cta",
+            "label": "Widget CTA",
+            "name": "mega_menu_widget_cta",
+            "type": "link",
+            "conditional_logic": [
+                [
+                    {
+                        "field": "field_mega_menu_widget_enabled",
+                        "operator": "==",
+                        "value": "1"
+                    }
+                ]
+            ]
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "nav_menu_item",
+                "operator": "==",
+                "value": "location\/header"
+            },
+            {
+                "param": "menu_level",
+                "operator": "==",
+                "value": "0"
+            }
+        ]
+    ]
+}

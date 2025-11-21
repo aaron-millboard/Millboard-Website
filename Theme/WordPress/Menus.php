@@ -17,6 +17,7 @@ class Menus
     public static function register_theme_menus(): void
     {
         \register_nav_menus([
+            'top' => \_x('Top Navigation', 'Menu name', 'granola'),
             'header' => \_x('Header', 'Menu name', 'granola'),
             'footer-1' => \_x('Footer 1', 'Menu name', 'granola'),
             'footer-2' => \_x('Footer 2', 'Menu name', 'granola'),
