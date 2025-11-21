@@ -1,0 +1,22 @@
+{
+    "key": "group_menu_item_top",
+    "title": "Top Menu Item Settings",
+    "fields": [
+        {
+            "key": "field_top_menu_item_permanently_active",
+            "label": "Permanenetly Active?",
+            "name": "permanently_active",
+            "type": "true_false",
+            "ui": 1
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "nav_menu_item",
+                "operator": "==",
+                "value": "location\/top"
+            }
+        ]
+    ]
+}

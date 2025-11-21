@@ -1,9 +1,20 @@
 <header <?= \Granola\Helpers::build_attributes($args['attributes']) ?>>
     <div class="site-header__inner">
+
+        <div class="site-header__top-navigation">
+            <?= \Granola\Component::get('menu', [
+                'theme_location' => 'top',
+                'menu_id' => 'top-menu', // Required for 'aria-controls' in burger component.
+                'classes' => [
+                    'site-header__navigation site-header__navigation--top',
+                ],
+            ]); ?>
+        </div>
+
         <div class="site-header__top">
             <?= \Granola\Component::get('link', [
                 'url' => home_url('/'),
-                'classes' => ['site-header__logo', 'img-fit'],
+                'classes' => ['site-header__logo'],
                 'content' => \Granola\Image::get('logo.svg', [
                     'alt' => get_bloginfo('name'),
                     'loading' => false,
@@ -44,6 +55,8 @@
                     'site-header__navigation',
                 ],
             ]); ?>
+            
+            <?php /*
 
             <button
                 class="site-header__search-toggler site-header__search-toggler--desktop g-button g-button--square"
@@ -59,6 +72,9 @@
                     <?= \Granola\Component::get('link', $args['content']['call_to_action_1']); ?>
                 </div>
             <?php } ?>
+
+            */ ?>
+
         </div>
 
         <?= \Granola\Component::get('header-search', [

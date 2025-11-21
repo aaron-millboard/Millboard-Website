@@ -1,7 +1,7 @@
 @import './menu';
 
 // These are set as SCSS variables so they can be used in the color-context mixin
-$site-header--bottom--background: 'brand-1';
+$site-header--bottom--background: 'brand-2';
 $site-header--top--background: 'white';
 
 :root {
@@ -19,7 +19,7 @@ $site-header--top--background: 'white';
 }
 
 .site-header {
-    --site-header--height: #{px-to-rem(70)};
+    --site-header--height: #{px-to-rem(140)};
     --site-header--logo-width: #{px-to-rem(120)};
 
     --site-header--spacing: var(--space--m);
@@ -31,6 +31,7 @@ $site-header--top--background: 'white';
 
     $this: &;
 
+    position: relative;
     z-index: var(--z-index--site-header);
     width: 100%;
     height: var(--site-header--height);
@@ -39,22 +40,14 @@ $site-header--top--background: 'white';
 
     @include mq('site-header') {
         --site-header--spacing: var(--space--l);
-        --site-header--logo-width: #{px-to-rem(170)};
-        --site-header--height: #{px-to-rem(74)};
+        --site-header--logo-width: #{px-to-rem(210)};
+        --site-header--height: #{px-to-rem(160)};
         --site-header--button-size: #{px-to-rem(42)};
 
         background-color: var(--color--white);
     }
 
     @include mq($until: 'site-header') {
-        &--positioned {
-            position: absolute;
-
-            ~ .site-main {
-                margin-top: calc(var(--site-header--bottom));
-            }
-        }
-
         &.is-open {
             position: fixed;
             height: calc(100% - var(--wp--admin-bar-height));
@@ -63,44 +56,99 @@ $site-header--top--background: 'white';
     }
 
     &__inner {
-        display: grid;
+        position: relative;
+        display: flex;
+        flex-direction: column;
         width: 100%;
         height: 100%;
-        grid-template-rows: min-content auto;
+        gap: var(--space--xs);
 
         @include mq('site-header') {
             @include align-width--l;
+            gap: var(--space--m);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+        }
+    }
 
-            gap: var(--site-header--spacing);
-            grid-auto-flow: column;
-            grid-template-rows: unset;
+    &__top-navigation {
+        
+        @include mq('site-header') {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .menu-list {
+            margin-top: var(--space--l);
+            padding-right: var(--space--container-padding);
+            padding-left: var(--space--container-padding);
+            display: flex;
+            flex-flow: row nowrap;
+            align-items: center;
+            gap: 0;
+
+            @include mq('site-header') {
+                margin: 0;
+                padding-right: 0;
+                padding-left: 0;
+            }
+        }
+
+        .menu-item {
+            padding: var(--space--3xs) var(--space--3xs);
+            
+            .menu-item__wrap > a {
+                @include typestyle-h6;
+            }
+        }
+
+        .menu-item--depth-0 > .menu-item__wrap > a {
+            font-weight: 100;
+            font-family: var(--type--1--font-family);
+        }
+
+        .menu-item__wrap {
+            min-height: auto;
+        }
+
+        .menu-item.is-active {
+            background-color: var(--color--brand-1);
+            > .menu-item__wrap > a {
+                font-weight: 400;
+                font-family: var(--type--3--font-family);
+                cursor: default;
+                pointer-events: none;
+                @include interact {
+                    text-decoration: none;
+                }
+            }
         }
     }
 
     &__top {
         display: flex;
-        height: var(--site-header--height);
         align-items: center;
         padding-right: var(--space--container-padding);
         padding-left: var(--space--container-padding);
         background-color: var(--color--#{$site-header--top--background});
         gap: var(--site-header--spacing);
-        justify-items: flex-end;
+        justify-content: space-between;
 
         @include mq('site-header') {
             padding-right: 0;
             padding-left: 0;
             background-color: transparent;
+            justify-items: flex-end;
+            justify-content: flex-end;
         }
     }
 
     &__bottom {
-        display: grid;
-        justify-content: center;
-        gap: var(--site-header--spacing);
-        grid-auto-rows: min-content;
-        grid-template-rows: auto;
-
+        display: flex;
+        width: 100%;
         @include mq($until: 'site-header') {
             --link--color: var(--color--foreground);
             --link--color--hover: var(--color--foreground);
@@ -140,21 +188,24 @@ $site-header--top--background: 'white';
         }
 
         @include mq('site-header') {
+            justify-content: center;
+            gap: var(--site-header--spacing);
+            display: grid;
+            grid-auto-rows: min-content;
+            grid-template-rows: auto;
             width: auto;
             align-items: center;
-            justify-content: flex-end;
-            grid-auto-flow: column;
         }
     }
 
     &__burger {
-        --burger--color: var(--color--brand-1);
-        --burger--background-color: var(--color--brand-2);
-        --burger--border-color: var(--color--brand-2);
+        --burger--color: var(--color--black);
+        --burger--background-color: transparent;
+        --burger--border-color: transparent;
 
-        --burger--color--hover: var(--color--brand-2);
-        --burger--background-color--hover: var(--color--brand-1);
-        --burger--border-color--hover: var(--color--brand-1);
+        --burger--color--hover: var(--color--black);
+        --burger--background-color--hover: transparent;
+        --burger--border-color--hover: transparent;
 
         --burger--size: var(--site-header--button-size);
 
@@ -167,13 +218,13 @@ $site-header--top--background: 'white';
     }
 
     &__search-toggler {
-        --button--color: var(--color--brand-1);
+        --button--color: var(--color--black);
         --button--background-color: transparent;
-        --button--border-color: var(--color--brand-1);
+        --button--border-color: transparent;
 
         --button--color--hover: var(--color--brand-1);
-        --button--background-color--hover: var(--color--brand-2);
-        --button--border-color--hover: var(--color--brand-1);
+        --button--background-color--hover: transparent;
+        --button--border-color--hover: transparent;
 
         --focus--color: var(--color--foreground);
 
@@ -188,6 +239,7 @@ $site-header--top--background: 'white';
         justify-content: space-around;
         padding: 0;
         border-radius: 100%;
+        margin-left: auto;
 
         &--desktop {
             display: none;
@@ -229,11 +281,10 @@ $site-header--top--background: 'white';
         display: flex;
         width: 100%;
         max-width: var(--site-header--logo-width);
-        height: 100%;
-        max-height: calc(100% - var(--space--s));
-        margin-right: auto;
 
         > * {
+            width: 100%;
+            height: 100%;
             object-fit: contain;
             object-position: left center;
         }

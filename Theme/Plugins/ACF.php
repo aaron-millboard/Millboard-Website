@@ -38,6 +38,11 @@ class ACF
         // Rename image field attachment ID array key from 'id' or 'ID' to 'attachment_id'.
         // Must be hooked higher than 10, as ACF converts from int to array on priority 10.
         \add_filter('acf/format_value/type=image', [__CLASS__, 'format_image_field_value'], 20, 1);
+
+        // Add custom menu depth location rule for ACF field groups.
+        \add_filter('acf/location/rule_types', [__CLASS__, 'acf_location_rules_types']);
+        \add_filter('acf/location/rule_values/menu_level', [__CLASS__, 'acf_location_rule_values_level']);
+        \add_filter('acf/location/rule_match/menu_level', [__CLASS__, 'acf_location_rule_match_level'], 10, 4);
     }
 
     public static function option_pages(): void
@@ -304,5 +309,54 @@ class ACF
         $field['disabled'] = true;
 
         return $field;
+    }
+
+    /**
+     * Add custom menu depth location rule type to ACF.
+     *
+     * @param array $choices The location rule type choices.
+     * @return array The filtered location rule type choices.
+     */
+    public static function acf_location_rules_types(array $choices): array
+    {
+        $choices['Menu']['menu_level'] = 'Menu Depth';
+
+        return $choices;
+    }
+
+    /**
+     * Define available values for the menu depth location rule.
+     *
+     * @param array $choices The location rule value choices.
+     * @return array The filtered location rule value choices.
+     */
+    public static function acf_location_rule_values_level(array $choices): array
+    {
+        $choices[0] = '0';
+        $choices[1] = '1';
+
+        return $choices;
+    }
+
+    /**
+     * Match the menu depth location rule against the current menu item.
+     *
+     * @param bool $match Whether the rule matches.
+     * @param array $rule The location rule being matched.
+     * @param array $options The options containing menu item data.
+     * @param array $field_group The field group being evaluated.
+     * @return bool Whether the rule matches.
+     */
+    public static function acf_location_rule_match_level(bool $match, array $rule, array $options, array $field_group): bool
+    {
+        $current_screen = \get_current_screen();
+
+        if ($current_screen->base === 'nav-menus') {
+            if ($rule['operator'] === '==') {
+                $match = ($options['nav_menu_item_depth'] == $rule['value']);
+            }
+        }
+
+        return $match;
     }
 }
