@@ -14,7 +14,6 @@
     "supports": {
         "align": [
             "wide",
-            "full",
             "center"
         ],
         "anchor": true,
@@ -25,7 +24,7 @@
     "attributes": {
         "align": {
             "type": "string",
-            "default": "full"
+            "default": "wide"
         }
     }
 }

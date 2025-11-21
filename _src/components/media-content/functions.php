@@ -67,6 +67,43 @@ function filter_args(array $args): ?array
     if ($args['align'] === 'center') {
         $args['heading_class'] = 'is-style-typestyle-h4';
     }
+
+    // -------------------------------------------------------------------------
+    // Heading inset.
+    // -------------------------------------------------------------------------
+    if (!empty($args['heading']) && !empty($args['heading_inset'])) {
+        $args['classes'][] = 'media-content--has-heading-inset';
+        $args['heading_class'] = 'is-style-typestyle-h1';
+        $args['heading'] = \Granola\Component::get('element', [
+            'el' => 'span',
+            'content' => $args['heading'],
+            'classes' => ['media-object__heading-primary'],
+        ]) . \Granola\Component::get('element', [
+            'el' => 'span',
+            'content' => $args['heading_inset'],
+            'classes' => ['media-object__heading-secondary'],
+        ]);
+    }
+
+    // -------------------------------------------------------------------------
+    // Buttons.
+    // -------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
+    if (!empty($args['buttons'])) {
+        $args['buttons'] = array_map(function ($button) {
+            $weight = $button['weight'] ?? 'primary';
+            $button = $button['button'];
+            return [
+                'url' => $button['url'],
+                'target' => $button['target'],
+                'content' => $button['title'],
+                'classes' => [
+                    $weight === 'primary' ? 'g-button--primary' : 'g-button--secondary',
+                ]
+            ];
+        }, $args['buttons']);
+    }
+
     // -------------------------------------------------------------------------
     // Return the filtered args.
     // -------------------------------------------------------------------------

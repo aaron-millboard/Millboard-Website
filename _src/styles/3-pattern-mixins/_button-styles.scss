@@ -101,3 +101,13 @@
         height: var(--button--icon-size, 1em);
     }
 }
+
+@mixin button--secondary {
+    --button--background-color: transparent;
+    --button--border-color: transparent;
+    --button--background-color--hover: transparent;
+
+    --button--padding-x: 0;
+    --button--padding-y: 0;
+    --button--border-width: 0;
+}

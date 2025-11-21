@@ -22,5 +22,9 @@
         @include button--arrow;
     }
 
+    &--secondary {
+        @include button--secondary;
+    }
+
     @include button--interaction;
 }

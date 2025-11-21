@@ -17,7 +17,8 @@
                 "id": ""
             },
             "placement": "top",
-            "endpoint": 0
+            "endpoint": 0,
+            "selected": 0
         },
         {
             "key": "field_60a67f8182d68",
@@ -35,6 +36,27 @@
             },
             "default_value": "",
             "maxlength": "",
+            "placeholder": "",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_692076a918566",
+            "label": "Heading Inset",
+            "name": "heading_inset",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "An inset heading used to give additional emphasis.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "allow_in_bindings": 1,
             "placeholder": "",
             "prepend": "",
             "append": ""
@@ -80,11 +102,11 @@
             "delay": 0
         },
         {
-            "key": "field_60a681d68f9d2",
-            "label": "Button",
-            "name": "button_1",
+            "key": "field_692077e805a54",
+            "label": "Buttons",
+            "name": "buttons",
             "aria-label": "",
-            "type": "link",
+            "type": "repeater",
             "instructions": "",
             "required": 0,
             "conditional_logic": 0,
@@ -93,7 +115,58 @@
                 "class": "",
                 "id": ""
             },
-            "return_format": "array"
+            "layout": "block",
+            "pagination": 0,
+            "min": 0,
+            "max": 0,
+            "collapsed": "",
+            "button_label": "Add Button",
+            "rows_per_page": 20,
+            "sub_fields": [
+                {
+                    "key": "field_692077ee05a55",
+                    "label": "Button",
+                    "name": "button",
+                    "aria-label": "",
+                    "type": "link",
+                    "instructions": "",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "50",
+                        "class": "",
+                        "id": ""
+                    },
+                    "return_format": "array",
+                    "allow_in_bindings": 0,
+                    "parent_repeater": "field_692077e805a54"
+                },
+                {
+                    "key": "field_69207b2a2b5ee",
+                    "label": "Weight",
+                    "name": "weight",
+                    "aria-label": "",
+                    "type": "button_group",
+                    "instructions": "",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "50",
+                        "class": "",
+                        "id": ""
+                    },
+                    "choices": {
+                        "primary": "Primary",
+                        "secondary": "Secondary"
+                    },
+                    "default_value": "",
+                    "return_format": "value",
+                    "allow_null": 0,
+                    "allow_in_bindings": 0,
+                    "layout": "horizontal",
+                    "parent_repeater": "field_692077e805a54"
+                }
+            ]
         },
         {
             "key": "field_60a6800ab968d",
@@ -110,7 +183,8 @@
                 "id": ""
             },
             "placement": "top",
-            "endpoint": 0
+            "endpoint": 0,
+            "selected": 0
         },
         {
             "key": "field_60a68014b968e",
@@ -200,7 +274,8 @@
                 "id": ""
             },
             "placement": "top",
-            "endpoint": 0
+            "endpoint": 0,
+            "selected": 0
         },
         {
             "key": "field_60a67f8182d7f",
@@ -244,5 +319,7 @@
     "active": true,
     "description": "",
     "show_in_rest": 0,
-    "modified": 1683735935
+    "display_title": "",
+    "granola_save_location": 0,
+    "modified": 1763736428
 }

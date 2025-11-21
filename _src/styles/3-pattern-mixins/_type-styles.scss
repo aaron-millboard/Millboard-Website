@@ -20,6 +20,7 @@
 @mixin typestyle-meta {
     font-size: var(--type--font-size--base);
     line-height: 1.2;
+    text-transform: uppercase;
 }
 
 @mixin heading-attributes {

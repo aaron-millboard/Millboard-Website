@@ -6,21 +6,93 @@
     $this: &;
     $media-object: '.media-object';
 
+
+    @include mq($until: medium) {
+        --media-object--gap: var(--space--s);
+    }
+
     @include mq(medium) {
-        --media-object--gap: var(--space--l);
+        --media-object--media--min-height: 100%;
+        --media-object--gap: var(--space--m);
+        --media-object--media--ratio: 1 / 1;
         --media-object--content--justify-content: center;
     }
 
-    &:not(.has-background) {
-        --media-object--gap: var(--space--s);
+    @include mq(large) {
+        --media-object--gap: var(--space--xl);
+    }
 
-        &[data-width='xl'] #{$media-object}__content {
+    #{$media-object} {
+        &__buttons {
+            --flex-column--gap: var(--space--s);
+
+            align-items: center;
+
+            @include mq(medium) {
+                --media-object--content--justify-content: flex-start;
+            }
+        }
+    }
+
+    &:not(.has-background) {
+        &.alignfull #{$media-object}__content {
             padding-inline: var(--space--container-padding);
+        }
+
+        &.aligncenter {
+            --media-object--gap: var(--space--s);
         }
     }
 
     &.has-background {
         --media-object--inner-padding-x: 0;
+
+        @include mq($until: medium) {
+            --media-object--inner-padding-x: var(--space--m);
+        }
+
+        &[data-media-position="after"] {
+            #{$media-object}__content {
+                @include mq(medium) {
+                    padding-inline-start: var(--media-object--gap);
+                }
+            }
+        }
+
+        &[data-media-position="before"] {
+            #{$media-object}__content {
+                @include mq(medium) {
+                    padding-inline-end: var(--media-object--gap);
+                }
+            }
+        }
     }
 
+    &[data-orientation=horizontal][data-media] {
+        @include mq(medium) {
+            --media-object--media--ratio: 1 / 1;
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Heading inset.
+    // -------------------------------------------------------------------------
+    &--has-heading-inset {
+        #{$media-object}__heading {
+            display: flex;
+            flex-flow: column;
+
+            @include mq(medium, $until: large) {
+                @include typestyle-h2;
+            }
+        }
+
+        #{$media-object}__heading-primary {
+            align-self: flex-start;
+        }
+
+        #{$media-object}__heading-secondary {
+            align-self: flex-end;
+        }
+    }
 }
