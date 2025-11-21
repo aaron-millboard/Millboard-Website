@@ -25,8 +25,10 @@
 
     // Override hover colors:
     // Wenge
+    // Charcoal
     // Olivegreen
     .has-brand-5-background-color,
+    .has-brand-3-background-color,
     .has-brand-4-background-color {
         &:not(.has-background) {
             --button--background-color--hover: var(--color--white);
