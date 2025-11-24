@@ -1,0 +1,50 @@
+{
+    "key": "group_list_values_block",
+    "title": "Block - List Values",
+    "fields": [
+        {
+            "key": "field_list_values_preheading",
+            "label": "Pre-heading",
+            "name": "preheading",
+            "type": "text"
+        },
+        {
+            "key": "field_list_values_heading",
+            "label": "Heading",
+            "name": "heading",
+            "type": "text"
+        },
+        {
+            "key": "field_list_values_values",
+            "label": "Values",
+            "name": "values",
+            "type": "repeater",
+            "layout": "block",
+            "button_label": "Add Value",
+            "sub_fields": [
+                {
+                    "key": "field_list_values_value_heading",
+                    "label": "Heading",
+                    "name": "heading",
+                    "type": "text",
+                    "parent_repeater": "field_list_values_values"
+                },
+                {
+                    "key": "field_list_values_value_description",
+                    "label": "Description",
+                    "name": "description",
+                    "type": "textarea"
+                }
+            ]
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "block",
+                "operator": "==",
+                "value": "acf\/list-values"
+            }
+        ]
+    ]
+}
