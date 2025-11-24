@@ -1,0 +1,31 @@
+{
+    "$schema": "https://advancedcustomfields.com/schemas/json/main/block.json",
+    "apiVersion": 2,
+    "name": "acf/quote",
+    "title": "Quote",
+    "category": "granola-blocks",
+    "icon": "format-quote",
+    "keywords": [],
+    "acf": {
+        "mode": "edit",
+        "renderCallback": "\\Granola\\Component::acf_render_callback"
+    },
+    "supports": {
+        "align": [
+            "wide",
+            "full",
+            "center"
+        ],
+        "anchor": true,
+        "color": {
+            "text": false
+        },
+        "mode": false
+    },
+    "attributes": {
+        "align": {
+            "type": "string",
+            "default": "center"
+        }
+    }
+}

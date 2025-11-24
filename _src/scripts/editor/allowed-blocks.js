@@ -11,7 +11,7 @@ const allowedCoreBlocks = [
     // 'core/gallery',
     'core/list',
     'core/list-item',
-    'core/quote',
+    // 'core/quote',
     'core/shortcode',
     // 'core/archives',
     // 'core/audio',
