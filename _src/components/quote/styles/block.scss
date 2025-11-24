@@ -1,0 +1,23 @@
+ @import '../../../core';
+
+ .quote {
+     $this: &;
+
+
+
+     &::before {
+        background-color: var(--color--brand-4);
+        width: 200px;
+        height: 4px;
+        display: block;
+        content: '';
+     }
+
+     &__content {
+        line-height: 120%;
+     }
+
+     &__citation {
+        font-style: initial;
+     }
+ }
