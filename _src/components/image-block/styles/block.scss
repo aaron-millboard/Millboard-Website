@@ -1,0 +1,19 @@
+ @import '../../../core';
+
+.image-block {
+    $this: &;
+
+    &__heading {
+        text-align: center;
+    }
+
+    &__caption {
+        margin-top: var(--space--3xs);
+        opacity: 0.8;
+
+        &-inner {
+            font-family: var(--type--2--font-family);
+            font-weight: var(--type--2--font-weight);
+        }
+    }
+ }

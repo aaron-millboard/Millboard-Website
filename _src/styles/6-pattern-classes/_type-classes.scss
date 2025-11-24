@@ -28,6 +28,10 @@
     @include typestyle-large;
 }
 
+.is-style-typestyle-xlarge {
+    @include typestyle-xlarge;
+}
+
 .is-style-typestyle-meta {
     @include typestyle-meta;
 }

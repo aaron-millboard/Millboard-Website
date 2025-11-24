@@ -17,6 +17,10 @@
     font-size: rfs(17, 18);
 }
 
+@mixin typestyle-xlarge {
+    font-size: rfs(18, 20);
+}
+
 @mixin typestyle-meta {
     font-size: var(--type--font-size--base);
     line-height: 1.2;

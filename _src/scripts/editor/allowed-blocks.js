@@ -6,7 +6,7 @@
  */
 const allowedCoreBlocks = [
     'core/paragraph',
-    'core/image',
+    // 'core/image',
     'core/heading',
     // 'core/gallery',
     'core/list',
