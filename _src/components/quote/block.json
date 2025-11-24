@@ -7,7 +7,7 @@
     "icon": "format-quote",
     "keywords": [],
     "acf": {
-        "mode": "edit",
+        "mode": "auto",
         "renderCallback": "\\Granola\\Component::acf_render_callback"
     },
     "supports": {
