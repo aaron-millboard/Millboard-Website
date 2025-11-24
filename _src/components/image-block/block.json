@@ -1,0 +1,30 @@
+{
+    "$schema": "https://advancedcustomfields.com/schemas/json/main/block.json",
+    "apiVersion": 2,
+    "name": "acf/image-block",
+    "title": "Image Block",
+    "category": "granola-blocks",
+    "icon": "cover-image",
+    "keywords": [],
+    "acf": {
+        "mode": "edit",
+        "renderCallback": "\\Granola\\Component::acf_render_callback"
+    },
+    "supports": {
+        "align": [
+            "wide",
+            "center"
+        ],
+        "anchor": true,
+        "color": {
+            "text": false
+        },
+        "mode": false
+    },
+    "attributes": {
+        "align": {
+            "type": "string",
+            "default": "center"
+        }
+    }
+}
