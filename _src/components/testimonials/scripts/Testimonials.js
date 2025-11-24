@@ -42,7 +42,7 @@ export default class Testimonials extends Slider {
     calculatePositionProperties() {
         // Loop through the slides and get the width and height of the content container.
         this.slides.forEach((slide, index) => {
-            const currentSlideContentContainer = slide.querySelector('.testimonial-item__content');
+            const currentSlideContentContainer = slide.querySelector('.quote__content');
 
             if (!currentSlideContentContainer) {
                 return;

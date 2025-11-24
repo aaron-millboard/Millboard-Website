@@ -41,13 +41,12 @@ function filter_args(array $args): ?array
     if (count($args['testimonials']) === 1) {
         $testimonial = $args['testimonials'][0];
 
-        $args['testimonials'] = \Granola\Component::get('testimonials/testimonial-item', [
-            'image' => [
-                'attachment_id' => $testimonial['image'],
-            ],
+        $args['testimonials'] = \Granola\Component::get('quote', [
+            'image' => $testimonial['image'],
             'testimonial' => $testimonial['testimonial']['testimonial'],
             'name' => $testimonial['testimonial']['name'],
             'affiliation' => $testimonial['testimonial']['affiliation'],
+            'classes' => ['quote--testimonial'],
         ]);
 
 
@@ -68,13 +67,12 @@ function filter_args(array $args): ?array
                     'class' => ['testimonials__slide'],
                 ],
                 'content_filter' => null,
-                'content' => \Granola\Component::get('testimonials/testimonial-item', [
-                    'image' => [
-                        'attachment_id' => $testimonial['image'],
-                    ],
+                'content' => \Granola\Component::get('quote', [
+                    'image' => $testimonial['image'],
                     'testimonial' => $testimonial['testimonial']['testimonial'],
                     'name' => $testimonial['testimonial']['name'],
                     'affiliation' => $testimonial['testimonial']['affiliation'],
+                    'classes' => ['quote--testimonial'],
                 ]),
             ])
         ];
