@@ -45,6 +45,19 @@ function filter_args(array $args): ?array
         ],
     ];
 
+    $args['close_button'] = [
+        'content' => sprintf('%s <span class="header-search__close-icon" aria-hidden="true">&times;</span>', \__('Close', 'granola')),
+        'classes' => [
+            'header-search__close'
+        ],
+        'attributes' => [
+            'type' => 'button',
+            'aria-label' => \__('Close search', 'granola'),
+            'aria-controls' => $args['attributes']['id'] ?? 'site-header-search-form',
+            'aria-expanded' => 'true',
+        ],
+    ];
+
     // -------------------------------------------------------------------------
     // Return the filtered args.
     // -------------------------------------------------------------------------

@@ -241,18 +241,10 @@ $site-header--top--background: 'white';
         border-radius: 100%;
         margin-left: auto;
 
-        &--desktop {
-            display: none;
-
-            @include mq('site-header') {
-                display: flex;
-            }
-        }
-
-        &--mobile {
-            @include mq('site-header') {
-                display: none;
-            }
+        @include mq('site-header') {
+            position: absolute;
+            top: 0;
+            right: 0;
         }
 
         &::before {
@@ -309,11 +301,9 @@ $site-header--top--background: 'white';
     }
 
     .header-search {
-        --input--color--focus: var(--color--brand-1);
-        --input--placeholder-color: hsla(var(--color--brand-1--hsl), 0.8);
-
         position: absolute;
-        top: var(--site-header--bottom);
+        top: 0;
+        height: 100%;
         right: 0;
         left: 0;
         width: 100%;

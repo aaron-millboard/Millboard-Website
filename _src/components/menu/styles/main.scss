@@ -11,13 +11,13 @@
     --mega-menu--column-gap: var(--space--xl);
     --mega-menu--widget-gap: var(--space--2xs);
 
-    max-width: var(--width--responsive--l);
     display: flex;
     flex-direction: column;
     gap: var(--space--l);
     margin: 0;
     
     @include mq('site-header') {
+        max-width: var(--width--responsive--l);
         margin: 0 auto;
         padding: var(--space--xl) 0;
     }
