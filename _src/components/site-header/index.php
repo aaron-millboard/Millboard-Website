@@ -26,7 +26,7 @@
             ]); ?>
 
             <button
-                class="site-header__search-toggler site-header__search-toggler--mobile g-button"
+                class="site-header__search-toggler g-button"
                 aria-expanded="false"
                 aria-controls="site-header-search-form">
                 <span class="visually-hidden">
