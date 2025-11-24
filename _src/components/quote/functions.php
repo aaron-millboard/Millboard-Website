@@ -9,6 +9,10 @@ function filter_args(array $args): ?array
     // -------------------------------------------------------------------------
     $args = array_merge([
         'classes' => [],
+        'image' => null,
+        'testimonial' => '',
+        'name' => '',
+        'affiliation' => '',
     ], $args);
 
     // -------------------------------------------------------------------------
@@ -17,14 +21,20 @@ function filter_args(array $args): ?array
     $args['classes'] = array_merge([
         'quote',
         'wp-block',
-        'flex-column',
     ], $args['classes']);
 
     // ---------------------------------------
     // Bail early - return null for no output.
     // ---------------------------------------
-    if (empty($args['quotation'])) {
+    if (empty($args['testimonial'])) {
         return null;
+    }
+
+
+    if (!is_array($args['image'])) {
+        $args['image'] = [
+            'attachment_id' => $args['image'],
+        ];
     }
 
     // -------------------------------------------------------------------------
