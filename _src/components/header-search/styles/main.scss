@@ -94,6 +94,10 @@
         @include mq('site-header') {
             margin-bottom: 0rem;
         }
+
+        &-icon {
+            pointer-events: none;
+        }
     }
 
     &__submit {
