@@ -1,0 +1,33 @@
+{
+    "$schema": "https://advancedcustomfields.com/schemas/json/main/block.json",
+    "apiVersion": 2,
+    "name": "gallery",
+    "title": "Gallery",
+    "category": "granola-blocks",
+    "icon": "images-alt",
+    "keywords": [
+        "images",
+        "slider",
+        "carousel",
+        "lightbox"
+    ],
+    "acf": {
+        "mode": "auto",
+        "renderCallback": "\\Granola\\Component::acf_render_callback"
+    },
+    "supports": {
+        "anchor": true,
+        "align": false,
+        "color": {
+            "text": false,
+            "background": false
+        },
+        "mode": false
+    },
+    "attributes": {
+        "align": {
+            "type": "string",
+            "default": "full"
+        }
+    }
+}
