@@ -2,6 +2,8 @@
 .g-button {
     @include button;
 
+    $this: &;
+
     &--small {
         @include button--small;
     }
@@ -27,4 +29,24 @@
     }
 
     @include button--interaction;
+
+
+}
+
+// Override hover colors:
+// Wenge
+// Charcoal
+// Olivegreen
+.has-brand-5-background-color,
+.has-brand-3-background-color,
+.has-brand-4-background-color,
+.has-brand-6-background-color {
+
+    --button--background-color: transparent;
+    --button--border-color: var(--color--white);
+    --button--color: var(--color--white);
+
+    --button--background-color--hover: var(--color--foreground);
+    --button--border-color--hover: var(--color--foreground);
+    --button--color--hover: var(--color--background);
 }
