@@ -5,6 +5,7 @@
     align-items: center;
     justify-content: center;
     padding: var(--button--padding-y) var(--button--padding-x);
+    padding-bottom: calc(var(--button--padding-y) - 4px);
     border-width: var(--button--border-width);
     border-style: solid;
     border-color: var(--button--border-color);
@@ -22,20 +23,6 @@
     text-transform: uppercase;
     transition: transition(color, background-color, border-color, box-shadow, transform);
     user-select: none;
-
-    // Override hover colors:
-    // Wenge
-    // Charcoal
-    // Olivegreen
-    .has-brand-5-background-color,
-    .has-brand-3-background-color,
-    .has-brand-4-background-color {
-        &:not(.has-background) {
-            --button--background-color--hover: var(--color--white);
-            --button--border-color--hover: var(--color--white);
-            --button--color--hover: var(--color--black);
-        }
-    }
 }
 
 @mixin button--interaction {

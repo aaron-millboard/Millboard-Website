@@ -27,7 +27,7 @@
         grid-template-areas: 'content button';
         grid-template-columns: 1fr var(--accordion--button--size);
         text-align: left;
-        padding: var(--space--s) 0;
+        padding: var(--space--s) 0 var(--space--xs) 0;
         transition: all 0.2s ease-in-out;
 
         .g-button__hidder {
