@@ -10,9 +10,10 @@ function filter_args(array $args): ?array
     $args = array_merge([
         'el' => 'a',
         'content' => '',
+        'title' => '',
         'url' => '',
         'attributes' => [
-            'rel' => [],
+            'rel' => '',
         ],
         'classes' => [],
     ], $args);
@@ -37,7 +38,7 @@ function filter_args(array $args): ?array
 
     // Conditionally add appropriate rel attribute.
     if (!empty($args['attributes']['target']) && $args['attributes']['target'] === '_blank') {
-        $args['attributes']['rel'][] = 'noopener';
+        $args['attributes']['rel'] = 'noopener';
     }
 
     // -------------------------------------------------------------------------

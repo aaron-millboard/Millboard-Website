@@ -1,0 +1,137 @@
+.downloads {
+    --downloads--icon-size: #{px-to-rem(20)};
+
+    $this: &;
+
+    &__inner {
+        max-width: var(--width--responsive--l);
+        margin-left: auto;
+        margin-right: auto;
+        position: relative;
+        padding: var(--space--xl) 0;
+    }
+
+    &__header {
+        display: grid;
+        gap: var(--space--l);
+        padding: var(--space--l) 0;
+        border-top: 1px solid ;
+
+        @include mq(large) {
+            grid-template-columns: 1fr auto;
+            align-items: center;
+            gap: var(--space--xl);
+        }
+    }
+
+    &__header-content {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space--3xs);
+    }
+
+    &__preheading {
+        @include typestyle-h6;
+        text-transform: uppercase;
+    }
+
+    &__heading {
+        @include typestyle-h3;
+        margin: 0;
+    }
+
+    &__header-cta {
+        @include mq($until: large) {
+            justify-self: start;
+        }
+    }
+
+    &__files {
+        display: flex;
+        flex-direction: column;
+    }
+
+    &__file {
+        display: grid;
+        gap: var(--space--m);
+        padding: var(--space--m) 0;
+        border-bottom: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+
+        @include mq(medium) {
+            grid-template-columns: 1fr auto;
+            align-items: start;
+            gap: var(--space--xl);
+        }
+    }
+
+    &__file-info {
+        display: flex;
+        flex-direction: row;
+        gap: var(--space--m);
+        align-items: end;
+
+        @include mq(medium) {
+            align-items: baseline;
+        }
+    }
+
+    &__file-label {
+        @include typestyle-base;
+        font-family: var(--type--2--font-family);
+        font-weight: 400;
+    }
+
+    &__file-size {
+        @include typestyle-small;
+        flex-shrink: 0;
+        text-align: right;
+        color: color-mix(in srgb, currentColor 60%, transparent);
+    }
+
+    &__file-actions {
+        display: flex;
+        gap: var(--space--xs);
+        align-items: center;
+        padding-top: var(--space--4xs);
+    }
+
+    &__file-action {
+        @include button-reset-hard;
+        @include typestyle-small;
+        text-decoration: none;
+        display: flex;
+        flex-shrink: 0;
+        align-items: flex-start;
+        gap: var(--space--3xs);
+        cursor: pointer;
+
+        span {
+            font-family: var(--type--1--font-family);
+            text-transform: uppercase;
+            pointer-events: none;
+        }
+
+        svg {
+            width: var(--downloads--icon-size);
+            height: var(--downloads--icon-size);
+            display: block;
+            object-fit: contain;
+            object-position: center;
+            pointer-events: none;
+        }
+
+        @include interact {
+            text-decoration: none;
+            cursor: pointer;
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Background color support
+    // -------------------------------------------------------------------------
+    &.has-background {
+        #{$this}__inner {
+            padding: var(--space--2xl);
+        }
+    }
+}

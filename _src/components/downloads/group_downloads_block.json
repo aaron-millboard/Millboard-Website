@@ -1,0 +1,58 @@
+{
+    "key": "group_downloads_block",
+    "title": "Block - Downloads",
+    "fields": [
+        {
+            "key": "field_downloads_preheading",
+            "label": "Pre-heading",
+            "name": "preheading",
+            "type": "text"
+        },
+        {
+            "key": "field_downloads_heading",
+            "label": "Heading",
+            "name": "heading",
+            "type": "text"
+        },
+        {
+            "key": "field_downloads_cta",
+            "label": "CTA",
+            "name": "cta",
+            "type": "link"
+        },
+        {
+            "key": "field_downloads_files",
+            "label": "Files",
+            "name": "files",
+            "type": "repeater",
+            "layout": "block",
+            "button_label": "Add File",
+            "sub_fields": [
+                {
+                    "key": "field_downloads_file_label",
+                    "label": "Label",
+                    "name": "label",
+                    "type": "text",
+                    "parent_repeater": "field_downloads_files"
+                },
+                {
+                    "key": "field_downloads_file_file",
+                    "label": "File",
+                    "name": "file",
+                    "type": "file",
+                    "return_format": "id",
+                    "parent_repeater": "field_downloads_files"
+                }
+            ]
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "block",
+                "operator": "==",
+                "value": "acf\/downloads"
+            }
+        ]
+    ]
+}
