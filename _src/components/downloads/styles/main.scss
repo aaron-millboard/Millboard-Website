@@ -9,6 +9,10 @@
         margin-right: auto;
         position: relative;
         padding: var(--space--xl) 0;
+
+        @include mq(large) {
+            padding: var(--space--2xl) 0;
+        }
     }
 
     &__header {
@@ -126,12 +130,4 @@
         }
     }
 
-    // -------------------------------------------------------------------------
-    // Background color support
-    // -------------------------------------------------------------------------
-    &.has-background {
-        #{$this}__inner {
-            padding: var(--space--2xl);
-        }
-    }
 }
