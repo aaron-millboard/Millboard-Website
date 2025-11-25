@@ -1,0 +1,287 @@
+@import '../../../core';
+
+.gallery {
+    $this: &;
+
+    &__lightbox {
+        position: fixed;
+        z-index: var(--z-index--modal);
+        display: grid;
+        width: 100%;
+        height: 100%;
+        border: 0; // Reset default border.
+        inset: 0;
+        place-items: center;
+        transition: transition(opacity, transform, visibility, scale);
+
+        // ------------------------------
+        // Hidden
+        // ------------------------------
+        &[aria-hidden='true'] {
+            opacity: 0;
+            transform: translateY(100%);
+            visibility: hidden;
+        }
+
+        // ------------------------------
+        // Visible
+        // ------------------------------
+        &[aria-hidden='false'] {
+            opacity: 1;
+            transform: translateY(0);
+            visibility: visible;
+        }
+
+        &__main {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            width: 100%;
+            max-width: var(--gallery--lightbox--max-width);
+            max-height: initial;
+            align-items: center;
+            gap: var(--space--l);
+            grid-template-columns: 1fr;
+            justify-self: center;
+
+            @include mq($until: large) {
+                height: 100%;
+                padding-top: var(--space--l);
+                grid-template-rows: auto 1fr;
+            }
+
+            @include mq(large) {
+                grid-template-columns: 5fr 1fr;
+            }
+        }
+
+        // ------------------------------
+        // Main image
+        // ------------------------------
+        &__main-image {
+            margin: var(--space--l) 0;
+
+            &__inner {
+                position: relative;
+                aspect-ratio: var(--gallery--lightbox--main-image--aspect-ratio);
+
+                 // Skeleton loading state
+                &::before {
+                    position: absolute;
+                    z-index: 1;
+                    background: linear-gradient(
+                        90deg,
+                        hsla(var(--color--white--hsl), 0.05) 0%,
+                        hsla(var(--color--white--hsl), 0.15) 50%,
+                        hsla(var(--color--white--hsl), 0.05) 100%
+                    );
+                    background-size: 200% 100%;
+                    content: '';
+                    inset: 0;
+                    opacity: 0;
+                    pointer-events: none;
+                    transition: transition(opacity);
+                }
+            }
+            // ------------------------------
+            // Skeleton loading state and hide previous image when new image is loading.
+            // ------------------------------
+            #{$this}__lightbox[aria-busy='true'] & {
+                &__inner::before {
+                    animation: skeleton-shimmer 1.5s ease-in-out infinite;
+                    opacity: 1;
+                }
+
+                &__inner > * {
+                    opacity: 0.3;
+                    transition: transition(opacity);
+                }
+            }
+
+            &__caption {
+                opacity: 0.8;
+                margin-top: var(--space--s);
+            }
+        }
+
+        // Keyframes for loading skeleton.
+        @keyframes skeleton-shimmer {
+            0% {
+                background-position: 200% 0;
+            }
+
+            100% {
+                background-position: -200% 0;
+            }
+        }
+
+        // ------------------------------
+        // Content
+        // ------------------------------
+        &__content {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space--4xs);
+            margin: 0 auto;
+
+            @include mq($until: large) {
+                align-self: center;
+            }
+        }
+
+        // ------------------------------
+        // Close
+        // ------------------------------
+        &__close {
+            @include button-reset-hard;
+
+            position: absolute;
+            z-index: 1;
+            top: 0;
+            right: 0;
+            text-decoration: underline;
+            text-decoration-color: var(--gallery--accent-color);
+            display: inline-flex;
+            gap: var(--space--3xs);
+            align-items: center;
+
+
+            @include interact {
+                color: var(--gallery--accent-color);
+                text-decoration-color: var(--color--foreground);
+
+            }
+
+            &__icon {
+                @include cross;
+
+                width: calc(var(--gallery--lightbox--thumbnails--button--size) * 0.5);
+                height: calc(var(--gallery--lightbox--thumbnails--button--size) * 0.5);
+                display: block;
+            }
+        }
+
+        // ------------------------------
+        // Thumbnails
+        // ------------------------------
+        &__thumbnails {
+            z-index: 1;
+            display: flex;
+            flex-flow: column;
+            align-items: center;
+            margin-top: var(--gallery--gap);
+            gap: var(--space--2xs);
+
+            @include mq($until: large) {
+                justify-content: space-between;
+                order: -1;
+            }
+
+            &__list {
+                @include list-reset-hard;
+
+                display: flex;
+                max-height: calc(
+                    (var(--gallery--lightbox--thumbnails--size) * var(--gallery--lightbox--thumbnails--visible-count))
+                    + (var(--space--4xs) * (var(--gallery--lightbox--thumbnails--visible-count) - 1))
+                );
+                gap: var(--space--4xs);
+                flex-flow: column;
+                overflow-x: auto;
+                scroll-behavior: smooth;
+                scroll-snap-align: start;
+                scroll-snap-type: x mandatory;
+                scrollbar-width: none;
+            }
+        }
+
+        // ------------------------------
+        // Thumbnail
+        // ------------------------------
+        &__thumbnail {
+            position: relative;
+            overflow: clip;
+            width: var(--gallery--lightbox--thumbnails--size);
+            flex-shrink: 0;
+            border: var(--border--1);
+            aspect-ratio: var(--gallery--lightbox--thumbnail--aspect-ratio);
+
+            #{$this}__card__button {
+                border: var(--border-width--m) solid transparent;
+
+                &[aria-current='true'] {
+                    border-color: var(--gallery--accent-color);
+                }
+
+            }
+
+            // Hover state.
+            &:has(#{$this}__card__button:hover),
+            &:has(#{$this}__card__button:focus  ) {
+                opacity: 0.5;
+            }
+        }
+
+        // ------------------------------
+        // Counter
+        // ------------------------------
+        &__counter {
+            position: absolute;
+            z-index: 1;
+            top: 0;
+            left: 0;
+            display: flex;
+            align-items: center;
+            color: var(--color--foreground);
+            gap: 0.5ch;
+
+            > * {
+                flex-shrink: 0;
+            }
+
+            &__label {
+                opacity: 0.8;
+            }
+        }
+
+        // ------------------------------
+        // Controls
+        // ------------------------------
+        &__control {
+            --button--icon-size: calc(var(--gallery--lightbox--thumbnails--button--size) * 0.65);
+
+            @include button--icon;
+
+            width: var(--gallery--lightbox--thumbnails--button--size);
+            height: var(--gallery--lightbox--thumbnails--button--size);
+            flex-shrink: 0;
+            padding: 0;
+            border: 0;
+
+            &--next {
+                &::after {
+                    transform: rotate(90deg);
+                }
+            }
+
+            &--previous {
+                &::after {
+                    transform: rotate(-90deg);
+                }
+            }
+
+            &:disabled {
+                cursor: not-allowed;
+                opacity: 0.3;
+            }
+
+            &::after {
+                width: var(--button--icon-size);
+                height: var(--button--icon-size);
+                margin: auto;
+                mask-image: url(#{asset-path('images/icons/chevron-right.svg')});
+                mask-size: contain;
+            }
+        }
+    }
+}

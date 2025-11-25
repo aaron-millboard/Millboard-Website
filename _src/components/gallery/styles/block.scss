@@ -1,0 +1,39 @@
+@import '../../../core';
+@import './gallery-pattern.scss';
+@import './gallery-card.scss';
+@import './gallery-lightbox.scss';
+
+.gallery {
+    --gallery--lightbox--max-width: min(#{px-to-rem(1344)}, calc(100vw - (#{px-to-rem(40)} * 2)));
+    --gallery--card--aspect-ratio: 1 / 1;
+    --gallery--lightbox--main-image--aspect-ratio: 3 / 2;
+    --gallery--lightbox--thumbnail--aspect-ratio: 1 / 1;
+    --gallery--lightbox--thumbnails--size: 64px;
+    --gallery--lightbox--thumbnails--button--size: 44px;
+    --gallery--lightbox--thumbnails--visible-count: 3;
+    --gallery--animation--direction: normal;
+    --gallery--lightbox--thumbnails--button--icon--offset: #{px-to-rem(30)};
+
+    --gallery--gap: var(--space--m);
+    --gallery--accent-color: var(--color--olivegreen);
+    --gallery--border-width: var(--border-width--s);
+    --gallery--border-radius: 0;
+    --gallery--card--overlay-opacity: 0;
+    --gallery--card--overlay-scale: 0;
+
+    $this: &;
+
+    @include align-width--l;
+
+    overflow: clip;
+
+    @include mq(large) {
+        --gallery--lightbox--thumbnails--size: 80px;
+        --gallery--lightbox--thumbnails--button--size: 58px;
+        --gallery--lightbox--thumbnails--visible-count: 5;
+    }
+
+    @include mq(xxxlarge) {
+        --gallery--lightbox--thumbnails--visible-count: 7;
+    }
+}

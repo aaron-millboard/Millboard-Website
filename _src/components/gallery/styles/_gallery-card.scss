@@ -1,0 +1,95 @@
+@import '../../../core';
+
+.gallery {
+    $this: &;
+
+    &__card {
+        display: flex;
+        overflow: visible;
+        flex-direction: column;
+        gap: var(--space--s);
+        width: var(--gallery--lightbox--card--size, initial);
+        flex-shrink: 0;
+
+        // Manages the image, button, and overlay.
+        &__inner {
+            aspect-ratio: var(--gallery--card--aspect-ratio);
+            position: relative;
+            transition: transition(border-color, opacity, border-radius);
+            border-radius: var(--gallery--border-radius);
+            overflow: clip;
+
+            // Overlay for the image - shown on button hover.
+            &::before {
+                position: absolute;
+                z-index: 1;
+                background-color: hsla(var(--color--black--hsl), 0.3);
+                content: '';
+                inset: 0;
+                opacity: var(--gallery--card--overlay-opacity);
+                transition: transition(opacity);
+            }
+        }
+
+        &__button {
+            @include button-reset-hard;
+
+            z-index: 1; // Above image.
+
+            &-icon {
+                position: absolute;
+                z-index: 1;
+                width: var(--gallery--lightbox--thumbnails--button--size);
+                height: var(--gallery--lightbox--thumbnails--button--size);
+                margin: auto;
+                background-color: var(--color--white);
+                inset: 0;
+                opacity: var(--gallery--card--overlay-opacity);
+                pointer-events: none;
+                scale: var(--gallery--card--overlay-scale);
+                transition: transition(opacity, scale);
+
+                &::after,
+                &::before {
+                    position: absolute;
+                    display: block;
+                    width: calc(var(--gallery--lightbox--thumbnails--button--size) * 0.25);
+                    height: calc(var(--gallery--lightbox--thumbnails--button--size) * 0.25);
+                    border: #{px-to-rem(4)} solid var(--color--foreground);
+                    transition: transition(left, right, top, bottom);
+                    content: '';
+                }
+
+                &::before {
+                    left: var(--gallery--lightbox--thumbnails--button--icon--offset);
+                    bottom: var(--gallery--lightbox--thumbnails--button--icon--offset);
+                    border-top-color: transparent;
+                    border-right-color: transparent;
+                }
+
+                &::after {
+                    right: var(--gallery--lightbox--thumbnails--button--icon--offset);
+                    top: var(--gallery--lightbox--thumbnails--button--icon--offset);
+                    border-bottom-color: transparent;
+                    border-left-color: transparent;
+                }
+            }
+        }
+
+        &:has(.gallery__card__button:hover),
+        &:has(.gallery__card__button:focus) {
+            --gallery--card--overlay-opacity: 1;
+            --gallery--card--overlay-scale: 1;
+            --gallery--lightbox--thumbnails--button--icon--offset: #{px-to-rem(10)};
+        }
+
+        &__caption {
+            opacity: 0.8;
+
+            &-main {
+                font-family: var(--type--2--font-family);
+                font-weight: var(--type--2--font-weight);
+            }
+        }
+    }
+}
