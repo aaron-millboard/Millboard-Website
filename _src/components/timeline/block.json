@@ -1,0 +1,27 @@
+{
+    "$schema": "https://advancedcustomfields.com/schemas/json/main/block.json",
+    "apiVersion": 2,
+    "name": "acf/timeline",
+    "title": "Timeline",
+    "description": "Display timeline with scroll-based animations",
+    "category": "granola-blocks",
+    "icon": "clock",
+    "keywords": [
+        "timeline",
+        "history",
+        "chronology"
+    ],
+    "acf": {
+        "mode": "auto",
+        "renderCallback": "\\Granola\\Component::acf_render_callback"
+    },
+    "supports": {
+        "anchor": true,
+        "align": false,
+        "color": {
+            "background": true,
+            "text": false
+        },
+        "mode": false
+    }
+}

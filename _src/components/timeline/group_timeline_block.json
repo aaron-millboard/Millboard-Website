@@ -1,0 +1,59 @@
+{
+    "key": "group_timeline_block",
+    "title": "Block - Timeline",
+    "fields": [
+        {
+            "key": "field_timeline_preheading",
+            "label": "Pre-heading",
+            "name": "preheading",
+            "type": "text"
+        },
+        {
+            "key": "field_timeline_heading",
+            "label": "Heading",
+            "name": "heading",
+            "type": "text"
+        },
+        {
+            "key": "field_timeline_items",
+            "label": "Timeline Items",
+            "name": "items",
+            "type": "repeater",
+            "layout": "block",
+            "button_label": "Add Timeline Item",
+            "sub_fields": [
+                {
+                    "key": "field_timeline_item_year",
+                    "label": "Year",
+                    "name": "year",
+                    "type": "text",
+                    "parent_repeater": "field_timeline_items"
+                },
+                {
+                    "key": "field_timeline_item_image",
+                    "label": "Image",
+                    "name": "image",
+                    "type": "image",
+                    "return_format": "id",
+                    "parent_repeater": "field_timeline_items"
+                },
+                {
+                    "key": "field_timeline_item_description",
+                    "label": "Description",
+                    "name": "description",
+                    "type": "textarea",
+                    "parent_repeater": "field_timeline_items"
+                }
+            ]
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "block",
+                "operator": "==",
+                "value": "acf\/timeline"
+            }
+        ]
+    ]
+}
