@@ -31,6 +31,7 @@ export default class Gallery {
         this.lastOpener = null;
         this.isOpen = false;
         this.preloadSeen = new Set();
+        this.isMobile = window.matchMedia('(max-width: 768px)').matches;
 
         // Cache DOM elements
         this.cacheElements();
@@ -341,7 +342,6 @@ export default class Gallery {
         this.thumbnailButtons.forEach((button) => {
             const isActive = button.dataset.lightboxIndex === String(index);
             button.setAttribute('aria-current', isActive ? 'true' : 'false');
-            // button.tabIndex = isActive ? 0 : -1;
         });
     }
 
@@ -367,10 +367,15 @@ export default class Gallery {
     updateThumbnailsNavigationState() {
         if (!this.thumbnailsList || !this.thumbnailsPrevious || !this.thumbnailsNext) return;
 
-        const { scrollTop, scrollHeight, clientHeight } = this.thumbnailsList;
-
-        this.thumbnailsPrevious.disabled = scrollTop <= 0;
-        this.thumbnailsNext.disabled = scrollTop + clientHeight >= scrollHeight - 1;
+        if (this.isMobile) {
+            const { scrollLeft, scrollWidth, clientWidth } = this.thumbnailsList;
+            this.thumbnailsPrevious.disabled = scrollLeft <= 0;
+            this.thumbnailsNext.disabled = scrollLeft + clientWidth >= scrollWidth - 1;
+        } else {
+            const { scrollTop, scrollHeight, clientHeight } = this.thumbnailsList;
+            this.thumbnailsPrevious.disabled = scrollTop <= 0;
+            this.thumbnailsNext.disabled = scrollTop + clientHeight >= scrollHeight - 1;
+        }
     }
 
     /**
@@ -382,7 +387,12 @@ export default class Gallery {
         if (!this.thumbnailsList) return;
 
         const scrollAmount = this.calculateThumbnailScrollAmount();
-        this.thumbnailsList.scrollBy({ top: scrollAmount * direction, behavior: 'smooth' });
+
+        if (this.isMobile) {
+            this.thumbnailsList.scrollBy({ left: scrollAmount * direction, behavior: 'smooth' });
+        } else {
+            this.thumbnailsList.scrollBy({ top: scrollAmount * direction, behavior: 'smooth' });
+        }
         this.updateThumbnailsNavigationState();
     }
 
@@ -735,5 +745,32 @@ export default class Gallery {
                 }
             }
         });
+    }
+
+    /**
+     * Helper to handle the direction of the thumbnail track - which is horizontal on mobile and vertical on desktop.
+     * @param {string} direction The direction to handle. Can be 'up', 'down', or 'height'.
+     * @returns {string} The direction to use.
+     */
+    handleThumbnailTrackDirection(direction) {
+        switch (direction) {
+            case 'up':
+                if (this.isMobile) {
+                    return 'left';
+                }
+                return direction;
+            case 'down':
+                if (this.isMobile) {
+                    return 'right';
+                }
+                return direction;
+            case 'height':
+                if (this.isMobile) {
+                    return 'width';
+                }
+                return direction;
+            default:
+                return direction;
+        }
     }
 }
