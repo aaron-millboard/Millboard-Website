@@ -1,9 +1,8 @@
 <section <?= \Granola\Helpers::build_attributes($args['attributes']); ?>>
     <div class="gallery__list__wrapper">
         <?= \Granola\Component::get('gallery/items', [
-            'images' => $args['images'],
+            'image_rows' => $args['image_rows'],
             'lightbox' => $args['lightbox'],
-            'classes' => ['gallery__list--' . $args['pattern']],
         ]); ?>
     </div>
 
@@ -11,7 +10,7 @@
         <dialog <?= \Granola\Helpers::build_attributes($args['lighbox_attributes']); ?>>
             <main class="gallery__lightbox__main" role="document">
                 <figure class="gallery__lightbox__main-image">
-                    <div class="gallery__lightbox__main-image__inner img-fit">
+                    <div class="gallery__lightbox__main-image__inner img-fit" data-image-orientation="">
                         <img class="gallery__lightbox__image" src="" alt="">
                     </div>
                     <div class="gallery__lightbox__main-image__caption is-style-typestyle-small is-style-typestyle-meta">
