@@ -10,11 +10,10 @@ function filter_args(array $args): ?array
     $args = array_merge([
         'classes' => [],
         // 'items' => [],
+        'image_rows' => [],
         'images' => [],
-        'images_second_row' => [],
         'controls' => [],
         // Config
-        'pattern' => 'pattern-1',
         'lightbox' => false,
         'thumbnail_navigation' => true,
         'lighbox_background_color' => 'mist',
@@ -34,7 +33,7 @@ function filter_args(array $args): ?array
     // -------------------------------------------------------------------------
     // Bail early - return null for no output.
     // -------------------------------------------------------------------------
-    if (empty($args['images'])) {
+    if (empty($args['image_rows'])) {
          return null;
     }
     // -------------------------------------------------------------------------
@@ -93,24 +92,49 @@ function filter_args(array $args): ?array
     // -------------------------------------------------------------------------
     // Set images.
     // -------------------------------------------------------------------------
-    foreach ($args['images'] as $key => $image) {
-        $processed_image = process_image($image, $key, $args);
-        if (!$processed_image) {
-            unset($args['images'][$key]);
+    $args['images'] = [];
+    $image_index = 1;
+
+    // Loop through the image rows.
+    foreach ($args['image_rows'] as $key => $image_row) {
+        // Get the pattern.
+        $pattern = $image_row['pattern'] ?? '50:50';
+        $pattern_parts = explode(':', $pattern);
+
+        // Process the first image.
+        $image_1 = process_image($image_row['image_1'], $image_index, $args, $pattern_parts[0] ?? 100, false);
+        $image_index += 1;
+
+        // Process the second image.
+        $image_2 = process_image($image_row['image_2'], $image_index, $args, $pattern_parts[1] ?? 100, true);
+
+        // Bail early if no image 1 is returned.
+        if (!$image_1) {
+            unset($args['image_rows'][$key]);
             continue;
         }
 
-        // Set attributes.
-        $args['images'][$key] = $processed_image;
-    }
+        // Set our processed images to the image rows.
+        $args['image_rows'][$key] = [
+            'image_1' => $image_1,
+            'image_2' => $image_2 ?? false,
+        ];
 
+        // Append first image to the images array.
+        $args['images'][] = $image_1;
+
+        // Append second image if it exists to to images array.
+        if ($image_2) {
+            $image_index += 1;
+            $args['images'][] = $image_2;
+        }
+    }
 
     // Collect total images.
     $args['total_images'] = count($args['images']);
 
     // Set attributes.
     $args['attributes']['data-lightbox'] = $args['lightbox'] ? true : false; // Inits the JS class.
-    $args['attributes']['data-pattern'] = $args['pattern']; // Used to determine the styles.
     $args['attributes']['style']['--gallery--items-count'] = $args['total_images'];
 
     // -------------------------------------------------------------------------
@@ -124,9 +148,11 @@ function filter_args(array $args): ?array
  * @param array $row The image repeater array.
  * @param int $key The key of the image.
  * @param array $args The arguments array.
+ * @param int $pattner_part The width percentage of the image.
+ * @param bool $is_last Whether the part is the last part.
  * @return array|false False if no image, otherwise the processed image array.
  */
-function process_image(array $row, int $key, array $args): array|false
+function process_image(array $row, int $key, array $args, int $pattern_part, bool $is_last = false): array|false
 {
     if (empty($row['image'])) {
         return false;
@@ -141,9 +167,15 @@ function process_image(array $row, int $key, array $args): array|false
         return false;
     }
 
+    $pattern_columns = pattern_part_to_grid_span($pattern_part, 100, 12, 0, $is_last);
+    $orientation = get_image_orientation($row['image']);
+
     // Collect attributes.
     return [
         'image' => $row,
+        'pattern_part' => $pattern_part ?? 100,
+        'pattern_columns' => $pattern_columns,
+        'image_orientation' => $orientation,
         'caption_main' => $row['caption_main'] ?? '',
         'caption_secondary' => $row['caption_secondary'] ?? '',
         'button_attributes' => [
@@ -153,6 +185,7 @@ function process_image(array $row, int $key, array $args): array|false
             'aria-label' => (!empty($row['caption_main']) ? sprintf('%s: "%s"', $args['aria_label_prefix'], $row['caption_main']) : ''),
             'data-caption-main' => $row['caption_main'] ?? '',
             'data-caption-secondary' => $row['caption_secondary'] ?? '',
+            'data-image-orientation' => $orientation,
             'aria-haspopup' => 'dialog',
         ],
         'lighbox_button_attributes' => [
@@ -169,6 +202,77 @@ function process_image(array $row, int $key, array $args): array|false
             'attachment_id' => $row['image'],
             'size' => 'thumbnail',
         ],
+        'li_attributes' => [
+            'data-pattern-part' => $pattern_part,
+            'data-image-orientation' => $orientation,
+            'style' => [
+                '--gallery--card--column' => $pattern_columns,
+            ],
+            'class' => [
+                'gallery__card',
+            ],
+        ],
         // 'aspect_ratio' => $row['aspect_ratio'] ?? '1/1',
     ];
+}
+
+/**
+ * Convert pattern to grid columns for use in CSS.
+ *
+ * @param int $part The part to convert.
+ * @param int $total The total to convert to.
+ * @param int $grid The grid to convert to.
+ * @param int $used The used to convert to.
+ * @param bool $is_last Whether the part is the last part.
+ * @return string The grid columns.
+ */
+function pattern_part_to_grid_span(int $part, int $total = 100, int $grid = 12, int $used = 0, bool $is_last = false): string
+{
+    // Full-width row (100)
+    if ($part === $total) {
+        return '1 / ' . ($grid + 1);
+    }
+
+    // Columns this item should occupy
+    $columns = (int) round(($part / $total) * $grid);
+
+    // First item starts at line 1
+    if (! $is_last) {
+        $start = 1;
+        $end   = $start + $columns;
+    }
+    // Last item always ends at grid + 1
+    else {
+        $end   = $grid + 1;
+        $start = $end - $columns;
+    }
+
+    return "{$start} / {$end}";
+}
+
+/**
+ * Determine image orientation: portrait, landscape, or square
+ *
+ * @param int $attachment_id WordPress attachment ID
+ * @return string 'portrait', 'landscape', or 'square'
+ */
+function get_image_orientation(int $attachment_id): string
+{
+    // Get attachment metadata
+    $meta = \wp_get_attachment_metadata($attachment_id);
+
+    if (! $meta || empty($meta['width']) || empty($meta['height'])) {
+        return ''; // Unknown or invalid attachment
+    }
+
+    $width  = $meta['width'];
+    $height = $meta['height'];
+
+    if ($width > $height) {
+        return 'landscape';
+    } elseif ($height > $width) {
+        return 'portrait';
+    } else {
+        return 'square';
+    }
 }

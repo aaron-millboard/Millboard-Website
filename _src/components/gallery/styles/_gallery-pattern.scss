@@ -1,111 +1,155 @@
 .gallery {
+    --grid--column-gap: var(--space--m);
+    --grid--row-gap: var(--grid--column-gap);
+
     $this: &;
 
-    &[data-pattern^="pattern-"] {
-        --grid--column-gap: var(--space--m);
-        --grid--row-gap: var(--grid--column-gap);
+    &__list {
+        @include grid(1, 2, 12);
 
-        #{$this}__list {
-            @include grid(1, 2, 12);
+        > * {
+            @include mq(large) {
+                grid-column: var(--gallery--card--column, 1 / 13);
 
-            > * {
-                grid-column: var(--gallery--card--column, initial);
-                grid-row: var(--gallery--card--row, initial);
-            }
-        }
-    }
+                &[data-pattern-part="50"] {
+                    --gallery--card--aspect-ratio: 1 / 1;
+                }
 
-    &[data-pattern="pattern-1"] {
-        #{$this}__list {
-            > * {
-                @include mq(large) {
-                    &:nth-child(1) {
-                        --gallery--card--column: 1 / 7;
-                        --gallery--card--aspect-ratio: 1 / 1;
-                    }
+                &[data-pattern-part="30"] {
+                    --gallery--card--aspect-ratio: 1 / 1;
+                }
 
-                    &:nth-child(2) {
-                        --gallery--card--column: 7 / 13;
-                        --gallery--card--aspect-ratio: 1 / 1;
-                    }
+                &[data-pattern-part="40"] {
+                    --gallery--card--aspect-ratio: 517 / 387;
+                }
 
-                    &:nth-child(3) {
-                        --gallery--card--column: 1 / 9;
-                        --gallery--card--aspect-ratio: 747 / 995;
-                    }
+                &[data-pattern-part="60"] {
+                    --gallery--card--aspect-ratio: 747 / 995;
+                }
 
-                    &:nth-child(4) {
-                        --gallery--card--column: 9 / 13;
-                        --gallery--card--aspect-ratio: 517 / 387;
-                    }
+                &[data-pattern-part="70"] {
+                    --gallery--card--aspect-ratio: 861 / 645;
+                }
 
-                    &:nth-child(5) {
-                        --gallery--card--column: 1 / 5;
-                        --gallery--card--aspect-ratio: 1 / 1;;
-                    }
-
-                    &:nth-child(6) {
-                        --gallery--card--column: 5 / 13;
-                        --gallery--card--aspect-ratio: 861 / 645;;
-                    }
-
-                    &:nth-child(7) {
-                        --gallery--card--column: 1 / 13;
-                        --gallery--card--aspect-ratio: 1320 / 829;
-                    }
+                &[data-pattern-part="100"] {
+                    --gallery--card--aspect-ratio: 1320 / 829;
                 }
             }
         }
     }
 
-    &[data-pattern="pattern-2"] {
-        #{$this}__list {
-            > * {
-                @include mq(large) {
-                    &:nth-child(1) {
-                        --gallery--card--column: 1 / 8;
-                        --gallery--card--row: 1 / 4;
-                        --gallery--card--aspect-ratio: 747 / 995;
-                    }
 
-                    &:nth-child(2) {
-                        --gallery--card--column: 8 / 13;
-                        --gallery--card--row: 1 / 2;
-                        --gallery--card--aspect-ratio: 517 / 387;
-                    }
+    // -------------------------------------------------------------------------
+    // Pattern styles
+    // -------------------------------------------------------------------------
+    // Removed as a new approach is being used.
 
-                    &:nth-child(3) {
-                        --gallery--card--column: 8 / 12;
-                        --gallery--card--row: 2 / 4;
-                        --gallery--card--aspect-ratio: 1 / 1;
-                    }
+    // &[data-pattern^="pattern-"] {
+    //     --grid--column-gap: var(--space--m);
+    //     --grid--row-gap: var(--grid--column-gap);
 
-                    &:nth-child(4) {
-                        --gallery--card--column: 1 / 5;
-                        --gallery--card--aspect-ratio: 1 / 1;
-                    }
+    //     #{$this}__list {
+    //         @include grid(1, 2, 12);
 
-                    &:nth-child(5) {
-                        --gallery--card--column: 5 / 13;
-                        --gallery--card--aspect-ratio: 861 / 645;
-                    }
+    //         > * {
+    //             grid-column: var(--gallery--card--column, initial);
+    //             grid-row: var(--gallery--card--row, initial);
+    //         }
+    //     }
+    // }
 
-                    &:nth-child(6) {
-                        --gallery--card--column: 1 / 7;
-                        --gallery--card--aspect-ratio: 1 / 1;
-                    }
+    // &[data-pattern="pattern-1"] {
+    //     #{$this}__list {
+    //         > * {
+    //             @include mq(large) {
+    //                 grid-column: var(--gallery--card--column, 1 / 13);
+    //                 // &:nth-child(1) {
+    //                 //     --gallery--card--column: 1 / 7;
+    //                 //     --gallery--card--aspect-ratio: 1 / 1;
+    //                 // }
 
-                    &:nth-child(7) {
-                        --gallery--card--column: 7 / 13;
-                        --gallery--card--aspect-ratio: 1 / 1;
-                    }
+    //                 // &:nth-child(2) {
+    //                 //     --gallery--card--column: 7 / 13;
+    //                 //     --gallery--card--aspect-ratio: 1 / 1;
+    //                 // }
 
-                    &:nth-child(8) {
-                        --gallery--card--column: 1 / 13;
-                        --gallery--card--aspect-ratio: 1320 / 829;
-                    }
-                }
-            }
-        }
-    }
+    //                 // &:nth-child(3) {
+    //                 //     --gallery--card--column: 1 / 9;
+    //                 //     --gallery--card--aspect-ratio: 747 / 995;
+    //                 // }
+
+    //                 // &:nth-child(4) {
+    //                 //     --gallery--card--column: 9 / 13;
+    //                 //     --gallery--card--aspect-ratio: 517 / 387;
+    //                 // }
+
+    //                 // &:nth-child(5) {
+    //                 //     --gallery--card--column: 1 / 5;
+    //                 //     --gallery--card--aspect-ratio: 1 / 1;;
+    //                 // }
+
+    //                 // &:nth-child(6) {
+    //                 //     --gallery--card--column: 5 / 13;
+    //                 //     --gallery--card--aspect-ratio: 861 / 645;;
+    //                 // }
+
+    //                 // &:nth-child(7) {
+    //                 //     --gallery--card--column: 1 / 13;
+    //                 //     --gallery--card--aspect-ratio: 1320 / 829;
+    //                 // }
+    //             }
+    //         }
+    //     }
+    // }
+
+    // &[data-pattern="pattern-2"] {
+    //     #{$this}__list {
+    //         > * {
+    //             @include mq(large) {
+    //                 &:nth-child(1) {
+    //                     --gallery--card--column: 1 / 8;
+    //                     --gallery--card--row: 1 / 4;
+    //                     --gallery--card--aspect-ratio: 747 / 995;
+    //                 }
+
+    //                 &:nth-child(2) {
+    //                     --gallery--card--column: 8 / 13;
+    //                     --gallery--card--row: 1 / 2;
+    //                     --gallery--card--aspect-ratio: 517 / 387;
+    //                 }
+
+    //                 &:nth-child(3) {
+    //                     --gallery--card--column: 8 / 12;
+    //                     --gallery--card--row: 2 / 4;
+    //                     --gallery--card--aspect-ratio: 1 / 1;
+    //                 }
+
+    //                 &:nth-child(4) {
+    //                     --gallery--card--column: 1 / 5;
+    //                     --gallery--card--aspect-ratio: 1 / 1;
+    //                 }
+
+    //                 &:nth-child(5) {
+    //                     --gallery--card--column: 5 / 13;
+    //                     --gallery--card--aspect-ratio: 861 / 645;
+    //                 }
+
+    //                 &:nth-child(6) {
+    //                     --gallery--card--column: 1 / 7;
+    //                     --gallery--card--aspect-ratio: 1 / 1;
+    //                 }
+
+    //                 &:nth-child(7) {
+    //                     --gallery--card--column: 7 / 13;
+    //                     --gallery--card--aspect-ratio: 1 / 1;
+    //                 }
+
+    //                 &:nth-child(8) {
+    //                     --gallery--card--column: 1 / 13;
+    //                     --gallery--card--aspect-ratio: 1320 / 829;
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
 }

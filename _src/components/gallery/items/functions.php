@@ -9,7 +9,7 @@ function filter_args(array $args): ?array
     // -------------------------------------------------------------------------
     $args = array_merge([
         'classes' => [],
-        'images' => [],
+        'image_rows' => [],
     ], $args);
 
     // -------------------------------------------------------------------------
@@ -23,7 +23,7 @@ function filter_args(array $args): ?array
     // -------------------------------------------------------------------------
     // Bail early - return null for no output.
     // -------------------------------------------------------------------------
-    if (empty($args['images'])) {
+    if (empty($args['image_rows'])) {
          return null;
     }
 

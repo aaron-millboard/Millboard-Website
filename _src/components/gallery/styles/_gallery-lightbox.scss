@@ -11,7 +11,7 @@
         height: 100%;
         border: 0; // Reset default border.
         inset: 0;
-        place-items: center;
+        place-items: flex-start;
         transition: transition(opacity, transform, visibility, scale);
 
         // ------------------------------
@@ -69,6 +69,8 @@
             &__inner {
                 position: relative;
                 aspect-ratio: var(--gallery--lightbox--main-image--aspect-ratio);
+                width: var(--gallery--lightbox--main-image--width);
+                margin-inline: auto;
 
                  // Skeleton loading state
                 &::before {
@@ -86,6 +88,22 @@
                     opacity: 0;
                     pointer-events: none;
                     transition: transition(opacity);
+                }
+
+                &[data-image-orientation='portrait'] {
+                    --gallery--lightbox--main-image--aspect-ratio: 3 / 4;
+                    --gallery--lightbox--main-image--width: min(85vh, 85vw);
+                }
+
+                &[data-image-orientation='landscape'] {
+                    --gallery--lightbox--main-image--aspect-ratio: 861 / 644;
+                    --gallery--lightbox--main-image--width: min(#{px-to-rem(861)}, 85vw);
+
+                }
+
+                &[data-image-orientation='square'] {
+                    --gallery--lightbox--main-image--aspect-ratio: 1 / 1;
+                    --gallery--lightbox--main-image--width: min(85vh, 85vw);
                 }
             }
             // ------------------------------
@@ -146,7 +164,7 @@
             top: 0;
             right: 0;
             text-decoration: underline;
-            text-decoration-color: var(--gallery--accent-color);
+            text-decoration-color: currentColor;
             display: inline-flex;
             gap: var(--space--3xs);
             align-items: center;

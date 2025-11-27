@@ -12,6 +12,7 @@ export default class Gallery {
         // Selectors (constants)
         this.selectors = {
             lightbox: '.gallery__lightbox',
+            mainImageWrapper: '.gallery__lightbox__main-image__inner',
             mainImage: '.gallery__lightbox__main-image__inner > *',
             captionMain: '.gallery__lightbox__main-image__caption__main',
             captionSecondary: '.gallery__lightbox__main-image__caption__secondary',
@@ -62,6 +63,7 @@ export default class Gallery {
      */
     cacheElements() {
         this.lightbox = this.element.querySelector(this.selectors.lightbox);
+        this.mainImageWrapper = this.element.querySelector(this.selectors.mainImageWrapper);
         this.mainImage = this.element.querySelector(this.selectors.mainImage);
         this.selectedCaptionMain = this.element.querySelector(this.selectors.captionMain);
         this.selectedCaptionSecondary = this.element.querySelector(this.selectors.captionSecondary);
@@ -283,6 +285,7 @@ export default class Gallery {
 
         this.mainImage.src = item.mainImageSrc;
         this.mainImage.alt = item.alt || '';
+        this.mainImageWrapper.setAttribute('data-image-orientation', item.imageOrientation || '');
     }
 
     /**
@@ -306,7 +309,7 @@ export default class Gallery {
      * @param {Object} item The current item data.
      */
     updateCounter(index, item) {
-        const current = index + 1;
+        const current = index;
         const total = this.totalItems;
 
         // Update visual counter
@@ -427,6 +430,7 @@ export default class Gallery {
             alt: mainImage?.alt || '',
             heading: cardButton.dataset.captionMain || '',
             subheading: cardButton.dataset.captionSecondary || '',
+            imageOrientation: cardButton.dataset.imageOrientation || '',
         };
     }
 
