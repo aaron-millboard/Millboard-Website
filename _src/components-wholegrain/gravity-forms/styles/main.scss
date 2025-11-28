@@ -29,10 +29,6 @@
         visibility: hidden;
     }
 
-    .gfield + .gfield {
-        margin-top: var(--space--xs);
-    }
-
     // Overrides
     /* stylelint-disable selector-no-qualifying-type */
     .gfield input.small,
@@ -117,7 +113,6 @@
 
     max-width: var(--width--xxs);
     padding: var(--space--responsive--m);
-    border-radius: var(--border-radius--s);
     margin-top: var(--space--l);
     margin-bottom: var(--space--l);
 }
@@ -161,7 +156,6 @@
     .gform_drop_area {
         padding: var(--space--l);
         border: var(--border-width--s) dashed var(--input--border-color);
-        border-radius: var(--input--border-radius);
         background: transparent;
 
         .button {
@@ -247,7 +241,6 @@
 
     .gform_delete_file {
         flex: 0 0 auto;
-        border-radius: var(--border-radius--s);
         background: var(--color--error);
         color: var(--color--white);
 

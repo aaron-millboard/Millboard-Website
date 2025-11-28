@@ -1,0 +1,28 @@
+{
+    "$schema": "https://advancedcustomfields.com/schemas/json/main/block.json",
+    "apiVersion": 2,
+    "name": "acf/email-subscription",
+    "title": "Email Subscription",
+    "description": "Email subscription form with image, heading and Gravity Form",
+    "category": "granola-blocks",
+    "icon": "email",
+    "keywords": [
+        "email",
+        "subscription",
+        "form",
+        "newsletter"
+    ],
+    "acf": {
+        "mode": "auto",
+        "renderCallback": "\\Granola\\Component::acf_render_callback"
+    },
+    "supports": {
+        "anchor": true,
+        "align": false,
+        "color": {
+            "background": true,
+            "text": false
+        },
+        "mode": false
+    }
+}
