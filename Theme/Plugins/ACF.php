@@ -25,6 +25,9 @@ class ACF
         \add_filter('acf/load_field/name=theme_background_color', [__CLASS__, 'load_color_field_choices']);
         \add_filter('acf/load_field/name=item_theme_background_color', [__CLASS__, 'load_color_field_choices']);
 
+        // Filter the choices for any ACF field named `gravity_form_id` to automatically add available forms.
+        \add_filter('acf/load_field/name=gravity_form_id', [__CLASS__, 'load_gravity_form_ids_choices']);
+
         // Filter empty link fields to return a consistent data type.
         \add_filter('acf/load_value/type=link', [__CLASS__, 'filter_empty_link_field']);
 
@@ -88,6 +91,25 @@ class ACF
             foreach (GRANOLA_COLOR_PALETTE as $color) {
                 $field['choices'][$color['slug']] = $color['name'];
             }
+        }
+
+        return $field;
+    }
+
+    public static function load_gravity_form_ids_choices(array $field): array
+    {
+        // Check if the GFAPI class exists
+        if (!class_exists('\\GFAPI')) {
+            return $field;
+        }
+        $forms = \GFAPI::get_forms();
+
+        if (empty($forms)) {
+            return $field;
+        }
+
+        foreach ($forms as $form) {
+            $field['choices'][$form['id']] = $form['title'];
         }
 
         return $field;

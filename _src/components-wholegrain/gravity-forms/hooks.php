@@ -13,6 +13,7 @@ namespace Granola\Components\GravityForms;
 // Disable default theme CSS.
 // https://docs.gravityforms.com/gform_disable_form_theme_css/
 \add_filter('gform_disable_form_theme_css', '__return_true');
+\add_filter('gform_disable_css', '__return_true');
 
 // Override default GF initial settings.
 \add_filter('gform_form_settings_initial_values', __NAMESPACE__ . '\\set_initial_settings', 10, 1);

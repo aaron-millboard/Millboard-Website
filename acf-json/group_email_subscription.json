@@ -1,0 +1,21 @@
+{
+    "key": "group_email_subscription",
+    "title": "Email Subscription Settings",
+    "fields": [
+        {
+            "key": "gravity_form_id_key",
+            "label": "Select Gravity Form",
+            "name": "gravity_form_id",
+            "type": "select"
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "options_page",
+                "operator": "==",
+                "value": "acf-options-general"
+            }
+        ]
+    ]
+}

@@ -1,0 +1,40 @@
+{
+    "key": "group_email_subscription_block",
+    "title": "Block - Email Subscription",
+    "fields": [
+        {
+            "key": "field_email_subscription_preheading",
+            "label": "Pre-heading",
+            "name": "preheading",
+            "type": "text"
+        },
+        {
+            "key": "field_email_subscription_heading",
+            "label": "Heading",
+            "name": "heading",
+            "type": "text"
+        },
+        {
+            "key": "field_email_subscription_description",
+            "label": "Description",
+            "name": "description",
+            "type": "textarea"
+        },
+        {
+            "key": "field_email_subscription_image",
+            "label": "Image",
+            "name": "image",
+            "type": "image",
+            "return_format": "id"
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "block",
+                "operator": "==",
+                "value": "acf\/email-subscription"
+            }
+        ]
+    ]
+}
