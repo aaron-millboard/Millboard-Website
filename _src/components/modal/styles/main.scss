@@ -1,0 +1,76 @@
+.modal {
+
+    $this: &;
+
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 500;
+    display: none;
+
+    &--active {
+        display: flex;
+    }
+
+    &__overlay {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    &__inner {
+        z-index: 150;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease-in-out;
+        overflow-y: auto;
+        padding: var(--space--xl) var(--space--m);
+
+        @include mq(medium) {
+            padding: var(--space--2xl) var(--space--l);
+        }
+    }
+
+    &__content {
+        position: relative;
+        width: max-content;
+        max-width: calc(var(--width--responsive--m) / 1.25);
+        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        background-color: transparent;
+        margin: auto;
+
+        @include mq($until: medium) {
+            max-width: 100%;
+            width: 100%;
+        }
+
+        #{$this}__dismiss {
+            @include button-reset-hard;
+            position: absolute;
+            width: auto;
+            height: auto;
+            top: 1rem;
+            right: 1rem;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space--3xs);
+            color: var(--color--foreground);
+
+            svg {
+                width: #{px-to-rem(28)};
+                height: #{px-to-rem(28)};
+                fill: var(--color--foreground);
+            }
+        }
+    }
+        
+}
