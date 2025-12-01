@@ -1,0 +1,155 @@
+{
+    "key": "group_modal_website_selector_options",
+    "title": "Options - Website selector",
+    "fields": [
+        {
+            "key": "field_680a2d5625b19",
+            "label": "Settings",
+            "type": "tab"
+        },
+        {
+            "key": "field_website_selector_enabled",
+            "label": "Enable website selector modal?",
+            "name": "website_selector_enabled",
+            "type": "true_false",
+            "ui": 1,
+            "default_value": 0
+        },
+        {
+            "key": "website_selector_query_type",
+            "label": "Modal to be shown on",
+            "name": "website_selector_query_type",
+            "aria-label": "",
+            "type": "button_group",
+            "choices": {
+                "all": "All pages \/ Posts",
+                "custom": "Specific Pages",
+                "exclude": "All pages except..."
+            },
+            "default_value": "all",
+            "layout": "horizontal"
+        },
+        {
+            "key": "field_68123df525b1d",
+            "label": "Select pages \/ posts",
+            "name": "website_selector_restrict_posts",
+            "type": "relationship",
+            "conditional_logic": [
+                [
+                    {
+                        "field": "website_selector_query_type",
+                        "operator": "==",
+                        "value": "custom"
+                    }
+                ],
+                [
+                    {
+                        "field": "website_selector_query_type",
+                        "operator": "==",
+                        "value": "exclude"
+                    }
+                ]
+            ],
+            "post_type": [
+                "post",
+                "page"
+            ],
+            "filters": [
+                "search",
+                "post_type",
+                "taxonomy"
+            ],
+            "return_format": "id"
+        },
+        {
+            "key": "field_680a34a7c97e1",
+            "label": "Cookie lifecycle (days)",
+            "name": "website_selector_cookie_life",
+            "type": "number",
+            "instructions": "After user closes a modal, the system creates a cookie which prevents the modal from being shown again.",
+            "default_value": 3
+        },
+        {
+            "key": "field_680a2d19",
+            "label": "Content",
+            "type": "tab"
+        },
+        {
+            "key": "field_680a2d562512319",
+            "label": "Preheading",
+            "type": "text",
+            "name": "website_selector_preheading"
+        },
+        {
+            "key": "field_680a2d562512320",
+            "label": "Heading",
+            "type": "text",
+            "name": "website_selector_heading"
+        },
+        {
+            "key": "field_680a2d562512123340",
+            "label": "Column 1 Description",
+            "type": "text",
+            "name": "website_selector_column_1_description",
+            "wrapper": {
+                "width": "50%"
+            }
+        },
+        {
+            "key": "field_680a2d56asd40",
+            "label": "Column 2 Description",
+            "type": "text",
+            "name": "website_selector_column_2_description",
+            "wrapper": {
+                "width": "50%"
+            }
+        },
+        {
+            "key": "field_680a2123340",
+            "label": "Column 1 Image",
+            "type": "image",
+            "name": "website_selector_column_1_image",
+            "return_format": "id",
+            "wrapper": {
+                "width": "50%"
+            }
+        },
+        {
+            "key": "field_680a2d51faqa2340",
+            "label": "Column 2 Image",
+            "type": "image",
+            "name": "website_selector_column_2_image",
+            "return_format": "id",
+            "wrapper": {
+                "width": "50%"
+            }
+        },
+        {
+            "key": "field_680awer3340",
+            "label": "Column 1 CTA",
+            "type": "link",
+            "name": "website_selector_column_1_cta",
+            "wrapper": {
+                "width": "50%"
+            }
+        },
+        {
+            "key": "field_6801232340",
+            "label": "Column 2 CTA",
+            "type": "link",
+            "name": "website_selector_column_2_cta",
+            "wrapper": {
+                "width": "50%"
+            }
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "options_page",
+                "operator": "==",
+                "value": "acf-options-website-selector-popup"
+            }
+        ]
+    ]
+}
