@@ -1,0 +1,82 @@
+.list-specifications {
+    --list-specifications--border-color: var(--color--brand-1);
+
+    $this: &;
+
+    &__inner {
+        max-width: var(--width--responsive--l);
+        margin-left: auto;
+        margin-right: auto;
+        position: relative;
+        padding: var(--space--xl) 0;
+
+        display: grid;
+        gap: var(--space--xl);
+
+        @include mq(large) {
+            grid-template-columns: 1fr 2fr;
+            align-items: start;
+        }
+    }
+
+    &__header {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space--3xs);
+    }
+
+    &__preheading {
+        @include typestyle-h6;
+        text-transform: uppercase;
+    }
+
+    &__heading {
+        @include typestyle-h5;
+        text-transform: uppercase;
+        margin: 0;
+    }
+
+    &__specifications {
+        display: grid;
+        column-gap: var(--space--xl);
+        row-gap: 0;
+        margin-top: calc(var(--space--s) * -1);
+
+        @include mq(large) {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    &__specification {
+        display: flex;
+        flex-direction: row;
+        gap: var(--space--3xs);
+        justify-content: space-between;
+        padding: var(--space--s) 0;
+        border-bottom: 1px solid var(--list-specifications--border-color);
+    }
+
+    &__specification-name {
+        @include typestyle-base;
+    }
+
+    &__specification-value {
+        @include typestyle-base;
+        font-weight: 700;
+    }
+
+    // Background color support
+    &.has-background {
+        #{$this}__inner {
+            padding: var(--space--2xl) 0;
+        }
+    }
+
+    // Adjustments as per background
+    &.has-brand-1-background-color {
+        --list-specifications--border-color: var(--color--brand-2);
+    }
+    &.has-brand-4-background-color {
+        --list-specifications--border-color: var(--color--brand-6);
+    }
+}

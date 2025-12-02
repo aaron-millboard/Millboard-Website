@@ -1,0 +1,71 @@
+{
+    "key": "group_list_specifications_block",
+    "title": "Block - List Specifications",
+    "fields": [
+        {
+            "key": "field_list_specifications_source",
+            "label": "Source of Data",
+            "name": "source",
+            "type": "select",
+            "choices": {
+                "manual": "Manual Data Entry",
+                "woocommerce": "WooCommerce Product Attributes"
+            },
+            "default_value": "manual"
+        },
+        {
+            "key": "field_list_specifications_preheading",
+            "label": "Pre-heading",
+            "name": "preheading",
+            "type": "text"
+        },
+        {
+            "key": "field_list_specifications_heading",
+            "label": "Heading",
+            "name": "heading",
+            "type": "text"
+        },
+        {
+            "key": "field_list_specifications_specifications",
+            "label": "Specifications",
+            "name": "specifications",
+            "type": "repeater",
+            "layout": "block",
+            "button_label": "Add Specification",
+            "conditional_logic": [
+                [
+                    {
+                        "field": "field_list_specifications_source",
+                        "operator": "==",
+                        "value": "manual"
+                    }
+                ]
+            ],
+            "sub_fields": [
+                {
+                    "key": "field_list_specifications_specification_name",
+                    "label": "Specification Name",
+                    "name": "name",
+                    "type": "text",
+                    "parent_repeater": "field_list_specifications_specifications"
+                },
+                {
+                    "key": "field_list_specifications_specification_value",
+                    "label": "Value",
+                    "name": "value",
+                    "type": "text",
+                    "parent_repeater": "field_list_specifications_specifications"
+                }
+            ]
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "block",
+                "operator": "==",
+                "value": "acf\/list-specifications"
+            }
+        ]
+    ]
+}
