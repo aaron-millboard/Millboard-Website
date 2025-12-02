@@ -1,0 +1,60 @@
+{
+    "key": "group_list_features_block",
+    "title": "Block - List Features",
+    "fields": [
+        {
+            "key": "field_list_features_preheading",
+            "label": "Pre-heading",
+            "name": "preheading",
+            "type": "text"
+        },
+        {
+            "key": "field_list_features_heading",
+            "label": "Heading",
+            "name": "heading",
+            "type": "text"
+        },
+        {
+            "key": "field_list_features_features",
+            "label": "Features",
+            "name": "features",
+            "type": "repeater",
+            "layout": "block",
+            "button_label": "Add Feature",
+            "sub_fields": [
+                {
+                    "key": "field_list_features_feature_icon",
+                    "label": "Icon",
+                    "name": "icon",
+                    "type": "image",
+                    "return_format": "id",
+                    "mime_types": "jpg,jpeg,png,gif,svg",
+                    "parent_repeater": "field_list_features_features"
+                },
+                {
+                    "key": "field_list_features_feature_title",
+                    "label": "Title",
+                    "name": "title",
+                    "type": "text",
+                    "parent_repeater": "field_list_features_features"
+                },
+                {
+                    "key": "field_list_features_feature_description",
+                    "label": "Description",
+                    "name": "description",
+                    "type": "textarea",
+                    "parent_repeater": "field_list_features_features"
+                }
+            ]
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "block",
+                "operator": "==",
+                "value": "acf\/list-features"
+            }
+        ]
+    ]
+}

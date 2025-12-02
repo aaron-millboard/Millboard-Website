@@ -1,0 +1,28 @@
+{
+    "$schema": "https://advancedcustomfields.com/schemas/json/main/block.json",
+    "apiVersion": 2,
+    "name": "acf/list-features",
+    "title": "Features with icons list",
+    "description": "Display features with icons, titles and descriptions in a grid layout",
+    "category": "granola-blocks",
+    "icon": "grid-view",
+    "keywords": [
+        "features",
+        "list",
+        "grid",
+        "icons"
+    ],
+    "acf": {
+        "mode": "auto",
+        "renderCallback": "\\Granola\\Component::acf_render_callback"
+    },
+    "supports": {
+        "anchor": true,
+        "align": false,
+        "color": {
+            "background": false,
+            "text": false
+        },
+        "mode": false
+    }
+}
