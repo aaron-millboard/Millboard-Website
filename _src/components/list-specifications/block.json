@@ -1,0 +1,28 @@
+{
+    "$schema": "https://advancedcustomfields.com/schemas/json/main/block.json",
+    "apiVersion": 2,
+    "name": "acf/list-specifications",
+    "title": "List Specifications",
+    "description": "Display product specifications with preheading, heading and specification items",
+    "category": "granola-blocks",
+    "icon": "list-view",
+    "keywords": [
+        "specifications",
+        "list",
+        "product",
+        "attributes"
+    ],
+    "acf": {
+        "mode": "auto",
+        "renderCallback": "\\Granola\\Component::acf_render_callback"
+    },
+    "supports": {
+        "anchor": true,
+        "align": false,
+        "color": {
+            "background": true,
+            "text": false
+        },
+        "mode": false
+    }
+}
