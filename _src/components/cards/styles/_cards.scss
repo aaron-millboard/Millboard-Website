@@ -1,7 +1,7 @@
 
 .cards {
-    --grid--column-gap: var(--space--s);
-    --grid--row-gap: var(--grid--column-gap);
+    --grid--column-gap: var(--space--xl);
+    --grid--row-gap: var(--space--2xl);
 
     $this: &;
 

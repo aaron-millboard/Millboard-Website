@@ -67,6 +67,24 @@
         > * {
             transition: transition(opacity);
         }
+
+        &--hover-effect {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: var(--space--3xs);
+            background-color: rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            visibility: hidden;
+            transition: transition(opacity);
+            z-index: 1;
+        }
     }
 
     &__content {
@@ -143,12 +161,6 @@
         // Ported from card styles, review.
         @include interact {
             --border--1: var(--border-width--s) solid var(--color--foreground);
-
-            #{$this}__media {
-                > * {
-                    opacity: 0.8;
-                }
-            }
         }
         // Set other links inside the media-object above the heading link.
         .video-item,

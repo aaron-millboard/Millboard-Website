@@ -28,6 +28,7 @@ function filter_args(array $args): ?array
         'cards',
         'wp-block',
         'animate',
+        'alignfull',
     ], $args['classes']);
 
     // ---------------------------------------

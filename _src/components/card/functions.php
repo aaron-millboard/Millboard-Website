@@ -20,9 +20,9 @@ function filter_args(array $args): ?array
         'meta' => [],
         'labels' => [],
         'buttons' => [],
-        'shape_choices' => null,
         'media' => [],
         'orientation' => 'vertical',
+        'hover_effect' => true,
         // Display.
         'config' => [
             'show_read_more' => $args['show_read_more'] ?? false,
@@ -56,6 +56,9 @@ function filter_args(array $args): ?array
         $args['target'] = $args['link']['target'] ?? $args['target'];
         $args['config']['read_more_label'] = $args['link']['title'] ?? $args['config']['read_more_label'];
     }
+
+    // Disable subheading
+    $args['subheading'] = '';
 
     // Shape.
     if (!empty($args['shape_choices']) && $args['shape_choices'] !== 'none') {
