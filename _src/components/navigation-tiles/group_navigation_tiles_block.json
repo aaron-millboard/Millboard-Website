@@ -1,0 +1,60 @@
+{
+    "key": "group_navigation_tiles_block",
+    "title": "Block - Navigation Tiles",
+    "fields": [
+        {
+            "key": "field_navigation_tiles_preheading",
+            "label": "Pre-heading",
+            "name": "preheading",
+            "type": "text"
+        },
+        {
+            "key": "field_navigation_tiles_heading",
+            "label": "Heading",
+            "name": "heading",
+            "type": "text"
+        },
+        {
+            "key": "field_navigation_tiles_tiles",
+            "label": "Tiles",
+            "name": "tiles",
+            "type": "repeater",
+            "layout": "block",
+            "button_label": "Add Tile",
+            "sub_fields": [
+                {
+                    "key": "field_navigation_tiles_tile_title",
+                    "label": "Title",
+                    "name": "title",
+                    "type": "text",
+                    "parent_repeater": "field_navigation_tiles_tiles"
+                },
+                {
+                    "key": "field_navigation_tiles_tile_description",
+                    "label": "Description",
+                    "name": "description",
+                    "type": "wysiwyg",
+                    "toolbar": "basic",
+                    "media_upload": 0,
+                    "parent_repeater": "field_navigation_tiles_tiles"
+                },
+                {
+                    "key": "field_navigation_tiles_tile_cta",
+                    "label": "CTA",
+                    "name": "cta",
+                    "type": "link",
+                    "parent_repeater": "field_navigation_tiles_tiles"
+                }
+            ]
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "block",
+                "operator": "==",
+                "value": "acf\/navigation-tiles"
+            }
+        ]
+    ]
+}

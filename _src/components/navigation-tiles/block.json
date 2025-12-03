@@ -1,0 +1,28 @@
+{
+    "$schema": "https://advancedcustomfields.com/schemas/json/main/block.json",
+    "apiVersion": 2,
+    "name": "acf/navigation-tiles",
+    "title": "Navigation Tiles",
+    "description": "Display navigation tiles with titles, descriptions and CTAs",
+    "category": "granola-blocks",
+    "icon": "layout",
+    "keywords": [
+        "navigation",
+        "tiles",
+        "cards",
+        "grid"
+    ],
+    "acf": {
+        "mode": "auto",
+        "renderCallback": "\\Granola\\Component::acf_render_callback"
+    },
+    "supports": {
+        "anchor": true,
+        "align": false,
+        "color": {
+            "background": true,
+            "text": false
+        },
+        "mode": false
+    }
+}

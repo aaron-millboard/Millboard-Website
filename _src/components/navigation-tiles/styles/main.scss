@@ -1,0 +1,97 @@
+.navigation-tiles {
+    $this: &;
+
+    &__inner {
+        max-width: var(--width--responsive--l);
+        margin-left: auto;
+        margin-right: auto;
+        position: relative;
+        padding: var(--space--2xl) 0;
+    }
+
+    &__header {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space--3xs);
+        margin-bottom: var(--space--l);
+        text-align: center;
+    }
+
+    &__preheading {
+        @include typestyle-h6;
+        text-transform: uppercase;
+    }
+
+    &__heading {
+        @include typestyle-h5;
+        margin: 0;
+    }
+
+    &__tiles {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: var(--space--xs);
+    }
+
+    &__tile {
+        flex: 0 0 100%;
+        max-width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: var(--space--m);
+        padding: var(--space--xl) var(--space--s);
+        border: 1px solid var(--color--foreground);
+        text-align: center;
+        align-items: center;
+
+        @include mq(medium) {
+            flex: 0 0 50%;
+            max-width: calc(50% - var(--space--xs) / 1.5);
+        }
+
+        @include mq(large) {
+            flex: 0 0 33%;
+            max-width: calc(33% - var(--space--xs) / 1.333);
+        }
+
+        @include mq(xlarge) {
+            flex: 0 0 25%;
+            max-width: calc(25% - var(--space--xs) / 1.25);
+        }
+    }
+
+    &__tile-title {
+        @include typestyle-h6;
+        font-weight: 700;
+        text-transform: uppercase;
+        margin: 0;
+        padding-top: var(--space--2xs);
+        border-top: 1px solid var(--color--foreground);
+    }
+
+    &__tile-description {
+        @include typestyle-small;
+        margin: 0;
+
+        p {
+            margin: 0;
+        }
+    }
+
+    &__tile-cta {
+        margin-top: auto;
+        width: max-content;
+    }
+
+    &.has-brand-2-background-color {
+        #{$this}__tile {
+            border-color: var(--color--brand-1);
+        }
+    }
+    &.has-brand-1-background-color {
+        #{$this}__tile {
+            border-color: var(--color--brand-2);
+        }
+    }
+}
