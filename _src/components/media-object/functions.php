@@ -16,12 +16,13 @@ function filter_args(array $args): ?array
         'background' => null, // todo remove?
         'image_size' => 'medium_large',
         'url' => '',
-        'heading_class' => 'is-style-typestyle-h3',
+        'heading_class' => '',
         'heading_level' => 'h2',
         'component_clickable' => true,
         'animate' => false,
         'video' => null,
         'shape' => null,
+        'hover_effect' => false,
     ], $args);
 
     // -------------------------------------------------------------------------

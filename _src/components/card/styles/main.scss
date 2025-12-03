@@ -1,9 +1,71 @@
 .g-card.media-object {
-    --media-object--inner-padding-x: var(--space--xs);
-    --media-object--inner-padding-y: var(--space--xs);
+    --media-object--inner-padding-x: 0;
+    --media-object--inner-padding-y: 0;
 
     &[data-media] {
         --media-object--gap: var(--space--xs);
+    }
+
+    //---------------------------------------------------
+    // Blog post card
+    //---------------------------------------------------
+    &[data-type='post'] {
+
+        .media-object {
+
+            &__heading {
+                @include typestyle-h6;
+                font-size: 20px;
+                text-transform: uppercase;
+                a {
+                    text-decoration: none;
+                }
+            }
+
+            &__media--hover-effect {
+                opacity: 0;
+                visibility: visible;
+                transition: all 0.3s ease-in-out;
+
+                span {
+                    @include typestyle-h6;
+                    font-size: 18px;
+                    font-family: var(--type--1--font-family);
+                    text-transform: uppercase;
+                    color: var(--color--white);
+                    transition: all 0.3s ease-in-out;
+                }
+
+                &__top {
+                    margin-right: 7rem;
+                }
+                &__bottom {
+                    margin-left: 7rem;
+                }
+            }
+
+        }
+
+        @include interact {
+            .media-object {
+
+                &__heading {
+                    a {
+                        text-decoration: underline;
+                    }
+                }
+
+                &__media--hover-effect {
+                    opacity: 1;
+                    &__top {
+                        margin-right: 5rem;
+                    }
+                    &__bottom {
+                        margin-left: 5rem;
+                    }
+                }
+            }
+        }
     }
 
     //---------------------------------------------------

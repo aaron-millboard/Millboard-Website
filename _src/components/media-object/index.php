@@ -5,6 +5,17 @@
                 <?php if ($args['media_type'] === 'video' && !empty($args['video'])) { ?>
                     <?= \Granola\Component::get('video-item', $args['video']); ?>
                 <?php } else { ?>
+                    <?php if ($args['hover_effect']) { ?>
+                        <div class="media-object__media--hover-effect">
+                            <span class="media-object__media--hover-effect__top">
+                                <?= __('View', 'granola'); ?>
+                            </span>
+                            <span class="media-object__media--hover-effect__bottom">
+                                <?= __('Article', 'granola'); ?>
+                            </span>
+                        </div>
+                    <?php } ?>
+                    
                     <?= \Granola\Component::get('image', $args['media']); ?>
                 <?php } ?>
             </div>
@@ -88,9 +99,4 @@
         <?php } ?>
     </div>
 
-    <?php if (!empty($args['shape'])) { ?>
-        <div <?= \Granola\Helpers::build_attributes($args['shape_attributes']); ?>>
-            <svg><use href="#<?= $args['shape']; ?>"></use></svg>
-        </div>
-    <?php } ?>
 </div>

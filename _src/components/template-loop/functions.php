@@ -20,7 +20,14 @@ function filter_args(array $args): ?array
         }
     }
 
+    // Fill items into items component args.
     $args['items_component_args']['items'] = $args['items'];
+
+    // Set limit to 12
+    $args['items_component_args']['limit'] = 12;
+
+    // Set columns to 3
+    $args['items_component_args']['columns'] = 3;
 
     // Filterable items output component.
     $args['items_component'] = 'cards-automatic';
