@@ -27,6 +27,7 @@ function filter_args(array $args): ?array
     $args['classes'] = array_merge([
         'taxonomy-filters',
         'wp-block',
+        'alignfull',
     ], $args['classes']);
 
     if (!empty($args['object'])) {
@@ -34,7 +35,6 @@ function filter_args(array $args): ?array
 
         $button_classes = [
             'g-button',
-            'g-button--small',
             'taxonomy-filters__item',
         ];
         $button_classes_all = $button_classes;
@@ -57,14 +57,6 @@ function filter_args(array $args): ?array
     }
 
     if (!empty($args['taxonomy'])) {
-        $tax = \get_taxonomy($args['taxonomy']);
-
-        $args['label'] = sprintf(
-            // translators: taxonomy name.
-            \__('Filter by %s', 'granola'),
-            strtolower($tax->labels->singular_name)
-        );
-
         $all = [
             'title' => \_x('All', 'Category filter clear button text', 'granola'),
             'url' => $all_link,

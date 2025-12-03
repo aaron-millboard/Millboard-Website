@@ -23,7 +23,7 @@ function filter_args(array $args): ?array
     $args['items_component_args']['items'] = $args['items'];
 
     // Filterable items output component.
-    $args['items_component'] = \apply_filters('granola/components/template-loop/items-component', 'post-summaries');
+    $args['items_component'] = 'cards-automatic';
 
     // Filterable items output component arguments.
     $args['items_component_args'] = \apply_filters(

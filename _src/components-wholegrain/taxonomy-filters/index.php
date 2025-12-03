@@ -1,11 +1,13 @@
 <div <?= \Granola\Helpers::build_attributes($args['attributes']); ?>>
     <?php if (!empty($args['label'])) { ?>
-        <?= \Granola\Component::get('element', [
-            'content' => $args['label'],
-            'classes' => [
-                'taxonomy-filters__label',
-            ],
-        ]); ?>
+        <div class="taxonomy-filters__label-wrapper">
+            <?= \Granola\Component::get('element', [
+                'content' => $args['label'],
+                'classes' => [
+                    'taxonomy-filters__label',
+                ],
+            ]); ?>
+        </div>
     <?php } ?>
 
     <ul class="taxonomy-filters__list flex-list">

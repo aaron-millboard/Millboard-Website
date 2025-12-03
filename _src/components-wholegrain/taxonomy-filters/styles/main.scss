@@ -1,15 +1,20 @@
 @import '../../../core';
 
 .taxonomy-filters {
-    --block--margin-bottom: calc(var(--block--margin-bottom) / 2);
+
+    max-width: var(--width--responsive--l);
+    margin-left: auto;
+    margin-right: auto;
+    position: relative;
+    padding: var(--space--xl) 0;
 
     display: grid;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space--s);
+    grid-template-columns: 1fr;
+    gap: var(--space--l);
 
-    @include mq(medium) {
-        grid-auto-flow: column;
+    @include mq(large) {
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--space--2xl);
     }
 
     + * {
@@ -21,18 +26,39 @@
         margin-bottom: var(--space--xl);
     }
 
+    &__label-wrapper {
+        display: flex;
+        align-items: start;
+        justify-content: start;
+    }
+
     &__label {
-        text-align: center;
+        @include typestyle-h4;
+        text-transform: uppercase;
+        margin: 0;
+        padding-top: var(--space--2xs);
+        border-top: 1px solid var(--color--foreground);
     }
 
     &__list {
-        --grid--column-gap: var(--space--s);
+        align-items: start;
+        column-gap: var(--space--3xs);
+        row-gap: var(--space--3xs);
 
-        justify-content: center;
+        @include mq(large) {
+            grid-column: span 2;
+        }
     }
 
     &__item {
+        --button--border-color: var(--color--brand-1);
+        --button--padding-y: calc(var(--space--3xs) + 3px);
+        --button--padding-x: var(--space--2xs);
+        text-transform: none;
+
         &--current {
+            @include button--interacted;
         }
+
     }
 }
