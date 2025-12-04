@@ -57,9 +57,6 @@ function filter_args(array $args): ?array
         $args['config']['read_more_label'] = $args['link']['title'] ?? $args['config']['read_more_label'];
     }
 
-    // Disable subheading
-    $args['subheading'] = '';
-
     // Shape.
     if (!empty($args['shape_choices']) && $args['shape_choices'] !== 'none') {
         $args['shape'] = $args['shape_choices'];
@@ -109,7 +106,9 @@ function handle_wp_object_args(array $args, object $object): array
         // -------------------------------------------------------------------------
         $args['heading'] = \get_the_title($object->ID);
         $args['url'] = \get_the_permalink($object->ID);
-        $args['subheading'] = \get_the_excerpt($object->ID);
+
+        // Disable subheading
+        $args['subheading'] = '';
 
         // Featured image.
         if (\has_post_thumbnail($object->ID)) {
@@ -124,57 +123,20 @@ function handle_wp_object_args(array $args, object $object): array
         }
 
         // -------------------------------------------------------------------------
-        // Set up args for Posts
+        // Set up args for Case Studies
         // -------------------------------------------------------------------------
-        if ($object->post_type === 'journal') {
-            // -------------------------------------------------------------
-            // Journal specific args
-            // -------------------------------------------------------------
-            $args['heading_class'] = 'is-style-typestyle-h5';
-            $args['config']['show_read_more'] = true;
-            $args['config']['read_more_label'] = \__('Read the journal', 'granola');
-            $args['labels'] = \Theme\Meta\ObjectMeta::get_object_labels($object->ID, [
-                'taxonomies' => ['topic'],
-            ]);
+        if ($object->post_type === 'case-study') {
+            // Add subheading from excerpt explicitly for case studies
+            $args['subheading'] = \get_the_excerpt($object->ID);
 
-             // Example meta.
-             $meta_author = \Theme\Meta\ObjectMeta::get_object_author($object);
-            if ($meta_date = \Theme\Meta\ObjectMeta::get_object_date($object)) {
-                $args['meta'][] = [
-                   'content' => $meta_date,
-                ];
-            }
-
-            if ($meta_author = \Theme\Meta\ObjectMeta::get_object_author($object)) {
-                $meta_author['content'] = sprintf(\__('by %s', 'granola'), $meta_author['content']);
-                $args['meta'][] = $meta_author;
-            }
-
-            $args['orientation'] = 'horizontal';
-        } elseif ($object->post_type === 'person') {
-            if (!$args['orientation'] === 'vertical') {
-                $args['orientation'] = 'horizontal';
-            }
-
-            $args['heading_class'] = 'is-style-typestyle-meta';
-
-            if ($job_title = \get_field('job_title', $object->ID)) {
-                $args['subheading'] = $job_title;
-            }
-
-            if ($location = \get_field('location', $object->ID)) {
-                $args['meta'][] = $location;
-            }
-
-            if ($person_socials = \get_field('person_socials', $object->ID)) {
-                $args['buttons'] = array_map(function ($social) {
-                    return [
-                        'url' => $social['link'],
-                        'target' => '_blank',
-                        'content' => ucfirst($social['type']),
-                        'classes' => ['g-button--text'],
+            // Populate categories as labels
+            $terms = \get_the_terms($object->ID, 'category');
+            if ($terms && !is_wp_error($terms)) {
+                foreach ($terms as $term) {
+                    $args['labels'][] = [
+                        'content' => $term->name,
                     ];
-                }, $person_socials);
+                }
             }
         }
     } elseif ($object instanceof \WP_Term) {

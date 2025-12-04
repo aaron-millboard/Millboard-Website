@@ -69,37 +69,89 @@
     }
 
     //---------------------------------------------------
-    // Person card
+    // Case Study card
     //---------------------------------------------------
-    &[data-type='person'] {
-        --media-object--media--ratio: 1 / 1;
-        --media-object--inner-padding-y: 0;
-        --media-object--inner-padding-x: 0;
+    &[data-type='case-study'] {
 
-        &[data-media] {
-            --media-object--media--border-radius: var(--border-width--m);
-
-            @include mq(medium) {
-                --media-object--media--ratio: 1 / 1;
-            }
-
-            &[data-orientation='horizontal'] {
-                --media-object--grid-template-columns: #{px-to-rem(94)} 1fr;
-            }
-        }
+        --media-object--media--ratio: 5 / 4;
+        --media-object--gap: var(--space--s);
 
         .media-object {
+
             &__heading {
-                font-size: inherit;
+                @include typestyle-h6;
+                font-size: 20px;
+                text-transform: uppercase;
+                a {
+                    text-decoration: none;
+                }
             }
 
             &__subheading {
-                text-transform: uppercase;
+                @include typestyle-small;
             }
 
-            &__header {
-                --flex-column--gap: 0;
+            &__media--hover-effect {
+                opacity: 0;
+                visibility: visible;
+                transition: all 0.3s ease-in-out;
+
+                span {
+                    @include typestyle-h6;
+                    font-size: 18px;
+                    font-family: var(--type--1--font-family);
+                    text-transform: uppercase;
+                    color: var(--color--white);
+                    transition: all 0.3s ease-in-out;
+                }
+
+                &__top {
+                    margin-right: 7rem;
+                }
+                &__bottom {
+                    margin-left: 7rem;
+                }
+            }
+
+            &__content {
+                gap: var(--space--xs);
+            }
+
+            &__labels {
+                display: flex;
+                flex-direction: row;
+                gap: var(--space--3xs);
+                flex-wrap: wrap;
+
+                .list__item {
+                    @include typestyle-small;
+                    padding: var(--space--4xs) var(--space--2xs);
+                    border: 1px solid var(--color--brand-1);
+                }
+            }
+
+        }
+
+        @include interact {
+            .media-object {
+
+                &__heading {
+                    a {
+                        text-decoration: underline;
+                    }
+                }
+
+                &__media--hover-effect {
+                    opacity: 1;
+                    &__top {
+                        margin-right: 5rem;
+                    }
+                    &__bottom {
+                        margin-left: 5rem;
+                    }
+                }
             }
         }
     }
+
 }

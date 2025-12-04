@@ -134,19 +134,6 @@ function filter_args(array $args): ?array
     $args['attributes']['data-orientation'] = $args['orientation'];
 
     // -------------------------------------------------------------------------
-    // Shape.
-    // -------------------------------------------------------------------------
-    if (!empty($args['shape'])) {
-        $args['shape_attributes'] = [
-            'class' => ['media-object__shape']
-        ];
-
-        if (isset($args['backgroundColor']) || isset($args['background_color'])) {
-            $args['shape_attributes']['style']['--media-object--shape--background-color'] = 'var(--color--tint--1)';
-        }
-    }
-
-    // -------------------------------------------------------------------------
     // Return the filtered args.
     // -------------------------------------------------------------------------
     return $args;
