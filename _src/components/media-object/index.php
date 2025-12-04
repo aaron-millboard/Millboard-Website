@@ -66,7 +66,7 @@
                 <?= \Granola\Component::get('list', [
                     'items' => $args['labels'],
                     'parent_class_name' => 'media-object',
-                    'is_buttons' => true,
+                    'is_buttons' => false,
                     'classes' => ['media-object__labels'],
                 ]); ?>
             <?php } ?>

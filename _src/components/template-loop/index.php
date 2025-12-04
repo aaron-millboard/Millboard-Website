@@ -4,6 +4,7 @@
         'taxonomy' => 'category',
         'object' => $args['object'],
     ]); ?>
+    
     <?= \Granola\Component::get($args['items_component'], $args['items_component_args']); ?>
     <?= \Granola\Component::get('pagination'); ?>
 <?php } else { ?>
