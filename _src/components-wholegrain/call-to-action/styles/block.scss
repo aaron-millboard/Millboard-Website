@@ -36,8 +36,11 @@
         .call-to-action__heading {
             display: flex;
             flex-flow: column;
-            margin-left: var(--space--xl);
-            margin-right: var(--space--xl);
+
+            @include mq(large) {
+                margin-left: var(--space--xl);
+                margin-right: var(--space--xl);
+            }
 
             @include mq(medium, $until: large) {
                 @include typestyle-h2;
@@ -59,9 +62,12 @@
     &__subheading {
         @include typestyle-h4;
 
-        margin-left: var(--space--xl);
-        margin-right: var(--space--xl);
         margin-top: 0;
+
+        @include mq(large) {
+            margin-left: var(--space--xl);
+            margin-right: var(--space--xl);
+        }
     }
 
     // -------------------------------------------------------------------------
