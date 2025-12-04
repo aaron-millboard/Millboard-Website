@@ -1,0 +1,69 @@
+{
+    "key": "group_gallery_video_block",
+    "title": "Block - Gallery Video",
+    "fields": [
+        {
+            "key": "field_gallery_video_preheading",
+            "label": "Pre-heading",
+            "name": "preheading",
+            "type": "text"
+        },
+        {
+            "key": "field_gallery_video_heading",
+            "label": "Heading",
+            "name": "heading",
+            "type": "text"
+        },
+        {
+            "key": "field_gallery_video_items",
+            "label": "Video Items",
+            "name": "items",
+            "type": "repeater",
+            "layout": "block",
+            "button_label": "Add Video",
+            "sub_fields": [
+                {
+                    "key": "field_gallery_video_item_cover_image",
+                    "label": "Cover Image",
+                    "name": "cover_image",
+                    "type": "image",
+                    "return_format": "id",
+                    "required": 1,
+                    "parent_repeater": "field_gallery_video_items"
+                },
+                {
+                    "key": "field_gallery_video_item_video_url",
+                    "label": "Video URL (YouTube or Vimeo)",
+                    "name": "video_url",
+                    "type": "url",
+                    "required": 1,
+                    "placeholder": "https://www.youtube.com/watch?v=... or https://vimeo.com/...",
+                    "parent_repeater": "field_gallery_video_items"
+                },
+                {
+                    "key": "field_gallery_video_item_caption",
+                    "label": "Caption",
+                    "name": "caption",
+                    "type": "text",
+                    "parent_repeater": "field_gallery_video_items"
+                },
+                {
+                    "key": "field_gallery_video_item_subcaption",
+                    "label": "Subcaption",
+                    "name": "subcaption",
+                    "type": "text",
+                    "parent_repeater": "field_gallery_video_items"
+                }
+            ]
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "block",
+                "operator": "==",
+                "value": "acf\/gallery-video"
+            }
+        ]
+    ]
+}

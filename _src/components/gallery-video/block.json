@@ -1,0 +1,29 @@
+{
+    "$schema": "https://advancedcustomfields.com/schemas/json/main/block.json",
+    "apiVersion": 2,
+    "name": "acf/gallery-video",
+    "title": "Gallery Video",
+    "description": "Display video gallery with thumbnails and player",
+    "category": "granola-blocks",
+    "icon": "video-alt3",
+    "keywords": [
+        "video",
+        "gallery",
+        "youtube",
+        "vimeo",
+        "player"
+    ],
+    "acf": {
+        "mode": "auto",
+        "renderCallback": "\\Granola\\Component::acf_render_callback"
+    },
+    "supports": {
+        "anchor": true,
+        "align": false,
+        "color": {
+            "background": true,
+            "text": false
+        },
+        "mode": false
+    }
+}
