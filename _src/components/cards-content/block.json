@@ -1,0 +1,28 @@
+{
+    "$schema": "https://advancedcustomfields.com/schemas/json/main/block.json",
+    "apiVersion": 2,
+    "name": "acf/cards-content",
+    "title": "Cards Content",
+    "description": "Display content cards with images, descriptions and hover effects",
+    "category": "granola-blocks",
+    "icon": "grid-view",
+    "keywords": [
+        "cards",
+        "content",
+        "grid",
+        "hover"
+    ],
+    "acf": {
+        "mode": "auto",
+        "renderCallback": "\\Granola\\Component::acf_render_callback"
+    },
+    "supports": {
+        "anchor": true,
+        "align": false,
+        "color": {
+            "background": true,
+            "text": false
+        },
+        "mode": false
+    }
+}
