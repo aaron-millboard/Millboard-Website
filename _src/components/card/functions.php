@@ -138,6 +138,9 @@ function handle_wp_object_args(array $args, object $object): array
                     ];
                 }
             }
+
+            // Image size for case studies
+            $args['size'] = 'large';
         }
     } elseif ($object instanceof \WP_Term) {
         // -------------------------------------------------------------------------
