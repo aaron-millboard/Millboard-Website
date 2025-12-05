@@ -1,0 +1,87 @@
+@import '../../../core';
+
+.call-to-action {
+    margin-right: var(--space--m);
+    margin-left: var(--space--m);
+
+    // Padding.
+    padding-top: var(--space--2xl);
+    padding-bottom: var(--space--xl);
+
+    &__inner {
+        margin: auto;
+
+        @include mq(large) {
+            max-width: 972px;
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Content.
+    // -------------------------------------------------------------------------
+    &__content {
+        @include no-first-last-margin;
+
+        margin-top: var(--space--2xl);
+
+        @include mq(large) {
+            column-count: 2;
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Heading inset.
+    // -------------------------------------------------------------------------
+    &--has-heading-inset {
+        .call-to-action__heading {
+            display: flex;
+            flex-flow: column;
+
+            @include mq(large) {
+                margin-left: var(--space--xl);
+                margin-right: var(--space--xl);
+            }
+
+            @include mq(medium, $until: large) {
+                @include typestyle-h2;
+            }
+        }
+
+        .call-to-action__heading-primary {
+            align-self: flex-start;
+        }
+
+        .call-to-action__heading-secondary {
+            align-self: flex-end;
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Subheading.
+    // -------------------------------------------------------------------------
+    &__subheading {
+        @include typestyle-h4;
+
+        margin-top: 0;
+
+        @include mq(large) {
+            margin-left: var(--space--xl);
+            margin-right: var(--space--xl);
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Buttons.
+    // -------------------------------------------------------------------------
+    &__buttons {
+        gap: var(--space--m);
+    }
+
+    // -------------------------------------------------------------------------
+    // Image.
+    // -------------------------------------------------------------------------
+    &__image {
+        overflow: hidden;
+        aspect-ratio: 16 / 9;
+    }
+}
