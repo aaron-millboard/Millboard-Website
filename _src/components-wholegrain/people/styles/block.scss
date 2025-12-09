@@ -1,0 +1,34 @@
+// @import '../../cards/styles/cards.scss';
+
+.people {
+    padding-top: var(--space--2xl);
+    padding-bottom: var(--space--2xl);
+
+    &__inner {
+        max-width: var(--width--responsive--l);
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    &__header {
+        text-align: center;
+        max-width: var(--width--responsive--s);
+        margin-left: auto;
+        margin-right: auto;
+        margin-bottom: var(--space--xl);
+    }
+
+    &__items {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: var(--space--xl);
+
+        @include mq(medium) {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        @include mq(large) {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+}
