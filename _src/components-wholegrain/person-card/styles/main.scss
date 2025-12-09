@@ -1,0 +1,22 @@
+.g-card.media-object {
+    --media-object--inner-padding-x: 0;
+    --media-object--inner-padding-y: 0;
+
+    &[data-media] {
+        --media-object--gap: var(--space--xs);
+    }
+
+    .media-object__heading {
+        line-height: 1;
+    }
+
+    .media-object__subheading {
+        text-transform: uppercase;
+    }
+
+    .media-object__text {
+        padding-top: var(--space--xs);
+        margin-top: var(--space--xs);
+        border-top: 1px solid var(--color--brand-2);
+    }
+}
