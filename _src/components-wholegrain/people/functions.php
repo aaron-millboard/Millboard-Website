@@ -52,9 +52,9 @@ function filter_args(array $args): ?array
         'class' => 'people__items',
         'allowedBlocks' => ['acf/person-card'],
         'template' => [
-            ['acf/card'],
-            ['acf/card'],
-            ['acf/card'],
+            ['acf/person-card'],
+            ['acf/person-card'],
+            ['acf/person-card'],
         ],
         'templateLock' => false,
     ];
