@@ -1,0 +1,39 @@
+{
+    "key": "group_cookieyes",
+    "title": "CookieYes",
+    "fields": [
+        {
+            "key": "field_cookieyes_enable",
+            "label": "Enable CookieYes",
+            "name": "cookieyes_enable",
+            "type": "true_false",
+            "default_value": 0,
+            "ui": 1
+        },
+        {
+            "key": "field_cookieyes_url",
+            "label": "CookieYes Script URL",
+            "name": "cookieyes_url",
+            "type": "url",
+            "placeholder": "https://cdn-cookieyes.com/client_data/...",
+            "conditional_logic": [
+                [
+                    {
+                        "field": "field_cookieyes_enable",
+                        "operator": "==",
+                        "value": "1"
+                    }
+                ]
+            ]
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "options_page",
+                "operator": "==",
+                "value": "acf-options-integrations"
+            }
+        ]
+    ]
+}
