@@ -1,0 +1,27 @@
+{
+    "$schema": "https://advancedcustomfields.com/schemas/json/main/block.json",
+    "apiVersion": 2,
+    "name": "acf/gravity-forms",
+    "title": "Gravity Forms",
+    "description": "Display a Gravity Form with optional heading and description",
+    "category": "granola-blocks",
+    "icon": "feedback",
+    "keywords": [
+        "form",
+        "gravity",
+        "contact"
+    ],
+    "acf": {
+        "mode": "auto",
+        "renderCallback": "\\Granola\\Component::acf_render_callback"
+    },
+    "supports": {
+        "anchor": true,
+        "align": false,
+        "color": {
+            "background": true,
+            "text": false
+        },
+        "mode": false
+    }
+}

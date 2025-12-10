@@ -18,7 +18,7 @@
         &::after {
             --input--outline-width--focus: 1px;
 
-            border-radius: 100%;
+            border-radius: 0%;
             content: '';
             grid-column: 1;
             grid-row: 1;
@@ -28,7 +28,7 @@
             width: var(--radio--size);
             height: var(--radio--size);
             border: var(--radio--border-width) solid var(--color--foreground);
-            background: var(--color--background);
+            background: hsla(var(--color--black--hsl), 0.025);
             cursor: pointer;
             transition: transition(background);
         }

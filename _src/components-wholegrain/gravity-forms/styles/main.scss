@@ -2,24 +2,62 @@
 // It's meant to complement GF's basic.min.css stylesheet.
 
 .gform_wrapper {
+    --input--gap: var(--space--l);
+
     margin-top: var(--space--base);
     margin-bottom: var(--space--base);
 
+    input,
+    select,
+    textarea {
+        --input--background-color: transparent;
+        --input--border-color: var(--color--foreground);
+        --input--border-color--focus: var(--color--brand-4);
+        --input--color: var(--color--foreground);
+        --input--color--focus: var(--color--foreground);
+        --input--placeholder-color: var(--color--foreground);
+        --input--border-width--focus: 2px;
+    }
+
+    input[aria-invalid='true'],
+    select[aria-invalid='true'],
+    textarea[aria-invalid='true'] {
+        --input--border-color: var(--color--error);
+        --input--border-width--focus: 2px;
+        --input--border-width: 2px;
+    }
+
     .gform_fields {
+        display: grid;
+        gap: var(--space--m);
+        grid-template-columns: 1fr 1fr;
         grid-row-gap: var(--input--gap);
+    }
+
+    legend,
+    label.gform-field-label {
+        @include typestyle-small;
+    }
+
+    .gfield {
+        position: relative;
+    }
+
+    .gfield:not(.gfield--width-half) {
+        grid-column: span 2;
     }
 
     [type='button'],
     [type='submit'] {
-        --button--background-color: var(--color--foreground);
-        --button--border-color: var(--color--foreground);
-        --button--color: var(--color--background);
-
         @include button;
     }
 
     .gform_ajax_spinner {
         margin-left: 1em;
+    }
+
+    .gfield_required {
+        margin-left: var(--space--4xs);
     }
 
     .gf_invisible,
@@ -81,7 +119,7 @@
 .gfield_label,
 .ginput_complex label {
     display: block;
-    margin-bottom: var(--space--xs);
+    margin-bottom: var(--space--3xs);
 }
 
 .gfield_description:not(.gfield_validation_message) {
@@ -111,15 +149,19 @@
     @include no-first-last-margin;
     @include color-context('error');
 
-    max-width: var(--width--xxs);
-    padding: var(--space--responsive--m);
+    max-width: 100%;
+    width: 100%;
+    padding: var(--space--m) var(--space--l);
     margin-top: var(--space--l);
     margin-bottom: var(--space--l);
 }
 
 // Heading inside .gform_validation_errors
 .gform_submission_error {
-    @include typestyle-h5;
+    @include typestyle-large;
+    text-transform: none;
+    letter-spacing: inherit;
+    font-weight: 600;
 
     .gform-icon {
         display: none;
@@ -144,6 +186,13 @@
 .gfield_validation_message {
     @include tooltip;
 
+    position: absolute;
+    top: -1rem;
+    right: 2rem;
+
+    margin-top: 0;
+    margin-bottom: 0;
+
     &:empty {
         display: none;
     }
@@ -153,13 +202,32 @@
 // Fields
 //
 .ginput_container_fileupload {
+
     .gform_drop_area {
+        --input--border-color: var(--color--brand-4);
+
         padding: var(--space--l);
-        border: var(--border-width--s) dashed var(--input--border-color);
-        background: transparent;
+        border: var(--border-width--m) dashed var(--input--border-color);
+        background: hsla(var(--color--black--hsl), 0.025);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: var(--space--3xs);
+        padding-top: calc(var(--space--l) + 2rem);
 
         .button {
-            @include button;
+            @include button-reset-hard;
+            text-decoration: underline;
+        }
+
+        &::before {
+            content: url(#{asset-path('images/icons-custom/download.svg')});
+            margin: 0;
+            width: 40px;
+            height: 40px;
+            display: block;
+            position: absolute;
+            top: 1rem;
         }
     }
 
@@ -167,18 +235,38 @@
         @include typestyle-small;
 
         display: block;
-        margin-top: var(--space--2xs);
+        margin-top: var(--space--3xs);
+        margin-bottom: 0;
     }
+
+}
+
+.gfield--type-fileupload > .gfield_description {
+    margin-top: 0;
+    margin-bottom: 0;
 }
 
 .ginput_container_consent {
     @include checkbox-field;
+
+    --input--padding-y: var(--space--3xs);
+    --input--background-color: transparent;
+    --input--background-color--focus: transparent;
+    --input--background-color--highlight: transparent;
+    --input--color: var(--color--foreground);
+    --input--color--focus: var(--color--foreground);
+    --input--placeholder-color: var(--color--foreground);
+
+    legend {
+        margin-bottom: var(--space--3xs);
+    }
 
     .gfield_required {
         @include visually-hidden;
     }
 
     label {
+        padding-top: 0;
         margin-bottom: 0;
     }
 }
@@ -256,13 +344,40 @@
     }
 }
 
+.gfield--type-radio {
+
+    .gfield_radio {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space--4xs);
+    }
+
+}
+
 .gchoice {
+
+    .gfield_checkbox &,
+    .gfield_radio & {
+        --input--padding-y: var(--space--3xs);
+        --input--padding-x: 0;
+        --input--background-color: transparent;
+        --input--background-color--focus: transparent;
+        --input--background-color--highlight: transparent;
+        --input--color: var(--color--foreground);
+        --input--color--focus: var(--color--foreground);
+        --input--placeholder-color: var(--color--foreground);
+    }
+
     .gfield_checkbox & {
         @include checkbox-field;
     }
 
     .gfield_radio & {
         @include radio-field;
+
+        label {
+            margin-bottom: 0;
+        }
 
         // Without this, a <br> tag adds unnecessary spacing if/when the 'other' radio field is used
         br {
@@ -276,6 +391,8 @@
         }
     }
 }
+
+
 
 // Uncomment this if you're using 'Below Inputs' for Sub-Label placement on complex fields (e.g. name, address)
 // .field_sublabel_below {
