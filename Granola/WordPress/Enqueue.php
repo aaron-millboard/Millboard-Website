@@ -11,7 +11,14 @@ class Enqueue
         \add_action('admin_enqueue_scripts', [__CLASS__, 'enqueue_admin_assets']);
         \add_action('enqueue_block_editor_assets', [__CLASS__, 'enqueue_editor_assets']);
 
+        // WP global styles need to be dequeued in both head and footer.
         \add_action('wp_enqueue_scripts', [__CLASS__, 'dequeue_wp_global_styles']);
+        \add_action('wp_footer', [__CLASS__, 'dequeue_wp_global_styles']);
+
+        // Ensure WP core block styles are all lumped into the block library stylesheet (which we dequeue).
+        \add_filter('should_load_separate_core_block_assets', '__return_false');
+        \add_filter('should_load_block_assets_on_demand', '__return_true');
+
         \add_action('wp_enqueue_scripts', [__CLASS__, 'dequeue_wp_block_library_styles']);
 
         \add_action('wp_default_scripts', [__CLASS__, 'move_jquery_to_footer']);
