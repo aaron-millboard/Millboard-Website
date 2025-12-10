@@ -21,6 +21,7 @@ fieldset {
 }
 
 label {
+    @include typestyle-small;
     display: inline-block;
     margin-bottom: var(--form--label-spacing);
 }

@@ -10,13 +10,14 @@
     color: var(--input--color);
     font-family: inherit;
     line-height: inherit;
-    transition: transition(color, background-color, border-color, box-shadow, transform);
+    transition: transition(color, background-color, border-color, box-shadow, transform, border-width);
 
     &:focus,
     &:focus-within {
         background: var(--input--background-color--focus);
         box-shadow: 0 0 0 var(--input--outline-width--focus) var(--input--outline-color--focus);
         color: var(--input--color--focus);
+        border: var(--input--border-width--focus) solid var(--input--border-color--focus);
     }
 }
 

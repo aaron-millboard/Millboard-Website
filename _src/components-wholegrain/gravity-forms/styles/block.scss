@@ -1,0 +1,85 @@
+
+.gravity-forms {
+    $this: &;
+
+    &__inner {
+        max-width: var(--width--responsive--l);
+        margin-left: auto;
+        margin-right: auto;
+        position: relative;
+        padding: var(--space--xl) 0;
+    }
+
+    &__grid {
+        display: grid;
+        gap: var(--space--l);
+
+        @include mq(medium) {
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space--2xl);
+        }
+    }
+
+    &__column {
+        display: flex;
+        flex-direction: column;
+
+        &--content {
+            gap: var(--space--m);
+        }
+    }
+
+    &__header {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space--xs);
+    }
+
+    &__preheading {
+        @include typestyle-h6;
+        text-transform: uppercase;
+        margin: 0;
+    }
+
+    &__heading {
+        @include typestyle-h4;
+        margin: 0;
+    }
+
+    &__description {
+        @include typestyle-large;
+        margin: 0;
+    }
+
+    &__form {
+        .gform_wrapper {
+            
+            margin-top: 0;
+            margin-bottom: 0;
+
+            .gform_body {
+                .gfield {
+                    border-color: var(--color--border);
+                }
+            }
+        }
+    }
+
+    &.has-background {
+        #{$this}__inner {
+            padding: var(--space--2xl) 0;
+        }
+    }
+
+    &.has-brand-2-background-color {
+        #{$this}__form {
+            .gform_wrapper {
+                .gform_body {
+                    .gfield {
+                        border-color: var(--color--brand-1);
+                    }
+                }
+            }
+        }
+    }
+}

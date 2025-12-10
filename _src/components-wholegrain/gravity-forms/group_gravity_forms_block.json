@@ -1,0 +1,40 @@
+{
+    "key": "group_gravity_forms_block",
+    "title": "Block - Gravity Forms",
+    "fields": [
+        {
+            "key": "field_gravity_forms_preheading",
+            "label": "Pre-heading",
+            "name": "preheading",
+            "type": "text"
+        },
+        {
+            "key": "field_gravity_forms_heading",
+            "label": "Heading",
+            "name": "heading",
+            "type": "text"
+        },
+        {
+            "key": "field_gravity_forms_description",
+            "label": "Description",
+            "name": "description",
+            "type": "textarea"
+        },
+        {
+            "key": "field_gravity_forms_gravity_form_id",
+            "label": "Gravity Form",
+            "name": "gravity_form_id",
+            "type": "select",
+            "choices": []
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "block",
+                "operator": "==",
+                "value": "acf\/gravity-forms"
+            }
+        ]
+    ]
+}

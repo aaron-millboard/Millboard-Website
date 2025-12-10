@@ -2,6 +2,8 @@
 
 namespace Granola\Components\GravityForms;
 
+\add_filter('granola/component/gravity-forms', __NAMESPACE__ . '\\filter_args');
+
 // Prevents the <head> GF hooks script being output on pages it's not needed.
 // https://docs.gravityforms.com/gform_force_hooks_js_output/
 \add_filter('gform_force_hooks_js_output', '__return_false');

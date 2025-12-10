@@ -70,7 +70,7 @@
             margin: 0;
         }
 
-        .gform_fields {
+        .gform_wrapper .gform_fields {
             display: grid;
             gap: var(--space--m);
             grid-template-columns: 1fr 1fr;

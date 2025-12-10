@@ -16,12 +16,13 @@
     // A little arrow at the top
     &::before {
         position: absolute;
-        bottom: 100%;
-        left: var(--tooltip--arrow--inset, var(--tooltip--padding));
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
         width: 0;
         height: 0;
         border-right: calc(var(--tooltip--arrow--size) / 1.2) solid transparent;
-        border-bottom: calc(var(--tooltip--arrow--size)) solid var(--color--background);
+        border-top: calc(var(--tooltip--arrow--size)) solid var(--color--background);
         border-left: calc(var(--tooltip--arrow--size) / 1.2) solid transparent;
         content: '';
     }
