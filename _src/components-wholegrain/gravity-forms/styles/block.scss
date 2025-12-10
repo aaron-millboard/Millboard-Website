@@ -16,7 +16,7 @@
 
         @include mq(medium) {
             grid-template-columns: 1fr 1fr;
-            gap: var(--space--2xl);
+            gap: var(--space--3xl);
         }
     }
 
@@ -26,6 +26,10 @@
 
         &--content {
             gap: var(--space--m);
+
+            @include mq(large) {
+                padding-right: var(--space--3xl);
+            }
         }
     }
 
