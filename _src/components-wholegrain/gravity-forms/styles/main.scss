@@ -188,7 +188,7 @@
 
     position: absolute;
     top: -1rem;
-    right: 2rem;
+    right: 0;
 
     margin-top: 0;
     margin-bottom: 0;
@@ -196,12 +196,16 @@
     &:empty {
         display: none;
     }
+
+    @include mq(large) {
+        right: 2rem;
+    }
 }
 
 //
 // Fields
 //
-.ginput_container_fileupload {
+.gfield--type-fileupload {
 
     .gform_drop_area {
         --input--border-color: var(--color--brand-4);
@@ -229,6 +233,10 @@
             position: absolute;
             top: 1rem;
         }
+    }
+
+    &.gfield_error .gform_drop_area {
+        --input--border-color: var(--color--error);
     }
 
     .gform_fileupload_rules {
