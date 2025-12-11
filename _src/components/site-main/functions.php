@@ -26,19 +26,29 @@ function filter_args(array $args): ?array
         }
 
         // Display default header if one isn't added in the content.
-        if (!\has_block('acf/page-header')) {
-            $args['header'] = \Granola\Component::get('page-header', [
-                'object' => $args['object'],
-            ]);
-        }
-    }
+        $template_page = \Granola\WordPress\TemplatePage::get_template_page($args['object']);
 
-    if (empty($args['id']) && empty($args['attributes']['id'])) {
-        $args['attributes']['id'] = 'main';
-    }
+        if (!is_single() && $template_page) {
+            if (!\has_block('acf/page-header', $template_page)) {
+                $args['header'] = \Granola\Component::get('page-header', [
+                    'object' => $args['object'],
+                ]);
+            }
+        } else {
+            if (!\has_block('acf/page-header')) {
+                $args['header'] = \Granola\Component::get('page-header', [
+                    'object' => $args['object'],
+                ]);
+            }
+        }
+
+        if (empty($args['id']) && empty($args['attributes']['id'])) {
+            $args['attributes']['id'] = 'main';
+        }
 
     // -------------------------------------------------------------------------
     // Return the filtered args.
     // -------------------------------------------------------------------------
-    return $args;
+        return $args;
+    }
 }
