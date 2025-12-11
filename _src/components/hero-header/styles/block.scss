@@ -18,7 +18,6 @@
 
     &__image {
         display: grid;
-        padding-block: var(--space--s);
 
         > img {
             display: block;
@@ -30,7 +29,8 @@
 
     &__strapline {
         display: block;
-        padding-block: var(--space--s);
+        padding-top: var(--space--xl);
+        padding-bottom: calc(var(--space--s) * 2);
         margin: 0;
         background-image: var(--hero-header--image);
         background-clip: text;
