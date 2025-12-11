@@ -5,12 +5,20 @@
 
     --hero-header--image: '';
 
+    &__inner {
+        max-width: var(--width--responsive--l);
+        margin-left: auto;
+        margin-right: auto;
+        padding-block: var(--space--xl);
+    }
+
     &__heading {
         @include typestyle-h3;
     }
 
     &__image {
         display: grid;
+        padding-block: var(--space--s);
 
         > img {
             display: block;
@@ -21,18 +29,20 @@
     }
 
     &__strapline {
-        @include typestyle-h1;
-
-        font-weight: 700;
-        font-size: 80px;
-        margin: 0;
         display: block;
-        text-align: center;
+        padding-block: var(--space--s);
+        margin: 0;
         background-image: var(--hero-header--image);
         background-clip: text;
         background-size: 100% auto;
         background-position: top center;
         color: transparent; // essential for background clipping magic.
+        font-weight: var(--type--1--font-weight);
+        font-size: rfs(30, 102);
+        letter-spacing: 0.015em; // magic number.
+        line-height: rfs(30, 80);
+        text-transform: none;
+        text-align: center;
 
         &-wrapper {
             width: 100%;
