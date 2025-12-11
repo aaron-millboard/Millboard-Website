@@ -2,10 +2,10 @@
 @mixin font-variables {
     @font-face {
         font-display: fallback;
-        font-family: 'F37 Ginger Light';
+        font-family: 'F37 Ginger';
         font-style: normal;
         font-weight: 300;
-        src: url('./static/subset-f37-ginger-light.woff2') format('woff2');
+        src: url('./static/f37-ginger-light.woff2') format('woff2');
     }
 
     @font-face {
@@ -13,14 +13,14 @@
         font-family: 'F37 Ginger';
         font-style: normal;
         font-weight: 400;
-        src: url('./static/subset-f37-ginger.woff2') format('woff2');
+        src: url('./static/f37-ginger.woff2') format('woff2');
     }
 
     @font-face {
         font-display: fallback;
-        font-family: 'F37 Ginger Bold';
+        font-family: 'F37 Ginger';
         font-style: normal;
         font-weight: 700;
-        src: url('./static/subset-f37-ginger-bold.woff2') format('woff2');
+        src: url('./static/f37-ginger-bold.woff2') format('woff2');
     }
 }
