@@ -10,14 +10,14 @@ $base-font-size: 18px;
 @mixin type-variables {
     --type--font-size--base: #{$base-font-size};
 
-    --type--1--font-family: 'F37 Ginger Light', system-ui, sans-serif;
+    --type--1--font-family: 'F37 Ginger', system-ui, sans-serif;
     --type--1--font-weight: 300;
     --type--1--line-height: 1.42;
 
     --type--2--font-family: 'F37 Ginger', system-ui, sans-serif;
     --type--2--font-weight: 400;
 
-    --type--3--font-family: 'F37 Ginger Bold', system-ui, sans-serif;
+    --type--3--font-family: 'F37 Ginger', system-ui, sans-serif;
     --type--3--font-weight: 700;
 
     --heading--max-width: 17em;
