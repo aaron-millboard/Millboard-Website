@@ -286,6 +286,10 @@ class Partial implements \Stringable
         }
 
         if (!empty($args['classes'])) {
+            if (is_array($args['classes'])) {
+                $args['classes'] = \Granola\Helpers::build_classes($args['classes']);
+            }
+
             $args['attributes']['class'] = $args['classes'];
         }
 
