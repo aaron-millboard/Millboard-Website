@@ -1,0 +1,35 @@
+{
+    "$schema": "https://advancedcustomfields.com/schemas/json/main/block.json",
+    "apiVersion": 2,
+    "name": "iframe",
+    "title": "iFrame",
+    "description": "Call to action block with button",
+    "category": "granola-blocks",
+    "icon": "id",
+    "keywords": [],
+    "acf": {
+        "mode": "edit",
+        "renderCallback": "\\Granola\\Component::acf_render_callback",
+        "postTypes": [
+            "page",
+            "post",
+            "granola-template"
+        ]
+    },
+    "supports": {
+        "align": [
+            "wide",
+            "full"
+        ],
+        "anchor": true,
+        "color": {
+            "text": false
+        }
+    },
+    "attributes": {
+        "align": {
+            "type": "string",
+            "default": "full"
+        }
+    }
+}
