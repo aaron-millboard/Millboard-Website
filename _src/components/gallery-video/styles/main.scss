@@ -23,26 +23,22 @@
 
     &__preheading {
         @include typestyle-h6;
-        text-transform: uppercase;
     }
 
     &__heading {
         @include typestyle-h3;
-        text-transform: uppercase;
+
         margin: 0;
     }
 
     &--single {
-
         #{$this}__content {
             display: flex;
             gap: var(--space--m);
         }
-
     }
 
     &--multiple {
-
         #{$this}__content {
             display: flex;
             flex-direction: column;
@@ -54,7 +50,6 @@
                 flex-direction: row;
             }
         }
-
     }
 
     &__sidebar-wrapper {
@@ -241,7 +236,6 @@
                 }
             }
         }
-
     }
 
     &__captions {

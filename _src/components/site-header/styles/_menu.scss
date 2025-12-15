@@ -85,7 +85,6 @@
         // Top level menu items.
         // -------------------------------------------------------------
         &--depth-0 {
-
             &.menu-item--current {
                 border-top: var(--border-width--m) solid var(--color--brand-4);
             }
@@ -98,13 +97,14 @@
             > .menu-item__wrap {
                 > a {
                     @include typestyle-h4;
+
                     text-transform: uppercase;
+
                     @include mq('site-header') {
                         @include typestyle-h6;
                     }
-                }  
+                }
             }
-
         }
 
         &--depth-0:not(:has(.sub-menu--mega)) {
@@ -121,7 +121,6 @@
             @include mq($until: 'site-header') {
                 min-height: px-to-rem(44);
             }
- 
         }
 
         // -------------------------------------------------------------
@@ -142,7 +141,6 @@
         // The active menu item.
         // -------------------------------------------------------------
         &--current {
-
             > .menu-item__wrap {
                 /* stylelint-disable selector-max-compound-selectors */
                 > a {
@@ -227,7 +225,6 @@
                     }
                 }
 
-
                 // Fills in the gap between the menu item and the
                 // dropdown so that the mouse doesn't lose hover
                 // going between them.
@@ -259,8 +256,6 @@
                 .menu-list {
                     padding: 0;
                 }
-
-
             }
         }
 

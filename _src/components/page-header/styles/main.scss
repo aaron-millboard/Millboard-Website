@@ -54,7 +54,6 @@
             @include mq(large) {
                 grid-column: span 1;
             }
-
         }
 
         @include mq(large) {
@@ -77,7 +76,6 @@
     &__preheading {
         @include no-first-last-margin;
         @include typestyle-h6;
-        text-transform: uppercase;
     }
 
     &__description {
@@ -121,7 +119,6 @@
         }
 
         #{$this}__wrapper {
-
             display: flex;
             flex-direction: column;
             gap: 0;
@@ -136,7 +133,6 @@
                 grid-template-columns: 1fr 0.5fr 1fr;
                 gap: 0;
             }
-
         }
 
         #{$this}__content--first {
@@ -176,7 +172,6 @@
                 @include mq(large) {
                     grid-column: span 1;
                 }
-
             }
 
             &--last {
@@ -198,7 +193,6 @@
         #{$this}__description {
             @include typestyle-small;
         }
-
     }
 
     .breadcrumbs {
@@ -207,7 +201,7 @@
     }
 
     .blocks & {
-        + [class*=wp-block] {
+        + [class*='wp-block'] {
             margin-top: 0;
 
             &:where([class*='has-background'].alignfull) {
@@ -236,7 +230,7 @@
                 transparent 70%
             );
         }
-        
+
         &-top {
             position: absolute;
             top: 0;
@@ -265,10 +259,9 @@
             );
         }
     }
-    
+
     // Adjust gradient color for brand backgrounds
-    &.has-brand-6-background-color
-    {
+    &.has-brand-6-background-color {
         --page-header--gradient-color: rgba(255, 255, 255, 0.15);
     }
 }

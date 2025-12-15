@@ -27,12 +27,11 @@
 
     &__preheading {
         @include typestyle-h6;
-        text-transform: uppercase;
     }
 
     &__heading {
         @include typestyle-h5;
-        text-transform: uppercase;
+
         margin: 0;
     }
 

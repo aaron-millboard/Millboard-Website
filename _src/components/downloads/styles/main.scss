@@ -19,7 +19,7 @@
         display: grid;
         gap: var(--space--l);
         padding: var(--space--l) 0;
-        border-top: 1px solid ;
+        border-top: 1px solid;
 
         @include mq(large) {
             grid-template-columns: 1fr auto;
@@ -36,7 +36,6 @@
 
     &__preheading {
         @include typestyle-h6;
-        text-transform: uppercase;
     }
 
     &__heading {
@@ -129,5 +128,4 @@
             cursor: pointer;
         }
     }
-
 }

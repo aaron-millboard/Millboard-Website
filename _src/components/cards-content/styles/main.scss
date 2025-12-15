@@ -26,12 +26,11 @@
 
     &__preheading {
         @include typestyle-h6;
-        text-transform: uppercase;
     }
 
     &__heading {
         @include typestyle-h2;
-        text-transform: uppercase;
+
         margin: 0;
     }
 
@@ -90,14 +89,13 @@
                     height: 220px;
                 }
             }
-
         }
     }
 
     &__card-title {
         @include typestyle-h5;
+
         font-size: 20px;
-        text-transform: uppercase;
         max-width: 75%;
         text-align: center;
         margin: 0 auto;
@@ -115,7 +113,6 @@
     }
 
     &__card-image-wrapper {
-
         img {
             position: absolute;
             top: 0;
@@ -159,16 +156,16 @@
         height: 2rem;
 
         &--message {
+            @include typestyle-h6;
+
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             width: 100%;
             text-align: center;
-            @include typestyle-h6;
             font-weight: 300;
             font-family: var(--type--2--font-family);
-            text-transform: uppercase;
             transition: all 0.3s ease-in-out;
         }
 
@@ -187,7 +184,7 @@
 
             a {
                 @include typestyle-h6;
-                text-transform: uppercase;
+
                 text-decoration: none;
                 width: 100%;
                 display: flex;
@@ -216,8 +213,6 @@
                     mask-size: #{px-to-rem(16)};
                 }
             }
-
-
         }
     }
 
