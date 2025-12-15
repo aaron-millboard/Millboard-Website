@@ -11,5 +11,41 @@
                 <?= \Granola\Component::get('image', $args['image']); ?>
             </div>
         <?php } ?>
+
+        <?php if (!empty($args['heading']) || !empty($args['ctas'])) { ?>
+            <div class="hero-header__header">
+                <div class="hero-header__content">
+                    <?php if (!empty($args['preheading'])) { ?>
+                        <div class="hero-header__preheading is-style-typestyle-h6">
+                            <?= wp_kses_post($args['preheading']); ?>
+                        </div>
+                    <?php } ?>
+
+                    <?= \Granola\Component::get('heading', $args['heading']); ?>
+
+                    <?= \Granola\Component::get('link', $args['link']); ?>
+                </div>
+
+                <?php if (!empty($args['ctas'])) { ?>
+                    <div class="hero-header__ctas">
+                        <?php foreach ($args['ctas'] as $cta) { ?>
+                            <div class="hero-header__cta">
+                                <?php if (!empty($cta['image_desktop'])) { ?>
+                                    <?= \Granola\Component::get('image', $cta['image_desktop']); ?>
+                                <?php } ?>
+
+                                <?php if (!empty($cta['image_mobile'])) { ?>
+                                    <?= \Granola\Component::get('image', $cta['image_mobile']); ?>
+                                <?php } ?>
+
+                                <?php if (!empty($cta['link'])) { ?>
+                                    <?= \Granola\Component::get('link', $cta['link']); ?>
+                                <?php } ?>
+                            </div>
+                        <?php } ?>
+                    </div>
+                <?php } ?>
+            </div>
+        <?php } ?>
     </div>
 </div>
