@@ -12,9 +12,7 @@ function filter_args(array $args): ?array
         'content' => '',
         'title' => '',
         'url' => '',
-        'attributes' => [
-            'rel' => '',
-        ],
+        'attributes' => [],
         'classes' => [],
     ], $args);
 
