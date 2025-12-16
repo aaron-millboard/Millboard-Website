@@ -12,7 +12,7 @@ function filter_args(array $args): ?array
         'source' => 'current', // post, custom
         'object' => null,
         'type' => 'page',
-        'background' => 'brand-1',
+        'background_color' => 'brand-1',
         'attributes' => [],
         'show_breadcrumbs' => true,
         'bg_gradient' => false,
@@ -198,9 +198,14 @@ function filter_args(array $args): ?array
     // -------------------------------------------------------------------------
     // Manipulate classes based on args
     // -------------------------------------------------------------------------
-    if (!empty($args['background']) && $args['background'] !== 'none') {
-        $args['classes'][] = 'has-' . $args['background'] . '-background-color';
+    if (!empty($args['background_color']) && $args['background_color'] !== 'none') {
+        $args['classes'][] = 'has-' . $args['background_color'] . '-background-color';
         $args['classes'][] = 'has-background';
+
+        // Only allow gradient on some brand colors.
+        if ($args['background_color'] !== 'brand-5' && $args['background_color'] !== 'brand-6') {
+            $args['bg_gradient'] = false;
+        }
     }
 
     if (!empty($args['type'])) {
