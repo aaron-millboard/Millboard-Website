@@ -15,7 +15,7 @@ class Videos
         // Try Vimeo
         $vimeo_id = self::extract_vimeo_id($url);
         if ($vimeo_id) {
-            return 'https://player.vimeo.com/video/' . $vimeo_id . '?autoplay=1';
+            return 'https://player.vimeo.com/video/' . $vimeo_id . '?autoplay=1&controls=0';
         }
 
         // Try YouTube
