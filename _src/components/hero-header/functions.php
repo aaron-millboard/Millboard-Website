@@ -75,6 +75,27 @@ function filter_args(array $args): ?array
         }, $args['ctas']);
     }
 
+     // Process video URL (YouTube or Vimeo).
+    if (!empty($args['video_url'])) {
+        $args['embed_url'] = \Theme\Utils\Videos::get_video_embed_url($args['video_url']);
+
+        $args['media_button'] = [
+            'content' => implode([
+                \Granola\SVG::get('icons-custom/play.svg', [
+                    'class' => 'hero-header__play-button',
+                ]),
+                \Granola\SVG::get('icons-custom/pause.svg', [
+                    'class' => 'hero-header__pause-button',
+                ]),
+            ]),
+            'classes' => ['hero-header__controls'],
+            'attributes' => [
+                'data-embed-url' => $args['embed_url'],
+                'aria-label' => \__('Play video', 'granola'),
+            ],
+        ];
+    }
+
     // -------------------------------------------------------------------------
     // Return the filtered args.
     // -------------------------------------------------------------------------

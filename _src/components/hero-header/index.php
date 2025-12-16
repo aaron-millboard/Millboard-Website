@@ -9,6 +9,17 @@
                 <?php } ?>
 
                 <?= \Granola\Component::get('image', $args['image']); ?>
+
+                <?= \Granola\Component::get('button', $args['media_button']); ?>
+
+                <div class="hero-header__iframe">
+                    <iframe
+                        src=""
+                        frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen
+                    ></iframe>
+                </div>
             </div>
         <?php } ?>
 
