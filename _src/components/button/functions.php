@@ -12,9 +12,7 @@ function filter_args(array $args): ?array
         'content' => '',
         'classes' => [],
         'visually_hidden_text' => false,
-        'attributes' => [
-            'type' => 'button',
-        ],
+        'attributes' => [],
     ], $args);
 
     // ---------------------------------------
@@ -31,6 +29,11 @@ function filter_args(array $args): ?array
                 'visually-hidden',
             ],
         ]);
+    }
+
+    // Enforce button type.
+    if (empty($args['type']) && empty($args['attributes']['type'])) {
+        $args['attributes']['type'] = 'button';
     }
 
     // -------------------------------------------------------------------------

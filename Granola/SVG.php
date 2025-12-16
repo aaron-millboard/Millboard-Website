@@ -44,6 +44,7 @@ class SVG
             'description'   => '',
             'width'         => 0,
             'height'        => 0,
+            'class'         => '',
         ], $args);
 
         // Get the path to the SVG (from assets folder by default).
@@ -121,6 +122,11 @@ class SVG
             $doc->documentElement->setAttribute('height', $args['height']);
         } elseif (!empty($svg_info['h'])) {
             $doc->documentElement->setAttribute('height', $svg_info['h']);
+        }
+
+        // If class was specified, set it.
+        if (!empty($args['class'])) {
+            $doc->documentElement->setAttribute('class', $args['class']);
         }
 
         // Output the SVG markup and strip the XML doctype declaration.

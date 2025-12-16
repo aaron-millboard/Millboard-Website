@@ -44,7 +44,6 @@
         transition: transition(color, background-color, border-color, box-shadow, transform);
 
         &:focus-within {
-
             #{$this}__label {
                 opacity: 0;
                 pointer-events: none;
@@ -69,12 +68,12 @@
 
     &__input {
         @include typestyle-h5;
-        --input--color: var(--color--black); 
+
+        --input--color: var(--color--black);
         --input--color--focus: var(--color--black);
         --input--background-color: transparent;
         --input--background-color--focus: transparent;
 
-        text-transform: uppercase;
         padding: 0;
         border: 0;
         border-radius: 0;
@@ -88,7 +87,7 @@
         @include button-reset-hard;
         width: max-content;
         align-self: end;
-        margin-top: .5rem;
+        margin-top: 0.5rem;
         margin-bottom: 0.5rem;
 
         @include mq('site-header') {

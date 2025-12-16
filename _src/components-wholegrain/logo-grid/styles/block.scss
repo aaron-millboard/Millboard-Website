@@ -40,7 +40,7 @@
     &__subheading {
         @include no-first-last-margin;
         @include typestyle-h6;
-        text-transform: uppercase;
+
         margin-block: var(--space--base);
 
         @if ($blocks--center-align-headers) {
@@ -78,7 +78,6 @@
         @include mq('xlarge') {
             --grid--columns: 6;
         }
-
     }
 
     &__item {
@@ -93,5 +92,4 @@
             object-fit: contain;
         }
     }
-
 }

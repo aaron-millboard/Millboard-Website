@@ -70,6 +70,7 @@
     font-size: rfs(18, 28);
     font-family: var(--type--3--font-family);
     font-weight: var(--type--3--font-weight);
+    text-transform: uppercase;
 }
 
 @mixin typestyle-h6 {
@@ -78,4 +79,5 @@
     font-size: rfs(14, 15);
     font-family: var(--type--3--font-family);
     font-weight: var(--type--3--font-weight);
+    text-transform: uppercase;
 }

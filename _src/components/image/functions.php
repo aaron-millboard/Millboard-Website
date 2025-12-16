@@ -8,10 +8,11 @@ function filter_args(array $args): ?array
     // Default arguments.
     // ---------------------------------------
     $args = array_merge([
-        'alt'        => '',
-        'size'       => 'medium_large',
+        'alt' => '',
+        'size' => 'medium_large',
         'attributes' => [],
-        'loading'   => 'lazy',
+        'loading' => 'lazy',
+        'classes' => [],
     ], $args);
 
     // ---------------------------------------
@@ -37,6 +38,14 @@ function filter_args(array $args): ?array
     if (!empty($args['loading'])) {
         $args['attributes']['loading'] = $args['loading'];
     }
+
+    $args['attributes']['class'] = [];
+    if (!empty($args['classes'])) {
+        $args['attributes']['class'] = $args['classes'];
+        unset($args['classes']);
+    }
+
+    $args['attributes']['class'] = \Granola\Helpers::build_classes($args['attributes']['class']);
 
     // -------------------------------------------------------------------------
     // Return the filtered args.

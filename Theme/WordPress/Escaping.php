@@ -34,6 +34,32 @@ class Escaping
             $tags['img']['srcset'] = true;
 
             $tags['a']['tabindex'] = true;
+
+            // Basic SVG filtering.
+            $tags['svg'] = [
+                'class' => true,
+                'aria-hidden' => true,
+                'aria-labelledby' => true,
+                'role' => true,
+                'xmlns' => true,
+                'width' => true,
+                'height' => true,
+                'fill' => true,
+                'viewbox' => true, // Must be lower case.
+            ];
+
+            $tags['path'] = [
+                'd' => true,
+                'fill' => true,
+            ];
+
+            $tags['g'] = [
+                'id' => true,
+                'stroke' => true,
+                'stroke-width' => true,
+                'fill' => true,
+                'fill-rule' => true,
+            ];
         }
 
         return $tags;

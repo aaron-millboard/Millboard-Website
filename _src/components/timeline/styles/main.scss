@@ -54,8 +54,6 @@
         @include mq(large) {
             align-self: flex-end;
         }
-
-
     }
 
     &__content {
@@ -70,7 +68,7 @@
         top: 0;
         bottom: 0;
         width: var(--timeline--line-width);
-        
+
         @include mq($until: large) {
             left: var(--space--m);
         }
@@ -175,12 +173,10 @@
 
             &__description {
                 @include typestyle-h6;
-                text-transform: uppercase;
 
                 @include mq(large) {
                     padding-top: var(--space--2xs);
                 }
-
             }
         }
 
@@ -195,7 +191,6 @@
                 padding-top: 0;
             }
         }
-
     }
 
     // -------------------------------------------------------------------------

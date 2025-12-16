@@ -52,7 +52,7 @@ function filter_args(array $args): ?array
 
             // Process video URL (YouTube or Vimeo)
             if (!empty($item['video_url'])) {
-                $embed_url = get_video_embed_url($item['video_url']);
+                $embed_url = \Theme\Utils\Videos::get_video_embed_url($item['video_url']);
                 if ($embed_url) {
                     $args['items'][$key]['embed_url'] = $embed_url;
                 } else {
@@ -80,58 +80,4 @@ function filter_args(array $args): ?array
     // Return the filtered args.
     // -------------------------------------------------------------------------
     return $args;
-}
-
-/**
- * Extract video embed URL from YouTube or Vimeo URL
- *
- * @param string $url Video URL
- * @return string|false Embed URL or false if invalid
- */
-function get_video_embed_url($url)
-{
-
-    // Try Vimeo
-    $vimeo_id = extract_vimeo_id($url);
-    if ($vimeo_id) {
-        return 'https://player.vimeo.com/video/' . $vimeo_id . '?autoplay=1';
-    }
-
-    // Try YouTube
-    $youtube_id = extract_youtube_id($url);
-    if ($youtube_id) {
-        return 'https://www.youtube.com/embed/' . $youtube_id . '?autoplay=1&modestbranding=1&rel=0';
-    }
-
-    return false;
-}
-
-/**
- * Extract YouTube video ID from URL
- *
- * @param string $url YouTube URL
- * @return string|false Video ID or false if not found
- */
-function extract_youtube_id($url)
-{
-    $pattern = '/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/ ]{11})/i';
-    if (preg_match($pattern, $url, $matches)) {
-        return $matches[1];
-    }
-    return false;
-}
-
-/**
- * Extract Vimeo video ID from URL
- *
- * @param string $url Vimeo URL
- * @return string|false Video ID or false if not found
- */
-function extract_vimeo_id($url)
-{
-    $pattern = '/vimeo\.com\/(?:channels\/(?:\w+\/)?|groups\/([^\/]*)\/videos\/|album\/(\d+)\/video\/|)(\d+)(?:$|\/|\?)/';
-    if (preg_match($pattern, $url, $matches)) {
-        return $matches[3];
-    }
-    return false;
 }

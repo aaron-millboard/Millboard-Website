@@ -19,11 +19,11 @@
 
     &__preheading {
         @include typestyle-h6;
-        text-transform: uppercase;
     }
 
     &__heading {
         @include typestyle-h5;
+
         margin: 0;
     }
 
@@ -63,8 +63,8 @@
 
     &__tile-title {
         @include typestyle-h6;
+
         font-weight: 700;
-        text-transform: uppercase;
         margin: 0;
         padding-top: var(--space--2xs);
         border-top: 1px solid var(--color--foreground);

@@ -1,5 +1,4 @@
 .list-features {
-
     $this: &;
 
     &__inner {
@@ -20,13 +19,13 @@
 
     &__preheading {
         @include typestyle-h6;
-        text-transform: uppercase;
+
         margin: 0;
     }
 
     &__heading {
         @include typestyle-h5;
-        text-transform: uppercase;
+
         margin: 0;
     }
 
@@ -59,9 +58,9 @@
 
         &__title {
             @include typestyle-h6;
+
             font-family: var(--type--2--font-family);
             font-weight: 400;
-            text-transform: uppercase;
         }
 
         &__description {
@@ -82,7 +81,5 @@
                 object-fit: contain;
             }
         }
-
     }
-
 }

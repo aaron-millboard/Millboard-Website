@@ -1,0 +1,216 @@
+@import '../../../core';
+
+.hero-header {
+    $this: &;
+
+    --hero-header--image: '';
+
+    $block-internal-z-index: 100; // Local stacking.
+
+    isolation: isolate; // Create local stacking context.
+
+    &__inner {
+        display: grid;
+        max-width: var(--width--responsive--l);
+        margin-left: auto;
+        margin-right: auto;
+        padding-block: var(--space--xl);
+        gap: var(--space--xl);
+    }
+
+    &__heading {
+        @include typestyle-h3;
+    }
+
+    &__media {
+        position: relative;
+        display: grid;
+    }
+
+    &__image {
+        display: block;
+        aspect-ratio: 16 / 9;
+        grid-row: 1;
+        grid-column: 1;
+        width: 100%;
+        opacity: 1;
+        visibility: visible;
+        transition: transition(opacity, visibility);
+    }
+
+    &__iframe {
+        z-index: $block-internal-z-index + 1;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        margin: 0;
+        opacity: 0;
+        visibility: hidden;
+        transition: transition(opacity, visibility);
+
+        iframe {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+        }
+    }
+
+    &__controls {
+        --icon-size: #{px-to-rem(40)};
+
+        @include button-reset-hard;
+        @include mask-icon;
+
+        z-index: $block-internal-z-index + 2;
+        position: absolute;
+        bottom: var(--space--l);
+        right: var(--space--l);
+        width: var(--icon-size);
+        height: var(--icon-size);
+        display: grid;
+        align-items: center;
+        justify-content: center;
+        color: var(--color--white);
+
+        &::after {
+            width: var(--icon-size);
+            height: var(--icon-size);
+            mask-image: url(#{asset-path('images/icons-custom/play.svg')});
+        }
+    }
+
+    // Active state when video is playing
+    &--playing {
+        #{$this}__iframe {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        #{$this}__controls {
+            &::after {
+                mask-image: url(#{asset-path('images/icons-custom/pause.svg')});
+            }
+        }
+    }
+
+    &__strapline {
+        display: block;
+        padding-top: var(--space--4sx);
+        padding-bottom: var(--space--2xs);
+        margin: 0;
+        background-image: var(--hero-header--image);
+        background-clip: text;
+        background-size: 100% auto;
+        background-position: top center;
+        color: transparent; // essential for background clipping magic.
+        font-weight: var(--type--1--font-weight);
+        font-size: rfs(30, 102);
+        letter-spacing: 0.015em; // magic number.
+        line-height: rfs(30, 80);
+        text-transform: none;
+        text-align: center;
+
+        @include mq(medium) {
+            padding-top: var(--space--xl);
+            padding-bottom: calc(var(--space--s) * 2);
+        }
+
+        &-wrapper {
+            width: 100%;
+            grid-row: 1;
+            grid-column: 1;
+            align-self: start;
+            background-color: var(--color--background);
+            z-index: $block-internal-z-index;
+        }
+    }
+
+    &__header {
+        display: grid;
+        gap: var(--space--xl);
+
+        @include mq(medium) {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    &__content {
+        display: grid;
+        justify-items: start;
+    }
+
+    &__heading {
+        margin: 0;
+        line-height: 1.2;
+
+        &:not(:first-child) {
+            margin-top: var(--space--2xs);
+        }
+
+        @include mq(medium) {
+            max-width: px-to-rem(560); // magic number
+        }
+    }
+
+    &__link {
+        &:not(:first-child) {
+            margin-top: var(--space--m);
+        }
+    }
+
+    &__ctas {
+        display: grid;
+        gap: var(--space--xl);
+
+        @include mq(medium) {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    &__cta {
+        display: grid;
+        gap: var(--space--2xs);
+    }
+
+    &__cta-image {
+        width: 100%;
+
+        &--mobile {
+            aspect-ratio: 16 / 9;
+
+            @include mq(medium) {
+                display: none;
+            }
+        }
+
+        &--desktop {
+            aspect-ratio: 1 / 1;
+
+            @include mq($until: medium) {
+                display: none;
+            }
+        }
+    }
+
+    &__cta-link {
+        @include typestyle-h6;
+        @include link--2;
+        @include mask-icon('after');
+
+        width: 100%;
+        display: inline-flex;
+        justify-content: space-between;
+
+        &::after {
+            --mask-icon--size: #{px-to-rem(24)};
+
+            display: block;
+            width: px-to-rem(24);
+            height: px-to-rem(24);
+            mask-image: url(#{asset-path('images/icons/chevron-right.svg')});
+        }
+    }
+}

@@ -1,0 +1,33 @@
+{
+    "$schema": "https://advancedcustomfields.com/schemas/json/main/block.json",
+    "apiVersion": 2,
+    "name": "acf/hero-header",
+    "title": "Hero Header",
+    "category": "granola-blocks",
+    "icon": "welcome-widgets-menus",
+    "keywords": [],
+    "acf": {
+        "mode": "auto",
+        "renderCallback": "\\Granola\\Component::acf_render_callback",
+        "postTypes": [
+            "page",
+            "granola-template"
+        ]
+    },
+    "supports": {
+        "align": false,
+        "anchor": true,
+        "color": {
+            "background": true,
+            "text": false
+        },
+        "mode": false,
+        "multiple": false
+    },
+    "attributes": {
+        "align": {
+            "type": "string",
+            "default": "full"
+        }
+    }
+}
