@@ -55,7 +55,7 @@ class Partial implements \Stringable
         \add_filter('granola/partial', [__CLASS__, 'build_partial_classes'], 40);
 
         // Set attribute args for partials.
-        \add_filter('granola/partial', [__CLASS__, 'build_partial_attributes'], 50);
+        \add_filter('granola/partial', [__CLASS__, 'build_partial_attributes'], 100);
     }
 
     /**
@@ -286,10 +286,6 @@ class Partial implements \Stringable
         }
 
         if (!empty($args['classes'])) {
-            if (is_array($args['classes'])) {
-                $args['classes'] = \Granola\Helpers::build_classes($args['classes']);
-            }
-
             $args['attributes']['class'] = $args['classes'];
         }
 
