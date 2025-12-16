@@ -78,9 +78,14 @@
 
     &__heading {
         margin: 0;
+        line-height: 1.2;
 
         &:not(:first-child) {
             margin-top: var(--space--2xs);
+        }
+
+        @include mq(medium) {
+            max-width: px-to-rem(560); // magic number
         }
     }
 
