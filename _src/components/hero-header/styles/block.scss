@@ -18,12 +18,12 @@
         @include typestyle-h3;
     }
 
-    &__image {
+    &__image-wrapper {
         display: grid;
-        aspect-ratio: 16 / 9;
 
         > img {
             display: block;
+            aspect-ratio: 16 / 9;
             grid-row: 1;
             grid-column: 1;
             width: 100%;
@@ -105,8 +105,10 @@
     }
 
     &__cta-image {
+        width: 100%;
+
         &--mobile {
-            width: 100%;
+            aspect-ratio: 16 / 9;
 
             @include mq(medium) {
                 display: none;
@@ -114,6 +116,8 @@
         }
 
         &--desktop {
+            aspect-ratio: 1 / 1;
+
             @include mq($until: medium) {
                 display: none;
             }
