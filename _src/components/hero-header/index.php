@@ -10,16 +10,16 @@
 
                 <?= \Granola\Component::get('image', $args['image']); ?>
 
-                <?= \Granola\Component::get('button', $args['media_button']); ?>
+                <?= \Granola\Component::get('button', $args['control_button']); ?>
 
-                <div class="hero-header__iframe">
-                    <iframe
-                        src=""
-                        frameborder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowfullscreen
-                    ></iframe>
-                </div>
+                <iframe
+                    src=""
+                    data-embed-url="<?= esc_attr($args['embed_url']); ?>"
+                    class="hero-header__iframe"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen
+                ></iframe>
             </div>
         <?php } ?>
 

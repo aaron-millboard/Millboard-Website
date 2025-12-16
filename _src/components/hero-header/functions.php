@@ -79,20 +79,14 @@ function filter_args(array $args): ?array
     if (!empty($args['video_url'])) {
         $args['embed_url'] = \Theme\Utils\Videos::get_video_embed_url($args['video_url']);
 
-        $args['media_button'] = [
-            'content' => implode([
-                \Granola\SVG::get('icons-custom/play.svg', [
-                    'class' => 'hero-header__play-button',
-                ]),
-                \Granola\SVG::get('icons-custom/pause.svg', [
-                    'class' => 'hero-header__pause-button',
-                ]),
-            ]),
+        $args['control_button'] = [
+            'content' => \__('Play video', 'granola'),
             'classes' => ['hero-header__controls'],
             'attributes' => [
-                'data-embed-url' => $args['embed_url'],
-                'aria-label' => \__('Play video', 'granola'),
+                'data-play-label' => \__('Play video', 'granola'),
+                'data-pause-label' => \__('Pause video', 'granola'),
             ],
+            'visually_hidden_text' => true,
         ];
     }
 

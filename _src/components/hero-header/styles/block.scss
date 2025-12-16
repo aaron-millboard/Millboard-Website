@@ -5,6 +5,10 @@
 
     --hero-header--image: '';
 
+    $block-internal-z-index: 100; // Local stacking.
+
+    isolation: isolate; // Create local stacking context.
+
     &__inner {
         display: grid;
         max-width: var(--width--responsive--l);
@@ -35,11 +39,13 @@
     }
 
     &__iframe {
+        z-index: $block-internal-z-index + 1;
         position: absolute;
         top: 0;
         left: 0;
         width: 100%;
         aspect-ratio: 16 / 9;
+        margin: 0;
         opacity: 0;
         visibility: hidden;
         transition: transition(opacity, visibility);
@@ -53,43 +59,40 @@
     }
 
     &__controls {
-        @include button-reset-hard;
+        --icon-size: #{px-to-rem(40)};
 
+        @include button-reset-hard;
+        @include mask-icon;
+
+        z-index: $block-internal-z-index + 2;
         position: absolute;
         bottom: var(--space--l);
         right: var(--space--l);
-        width: #{px-to-rem(40)};
-        height: #{px-to-rem(40)};
-        display: flex;
+        width: var(--icon-size);
+        height: var(--icon-size);
+        display: grid;
         align-items: center;
         justify-content: center;
         color: var(--color--white);
-    }
 
-    &__play-button,
-    &__pause-button {
-        width: 100%;
-        height: 100%;
-    }
-
-    &__pause-button {
-        display: none;
-    }
-
-    &__play-button {
-        display: block;
+        &::after {
+            width: var(--icon-size);
+            height: var(--icon-size);
+            mask-image: url(#{asset-path('images/icons-custom/play.svg')});
+        }
     }
 
     // Active state when video is playing
     &--playing {
-        #{$this}__image {
-            opacity: 0;
-            visibility: hidden;
-        }
-
         #{$this}__iframe {
             opacity: 1;
             visibility: visible;
+        }
+
+        #{$this}__controls {
+            &::after {
+                mask-image: url(#{asset-path('images/icons-custom/pause.svg')});
+            }
         }
     }
 
@@ -121,7 +124,7 @@
             grid-column: 1;
             align-self: start;
             background-color: var(--color--background);
-            z-index: 100;
+            z-index: $block-internal-z-index;
         }
     }
 
