@@ -1,16 +1,17 @@
 <header <?= \Granola\Helpers::build_attributes($args['attributes']); ?>>
     <div class="page-header__inner">
-
-        <!-- Breadcrumbs -->
         <?php if (!empty($args['show_breadcrumbs'])) { ?>
+            <!-- Breadcrumbs -->
             <div class="page-header__breadcrumbs">
                 <?= \Granola\Component::get('breadcrumbs'); ?>
             </div>
         <?php } ?>
 
         <div class="page-header__wrapper">
-
-            <div class="page-header__image-wrapper <?php if (empty($args['image'])) { echo 'page-header__image-wrapper--no-image'; } ?>">
+            <div class="<?= \Granola\Helpers::build_classes([
+                'page-header__image-wrapper',
+                empty($args['image']) ? 'page-header__image-wrapper--no-image' : '',
+            ]); ?>">
                 <?php if (!empty($args['image'])) { ?>
                     <div class="page-header__image">
                         <div class="page-header__image-inner img-fit">
@@ -21,9 +22,7 @@
             </div>
 
             <div class="page-header__content page-header__content--first">
-
                 <div class="page-header__header">
-
                     <?php if (!empty($args['preheading'])) { ?>
                         <div class="page-header__preheading">
                             <?= wp_kses_post($args['preheading']); ?>
@@ -33,17 +32,12 @@
                     <?php if (!empty($args['heading'])) { ?>
                         <?= \Granola\Component::get('heading', $args['heading']); ?>
                     <?php } ?>
-
                 </div>
 
-            <?php
-                // We are closing the first content div here if the type is 'page' and opening a new one for the rest of the content
-                if($args['type'] == 'page'):
-            ?>
+            <?php if ($args['type'] == 'page') : // Close the first content div here if the type is 'page' and opening a new one for the rest of the content. ?>
                 </div>
                 <div class="page-header__content page-header__content--last">
             <?php endif; ?>
-
                 <?php if (!empty($args['description'])) { ?>
                     <div class="page-header__description">
                         <?= wp_kses_post($args['description']['content']); ?>
@@ -53,11 +47,8 @@
                 <?php if (!empty($args['cta'])) { ?>
                     <?= \Granola\Component::get('link', $args['cta']); ?>
                 <?php } ?>
-
             </div>
-
         </div>
-
     </div>
 
     <?php if (!empty($args['bg_gradient'])) { ?>
@@ -67,5 +58,4 @@
             <div class="page-header__background-bottom"></div>
         </div>
     <?php } ?>
-
 </header>

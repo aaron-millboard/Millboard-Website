@@ -12,16 +12,15 @@ function filter_args(array $args): ?array
         'source' => 'current', // post, custom
         'object' => null,
         'type' => 'page',
-        'background' => 'brand-1',
+        'background_color' => 'brand-1',
         'attributes' => [],
         'show_breadcrumbs' => true,
         'bg_gradient' => false,
     ], $args);
 
     // -------------------------------------------------------------------------
-    // Add Required claasses
+    // Add Required classes
     // -------------------------------------------------------------------------
-    
     $args['classes'] = array_merge([
         'page-header',
         'wp-block',
@@ -31,12 +30,11 @@ function filter_args(array $args): ?array
     // -------------------------------------------------------------------------
     // Define our object
     // -------------------------------------------------------------------------
-    if($args['source'] === 'current') {
-        
+    if ($args['source'] === 'current') {
         $args['object'] = \Granola\WordPress\PageObject::get() ?? null;
 
         // Check if this is not page, set type to post
-        if($args['object'] instanceof \WP_Post && $args['object']->post_type !== 'page') {
+        if ($args['object'] instanceof \WP_Post && $args['object']->post_type !== 'page') {
             $args['type'] = 'post';
         }
     }
@@ -45,7 +43,6 @@ function filter_args(array $args): ?array
     // Mapping content based on the provided object
     // -------------------------------------------------------------------------
     if (!empty($args['object']) && ($args['source'] === 'post' || $args['source'] === 'current')) {
-
         $object = $args['object'];
 
         // Terms
@@ -99,9 +96,8 @@ function filter_args(array $args): ?array
 
         // Single Posts, Pages and other CPTs
         if ($object instanceof \WP_Post) {
-
             // Manage heading default (post title)
-            if(empty($args['heading'])) {
+            if (empty($args['heading'])) {
                 $args['heading'] = $object->post_title;
             }
 
@@ -117,7 +113,6 @@ function filter_args(array $args): ?array
 
             // Specific to post + case-study CPT args (to be reviewed)
             if ($object->post_type === 'post' || $object->post_type === 'case-study') {
-
                 $args['type'] = 'post';
 
                 $args['preheading'] = __('Featured article', 'granola');
@@ -132,7 +127,6 @@ function filter_args(array $args): ?array
                     // If this is current post, no CTA
                     unset($args['cta']);
                 }
-
             }
 
             unset($args['object']);
@@ -155,7 +149,6 @@ function filter_args(array $args): ?array
     // -------------------------------------------------------------------------
     // Prepeare args for sub-components
     // -------------------------------------------------------------------------
-
     if (!empty($args['image'])) {
         if (!is_array($args['image'])) {
             $args['image'] = [
@@ -205,10 +198,14 @@ function filter_args(array $args): ?array
     // -------------------------------------------------------------------------
     // Manipulate classes based on args
     // -------------------------------------------------------------------------
-    
-    if (!empty($args['background']) && $args['background'] !== 'none') {
-        $args['classes'][] = 'has-' . $args['background'] . '-background-color';
+    if (!empty($args['background_color']) && $args['background_color'] !== 'none') {
+        $args['classes'][] = 'has-' . $args['background_color'] . '-background-color';
         $args['classes'][] = 'has-background';
+
+        // Only allow gradient on some brand colors.
+        if ($args['background_color'] !== 'brand-5' && $args['background_color'] !== 'brand-6') {
+            $args['bg_gradient'] = false;
+        }
     }
 
     if (!empty($args['type'])) {
