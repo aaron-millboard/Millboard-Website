@@ -15,13 +15,22 @@ class Videos
         // Try Vimeo
         $vimeo_id = self::extract_vimeo_id($url);
         if ($vimeo_id) {
-            return 'https://player.vimeo.com/video/' . $vimeo_id . '?autoplay=1&controls=0';
+            // Player parameters: https://help.vimeo.com/hc/en-us/articles/12426260232977-About-Player-Parameters
+            return add_query_arg([
+                'autoplay' => 1,
+                'controls' => 0,
+                'transparent' => 0,
+            ], 'https://player.vimeo.com/video/' . $vimeo_id);
         }
 
         // Try YouTube
         $youtube_id = self::extract_youtube_id($url);
         if ($youtube_id) {
-            return 'https://www.youtube.com/embed/' . $youtube_id . '?autoplay=1&modestbranding=1&rel=0';
+            return add_query_arg([
+                'autoplay' => 1,
+                'modestbranding' => 1,
+                'rel' => 0,
+            ], 'https://www.youtube.com/embed/' . $youtube_id);
         }
 
         return false;
