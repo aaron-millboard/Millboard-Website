@@ -43,10 +43,10 @@ function filter_args(array $args): ?array
         if (empty($args['id']) && empty($args['attributes']['id'])) {
             $args['attributes']['id'] = 'main';
         }
+    }
 
     // -------------------------------------------------------------------------
     // Return the filtered args.
     // -------------------------------------------------------------------------
-        return $args;
-    }
+    return $args;
 }
