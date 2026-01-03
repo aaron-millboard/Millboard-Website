@@ -383,7 +383,13 @@ class TemplatePage
      */
     public static function add_taxonomy_add_template_admin_bar_link(\WP_Admin_Bar $admin_bar): void
     {
-        if (!\current_user_can('edit_posts') || !\is_admin()) {
+        // Bail early - on an admin screen.
+        if (\is_admin()) {
+            return;
+        }
+
+        // Bail early - user doesn't have the right capabilities.
+        if (!\current_user_can('edit_posts')) {
             return;
         }
 
@@ -430,7 +436,18 @@ class TemplatePage
      */
     public static function add_term_add_template_admin_bar_link_front_end(\WP_Admin_Bar $admin_bar): void
     {
-        if (!\current_user_can('edit_posts') || !\Granola\Helpers::is_taxonomy()) {
+        // Bail early - on an admin screen.
+        if (\is_admin()) {
+            return;
+        }
+
+        // Bail early - not on a taxonomy page.
+        if (!\Granola\Helpers::is_taxonomy()) {
+            return;
+        }
+
+        // Bail early - user doesn't have the right capabilities.
+        if (!\current_user_can('edit_posts')) {
             return;
         }
 
@@ -477,7 +494,13 @@ class TemplatePage
      */
     public static function add_post_type_archive_template_admin_bar_link(\WP_Admin_Bar $admin_bar): void
     {
-        if (!\current_user_can('edit_posts') || !\is_archive()) {
+        // Bail early - not on an archive page.
+        if (!\is_archive()) {
+            return;
+        }
+
+        // Bail early - user doesn't have the right capabilities.
+        if (!\current_user_can('edit_posts')) {
             return;
         }
 
@@ -516,7 +539,13 @@ class TemplatePage
      */
     public static function add_term_add_template_admin_bar_link(\WP_Admin_Bar $admin_bar): void
     {
-        if (!\current_user_can('edit_posts') || !\is_admin()) {
+        // Bail early - not on an admin screen.
+        if (!\is_admin()) {
+            return;
+        }
+
+        // Bail early - user doesn't have the right capabilities.
+        if (!\current_user_can('edit_posts')) {
             return;
         }
 
@@ -565,7 +594,13 @@ class TemplatePage
      */
     public static function add_404_add_template_admin_bar_link(\WP_Admin_Bar $admin_bar): void
     {
-        if (!\current_user_can('edit_posts') || \is_admin() || !\is_404()) {
+        // Bail early - on an admin screen or not on a 404 page.
+        if (\is_admin() || !\is_404()) {
+            return;
+        }
+
+        // Bail early - user doesn't have the right capabilities.
+        if (!\current_user_can('edit_posts')) {
             return;
         }
 
@@ -607,7 +642,13 @@ class TemplatePage
      */
     public static function add_view_toolbar_button(\WP_Admin_Bar $admin_bar): void
     {
-        if (!\current_user_can('edit_posts') || !\is_admin()) {
+        // Bail early - not on an admin screen.
+        if (!\is_admin()) {
+            return;
+        }
+
+        // Bail early - user doesn't have the right capabilities.
+        if (!\current_user_can('edit_posts')) {
             return;
         }
 
@@ -659,7 +700,13 @@ class TemplatePage
      */
     public static function add_admin_bar_edit_toolbar_button(\WP_Admin_Bar $admin_bar): void
     {
-        if (!\current_user_can('edit_posts') || !\is_admin()) {
+        // Bail early - not on an admin screen.
+        if (!\is_admin()) {
+            return;
+        }
+
+        // Bail early - user doesn't have the right capabilities.
+        if (!\current_user_can('edit_posts')) {
             return;
         }
 
@@ -753,7 +800,7 @@ class TemplatePage
             return;
         }
 
-        // Bail early - not permitted to edit Template Pages.
+        // Bail early - user doesn't have the right capabilities.
         if (!\current_user_can('edit_posts')) {
             return;
         }
@@ -802,7 +849,7 @@ class TemplatePage
             return;
         }
 
-        // Bail early - not permitted to edit Template Pages.
+        // Bail early - user doesn't have the right capabilities.
         if (!\current_user_can('edit_posts')) {
             return;
         }
@@ -844,7 +891,13 @@ class TemplatePage
      */
     public static function remove_blog_home_edit_page_button(\WP_Admin_Bar $admin_bar): void
     {
-        if (!\current_user_can('edit_posts') || \is_admin()) {
+        // Bail early - on an admin screen.
+        if (\is_admin()) {
+            return;
+        }
+
+        // Bail early - user doesn't have the right capabilities.
+        if (!\current_user_can('edit_posts')) {
             return;
         }
 
