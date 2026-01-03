@@ -36,6 +36,7 @@ class TemplatePage
 
         // Append "Add Template" buttons to admin bar.
         \add_action('admin_bar_menu', [__CLASS__, 'add_404_add_template_admin_bar_link'], 80);
+        \add_action('admin_bar_menu', [__CLASS__, 'add_search_add_template_admin_bar_link'], 80);
         \add_action('admin_bar_menu', [__CLASS__, 'add_taxonomy_add_template_admin_bar_link'], 80);
         \add_action('admin_bar_menu', [__CLASS__, 'add_term_add_template_admin_bar_link'], 80);
         \add_action('admin_bar_menu', [__CLASS__, 'add_term_add_template_admin_bar_link_front_end'], 80);
@@ -43,6 +44,7 @@ class TemplatePage
 
         // Append "Edit Template" buttons to admin bar.
         \add_action('admin_bar_menu', [__CLASS__, 'add_404_edit_toolbar_button'], 80);
+        \add_action('admin_bar_menu', [__CLASS__, 'add_search_edit_toolbar_button'], 80);
         \add_action('admin_bar_menu', [__CLASS__, 'add_post_type_edit_toolbar_button'], 80);
         \add_action('admin_bar_menu', [__CLASS__, 'add_admin_bar_edit_toolbar_button'], 80);
 
@@ -175,6 +177,8 @@ class TemplatePage
                             );
                         } elseif (!empty($object->type) && $object->type === '404') {
                             echo \_x('Special: 404', 'Template post list 404', 'granola');
+                        } elseif (!empty($object->type) && $object->type === 'search') {
+                            echo \_x('Special: Search', 'Template post list search', 'granola');
                         }
                     }
                 ]
@@ -253,6 +257,9 @@ class TemplatePage
         } elseif ($object_data->type === '404') {
             $object_data->title = \_x('404 Not Found', 'Template Page 404 title', 'granola');
             $object_data->slug = '404';
+        } elseif ($object_data->type === 'search') {
+            $object_data->title = \_x('Search', 'Template Page search title', 'granola');
+            $object_data->slug = 'search';
         }
 
         // Bail early - invalid object.
@@ -291,6 +298,8 @@ class TemplatePage
             \update_term_meta($object_data->id, 'template_page', $template_page_id);
         } elseif ($object_data->type === '404') {
             \update_option('404_template_page', $template_page_id, false);
+        } elseif ($object_data->type === 'search') {
+            \update_option('search_template_page', $template_page_id, false);
         }
 
         \wp_safe_redirect(
@@ -320,8 +329,10 @@ class TemplatePage
             \delete_option("{$object->name}_template_page");
         } elseif ($object instanceof \WP_Term) {
             \delete_term_meta($object->term_id, 'template_page');
-        } elseif ($object->type === '404') {
+        } elseif (!empty($object->type) && $object->type === '404') {
             \delete_option('404_template_page');
+        } elseif (!empty($object->type) && $object->type === 'search') {
+            \delete_option('search_template_page');
         }
 
         return;
@@ -526,7 +537,7 @@ class TemplatePage
                 'object_id' => $queried_object->name,
                 'nonce' => \wp_create_nonce('create_template_page'),
             ], \admin_url('admin-post.php')),
-             'meta'  => [
+            'meta'  => [
                 'title' => \__('Add Template', 'granola'),
             ],
         ]);
@@ -624,6 +635,54 @@ class TemplatePage
             'href'  => \add_query_arg([
                 'action' => 'create_template_page',
                 'object_type' => '404',
+                'object_id' => '0',
+                'nonce' => \wp_create_nonce('create_template_page'),
+            ], \admin_url('admin-post.php')),
+            'meta'  => [
+                'title' => \__('Add Template', 'granola'),
+            ],
+        ]);
+    }
+
+    /**
+     * Filters the global $submenu to add post type edit link(s) to the WP admin bar on the Search page.
+     *
+     * @param \WP_Admin_Bar $admin_bar An array of WP admin menu items.
+     */
+    public static function add_search_add_template_admin_bar_link(\WP_Admin_Bar $admin_bar): void
+    {
+
+        // Bail early - on an admin screen or not on a 404 page.
+        if (\is_admin() || !\is_search()) {
+            return;
+        }
+
+        // Bail early - user doesn't have the right capabilities.
+        if (!\current_user_can('edit_posts')) {
+            return;
+        }
+
+        $template_page_id = \get_option('search_template_page', 0);
+
+        // Bail early - template page set already.
+        if (!empty($template_page_id)) {
+            return;
+        }
+
+        $page_object = \Granola\WordPress\PageObject::get();
+        $template_page = self::get_template_page($page_object);
+
+        // Bail early - template page set already.
+        if (self::is_valid_template_page($template_page)) {
+            return;
+        }
+
+        $admin_bar->add_menu([
+            'id'    => 'granola-add-template',
+            'title' => \__('Add Template', 'granola'),
+            'href'  => \add_query_arg([
+                'action' => 'create_template_page',
+                'object_type' => 'search',
                 'object_id' => '0',
                 'nonce' => \wp_create_nonce('create_template_page'),
             ], \admin_url('admin-post.php')),
@@ -879,6 +938,55 @@ class TemplatePage
     }
 
     /**
+     * Add an 'Edit Template' button to the WP admin bar when viewing a search page
+     * on the front-end, which is linked to a granola-template post.
+     *
+     * @link https://developer.wordpress.org/reference/hooks/admin_bar_menu/
+     *
+     * @param \WP_Admin_Bar $admin_bar The WP_Admin_Bar instance, passed by reference.
+     */
+    public static function add_search_edit_toolbar_button(\WP_Admin_Bar $admin_bar): void
+    {
+        // Bail early - not on the front-end.
+        if (\is_admin()) {
+            return;
+        }
+
+        // Bail early - not on a search page.
+        if (!\is_search()) {
+            return;
+        }
+
+        // Bail early - user doesn't have the right capabilities.
+        if (!\current_user_can('edit_posts')) {
+            return;
+        }
+
+        $page_object = \Granola\WordPress\PageObject::get();
+        $template_page = self::get_template_page($page_object);
+
+        // Bail early - no valid template page set.
+        if (!self::is_valid_template_page($template_page)) {
+            return;
+        }
+
+        $admin_bar->add_menu([
+            'id'    => 'granola-edit-template',
+            'title' => sprintf(
+                // translators: 1: opening html tags. 2: closing html tags.
+                \_x('%1$sEdit Template Content%2$s', 'Admin bar edit link', 'granola'),
+                '<span class="ab-icon" aria-hidden="true"></span><span class="ab-label">',
+                '</span>'
+            ),
+            'href'  => \get_edit_post_link($template_page),
+            'meta'  => [
+                'title' => \_x('Edit Template Content', 'Admin bar edit link title', 'granola'),
+                'class' => 'granola-ab-item granola-edit-template'
+            ],
+        ]);
+    }
+
+    /**
      * Remove the default 'Edit Page' button from the WP admin bar when viewing the 'Post' post type
      * template on the front-end, which is linked to a 'Page' post via core settings.
      *
@@ -912,7 +1020,7 @@ class TemplatePage
     /**
      * Retrieve the permalink for a Template Page's linked object instead of the Template Page's own permalink.
      *
-     * Does not return a filtered permalink for a 404 page (for hopefully obvious reasons).
+     * Does not return a filtered permalink for the 404 or search pages (for hopefully obvious reasons).
      *
      * @param string $permalink The template page's permalink.
      * @param \WP_Post $post The template post object.
@@ -935,16 +1043,15 @@ class TemplatePage
         return $permalink;
     }
 
-
     /**
-     * Filters the Template Page menu items in the admin Edit Menu screen to prevent unlinked Template Pages and the
-     * 404 Template Page from being available to add to nav menus via the the 'Most Recent', 'View All', and 'Search'
-     * menu item selection lists.
+     * Filters the Template Page menu items in the admin Edit Menu screen to prevent unlinked Template Pages, the 404,
+     * and the Search Template Page from being available to add to nav menus via the the 'Most Recent', 'View All',
+     * and 'Search' menu item selection lists.
      *
      * @link https://developer.wordpress.org/reference/hooks/wp_setup_nav_menu_item/
      *
      * @param object|null $item The menu item object.
-     * @return object|null The same menu item object. Null if unlinked or linked to the 404 page.
+     * @return object|null The same menu item object. Null if unlinked or linked to the 404 or Search pages.
      */
     public static function filter_admin_nav_menu_item(?object $item)
     {
@@ -963,7 +1070,6 @@ class TemplatePage
 
         return $item;
     }
-
 
     /**
      * Filter the initially available Template Page menu items in the customizer.
@@ -1022,7 +1128,7 @@ class TemplatePage
     {
         $object = self::get_templated_object($page);
 
-        return !empty($object) && is_object($object) && (!$object instanceof \WP_Taxonomy) && $object->name !== '404';
+        return !empty($object) && is_object($object) && (!$object instanceof \WP_Taxonomy) && empty($object->type);
     }
 
     /**
@@ -1075,6 +1181,8 @@ class TemplatePage
             }
         } elseif ($object instanceof \WP_Query && $object->is_404()) {
             $template_id = \get_option('404_template_page', 0);
+        } elseif ($object instanceof \WP_Query && $object->is_search()) {
+            $template_id = \get_option('search_template_page', 0);
         } else {
             $template_id = \get_option("{$object->name}_template_page", 0);
         }
@@ -1130,6 +1238,8 @@ class TemplatePage
         } elseif ($object_data->type === 'wp_taxonomy') {
             $object = \get_taxonomy($object_data->id);
         } elseif ($object_data->type === '404') {
+            $object = (object) $object_data;
+        } elseif ($object_data->type === 'search') {
             $object = (object) $object_data;
         }
 
