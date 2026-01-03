@@ -896,13 +896,13 @@ class TemplatePage
             return;
         }
 
-        // Bail early - user doesn't have the right capabilities.
-        if (!\current_user_can('edit_posts')) {
+        // Bail early - not on the blog archive page.
+        if (!\is_home()) {
             return;
         }
 
-        // Bail early - not on the blog archive page.
-        if (!\is_home()) {
+        // Bail early - user doesn't have the right capabilities.
+        if (!\current_user_can('edit_posts')) {
             return;
         }
 
