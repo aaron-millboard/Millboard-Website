@@ -201,11 +201,12 @@ class TemplatePage
     }
 
     /**
-     * Filters the global $submenu to add post type edit link(s) to the WP admin bar.
+     * Filters the global $submenu to add post type edit link(s) to the WP admin sidebar.
      *
      * @param array $submenu An array of WP admin menu items.
+     * @return array The array of WP admin menu items, with Template Page add/edit links appended where relevant.
      */
-    public static function add_post_type_template_edit_submenu_link($submenu): array
+    public static function add_post_type_template_edit_submenu_link(array $submenu): array
     {
         // Bail early - user doesn't have the right capabilities.
         if (!\current_user_can('edit_pages')) {
@@ -215,7 +216,7 @@ class TemplatePage
         $post_types = self::get_template_post_types();
 
         foreach ($post_types as $pt) {
-            $template = self::get_template_page(
+            $template_page = self::get_template_page(
                 \get_post_type_object($pt)
             );
 
@@ -223,15 +224,11 @@ class TemplatePage
             $key = ($pt === 'post') ? 'edit.php' : "edit.php?post_type={$pt}";
 
             // Bail early - no page found.
-            if (
-                !empty($template)
-                && $template instanceof \WP_Post
-                && $template->post_status !== 'trash'
-            ) {
+            if (self::is_valid_template_page($template_page)) {
                 $link_array = [
                     \__('Edit Template', 'granola'),
                     'edit_pages',
-                    \get_edit_post_link($template->ID),
+                    \get_edit_post_link($template_page->ID),
                 ];
             } else {
                 $link_array = [
