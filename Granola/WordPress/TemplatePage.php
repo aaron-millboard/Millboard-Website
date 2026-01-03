@@ -300,6 +300,34 @@ class TemplatePage
     }
 
     /**
+     * Deletes a template page option field when the related template page post is trashed.
+     */
+    public static function remove_template_option($post_id, $post): void
+    {
+        // Bail early - wrong post type.
+        if (\get_post_type($post_id) !== self::SLUG) {
+            return;
+        }
+
+        $object = self::get_templated_object($post);
+
+        // Bail early - no templated object found.
+        if (empty($object)) {
+            return;
+        }
+
+        if ($object instanceof \WP_Post_Type || $object instanceof \WP_Taxonomy) {
+            \delete_option("{$object->name}_template_page");
+        } elseif ($object instanceof \WP_Term) {
+            \delete_term_meta($object->term_id, 'template_page');
+        } elseif ($object->type === '404') {
+            \delete_option('404_template_page');
+        }
+
+        return;
+    }
+
+    /**
      * Filters the global $submenu to add post type edit link(s) to the WP admin sidebar.
      *
      * @param array $submenu An array of WP admin menu items.
@@ -1096,34 +1124,6 @@ class TemplatePage
     public static function get_template_post_types(): array
     {
         return \apply_filters('granola/templates/post-types', []);
-    }
-
-    /**
-     * Deletes a template page option field when the related template page post is trashed.
-     */
-    public static function remove_template_option($post_id, $post): void
-    {
-        // Bail early - wrong post type.
-        if (\get_post_type($post_id) !== self::SLUG) {
-            return;
-        }
-
-        $object = self::get_templated_object($post);
-
-        // Bail early - no templated object found.
-        if (empty($object)) {
-            return;
-        }
-
-        if ($object instanceof \WP_Post_Type || $object instanceof \WP_Taxonomy) {
-            \delete_option("{$object->name}_template_page");
-        } elseif ($object instanceof \WP_Term) {
-            \delete_term_meta($object->term_id, 'template_page');
-        } elseif ($object->type === '404') {
-            \delete_option('404_template_page');
-        }
-
-        return;
     }
 
     /**
