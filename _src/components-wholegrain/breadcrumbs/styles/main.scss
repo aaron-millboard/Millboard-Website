@@ -23,24 +23,25 @@
     }
 
     &__yoast-separator {
-        @include mask-icon('after');
-
         padding-inline: 0.7ch;
 
         &:nth-last-child(2) {
             display: none;
-        }
 
-        &::after {
-            display: inline-block;
-            width: 1.1ch;
-            height: 1.1ch;
-            mask-image: url(#{asset-path('images/icons/chevron-right.svg')});
+            .search-results & {
+                display: inline;
+            }
         }
     }
 
     .breadcrumb_last {
         display: none;
+        font-weight: var(--type--2--font-weight);
+        text-decoration: underline;
+
+        .search-results & {
+            display: inline;
+        }
     }
 
     a {

@@ -42,6 +42,7 @@ function alter_yoast_separator_markup(): string
 {
     return \Granola\Component::get('element', [
         'classes' => ['breadcrumbs__yoast-separator'],
+        'content' => '/',
     ]);
 }
 
