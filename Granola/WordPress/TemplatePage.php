@@ -325,13 +325,8 @@ class TemplatePage
         // If we have a template page ID, get the post content.
         $template_page = \get_post($template_page_id);
 
-
         // Bail early - template page set already.
-        if (
-            !empty($template_page)
-            && $template_page instanceof \WP_Post
-            && $template_page->post_status !== 'trash'
-        ) {
+        if (self::is_valid_template_page($template_page)) {
             return;
         }
 
@@ -357,7 +352,7 @@ class TemplatePage
      */
     public static function add_post_type_archive_template_admin_bar_link(\WP_Admin_Bar $admin_bar): void
     {
-        if (!\current_user_can('edit_posts') || !is_archive()) {
+        if (!\current_user_can('edit_posts') || !\is_archive()) {
             return;
         }
 
@@ -367,23 +362,10 @@ class TemplatePage
             return;
         }
 
-        $post_type = $queried_object->name;
-
-        $template = self::get_template_page(
-            $queried_object
-        );
-
-        // If no template page ID, return.
-        if (!empty($template)) {
-            return;
-        }
+        $template_page = self::get_template_page($queried_object);
 
         // Bail early - template page set already.
-        if (
-            !empty($template_page)
-            && $template_page instanceof \WP_Post
-            && $template_page->post_status !== 'trash'
-        ) {
+        if (self::is_valid_template_page($template_page)) {
             return;
         }
 
@@ -393,7 +375,7 @@ class TemplatePage
             'href'  => \add_query_arg([
                 'action' => 'create_template_page',
                 'object_type' => 'wp_post_type',
-                'object_id' => $post_type,
+                'object_id' => $queried_object->name,
                 'nonce' => \wp_create_nonce('create_template_page'),
             ], \admin_url('admin-post.php')),
              'meta'  => [
