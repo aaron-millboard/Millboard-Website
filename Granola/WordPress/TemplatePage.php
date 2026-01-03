@@ -277,7 +277,7 @@ class TemplatePage
         $template_page = \get_post($template_page_id);
 
         // Bail early - template page set already.
-        if (!empty($template_page) && $template_page instanceof \WP_Post && $template_page->post_status !== 'trash') {
+        if (self::is_valid_template_page($template_page)) {
             return;
         }
 
@@ -412,11 +412,7 @@ class TemplatePage
         $template_page = \get_post($template_page_id);
 
         // Bail early - template page set already.
-        if (
-            !empty($template_page)
-            && $template_page instanceof \WP_Post
-            && $template_page->post_status !== 'trash'
-        ) {
+        if (self::is_valid_template_page($template_page)) {
             return;
         }
 
@@ -456,10 +452,7 @@ class TemplatePage
         $template_page = \get_post($template_page_id);
 
         // Bail early - template page set already.
-        if (
-            $template_page instanceof \WP_Post
-            && $template_page->post_status !== 'trash'
-        ) {
+        if (self::is_valid_template_page($template_page)) {
             return;
         }
 
@@ -686,11 +679,8 @@ class TemplatePage
 
         $template_page = \get_post($template_page_id);
 
-        if (
-            empty($template_page)
-            || !($template_page instanceof \WP_Post)
-            || $template_page->post_status === 'trash'
-        ) {
+        // Bail early - no valid template page set.
+        if (!self::is_valid_template_page($template_page)) {
             return;
         }
 
@@ -1011,7 +1001,7 @@ class TemplatePage
         if (!empty($template_id)) {
             $template_page = \get_post($template_id);
 
-            if (!empty($template_page) && $template_page->post_status !== 'trash') {
+            if (self::is_valid_template_page($template_page)) {
                 return $template_page;
             }
         }
