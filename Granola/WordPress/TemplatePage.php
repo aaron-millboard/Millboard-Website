@@ -104,6 +104,11 @@ class TemplatePage
         }
     }
 
+    /**
+     * Register the TemplatePage post type.
+     *
+     * @return void
+     */
     public static function register_post_type(): void
     {
         if (!function_exists('register_extended_post_type')) {
