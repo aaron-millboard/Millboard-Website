@@ -29,6 +29,8 @@ function filter_args(array $args): ?array
         'alignfull',
     ], $args['classes']);
 
+    $all_link = false;
+
     if (!empty($args['object'])) {
         $object = $args['object'];
 
