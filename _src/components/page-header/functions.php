@@ -77,8 +77,14 @@ function filter_args(array $args): ?array
             if (!empty($object->query['s'])) {
                 $args['preheading'] = \__('Search', 'granola');
                 $args['heading'] = sprintf(
-                    // translators: query string.
-                    \__("Showing results for '%s'", 'granola'),
+                    \_n(
+                        // translators: 1: quantity of comments. 2: post title.
+                        'Showing %1$s search result for \'%2$s\'',
+                        'Showing %1$s search results for \'%2$s\'',
+                        $object->found_posts,
+                        'granola'
+                    ),
+                    \number_format_i18n($object->found_posts),
                     $object->query['s']
                 );
             }
