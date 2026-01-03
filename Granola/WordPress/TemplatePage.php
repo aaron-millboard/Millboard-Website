@@ -201,6 +201,100 @@ class TemplatePage
     }
 
     /**
+     * Creates a new template page for a post type, if one does not exist, using the `admin_post_{action}` hook.
+     *
+     * @link https://developer.wordpress.org/reference/hooks/admin_post_action/
+     */
+    public static function create_template_page(): void
+    {
+        // Bail early - capability check.
+        if (!\current_user_can('edit_pages')) {
+            return;
+        }
+
+        // Bail early - nonce check.
+        $nonce = $_REQUEST['nonce'] ?? '';
+        if (\wp_verify_nonce($nonce, 'create_template_page') === false) {
+            \wp_die(
+                \__('Invalid request.', 'granola')
+            );
+        }
+
+        if (empty($_REQUEST['object_type']) || !isset($_REQUEST['object_id'])) {
+            // Bail early - required args not set.
+            \wp_safe_redirect(
+                \admin_url('edit.php?post_type=' . self::SLUG)
+            );
+            exit;
+        }
+
+        $object_data = (object) [
+            'id' => \sanitize_text_field((string) $_REQUEST['object_id']),
+            'type' => \sanitize_text_field((string) $_REQUEST['object_type']),
+        ];
+
+        if ($object_data->type === 'wp_post_type') {
+            $object = \get_post_type_object($object_data->id);
+            $object_data->title = $object->labels->name;
+            $object_data->slug = $object->name;
+        } elseif ($object_data->type === 'wp_term') {
+            $object = \get_term_by('term_taxonomy_id', $object_data->id);
+            $object_data->title = $object->name;
+            $object_data->slug = $object->slug;
+        } elseif ($object_data->type === 'wp_taxonomy') {
+            $object = \get_taxonomy($object_data->id);
+            $object_data->title = $object->label;
+            $object_data->slug = $object->name;
+        } elseif ($object_data->type === '404') {
+            $object_data->title = \_x('404 Not Found', 'Template Page 404 title', 'granola');
+            $object_data->slug = '404';
+        }
+
+        // Bail early - invalid object.
+        if (empty($object_data->title)) {
+            \wp_safe_redirect(
+                \admin_url('edit.php?post_type=' . self::SLUG)
+            );
+            exit;
+        }
+
+        // Create new template page for this post type.
+        $template_page_id = \wp_insert_post([
+            'post_title'   => $object_data->title,
+            'post_content' => $object_data->type === '404' ? '' : '<!-- wp:acf/template-loop /-->',
+            'post_status'  => 'publish',
+            'post_type'    => self::SLUG,
+            'post_name'    => isset($object_data->slug) ? $object_data->slug : null,
+            'meta_input'   => [
+                'granola-template-page-data' => $object_data,
+            ],
+        ]);
+
+        // Bail early - post creation failed somehow.
+        if (empty($template_page_id) || \is_wp_error($template_page_id)) {
+            \wp_safe_redirect(
+                \admin_url('edit.php?post_type=' . self::SLUG)
+            );
+            exit;
+        }
+
+        if ($object_data->type === 'wp_post_type' || $object_data->type === 'wp_taxonomy') {
+            // Connection from post type or taxonomy to template page.
+            \update_option("{$object_data->slug}_template_page", $template_page_id, false);
+        } elseif ($object_data->type === 'wp_term') {
+            // Connection from term to template page.
+            \update_term_meta($object_data->id, 'template_page', $template_page_id);
+        } elseif ($object_data->type === '404') {
+            \update_option('404_template_page', $template_page_id, false);
+        }
+
+        \wp_safe_redirect(
+            \get_edit_post_link($template_page_id, 'redirect')
+        );
+        exit;
+    }
+
+    /**
      * Filters the global $submenu to add post type edit link(s) to the WP admin sidebar.
      *
      * @param array $submenu An array of WP admin menu items.
@@ -469,100 +563,6 @@ class TemplatePage
                 'title' => \__('Add Template', 'granola'),
             ],
         ]);
-    }
-
-    /**
-     * Creates a new template page for a post type, if one does not exist, using the `admin_post_{action}` hook.
-     *
-     * @link https://developer.wordpress.org/reference/hooks/admin_post_action/
-     */
-    public static function create_template_page(): void
-    {
-        // Bail early - capability check.
-        if (!\current_user_can('edit_pages')) {
-            return;
-        }
-
-        // Bail early - nonce check.
-        $nonce = $_REQUEST['nonce'] ?? '';
-        if (\wp_verify_nonce($nonce, 'create_template_page') === false) {
-            \wp_die(
-                \__('Invalid request.', 'granola')
-            );
-        }
-
-        if (empty($_REQUEST['object_type']) || !isset($_REQUEST['object_id'])) {
-            // Bail early - required args not set.
-            \wp_safe_redirect(
-                \admin_url('edit.php?post_type=' . self::SLUG)
-            );
-            exit;
-        }
-
-        $object_data = (object) [
-            'id' => \sanitize_text_field((string) $_REQUEST['object_id']),
-            'type' => \sanitize_text_field((string) $_REQUEST['object_type']),
-        ];
-
-        if ($object_data->type === 'wp_post_type') {
-            $object = \get_post_type_object($object_data->id);
-            $object_data->title = $object->labels->name;
-            $object_data->slug = $object->name;
-        } elseif ($object_data->type === 'wp_term') {
-            $object = \get_term_by('term_taxonomy_id', $object_data->id);
-            $object_data->title = $object->name;
-            $object_data->slug = $object->slug;
-        } elseif ($object_data->type === 'wp_taxonomy') {
-            $object = \get_taxonomy($object_data->id);
-            $object_data->title = $object->label;
-            $object_data->slug = $object->name;
-        } elseif ($object_data->type === '404') {
-            $object_data->title = \_x('404 Not Found', 'Template Page 404 title', 'granola');
-            $object_data->slug = '404';
-        }
-
-        // Bail early - invalid object.
-        if (empty($object_data->title)) {
-            \wp_safe_redirect(
-                \admin_url('edit.php?post_type=' . self::SLUG)
-            );
-            exit;
-        }
-
-        // Create new template page for this post type.
-        $template_page_id = \wp_insert_post([
-            'post_title'   => $object_data->title,
-            'post_content' => $object_data->type === '404' ? '' : '<!-- wp:acf/template-loop /-->',
-            'post_status'  => 'publish',
-            'post_type'    => self::SLUG,
-            'post_name'    => isset($object_data->slug) ? $object_data->slug : null,
-            'meta_input'   => [
-                'granola-template-page-data' => $object_data,
-            ],
-        ]);
-
-        // Bail early - post creation failed somehow.
-        if (empty($template_page_id) || \is_wp_error($template_page_id)) {
-            \wp_safe_redirect(
-                \admin_url('edit.php?post_type=' . self::SLUG)
-            );
-            exit;
-        }
-
-        if ($object_data->type === 'wp_post_type' || $object_data->type === 'wp_taxonomy') {
-            // Connection from post type or taxonomy to template page.
-            \update_option("{$object_data->slug}_template_page", $template_page_id, false);
-        } elseif ($object_data->type === 'wp_term') {
-            // Connection from term to template page.
-            \update_term_meta($object_data->id, 'template_page', $template_page_id);
-        } elseif ($object_data->type === '404') {
-            \update_option('404_template_page', $template_page_id, false);
-        }
-
-        \wp_safe_redirect(
-            \get_edit_post_link($template_page_id, 'redirect')
-        );
-        exit;
     }
 
     /**
