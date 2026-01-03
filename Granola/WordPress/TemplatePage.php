@@ -16,28 +16,68 @@ class TemplatePage
      */
     public static function init()
     {
+        // -------------------------------------------------------------------------
+        // Functional. Set up basic building blocks of Template Pages.
+        // -------------------------------------------------------------------------
+
+        // Register Template Page CPT to store on-page content for archives and "special" pages.
         \add_action('init', [__CLASS__, 'register_post_type']);
-        \add_action('admin_bar_menu', [__CLASS__, 'add_post_type_edit_toolbar_button'], 80);
-        \add_action('admin_bar_menu', [__CLASS__, 'add_admin_bar_edit_toolbar_button'], 80);
+
+        // Create a new Template Page post instance when requesting a valid "Add Template" URL.
+        \add_action('admin_post_create_template_page', [__CLASS__, 'create_template_page']);
+
+        // Deletes the relevant Template Page option when a Template Page post instance is trashed.
+        \add_action('after_delete_post', [__CLASS__, 'remove_template_option'], 10, 2);
+
+
+        // -------------------------------------------------------------------------
+        // UI - Buttons. Appends various admin bar buttons for Template Page CRUD.
+        // -------------------------------------------------------------------------
+
+        // Append "Add Template" buttons to admin bar.
         \add_action('admin_bar_menu', [__CLASS__, 'add_404_add_template_admin_bar_link'], 80);
         \add_action('admin_bar_menu', [__CLASS__, 'add_taxonomy_add_template_admin_bar_link'], 80);
         \add_action('admin_bar_menu', [__CLASS__, 'add_term_add_template_admin_bar_link'], 80);
         \add_action('admin_bar_menu', [__CLASS__, 'add_term_add_template_admin_bar_link_front_end'], 80);
         \add_action('admin_bar_menu', [__CLASS__, 'add_post_type_archive_template_admin_bar_link'], 80);
+
+        // Append "Edit Template" buttons to admin bar.
+        \add_action('admin_bar_menu', [__CLASS__, 'add_post_type_edit_toolbar_button'], 80);
+        \add_action('admin_bar_menu', [__CLASS__, 'add_admin_bar_edit_toolbar_button'], 80);
+
+        // Add "View Template" button to admin bar.
         \add_action('admin_bar_menu', [__CLASS__, 'add_view_toolbar_button'], 80);
-        \add_action('admin_bar_menu', [__CLASS__, 'remove_blog_home_edit_page_button'], 100);
+
+
+        // -------------------------------------------------------------------------
+        // UI - Enhancements.
+        // -------------------------------------------------------------------------
+
+        // Add an "Edit Template" link to all CPTs (which have a template set) in the admin sidebar.
         \add_filter('granola/wordpress/admin/submenu', [__CLASS__, 'add_post_type_template_edit_submenu_link']);
-        \add_action('admin_post_create_template_page', [__CLASS__, 'create_template_page']);
-        \add_action('after_delete_post', [__CLASS__, 'remove_template_option'], 10, 2);
+
+        // Return the permalink of a Template Page's linked object instead of the Template Page's own permalink.
         \add_filter('post_type_link', [__CLASS__, 'filter_template_page_permalink'], 10, 2);
 
-        // Filter Template Page items in Edit Menu admin screen & customizer.
+        // Admin columns related actions and filters. (next static method adds more actions / filters)
+        \add_action('init', [__CLASS__, 'init_taxonomy_template_page_column']);
+
+
+        // -------------------------------------------------------------------------
+        // Menus. Allow (valid) Template Pages to be linked in menus.
+        // -------------------------------------------------------------------------
+
         \add_filter('wp_setup_nav_menu_item', [__CLASS__, 'filter_admin_nav_menu_item']);
         \add_filter('customize_nav_menu_available_items', [__CLASS__, 'filter_customizer_available_nav_menu_items'], 10, 3);
         \add_filter('customize_nav_menu_searched_items', [__CLASS__, 'filter_customizer_nav_menu_items']);
 
-        // Admin columns related actions and filters. (next static method adds more actions / filters)
-        \add_action('init', [__CLASS__, 'init_taxonomy_template_page_column']);
+
+        // -------------------------------------------------------------------------
+        // Clean up. Remove any conflicting core WP functionality.
+        // -------------------------------------------------------------------------
+
+        // Remove "edit page" button for Posts PT when there is a static page set in WP Settings > Reading.
+        \add_action('admin_bar_menu', [__CLASS__, 'remove_blog_home_edit_page_button'], 100);
     }
 
     /**
@@ -46,15 +86,15 @@ class TemplatePage
     public static function init_taxonomy_template_page_column(): void
     {
 
-        // Pull list of taxonomies which we are going to use for 'template page'
+        // Pull list of taxonomies which we are going to use for 'template page'.
         $taxonomies = self::get_template_taxonomies();
 
-        // Prevent unnecessary loop attempt if our array is empty
+        // Prevent unnecessary loop attempt if our array is empty.
         if (empty($taxonomies)) {
             return;
         }
 
-        // Loop through each taxonomy and manage it's 'Template Page' column
+        // Loop through each taxonomy and manage its 'Template Page' column.
         foreach ($taxonomies as $taxonomy_slug) {
             // Add column
             \add_filter("manage_edit-{$taxonomy_slug}_columns", [__CLASS__, 'add_taxonomy_template_page_column'], 10);
@@ -1013,7 +1053,6 @@ class TemplatePage
 
     /**
      * Deletes a template page option field when the related template page post is trashed.
-     *
      */
     public static function remove_template_option($post_id, $post): void
     {
