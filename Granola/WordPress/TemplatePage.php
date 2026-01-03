@@ -383,8 +383,8 @@ class TemplatePage
      */
     public static function add_taxonomy_add_template_admin_bar_link(\WP_Admin_Bar $admin_bar): void
     {
-        // Bail early - on an admin screen.
-        if (\is_admin()) {
+        // Bail early - not on an admin screen.
+        if (!\is_admin()) {
             return;
         }
 
