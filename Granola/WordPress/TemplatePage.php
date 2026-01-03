@@ -932,7 +932,14 @@ class TemplatePage
 
         $template_page = self::get_template_page($object);
 
-        if (empty($template_page) || $template_page->post_status !== 'publish') {
+        // Bail early - invalid template page found,
+        if (!self::is_valid_template_page($template_page)) {
+            return false;
+        }
+
+        // Only return the content (to the public) if the template page has been published.
+        // Draft, Pending, etc statuses are valid but should only be viewed by users who can see unpublished content.
+        if ($template_page->post_status !== 'publish' && !\current_user_can('edit_posts')) {
             return false;
         }
 
@@ -980,6 +987,20 @@ class TemplatePage
 
         return false;
     }
+
+    /**
+     * Determines whether the passed object is a valid template page.
+     *
+     * A valid template page is a WP_Post object that hasn't been trashed.
+     *
+     * @param mixed $object The potential Template Page to check.
+     * @return boolean Whether the passed object is a valid template page.
+     */
+    public static function is_valid_template_page(mixed $object): bool
+    {
+        return !empty($object) && $object instanceof \WP_Post && $object->post_status !== 'trash';
+    }
+
 
     /**
      * Retrieves the object that the given Template Page is linked to, if one exists.
