@@ -32,7 +32,9 @@ function filter_args(array $args): ?array
     }
 
     // Enforce button type.
-    if (empty($args['type']) && empty($args['attributes']['type'])) {
+    if (!empty($args['type'])) {
+        $args['attributes']['type'] = $args['type'];
+    } elseif (empty($args['type']) && empty($args['attributes']['type'])) {
         $args['attributes']['type'] = 'button';
     }
 
