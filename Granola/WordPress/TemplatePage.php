@@ -42,6 +42,7 @@ class TemplatePage
         \add_action('admin_bar_menu', [__CLASS__, 'add_post_type_archive_template_admin_bar_link'], 80);
 
         // Append "Edit Template" buttons to admin bar.
+        \add_action('admin_bar_menu', [__CLASS__, 'add_404_edit_toolbar_button'], 80);
         \add_action('admin_bar_menu', [__CLASS__, 'add_post_type_edit_toolbar_button'], 80);
         \add_action('admin_bar_menu', [__CLASS__, 'add_admin_bar_edit_toolbar_button'], 80);
 
@@ -722,24 +723,75 @@ class TemplatePage
      */
     public static function add_post_type_edit_toolbar_button(\WP_Admin_Bar $admin_bar): void
     {
-        if (!\current_user_can('edit_posts') || \is_admin()) {
+        // Bail early - not on the front-end.
+        if (\is_admin()) {
             return;
         }
 
-        // Bail early - not on an template page.
-        if (!\is_archive() && !\is_home() && !\is_404()) {
+        // Bail early - not on an archive.
+        if (!\is_archive() && !\is_home()) {
             return;
         }
 
-        $template_page = self::get_template_page(
-            \Granola\WordPress\PageObject::get()
-        );
+        // Bail early - not permitted to edit Template Pages.
+        if (!\current_user_can('edit_posts')) {
+            return;
+        }
 
-        if (
-            empty($template_page)
-            || !($template_page instanceof \WP_Post)
-            || $template_page->post_status === 'trash'
-        ) {
+        $page_object = \Granola\WordPress\PageObject::get();
+        $template_page = self::get_template_page($page_object);
+
+        // Bail early - no valid template page set.
+        if (!self::is_valid_template_page($template_page)) {
+            return;
+        }
+
+        $admin_bar->add_menu([
+            'id'    => 'granola-edit-template',
+            'title' => sprintf(
+                // translators: 1: opening html tags. 2: closing html tags.
+                \_x('%1$sEdit Template Content%2$s', 'Admin bar edit link', 'granola'),
+                '<span class="ab-icon" aria-hidden="true"></span><span class="ab-label">',
+                '</span>'
+            ),
+            'href'  => \get_edit_post_link($template_page),
+            'meta'  => [
+                'title' => \_x('Edit Template Content', 'Admin bar edit link title', 'granola'),
+                'class' => 'granola-ab-item granola-edit-template'
+            ],
+        ]);
+    }
+
+    /**
+     * Add an 'Edit Template' button to the WP admin bar when viewing a 404 page
+     * on the front-end, which is linked to a granola-template post.
+     *
+     * @link https://developer.wordpress.org/reference/hooks/admin_bar_menu/
+     *
+     * @param \WP_Admin_Bar $admin_bar The WP_Admin_Bar instance, passed by reference.
+     */
+    public static function add_404_edit_toolbar_button(\WP_Admin_Bar $admin_bar): void
+    {
+        // Bail early - not on the front-end.
+        if (\is_admin()) {
+            return;
+        }
+
+        // Bail early - not on a 404 page.
+        if (!\is_404()) {
+            return;
+        }
+
+        // Bail early - not permitted to edit Template Pages.
+        if (!\current_user_can('edit_posts')) {
+            return;
+        }
+
+        $page_object = \Granola\WordPress\PageObject::get();
+        $template_page = self::get_template_page($page_object);
+
+        // Bail early - no valid template page set.
+        if (!self::is_valid_template_page($template_page)) {
             return;
         }
 
