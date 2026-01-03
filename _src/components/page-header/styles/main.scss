@@ -71,6 +71,12 @@
     &__heading {
         margin-top: 0;
         margin-bottom: 0;
+
+        .search-results & {
+            @include typestyle-xlarge;
+
+            font-weight: var(--type--3--font-weight);
+        }
     }
 
     &__preheading {
@@ -80,6 +86,7 @@
 
     &__description {
         @include typestyle-base;
+
         margin: 0;
     }
 
