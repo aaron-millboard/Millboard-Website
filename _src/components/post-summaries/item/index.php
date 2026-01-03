@@ -6,10 +6,4 @@
             <?= wp_kses_post($args['content']); ?>
         </div>
     <?php } ?>
-
-    <?php if (!empty($args['image'])) { ?>
-        <div class="post-summary__image img-fit">
-            <?= \Granola\Component::get('image', $args['image']); ?>
-        </div>
-    <?php } ?>
 </article>
