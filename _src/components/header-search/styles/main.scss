@@ -20,112 +20,32 @@
         visibility: visible;
 
         > a {
-            // background-color: var(--link--background-color--hover);
             color: var(--link--color--hover);
         }
     }
 
     &__inner {
         @include align-width--l;
+
         display: flex;
-        flex-direction: column;
-    }
-
-    &__input-wrapper {
-        width: 100%;
-        display: flex;
-        align-items: center;
-        margin: 0 auto;
-        gap: var(--space--xs);
-        justify-items: center;
-        border-bottom: 1px solid var(--color--black);
-        padding-top: var(--space--3xs);
-        padding-bottom: var(--space--2xs);
-        transition: transition(color, background-color, border-color, box-shadow, transform);
-
-        &:focus-within {
-            #{$this}__label {
-                opacity: 0;
-                pointer-events: none;
-                visibility: hidden;
-            }
-
-            #{$this}__submit {
-                position: relative;
-                opacity: 1;
-                pointer-events: all;
-                visibility: visible;
-            }
-        }
+        flex-direction: row-reverse;
     }
 
     &__label {
         margin-top: var(--space--2xs);
+
         @include mq($until: 'site-header') {
             display: none;
         }
     }
 
-    &__input {
-        @include typestyle-h5;
-
-        --input--color: var(--color--black);
-        --input--color--focus: var(--color--black);
-        --input--background-color: transparent;
-        --input--background-color--focus: transparent;
-
-        padding: 0;
-        border: 0;
-        border-radius: 0;
-
-        @include interact {
-            box-shadow: unset;
-        }
-    }
-
     &__close {
         @include button-reset-hard;
-        width: max-content;
-        align-self: end;
-        margin-top: 0.5rem;
-        margin-bottom: 0.5rem;
 
-        @include mq('site-header') {
-            margin-bottom: 0rem;
-        }
+        width: max-content;
 
         &-icon {
             pointer-events: none;
-        }
-    }
-
-    &__submit {
-        --button--padding-y: 0.75rem;
-
-        display: block;
-        flex: 0 0 auto;
-
-        @include mq($until: 'site-header') {
-            @include button--icon;
-            @include button--square;
-
-            margin: 0;
-            color: var(--color--foreground);
-            cursor: pointer;
-
-            &::after {
-                mask-image: url(#{asset-path('images/icons/chevron-right.svg')});
-                mask-size: var(--header-search--icon-size);
-
-                @include mq('site-header') {
-                    mask-image: url(#{asset-path('images/icons/search.svg')});
-                }
-            }
-        }
-
-        @include mq('site-header') {
-            @include button;
-            @include button--interaction;
         }
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace Granola\Components\HeaderSearch;
+namespace Granola\Components\SearchForm;
 
 function filter_args(array $args): ?array
 {
@@ -8,8 +8,7 @@ function filter_args(array $args): ?array
     // Default arguments.
     // ---------------------------------------
     $args = array_merge([
-        'input_id' => \wp_unique_id('header-search-'),
-        'background_color' => 'brand-2',
+        'input_id' => \wp_unique_id('search-form-'),
         'classes' => [],
         'attributes' => [],
     ], $args);
@@ -18,39 +17,28 @@ function filter_args(array $args): ?array
     // Required classes.
     // ---------------------------------------
     $args['classes'] = array_merge([
-        'header-search',
+        'search-form',
     ], $args['classes']);
 
     // ---------------------------------------
     // Default attributes.
     // ---------------------------------------
     $args['attributes'] = array_merge([
-        'hidden' => 'hidden',
-        'aria-hidden' => 'true',
+        'autocomplete' => 'off',
+        'method' => 'get',
+        'action' => \home_url('/'),
+        'role' => 'search',
     ], $args['attributes']);
 
     $args['submit_button'] = [
         'content' => \__('Search', 'granola'),
+        'type' => 'submit',
         'classes' => [
-            'header-search__submit',
+            'search-form__submit',
             'g-button',
         ],
         'attributes' => [
-            'type' => 'submit',
             'aria-label' => \__('Submit search', 'granola'),
-        ],
-    ];
-
-    $args['close_button'] = [
-        'content' => sprintf('%s <span class="header-search__close-icon" aria-hidden="true">&times;</span>', \__('Close', 'granola')),
-        'classes' => [
-            'header-search__close'
-        ],
-        'attributes' => [
-            'type' => 'button',
-            'aria-label' => \__('Close search', 'granola'),
-            'aria-controls' => $args['attributes']['id'] ?? 'site-header-search-form',
-            'aria-expanded' => 'true',
         ],
     ];
 
