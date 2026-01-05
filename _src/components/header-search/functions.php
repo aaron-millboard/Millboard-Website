@@ -42,7 +42,7 @@ function filter_args(array $args): ?array
     ];
 
     $args['close_button'] = [
-        'content' => sprintf('%s <span class="header-search__close-icon" aria-hidden="true">&times;</span>', \__('Close', 'granola')),
+        'content' => \__('Close', 'granola'),
         'classes' => [
             'header-search__close'
         ],

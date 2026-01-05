@@ -1,11 +1,6 @@
 .search-form {
     $this: &;
 
-    @include align-width--l;
-
-    display: flex;
-    flex-direction: column;
-
     &__input-wrapper {
         width: 100%;
         display: flex;
@@ -30,6 +25,8 @@
     &__input {
         --input--color: var(--color--black);
         --input--color--focus: var(--color--black);
+        --input--placeholder-color: var(--color--black);
+
         --input--background-color: transparent;
         --input--background-color--focus: transparent;
 

@@ -1,9 +1,9 @@
 .header-search {
-    --input--placeholder-color: var(--color--black);
-    --header-search--icon-size: 1em;
     $this: &;
 
-    display: block;
+    display: grid;
+    align-content: center;
+    padding: var(--space--2xl) var(--space--2xl) var(--space--xl);
     opacity: 0;
     pointer-events: none;
     transition: opacity var(--submenu--transition-duration) var(--submenu--transition-ease),
@@ -27,12 +27,20 @@
     &__inner {
         @include align-width--l;
 
-        display: flex;
-        flex-direction: row-reverse;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space--xl);
+        align-items: center;
     }
 
     &__label {
-        margin-top: var(--space--2xs);
+        @include heading-attributes;
+        @include typestyle-xlarge;
+
+        grid-row: 1;
+        grid-column: 1;
+        font-weight: var(--type--3--font-weight);
+        text-transform: uppercase;
 
         @include mq($until: 'site-header') {
             display: none;
@@ -41,11 +49,24 @@
 
     &__close {
         @include button-reset-hard;
+        @include typestyle-small;
+        @include mask-icon;
 
+        position: absolute;
+        top: var(--space--4xs);
+        right: var(--space--3xs);
+        display: inline-flex;
         width: max-content;
+        align-items: center;
+        gap: var(--space--4xs);
 
-        &-icon {
-            pointer-events: none;
+        &::after {
+            --icon-size: #{px-to-rem(18)};
+
+            display: block;
+            width: var(--icon-size);
+            height: var(--icon-size);
+            mask-image: url(#{asset-path('images/icons/cross.svg')});
         }
     }
 }
