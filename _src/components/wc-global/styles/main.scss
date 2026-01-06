@@ -1,0 +1,10 @@
+/* Class .woocommerce also set on <body> in WooCommerce pages so we target only blocks */
+
+.blocks > .woocommerce {
+    --block--max-width: var(--width--responsive--l);
+
+    max-width: var(--block--max-width);
+    margin-left: auto;
+    margin-right: auto;
+    position: relative;
+}
