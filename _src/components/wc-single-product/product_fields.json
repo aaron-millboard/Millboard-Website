@@ -1,0 +1,35 @@
+{
+    "key": "cpt_product_fields",
+    "title": "Product Custom data",
+    "fields": [
+        {
+            "key": "cpt_product_tab_content",
+            "label": "Content Area",
+            "type": "tab"
+        },
+        {
+            "key": "cpt_product_panner_cta",
+            "label": "Planner CTA",
+            "name": "header_cta",
+            "type": "link"
+        },
+        {
+            "key": "cpt_product_add_wastage",
+            "label": "Show wastage checkbox",
+            "name": "add_wastage_option",
+            "type": "true_false",
+            "instructions": "Enable this to show '10% wastage' checkbox on product page",
+            "default_value": 0,
+            "ui": 1
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "post_type",
+                "operator": "==",
+                "value": "product"
+            }
+        ]
+    ]
+}

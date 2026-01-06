@@ -1,0 +1,59 @@
+<?php
+
+namespace Granola\Components\WC_SingleProduct;
+
+function filter_args(array $args): ?array
+{
+
+    global $product;
+
+    if (empty($product) || ! $product instanceof \WC_Product) {
+        return [];
+    }
+
+    // -------------------------------------------------------------------------
+    // Default arguments.
+    // -------------------------------------------------------------------------
+    $args = array_merge([
+        'id' => 'product',
+        'classes' => [],
+        'preheading' => '',
+        'heading' => '',
+        'description' => '',
+        'header_cta' => [],
+    ], $args);
+
+    // -------------------------------------------------------------------------
+    // 1. Required classes and ID
+    // -------------------------------------------------------------------------
+    $args['classes'] = array_merge(
+        $args['classes'],
+        wc_get_product_class('', $product)
+    );
+    $args['id'] = "product-{$product->get_id()}";
+
+    // -------------------------------------------------------------------------
+    // 2. Retrieve product data
+    // -------------------------------------------------------------------------
+
+    // Preheading - get name of first category
+    $categories = wp_get_post_terms($product->get_id(), 'product_cat');
+    if (!is_wp_error($categories) && ! empty($categories)) {
+        $args['preheading'] = $categories[0]->name;
+    }
+
+    // Heading - get product title
+    $args['heading'] = $product->get_name();
+
+    // Description - get product short description
+    $args['description'] = $product->get_short_description();
+
+    // CTA under description
+    $args['header_cta'] = \get_field('header_cta', $product->get_id());
+    $args['header_cta']['content'] = \Granola\SVG::get('icons-custom/pencil.svg') . $args['header_cta']['title'];
+
+    // -------------------------------------------------------------------------
+    // Return the filtered args.
+    // -------------------------------------------------------------------------
+        return $args;
+}

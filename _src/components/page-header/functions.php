@@ -37,6 +37,11 @@ function filter_args(array $args): ?array
         if ($args['object'] instanceof \WP_Post && $args['object']->post_type !== 'page') {
             $args['type'] = 'post';
         }
+
+        // Check if this is WC product - set type to product
+        if ((class_exists('\WooCommerce')) && $args['object'] instanceof \WC_Product) {
+            $args['type'] = 'product';
+        }
     }
 
     // -------------------------------------------------------------------------
@@ -92,6 +97,12 @@ function filter_args(array $args): ?array
                     $object->data->display_name
                 );
             }
+        }
+
+        // WP Products
+        elseif ((class_exists('\WooCommerce')) && $object instanceof \WC_Product) {
+            // Adjust background color for products
+            $args['background_color'] = 'brand-2';
         }
 
         // Single Posts, Pages and other CPTs

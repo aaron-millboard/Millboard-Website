@@ -195,6 +195,18 @@
         }
     }
 
+    /* WC PRODUCT */
+    &--type--product {
+
+        --page-header--padding-top: var(--space--s);
+        --page-header--padding-bottom: var(--space--s);
+
+        #{$this}__wrapper {
+            display: none;
+        }
+    }
+
+
     .breadcrumbs {
         padding-top: var(--space--responsive--m);
         margin-left: 0;

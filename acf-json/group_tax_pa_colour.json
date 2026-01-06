@@ -1,0 +1,21 @@
+{
+    "key": "group_attribute_colour",
+    "title": "Attribute Colour Settings",
+    "fields": [
+        {
+            "key": "tax_pa_colour_image",
+            "label": "Select Image",
+            "name": "image",
+            "type": "image"
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "taxonomy",
+                "operator": "==",
+                "value": "pa_colour"
+            }
+        ]
+    ]
+}

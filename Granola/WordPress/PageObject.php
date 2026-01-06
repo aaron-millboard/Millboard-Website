@@ -8,6 +8,12 @@ class PageObject
     {
         global $wp_query;
 
+        // Check if WC product query
+        if ((class_exists('\WooCommerce')) && function_exists('is_product') && is_product()) {
+            return wc_get_product();
+        }
+
+        // Standard WP queries
         if ($wp_query->is_home()) {
             // The query is for the posts index. Return the 'post' post type.
             return \get_post_type_object('post');
