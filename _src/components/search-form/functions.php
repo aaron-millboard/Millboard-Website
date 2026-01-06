@@ -9,6 +9,7 @@ function filter_args(array $args): ?array
     // ---------------------------------------
     $args = array_merge([
         'input_id' => \wp_unique_id('search-form-'),
+        'input_value' => '',
         'classes' => [],
         'attributes' => [],
     ], $args);
@@ -41,6 +42,10 @@ function filter_args(array $args): ?array
             'aria-label' => \__('Submit search', 'granola'),
         ],
     ];
+
+    if (!empty($_GET['s'])) {
+        $args['input_value'] = \sanitize_text_field($_GET['s']);
+    }
 
     // -------------------------------------------------------------------------
     // Return the filtered args.

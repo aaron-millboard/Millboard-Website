@@ -7,6 +7,7 @@
             name="s"
             aria-label="<?= esc_attr__('Search', 'granola'); ?>"
             placeholder="<?= esc_attr__('Search...', 'granola'); ?>"
+            value="<?= esc_attr($args['input_value']); ?>"
             required
         >
 
