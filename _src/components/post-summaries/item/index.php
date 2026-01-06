@@ -6,4 +6,12 @@
             <?= wp_kses_post($args['content']); ?>
         </div>
     <?php } ?>
+
+    <?php if (!empty($args['tags'])) { ?>
+        <div class="post-summary__tags">
+            <?php foreach ($args['tags'] as $tag) { ?>
+                <?=  \Granola\Component::get('element', $tag) ?>
+            <?php } ?>
+        </div>
+    <?php } ?>
 </article>

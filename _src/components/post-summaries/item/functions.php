@@ -13,6 +13,7 @@ function filter_args(array $args): ?array
         'image' => null,
         'content' => '',
         'object' => null,
+        'tags' => [],
     ], $args);
 
     // ---------------------------------------
@@ -40,6 +41,17 @@ function filter_args(array $args): ?array
     ];
 
     $args['content'] = \get_the_excerpt($object->ID);
+
+    if ($object instanceof \WP_Post) {
+        $post_type = \get_post_type($object);
+
+        $args['tags'][] = [
+            'content' => $post_type ?? '',
+            'classes' => [
+                'g-button',
+            ],
+        ];
+    }
 
     // -------------------------------------------------------------------------
     // Return the filtered args.
