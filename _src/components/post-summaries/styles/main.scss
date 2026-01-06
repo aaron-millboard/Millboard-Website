@@ -1,11 +1,13 @@
 .post-summaries {
-    &__inner {
-        @include align-width--l;
+    &__heading {
+        padding-bottom: var(--space--2xs);
+        border-bottom: var(--border--1);
+        margin-bottom: var(--space--l);
     }
 
     &__items {
         display: grid;
-        gap: var(--space--xl);
+        gap: var(--space--l);
     }
 }
 
