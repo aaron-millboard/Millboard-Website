@@ -51,8 +51,15 @@
 
         &--first {
             grid-column: span 2;
+
             @include mq(large) {
                 grid-column: span 1;
+            }
+
+            .search-results & {
+                @include mq(large) {
+                    max-width: px-to-rem(470); // magic number.
+                }
             }
         }
 
@@ -185,9 +192,16 @@
                 padding-left: 0;
                 justify-content: end;
                 padding-bottom: var(--space--2xl);
+
                 @include mq(large) {
                     padding-left: calc(100% / 3 + var(--space--2xl));
                     padding-bottom: var(--space--xl);
+                }
+
+                .search-results & {
+                    @include mq(large) {
+                        padding-left: 0;
+                    }
                 }
             }
 
