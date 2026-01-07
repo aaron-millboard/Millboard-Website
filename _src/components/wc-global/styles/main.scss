@@ -7,4 +7,64 @@
     margin-left: auto;
     margin-right: auto;
     position: relative;
+
+    // Style WooCommerce notices
+    .woocommerce-notices-wrapper > div {
+        margin-bottom: var(--space--l);
+        padding: var(--space--s) var(--space--s);
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        background-color: var(--color--brand-1);
+        gap: var(--space--xs);
+        border-top: 3px solid transparent;
+
+        &::before {
+            flex-shrink: 0;
+            width: #{px-to-rem(24)};
+            height: #{px-to-rem(24)};
+            content: '';
+            background-image: url(#{asset-path('images/icons-custom/tick.svg')});
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: #{px-to-rem(24)} #{px-to-rem(24)};
+        }
+
+        a {
+            @include typestyle-h6;
+            font-weight: normal;
+            text-transform: uppercase;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: var(--space--s);
+            margin-left: auto;
+
+            &::after {
+                width: #{px-to-rem(16)};
+                height: #{px-to-rem(16)};
+                background-color: var(--color--foreground);
+                content: '';
+                mask-image: url(#{asset-path('images/icons/chevron-right.svg')});
+                mask-position: center;
+                mask-repeat: no-repeat;
+                mask-size: #{px-to-rem(16)};
+            }
+
+        }
+
+        // Success notice specific styles
+        &.woocommerce-message {
+            border-color: var(--color--brand-4);
+        }
+
+        &.woocommerce-error {
+            border-color: var(--color--brand-3);
+            &::before {
+                background-image: url(#{asset-path('images/icons-custom/union.svg')});
+            }
+        }
+    }
+
 }
