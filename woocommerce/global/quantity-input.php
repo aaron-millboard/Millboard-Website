@@ -32,7 +32,10 @@ if ($product) {
 
 ?>
 <div class="quantity-wrapper">
-    <label class="quantity-label"><?php esc_html_e('SELECT QUANTITY:', 'woocommerce'); ?> (M2)</label>
+
+    <?php if (is_product()) : ?>
+        <label class="quantity-label"><?php esc_html_e('SELECT QUANTITY:', 'woocommerce'); ?></label>
+    <?php endif; ?>
     
     <div class="quantity">
         <?php
