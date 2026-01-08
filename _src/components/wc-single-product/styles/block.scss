@@ -297,6 +297,7 @@
         button {
             @include button;    
             @include button--interaction;
+            @include button--solid;
         }
     }
 

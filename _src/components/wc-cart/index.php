@@ -97,7 +97,7 @@ do_action('woocommerce_before_cart'); ?>
                                     // check if have pa_colour attribute and display it
                                     $attributes = $_product->get_attributes();
                                     if (isset($attributes['pa_colour'])) {
-                                        $term = get_term_by('name', $attributes['pa_colour'], 'pa_colour');
+                                        $term = get_term_by('slug', $attributes['pa_colour'], 'pa_colour');
                                         if (!empty($term)) {
                                             ?>
                                             <div class="cart__item__details__colour">
@@ -105,6 +105,17 @@ do_action('woocommerce_before_cart'); ?>
                                             </div>
                                             <?php
                                         }
+                                    }
+                                    ?>
+
+                                    <?php
+                                    // Show other attributes
+                                    foreach ($attributes as $key => $value) {
+                                        if ($key === 'pa_colour') {
+                                            continue; // already shown
+                                        }
+                                        $term = get_term_by('slug', $value, $key);
+                                        echo '<div class="cart__item__details__attribute">' . esc_html($term->name) . '</div>';
                                     }
                                     ?>
 
@@ -182,26 +193,6 @@ do_action('woocommerce_before_cart'); ?>
                 }
             }
             ?>
-
-        </div>
-
-        <div class="cart__actions">
-
-            <div class="back-to-shop">
-                <a href="<?php echo esc_url(wc_get_page_permalink('shop')); ?>">
-                    <?php esc_html_e('Back to shop', 'granola'); ?>
-                </a>
-            </div>
-
-            <div class="wc-proceed-to-checkout">
-                <?php do_action('woocommerce_proceed_to_checkout'); ?>
-            </div>
-
-            <button type="submit" class="button<?php echo esc_attr(wc_wp_theme_get_element_class_name('button') ? ' ' . wc_wp_theme_get_element_class_name('button') : ''); ?>" name="update_cart" value="<?php esc_attr_e('Update cart', 'woocommerce'); ?>"><?php esc_html_e('Update cart', 'woocommerce'); ?></button>
-
-            <?php wp_nonce_field('woocommerce-cart', 'woocommerce-cart-nonce'); ?>
-
-            <?php do_action('woocommerce_cart_actions'); ?>
 
         </div>
 
@@ -324,6 +315,28 @@ do_action('woocommerce_before_cart'); ?>
             */ ?>
 
         </div>
+
+    </div>
+
+    <div class="cart__actions">
+
+        <div class="back-to-shop">
+            <a href="<?php echo esc_url(wc_get_page_permalink('shop')); ?>">
+                <?php esc_html_e('Back to shop', 'granola'); ?>
+            </a>
+        </div>
+
+        <div class="wc-proceed-to-checkout">
+            <a href="<?php echo esc_url(wc_get_checkout_url()); ?>" class="checkout-button button alt wc-forward<?php echo esc_attr(wc_wp_theme_get_element_class_name('button') ? ' ' . wc_wp_theme_get_element_class_name('button') : ''); ?>">
+                <?php esc_html_e('Proceed to checkout', 'woocommerce'); ?>
+            </a>
+        </div>
+
+        <button type="submit" class="button<?php echo esc_attr(wc_wp_theme_get_element_class_name('button') ? ' ' . wc_wp_theme_get_element_class_name('button') : ''); ?>" name="update_cart" value="<?php esc_attr_e('Update cart', 'woocommerce'); ?>"><?php esc_html_e('Update cart', 'woocommerce'); ?></button>
+
+        <?php wp_nonce_field('woocommerce-cart', 'woocommerce-cart-nonce'); ?>
+
+        <?php do_action('woocommerce_cart_actions'); ?>
 
     </div>
 
