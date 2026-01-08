@@ -119,6 +119,7 @@ function get_search_query_post_type_tags(\WP_Query $query): array
 
         $tag['classes'] = [
             'g-tag',
+            'is-interactive',
         ];
 
         // Remove unnecessary data.
@@ -139,6 +140,7 @@ function get_search_query_post_type_tags(\WP_Query $query): array
             ], \home_url()),
             'classes' => [
                 'g-tag',
+                'is-interactive',
             ],
         ]);
     }

@@ -58,5 +58,10 @@
 
     &__content {
         align-self: start;
+        margin-top: var(--space--4xs);
+    }
+
+    &__tags {
+        margin-top: var(--space--2xs);
     }
 }
