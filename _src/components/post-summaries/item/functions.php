@@ -43,12 +43,12 @@ function filter_args(array $args): ?array
     $args['content'] = \get_the_excerpt($object->ID);
 
     if ($object instanceof \WP_Post) {
-        $post_type = \get_post_type($object);
+        $pt_object = \get_post_type_object($object->post_type);
 
         $args['tags'][] = [
-            'content' => $post_type ?? '',
+            'content' => $pt_object->labels->singular_name ?? '',
             'classes' => [
-                'g-button',
+                'g-tag',
             ],
         ];
     }

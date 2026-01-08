@@ -118,7 +118,7 @@ function get_search_query_post_type_tags(\WP_Query $query): array
         ], \home_url());
 
         $tag['classes'] = [
-            'g-button',
+            'g-tag',
         ];
 
         // Remove unnecessary data.
@@ -138,7 +138,7 @@ function get_search_query_post_type_tags(\WP_Query $query): array
                 's' => $query->query['s'],
             ], \home_url()),
             'classes' => [
-                'g-button',
+                'g-tag',
             ],
         ]);
     }
