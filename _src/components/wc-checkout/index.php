@@ -144,10 +144,7 @@ if (!$checkout->is_registration_enabled() && $checkout->is_registration_required
                 </div>
             <?php endif; ?>
 
-            <?php woocommerce_checkout_payment(); ?>
-
         </div>
-
     <?php endif; ?>
 
     <div class="checkout__summary">
@@ -157,6 +154,12 @@ if (!$checkout->is_registration_enabled() && $checkout->is_registration_required
         </div>
 
         <?php woocommerce_order_review(); ?>
+
+    </div>
+
+    <div class="checkout__fields" id="payment_details">
+
+        <?php woocommerce_checkout_payment(); ?>
 
     </div>
 

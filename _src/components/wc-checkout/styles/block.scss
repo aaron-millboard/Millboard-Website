@@ -18,11 +18,11 @@
 
         display: grid;
         grid-template-columns: 1fr;
-        gap: var(--space--l);
+        row-gap: var(--space--l);
 
         @include mq('large') {
             grid-template-columns: 1.75fr 1fr;
-            gap: var(--space--4xl);
+            column-gap: var(--space--4xl);
         }
 
         // Wrapper for all checkout fieldss
