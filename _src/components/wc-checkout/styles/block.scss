@@ -1,0 +1,383 @@
+.woocommerce {
+
+    display: flex;
+    flex-direction: column;
+    gap: var(--space--xl);
+
+    &__section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: var(--color--brand-5);
+        padding: var(--space--2xs) var(--space--xs);
+        color: var(--color--brand-2);
+        margin-bottom: 0;
+    }
+
+    .checkout {
+
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: var(--space--l);
+
+        @include mq('large') {
+            grid-template-columns: 1.75fr 1fr;
+            gap: var(--space--4xl);
+        }
+
+        // Wrapper for all checkout fieldss
+        &__fields {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space--l);
+        }
+
+        // All sections inside checkout form
+        &__section {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space--s);
+            padding-bottom: var(--space--l);
+            border-bottom: 1px solid var(--color--brand-1);
+
+            &-header {
+                display: flex;
+                flex-direction: column;
+                gap: var(--space--3xs);
+
+                h2 {
+                    @include typestyle-h6;
+                    @include typestyle-large;
+                    margin: 0;
+                }
+            }
+
+            &-fields {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                column-gap: var(--space--s);
+                row-gap: var(--space--m);
+            }
+        }
+
+        // Shipping methods selector
+        #shipping_method {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: var(--space--2xs);
+
+            li {
+                position: relative;
+                border: 2px solid var(--color--brand-1);
+                margin: 0;
+                padding: var(--space--s);
+                display: flex;
+                align-items: flex-start;
+                gap: var(--space--xs);
+
+                &:has(input[type="radio"]:checked) {
+                    background-color: var(--color--brand-1);
+                    border-color: var(--color--brand-4);
+
+                    input[type="radio"] {
+                        background-color: var(--color--brand-1);
+                    }
+                }
+
+                input[type="radio"] {
+                    flex-shrink: 0;
+                    margin: 0;
+                    margin-top: 0.125rem;
+                    width: 20px;
+                    height: 20px;
+                    cursor: pointer;
+                    appearance: none;
+                    border: 1px solid var(--color--foreground);
+                    border-radius: 50%;
+                    position: relative;
+                    background-color: var(--color--background);
+
+                    &:checked {
+                        background-color: var(--color--background);
+                        border-color: var(--color--foreground);
+                        
+                        &::after {
+                            content: '';
+                            position: absolute;
+                            top: 50%;
+                            left: 50%;
+                            transform: translate(-50%, -50%);
+                            width: 10px;
+                            height: 10px;
+                            border-radius: 50%;
+                            background-color: var(--color--foreground);
+                        }
+                    }
+                }
+
+                label {
+                    flex: 1;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 0.25rem;
+                    cursor: pointer;
+                    margin: 0;
+
+                    .woocommerce-Price-amount {
+                        position: absolute;
+                        right: var(--space--s);
+                        top: 50%;
+                        transform: translateY(-50%);
+                        font-weight: 600;
+                    }
+                }
+
+                small {
+                    display: block;
+                    color: var(--color--brand-1);
+                    font-size: 0.875rem;
+                }
+            }
+        }
+
+        // "Ship to different address" checkbox
+        #ship-to-different-address {
+            @include typestyle-base;
+            grid-column: span 2;
+
+            label {
+                @include typestyle-base;
+                letter-spacing: normal;
+                margin-bottom: 0;
+            }
+        }
+
+        // Payment methods
+        .wc_payment_method {
+
+            .payment_box p {
+                @include typestyle-base;
+                margin: 0;
+            }
+
+            label {
+                @include typestyle-base;
+                margin-bottom: 0;
+            }
+
+            fieldset p {
+                margin: 0;
+                --input--padding-y: 8px;
+                --input--background-color: transparent;
+                --input--color: var(--color--foreground);
+                --input--background-color--highlight: transparent;
+            }
+
+        }
+
+        // Around place order area
+        .place-order,
+        .woocommerce-terms-and-conditions-wrapper {
+
+            display: flex;
+            flex-direction: column;
+            gap: var(--space--xs);
+
+            p {
+                @include typestyle-base;
+                margin: 0;
+            }
+
+            label {
+                @include typestyle-base;
+                margin: 0;
+            }
+
+        }
+
+        // Right column - order summary
+        &__summary {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space--m);
+
+            &__items {
+                display: flex;
+                flex-direction: column;
+                gap: var(--space--m);
+            }
+
+            &__coupon {
+                display: flex;
+                flex-direction: column;
+                gap: var(--space--xs);
+                padding: var(--space--s) 0;
+                border-bottom: 1px solid var(--color--brand-5);
+
+                .form-row,
+                form {
+                    display: flex;
+                    flex-direction: column;
+                    gap: var(--space--xs);
+                }
+
+                button {
+                    @include button;
+                    @include button--interaction;
+                    width: fit-content;
+                }
+
+                a.showcoupon {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    text-decoration: none;
+                }
+                
+                .label {
+                    @include typestyle-h6;
+                    @include typestyle-xlarge;
+                }
+
+                .icon {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: #{px-to-rem(32)};
+                    height: #{px-to-rem(32)};
+                    fill: var(--color--foreground);
+                    padding: 4px;
+                    background-color: var(--color--brand-1);
+
+                    svg {
+                        width: 20px;
+                        height: 20px;
+                    }
+                }
+            }
+
+            &__totals {
+                display: flex;
+                flex-direction: column;
+                gap: var(--space--s);
+                padding: var(--space--s) 0;
+
+                &__item {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+
+                    .label {
+                        @include typestyle-h5;
+                        @include typestyle-xlarge;
+                    }
+
+                    .value {
+                        @include typestyle-base;
+                        font-weight: 600;
+                    }
+                }
+
+                .order-total {
+                    padding-top: var(--space--s);
+                    border-top: 1px solid var(--color--brand-5);
+                }
+            }
+
+        }
+
+    }
+
+    // all form fields (global scope)
+    .form-row {
+        
+        //span both columns for full width fields
+        &.form-row-wide {
+            grid-column: span 2;
+        }
+
+        margin: 0;
+
+        label {
+            @include typestyle-small;
+            margin: 0;
+        }
+
+        input,
+        .select2 {
+            --input--color: var(--color--foreground);
+            --input--color--focus: var(--color--foreground);
+            --input--placeholder-color: var(--color--brand-1);
+            --input--background-color: var(--color--brand-2);
+            --input--border-color: var(--color--foreground);
+            --input--border-color--focus: var(--color--foreground);
+            --input--border-width--focus: 1px;
+            --input--border-width: 1px;
+        }
+
+        .select2-selection.select2-selection--single {
+            height: auto;
+            border: 0;
+            background: transparent;
+        }
+
+        .select2-selection__rendered {
+            @include input;
+        }
+
+        .select2-selection__arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            right: 0.75rem;
+
+            & b {
+                border-color: #000 transparent transparent transparent;
+                border-style: solid;
+                border-width: 8px 6px 0 6px;
+            }
+        }
+
+    }
+
+    &__actions {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: var(--space--m);
+
+        .wc-submit-order button {
+            @include button;
+            @include button--interaction;
+            @include button--solid;
+        }
+
+        .back-to-cart a {
+            @include typestyle-h6;
+            font-weight: normal;
+            text-transform: uppercase;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: var(--space--s);
+            margin-left: auto;
+
+            &::before {
+                transform: rotate(180deg);
+                width: #{px-to-rem(16)};
+                height: #{px-to-rem(16)};
+                background-color: var(--color--foreground);
+                content: '';
+                mask-image: url(#{asset-path('images/icons/chevron-right.svg')});
+                mask-position: center;
+                mask-repeat: no-repeat;
+                mask-size: #{px-to-rem(16)};
+            }
+
+        }
+
+    }
+}
