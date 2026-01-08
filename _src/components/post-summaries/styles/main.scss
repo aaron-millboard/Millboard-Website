@@ -1,4 +1,29 @@
 .post-summaries {
+    $this: &;
+
+    &.is-search-results {
+        --block--max-width: var(--width--responsive--l);
+
+        display: grid;
+        gap: var(--space--xl);
+
+        @include mq(medium) {
+            grid-template-columns: auto 1fr;
+        }
+
+        #{$this}__sidebar {
+            @include mq(medium) {
+                max-width: var(--width--3xs);
+            }
+        }
+
+        #{$this}__inner {
+            @include mq(medium) {
+                max-width: var(--width--s);
+            }
+        }
+    }
+
     &__heading {
         padding-bottom: var(--space--2xs);
         border-bottom: var(--border--1);
@@ -8,6 +33,10 @@
     &__items {
         display: grid;
         gap: var(--space--l);
+    }
+
+    &__sidebar-heading {
+        margin-bottom: var(--space--2xs);
     }
 }
 

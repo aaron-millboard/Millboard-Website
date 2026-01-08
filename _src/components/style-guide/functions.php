@@ -369,30 +369,25 @@ function enqueue_style_guide_styles()
  */
 function exclude_style_guide_pages_internal_search_results($query)
 {
-    // Bail conditions.
-    if (!empty($query->is_admin) && !defined('DOING_AJAX')) {
+    // Bail early - query on any admin page.
+    if ($query->is_admin || \is_admin()) {
         return;
     }
 
-    if (!empty($query->is_single)) {
+    // Bail early - on a single post template.
+    if ($query->is_single) {
         return;
     }
 
-    if ($query->is_admin) {
-        return;
-    }
-
+    // Bail early - not running a search.
     if (!$query->is_search) {
         return;
     }
 
-    if (is_admin()) {
-        return;
-    }
-
-    if (!$query->is_main_query()) {
-        return;
-    }
+    // Bail early - not the main query. TODO: confirm if this check is necessary.
+    // if (!$query->is_main_query()) {
+    //     return;
+    // }
 
     // Guards done - remove styleguide pages.
     $style_guide_page_id = \get_field(STYLE_GUIDE_FIELD_NAME, 'options');
