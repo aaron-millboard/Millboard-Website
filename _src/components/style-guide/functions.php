@@ -393,14 +393,11 @@ function exclude_style_guide_pages_internal_search_results($query)
     $style_guide_page_id = \get_field(STYLE_GUIDE_FIELD_NAME, 'options');
 
     // Children of style guide.
-    $child_pages_args = [
-        'posts_per_page' => -1,
-        'post_parent'    => $style_guide_page_id,
-    ];
+    $style_guide_child_objects = \get_pages([
+        'child_of' => $style_guide_page_id,
+    ]);
 
     $style_guide_child_pages = [];
-
-    $style_guide_child_objects = \get_children($child_pages_args);
 
     if ($style_guide_child_objects) {
         foreach ($style_guide_child_objects as $key => $object) {
