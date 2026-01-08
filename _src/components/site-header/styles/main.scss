@@ -56,29 +56,27 @@ $site-header--top--background: 'white';
     }
 
     &__inner {
+        @include align-width--l;
+
         position: relative;
         display: flex;
         flex-direction: column;
         width: 100%;
         height: 100%;
-        gap: var(--space--xs);
+        gap: 0;
 
         @include mq('site-header') {
-            @include align-width--l;
-            gap: var(--space--m);
+            gap: 0;
             display: flex;
             flex-direction: column;
-            justify-content: flex-end;
+            justify-content: flex-start;
             align-items: center;
         }
     }
 
     &__top-navigation {
-        
         @include mq('site-header') {
-            position: absolute;
-            top: 0;
-            left: 0;
+            width: 100%;
         }
 
         .menu-list {
@@ -99,7 +97,7 @@ $site-header--top--background: 'white';
 
         .menu-item {
             padding: var(--space--3xs) var(--space--3xs);
-            
+
             .menu-item__wrap > a {
                 @include typestyle-h6;
             }
@@ -116,11 +114,13 @@ $site-header--top--background: 'white';
 
         .menu-item.is-active {
             background-color: var(--color--brand-1);
+
             > .menu-item__wrap > a {
                 font-weight: 400;
                 font-family: var(--type--3--font-family);
                 cursor: default;
                 pointer-events: none;
+
                 @include interact {
                     text-decoration: none;
                 }
@@ -135,20 +135,20 @@ $site-header--top--background: 'white';
         padding-left: var(--space--container-padding);
         background-color: var(--color--#{$site-header--top--background});
         gap: var(--site-header--spacing);
-        justify-content: space-between;
+        justify-content: center;
 
         @include mq('site-header') {
+            width: 100%;
             padding-right: 0;
             padding-left: 0;
             background-color: transparent;
-            justify-items: flex-end;
-            justify-content: flex-end;
         }
     }
 
     &__bottom {
         display: flex;
         width: 100%;
+
         @include mq($until: 'site-header') {
             --link--color: var(--color--foreground);
             --link--color--hover: var(--color--foreground);
@@ -188,7 +188,10 @@ $site-header--top--background: 'white';
         }
 
         @include mq('site-header') {
+            @include align-width--l;
+
             justify-content: center;
+            margin-top: var(--space--2xs);
             gap: var(--site-header--spacing);
             display: grid;
             grid-auto-rows: min-content;
@@ -303,7 +306,6 @@ $site-header--top--background: 'white';
     .header-search {
         position: absolute;
         top: 0;
-        height: 100%;
         right: 0;
         left: 0;
         width: 100%;

@@ -1,0 +1,71 @@
+.search-form {
+    $this: &;
+
+    &__input-wrapper {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        margin: 0 auto;
+        gap: var(--space--xs);
+        justify-items: center;
+        border-bottom: 1px solid var(--color--black);
+        padding: 0;
+        transition: transition(color, background-color, border-color, box-shadow, transform);
+
+        &:focus-within {
+            #{$this}__submit {
+                position: relative;
+                opacity: 1;
+                pointer-events: all;
+                visibility: visible;
+            }
+        }
+    }
+
+    &__input {
+        --input--color: var(--color--black);
+        --input--color--focus: var(--color--black);
+        --input--placeholder-color: var(--color--black);
+
+        --input--background-color: transparent;
+        --input--background-color--focus: transparent;
+
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        font-weight: var(--type--1--font-weight);
+
+        @include interact {
+            box-shadow: unset;
+        }
+    }
+
+    &__submit {
+        --button--padding-x: 0.75rem;
+        --button--padding-y: 0.75rem;
+        --button--border-width: 0;
+
+        @include button--icon;
+        @include button--square;
+
+        display: block;
+        flex: 0 0 auto;
+        margin: 0;
+        color: var(--color--foreground);
+        cursor: pointer;
+
+        &::after {
+            mask-image: url(#{asset-path('images/icons/chevron-right.svg')});
+            mask-size: 1em;
+
+            @include mq('site-header') {
+                mask-image: url(#{asset-path('images/icons/search.svg')});
+            }
+        }
+
+        @include mq('site-header') {
+            @include button;
+            @include button--interaction;
+        }
+    }
+}

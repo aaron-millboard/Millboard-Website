@@ -55,31 +55,13 @@
                     'site-header__navigation',
                 ],
             ]); ?>
-            
-            <?php /*
-
-            <button
-                class="site-header__search-toggler site-header__search-toggler--desktop g-button g-button--square"
-                aria-expanded="false"
-                aria-controls="site-header-search-form">
-                <span class="visually-hidden">
-                    <?= esc_html__('Expand the search field', 'granola'); ?>
-                </span>
-            </button>
-
-            <?php if (!empty($args['content']['call_to_action_1'])) { ?>
-                <div class="site-header__widgets">
-                    <?= \Granola\Component::get('link', $args['content']['call_to_action_1']); ?>
-                </div>
-            <?php } ?>
-
-            */ ?>
-
         </div>
-
-        <?= \Granola\Component::get('header-search', [
-            'id' => 'site-header-search-form',
-            'classes' => ['js-expandable-element'],
-        ]); ?>
     </div>
+
+    <?= \Granola\Component::get('header-search', [
+        'id' => 'site-header-search-form',
+        'classes' => [
+            'js-expandable-element',
+        ],
+    ]); ?>
 </header>

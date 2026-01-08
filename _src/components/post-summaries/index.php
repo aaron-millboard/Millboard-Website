@@ -1,4 +1,14 @@
 <div <?= \Granola\Helpers::build_attributes($args['attributes']); ?>>
+    <?php if (!empty($args['sidebar_tags'])) { ?>
+        <div class="post-summaries__sidebar">
+            <?= \Granola\Component::get('heading', $args['sidebar_heading']); ?>
+
+            <?php foreach ($args['sidebar_tags'] as $tag) { ?>
+                <?= \Granola\Component::get('link', $tag); ?>
+            <?php } ?>
+        </div>
+    <?php } ?>
+
     <div class="post-summaries__inner">
         <?php if (!empty($args['heading'])) { ?>
             <?= \Granola\Component::get('heading', $args['heading']); ?>

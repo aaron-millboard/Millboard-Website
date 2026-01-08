@@ -7,9 +7,11 @@
         </div>
     <?php } ?>
 
-    <?php if (!empty($args['image'])) { ?>
-        <div class="post-summary__image img-fit">
-            <?= \Granola\Component::get('image', $args['image']); ?>
+    <?php if (!empty($args['tags'])) { ?>
+        <div class="post-summary__tags">
+            <?php foreach ($args['tags'] as $tag) { ?>
+                <?=  \Granola\Component::get('element', $tag) ?>
+            <?php } ?>
         </div>
     <?php } ?>
 </article>

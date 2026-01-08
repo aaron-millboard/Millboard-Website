@@ -11,9 +11,6 @@ $content[] = $template_content ?: \Granola\Component::get('no-content', [
 ]);
 
 echo \Granola\Component::get('site-main', [
-    'header' => \Granola\Component::get('page-header', [
-        'object' => $object,
-    ]),
     'object' => $object,
     'content' => implode($content),
 ]);

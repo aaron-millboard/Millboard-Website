@@ -1,0 +1,30 @@
+.g-tag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: calc(var(--space--3xs) - 1px) px-to-rem(11px);
+    border: var(--border--1);
+    background-color: var(--color--brand-2);
+    color: var(--color--black);
+    font-size: rfs(15, 15);
+    font-weight: var(--type--2--font-weight);
+    font-family: var(--type--2--font-family);
+    gap: var(--button--gap);
+    line-height: normal;
+    letter-spacing: 0.15px;
+    text-align: center;
+    text-decoration: none;
+    user-select: none;
+
+    &.is-interactive {
+        cursor: pointer;
+        transition: transition(color, background-color, border-color);
+
+        @include interact {
+            background-color: var(--color--brand-5);
+            border-color: var(--color--brand-5);
+            color: var(--color--brand-2);
+            text-decoration: none;
+        }
+    }
+}

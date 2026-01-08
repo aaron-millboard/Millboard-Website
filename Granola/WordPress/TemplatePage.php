@@ -16,28 +16,71 @@ class TemplatePage
      */
     public static function init()
     {
+        // -------------------------------------------------------------------------
+        // Functional. Set up basic building blocks of Template Pages.
+        // -------------------------------------------------------------------------
+
+        // Register Template Page CPT to store on-page content for archives and "special" pages.
         \add_action('init', [__CLASS__, 'register_post_type']);
-        \add_action('admin_bar_menu', [__CLASS__, 'add_post_type_edit_toolbar_button'], 80);
-        \add_action('admin_bar_menu', [__CLASS__, 'add_admin_bar_edit_toolbar_button'], 80);
+
+        // Create a new Template Page post instance when requesting a valid "Add Template" URL.
+        \add_action('admin_post_create_template_page', [__CLASS__, 'create_template_page']);
+
+        // Deletes the relevant Template Page option when a Template Page post instance is trashed.
+        \add_action('after_delete_post', [__CLASS__, 'remove_template_option'], 10, 2);
+
+
+        // -------------------------------------------------------------------------
+        // UI - Buttons. Appends various admin bar buttons for Template Page CRUD.
+        // -------------------------------------------------------------------------
+
+        // Append "Add Template" buttons to admin bar.
         \add_action('admin_bar_menu', [__CLASS__, 'add_404_add_template_admin_bar_link'], 80);
+        \add_action('admin_bar_menu', [__CLASS__, 'add_search_add_template_admin_bar_link'], 80);
         \add_action('admin_bar_menu', [__CLASS__, 'add_taxonomy_add_template_admin_bar_link'], 80);
         \add_action('admin_bar_menu', [__CLASS__, 'add_term_add_template_admin_bar_link'], 80);
         \add_action('admin_bar_menu', [__CLASS__, 'add_term_add_template_admin_bar_link_front_end'], 80);
         \add_action('admin_bar_menu', [__CLASS__, 'add_post_type_archive_template_admin_bar_link'], 80);
+
+        // Append "Edit Template" buttons to admin bar.
+        \add_action('admin_bar_menu', [__CLASS__, 'add_404_edit_toolbar_button'], 80);
+        \add_action('admin_bar_menu', [__CLASS__, 'add_search_edit_toolbar_button'], 80);
+        \add_action('admin_bar_menu', [__CLASS__, 'add_post_type_edit_toolbar_button'], 80);
+        \add_action('admin_bar_menu', [__CLASS__, 'add_admin_bar_edit_toolbar_button'], 80);
+
+        // Add "View Template" button to admin bar.
         \add_action('admin_bar_menu', [__CLASS__, 'add_view_toolbar_button'], 80);
-        \add_action('admin_bar_menu', [__CLASS__, 'remove_blog_home_edit_page_button'], 100);
+
+
+        // -------------------------------------------------------------------------
+        // UI - Enhancements.
+        // -------------------------------------------------------------------------
+
+        // Add an "Edit Template" link to all CPTs (which have a template set) in the admin sidebar.
         \add_filter('granola/wordpress/admin/submenu', [__CLASS__, 'add_post_type_template_edit_submenu_link']);
-        \add_action('admin_post_create_template_page', [__CLASS__, 'create_template_page']);
-        \add_action('after_delete_post', [__CLASS__, 'remove_template_option'], 10, 2);
+
+        // Return the permalink of a Template Page's linked object instead of the Template Page's own permalink.
         \add_filter('post_type_link', [__CLASS__, 'filter_template_page_permalink'], 10, 2);
 
-        // Filter Template Page items in Edit Menu admin screen & customizer.
+        // Admin columns related actions and filters. (next static method adds more actions / filters)
+        \add_action('init', [__CLASS__, 'init_taxonomy_template_page_column']);
+
+
+        // -------------------------------------------------------------------------
+        // Menus. Allow (valid) Template Pages to be linked in menus.
+        // -------------------------------------------------------------------------
+
         \add_filter('wp_setup_nav_menu_item', [__CLASS__, 'filter_admin_nav_menu_item']);
         \add_filter('customize_nav_menu_available_items', [__CLASS__, 'filter_customizer_available_nav_menu_items'], 10, 3);
         \add_filter('customize_nav_menu_searched_items', [__CLASS__, 'filter_customizer_nav_menu_items']);
 
-        // Admin columns related actions and filters. (next static method adds more actions / filters)
-        \add_action('init', [__CLASS__, 'init_taxonomy_template_page_column']);
+
+        // -------------------------------------------------------------------------
+        // Clean up. Remove any conflicting core WP functionality.
+        // -------------------------------------------------------------------------
+
+        // Remove "edit page" button for Posts PT when there is a static page set in WP Settings > Reading.
+        \add_action('admin_bar_menu', [__CLASS__, 'remove_blog_home_edit_page_button'], 100);
     }
 
     /**
@@ -46,15 +89,15 @@ class TemplatePage
     public static function init_taxonomy_template_page_column(): void
     {
 
-        // Pull list of taxonomies which we are going to use for 'template page'
+        // Pull list of taxonomies which we are going to use for 'template page'.
         $taxonomies = self::get_template_taxonomies();
 
-        // Prevent unnecessary loop attempt if our array is empty
+        // Prevent unnecessary loop attempt if our array is empty.
         if (empty($taxonomies)) {
             return;
         }
 
-        // Loop through each taxonomy and manage it's 'Template Page' column
+        // Loop through each taxonomy and manage its 'Template Page' column.
         foreach ($taxonomies as $taxonomy_slug) {
             // Add column
             \add_filter("manage_edit-{$taxonomy_slug}_columns", [__CLASS__, 'add_taxonomy_template_page_column'], 10);
@@ -63,6 +106,11 @@ class TemplatePage
         }
     }
 
+    /**
+     * Register the TemplatePage post type.
+     *
+     * @return void
+     */
     public static function register_post_type(): void
     {
         if (!function_exists('register_extended_post_type')) {
@@ -129,6 +177,8 @@ class TemplatePage
                             );
                         } elseif (!empty($object->type) && $object->type === '404') {
                             echo \_x('Special: 404', 'Template post list 404', 'granola');
+                        } elseif (!empty($object->type) && $object->type === 'search') {
+                            echo \_x('Special: Search', 'Template post list search', 'granola');
                         }
                     }
                 ]
@@ -156,305 +206,6 @@ class TemplatePage
             'singular' => \__('Template Page', 'granola'),
             'plural'   => \__('Template Pages', 'granola'),
             'slug'     => self::SLUG,
-        ]);
-    }
-
-    /**
-     * Filters the global $submenu to add post type edit link(s) to the WP admin bar.
-     *
-     * @param array $submenu An array of WP admin menu items.
-     */
-    public static function add_post_type_template_edit_submenu_link($submenu): array
-    {
-        // Bail early - user doesn't have the right capabilities.
-        if (!\current_user_can('edit_pages')) {
-            return $submenu;
-        }
-
-        $post_types = self::get_template_post_types();
-
-        foreach ($post_types as $pt) {
-            $template = self::get_template_page(
-                \get_post_type_object($pt)
-            );
-
-            // Handle 'post' PT menu key edge case.
-            $key = ($pt === 'post') ? 'edit.php' : "edit.php?post_type={$pt}";
-
-            // Bail early - no page found.
-            if (
-                !empty($template)
-                && $template instanceof \WP_Post
-                && $template->post_status !== 'trash'
-            ) {
-                $link_array = [
-                    \__('Edit Template', 'granola'),
-                    'edit_pages',
-                    \get_edit_post_link($template->ID),
-                ];
-            } else {
-                $link_array = [
-                    \__('Add Template', 'granola'),
-                    'edit_pages',
-                    \add_query_arg([
-                        'action' => 'create_template_page',
-                        'object_type' => 'wp_post_type',
-                        'object_id' => $pt,
-                        'nonce' => \wp_create_nonce('create_template_page'),
-                    ], \admin_url('admin-post.php')),
-                ];
-            }
-
-            $submenu[$key][] = $link_array;
-        }
-
-        return $submenu;
-    }
-
-    /**
-     * Filters the global $submenu to add post type edit link(s) to the WP admin bar.
-     *
-     * @param \WP_Admin_Bar $admin_bar An array of WP admin menu items.
-     */
-    public static function add_taxonomy_add_template_admin_bar_link(\WP_Admin_Bar $admin_bar): void
-    {
-        if (!\current_user_can('edit_posts') || !\is_admin()) {
-            return;
-        }
-
-        $screen = \get_current_screen();
-        $taxonomies = self::get_template_taxonomies();
-
-        // Bail early - not currently editing a valid taxonomy term.
-        if (
-            empty($screen->taxonomy) ||
-            $screen->base !== 'edit-tags' ||
-            !in_array($screen->taxonomy, $taxonomies, true)
-        ) {
-            return;
-        }
-
-        $taxonomy_name = $screen->taxonomy;
-        $template_page_id = \get_option("{$taxonomy_name}_template_page", 0);
-        $template_page = \get_post($template_page_id);
-
-        // Bail early - template page set already.
-        if (!empty($template_page) && $template_page instanceof \WP_Post && $template_page->post_status !== 'trash') {
-            return;
-        }
-
-        $admin_bar->add_menu([
-            'id'    => 'granola-add-template',
-            'title' => \__('Add Template', 'granola'),
-            'href'  => \add_query_arg([
-                'action' => 'create_template_page',
-                'object_type' => 'wp_taxonomy',
-                'object_id' => $taxonomy_name,
-                'nonce' => \wp_create_nonce('create_template_page'),
-            ], \admin_url('admin-post.php')),
-            'meta'  => [
-                'title' => \__('Add Template', 'granola'),
-            ],
-        ]);
-    }
-
-    /**
-     * Filters the global $submenu to add post type edit link(s) to the WP admin bar.
-     *
-     * @param \WP_Admin_Bar $admin_bar An array of WP admin menu items.
-     */
-    public static function add_term_add_template_admin_bar_link_front_end(\WP_Admin_Bar $admin_bar): void
-    {
-        if (!\current_user_can('edit_posts') || !\Granola\Helpers::is_taxonomy()) {
-            return;
-        }
-
-        $queried_object = \get_queried_object();
-
-        if (!$queried_object instanceof \WP_Term) {
-            return;
-        }
-
-        $template_page_id = \get_term_meta($queried_object->term_id, 'template_page', true);
-
-        // If no template page ID, return.
-        if (!empty($template_page_id)) {
-            return;
-        }
-
-        // If we have a template page ID, get the post content.
-        $template_page = \get_post($template_page_id);
-
-
-        // Bail early - template page set already.
-        if (
-            !empty($template_page)
-            && $template_page instanceof \WP_Post
-            && $template_page->post_status !== 'trash'
-        ) {
-            return;
-        }
-
-        $admin_bar->add_menu([
-            'id'    => 'granola-add-template',
-            'title' => \__('Add Template', 'granola'),
-            'href'  => \add_query_arg([
-                'action' => 'create_template_page',
-                'object_type' => 'wp_term',
-                'object_id' => $queried_object->term_taxonomy_id,
-                'nonce' => \wp_create_nonce('create_template_page'),
-            ], \admin_url('admin-post.php')),
-            'meta'  => [
-                'title' => \__('Add Template', 'granola'),
-            ],
-        ]);
-    }
-
-    /**
-     * Filters the global $submenu to add post type edit link(s) to the WP admin bar.
-     *
-     * @param \WP_Admin_Bar $admin_bar An array of WP admin menu items.
-     */
-    public static function add_post_type_archive_template_admin_bar_link(\WP_Admin_Bar $admin_bar): void
-    {
-        if (!\current_user_can('edit_posts') || !is_archive()) {
-            return;
-        }
-
-        $queried_object = \get_queried_object();
-
-        if (!$queried_object instanceof \WP_Post_Type) {
-            return;
-        }
-
-        $post_type = $queried_object->name;
-
-        $template = self::get_template_page(
-            $queried_object
-        );
-
-        // If no template page ID, return.
-        if (!empty($template)) {
-            return;
-        }
-
-        // Bail early - template page set already.
-        if (
-            !empty($template_page)
-            && $template_page instanceof \WP_Post
-            && $template_page->post_status !== 'trash'
-        ) {
-            return;
-        }
-
-        $admin_bar->add_menu([
-            'id'    => 'granola-add-template',
-            'title' => \__('Add Template', 'granola'),
-            'href'  => \add_query_arg([
-                'action' => 'create_template_page',
-                'object_type' => 'wp_post_type',
-                'object_id' => $post_type,
-                'nonce' => \wp_create_nonce('create_template_page'),
-            ], \admin_url('admin-post.php')),
-             'meta'  => [
-                'title' => \__('Add Template', 'granola'),
-            ],
-        ]);
-    }
-
-    /**
-     * Filters the global $submenu to add post type edit link(s) to the WP admin bar.
-     *
-     * @param \WP_Admin_Bar $admin_bar An array of WP admin menu items.
-     */
-    public static function add_term_add_template_admin_bar_link(\WP_Admin_Bar $admin_bar): void
-    {
-        if (!\current_user_can('edit_posts') || !\is_admin()) {
-            return;
-        }
-
-        $screen = \get_current_screen();
-        $taxonomies = self::get_template_taxonomies();
-
-        // Bail early - not currently editing a valid taxonomy term.
-        if (empty($screen->taxonomy) || $screen->base !== 'term' || !in_array($screen->taxonomy, $taxonomies, true)) {
-            return;
-        }
-
-        $term = self::get_term_being_edited();
-
-        // Bail early - invalid term page.
-        if (empty($term)) {
-            return;
-        }
-
-        $template_page_id = \get_term_meta($term->term_id, 'template_page', true);
-        $template_page = \get_post($template_page_id);
-
-        // Bail early - template page set already.
-        if (
-            !empty($template_page)
-            && $template_page instanceof \WP_Post
-            && $template_page->post_status !== 'trash'
-        ) {
-            return;
-        }
-
-        $admin_bar->add_menu([
-            'id'    => 'granola-add-template',
-            'title' => \__('Add Template', 'granola'),
-            'href'  => \add_query_arg([
-                'action' => 'create_template_page',
-                'object_type' => 'wp_term',
-                'object_id' => $term->term_taxonomy_id,
-                'nonce' => \wp_create_nonce('create_template_page'),
-            ], \admin_url('admin-post.php')),
-            'meta'  => [
-                'title' => \__('Add Template', 'granola'),
-            ],
-        ]);
-    }
-
-    /**
-     * Filters the global $submenu to add post type edit link(s) to the WP admin bar.
-     *
-     * @param \WP_Admin_Bar $admin_bar An array of WP admin menu items.
-     */
-    public static function add_404_add_template_admin_bar_link(\WP_Admin_Bar $admin_bar): void
-    {
-        if (!\current_user_can('edit_posts') || \is_admin() || !\is_404()) {
-            return;
-        }
-
-        $template_page_id = \get_option('404_template_page', 0);
-
-        // Bail early - template page set already.
-        if (!empty($template_page_id)) {
-            return;
-        }
-
-        $template_page = \get_post($template_page_id);
-
-        // Bail early - template page set already.
-        if (
-            $template_page instanceof \WP_Post
-            && $template_page->post_status !== 'trash'
-        ) {
-            return;
-        }
-
-        $admin_bar->add_menu([
-            'id'    => 'granola-add-template',
-            'title' => \__('Add Template', 'granola'),
-            'href'  => \add_query_arg([
-                'action' => 'create_template_page',
-                'object_type' => '404',
-                'object_id' => '0',
-                'nonce' => \wp_create_nonce('create_template_page'),
-            ], \admin_url('admin-post.php')),
-            'meta'  => [
-                'title' => \__('Add Template', 'granola'),
-            ],
         ]);
     }
 
@@ -506,6 +257,9 @@ class TemplatePage
         } elseif ($object_data->type === '404') {
             $object_data->title = \_x('404 Not Found', 'Template Page 404 title', 'granola');
             $object_data->slug = '404';
+        } elseif ($object_data->type === 'search') {
+            $object_data->title = \_x('Search', 'Template Page search title', 'granola');
+            $object_data->slug = 'search';
         }
 
         // Bail early - invalid object.
@@ -544,12 +298,398 @@ class TemplatePage
             \update_term_meta($object_data->id, 'template_page', $template_page_id);
         } elseif ($object_data->type === '404') {
             \update_option('404_template_page', $template_page_id, false);
+        } elseif ($object_data->type === 'search') {
+            \update_option('search_template_page', $template_page_id, false);
         }
 
         \wp_safe_redirect(
             \get_edit_post_link($template_page_id, 'redirect')
         );
         exit;
+    }
+
+    /**
+     * Deletes a template page option field when the related template page post is trashed.
+     */
+    public static function remove_template_option($post_id, $post): void
+    {
+        // Bail early - wrong post type.
+        if (\get_post_type($post_id) !== self::SLUG) {
+            return;
+        }
+
+        $object = self::get_templated_object($post);
+
+        // Bail early - no templated object found.
+        if (empty($object)) {
+            return;
+        }
+
+        if ($object instanceof \WP_Post_Type || $object instanceof \WP_Taxonomy) {
+            \delete_option("{$object->name}_template_page");
+        } elseif ($object instanceof \WP_Term) {
+            \delete_term_meta($object->term_id, 'template_page');
+        } elseif (!empty($object->type) && $object->type === '404') {
+            \delete_option('404_template_page');
+        } elseif (!empty($object->type) && $object->type === 'search') {
+            \delete_option('search_template_page');
+        }
+
+        return;
+    }
+
+    /**
+     * Filters the global $submenu to add post type edit link(s) to the WP admin sidebar.
+     *
+     * @param array $submenu An array of WP admin menu items.
+     * @return array The array of WP admin menu items, with Template Page add/edit links appended where relevant.
+     */
+    public static function add_post_type_template_edit_submenu_link(array $submenu): array
+    {
+        // Bail early - user doesn't have the right capabilities.
+        if (!\current_user_can('edit_pages')) {
+            return $submenu;
+        }
+
+        $post_types = self::get_template_post_types();
+
+        foreach ($post_types as $pt) {
+            $template_page = self::get_template_page(
+                \get_post_type_object($pt)
+            );
+
+            // Handle 'post' PT menu key edge case.
+            $key = ($pt === 'post') ? 'edit.php' : "edit.php?post_type={$pt}";
+
+            // Bail early - no page found.
+            if (self::is_valid_template_page($template_page)) {
+                $link_array = [
+                    \__('Edit Template', 'granola'),
+                    'edit_pages',
+                    \get_edit_post_link($template_page->ID),
+                ];
+            } else {
+                $link_array = [
+                    \__('Add Template', 'granola'),
+                    'edit_pages',
+                    \add_query_arg([
+                        'action' => 'create_template_page',
+                        'object_type' => 'wp_post_type',
+                        'object_id' => $pt,
+                        'nonce' => \wp_create_nonce('create_template_page'),
+                    ], \admin_url('admin-post.php')),
+                ];
+            }
+
+            $submenu[$key][] = $link_array;
+        }
+
+        return $submenu;
+    }
+
+    /**
+     * Filters the global $submenu to add post type edit link(s) to the WP admin bar.
+     *
+     * @param \WP_Admin_Bar $admin_bar An array of WP admin menu items.
+     */
+    public static function add_taxonomy_add_template_admin_bar_link(\WP_Admin_Bar $admin_bar): void
+    {
+        // Bail early - not on an admin screen.
+        if (!\is_admin()) {
+            return;
+        }
+
+        // Bail early - user doesn't have the right capabilities.
+        if (!\current_user_can('edit_posts')) {
+            return;
+        }
+
+        $screen = \get_current_screen();
+        $taxonomies = self::get_template_taxonomies();
+
+        // Bail early - not currently editing a valid taxonomy term.
+        if (
+            empty($screen->taxonomy) ||
+            $screen->base !== 'edit-tags' ||
+            !in_array($screen->taxonomy, $taxonomies, true)
+        ) {
+            return;
+        }
+
+        $taxonomy_name = $screen->taxonomy;
+        $template_page_id = \get_option("{$taxonomy_name}_template_page", 0);
+        $template_page = \get_post($template_page_id);
+
+        // Bail early - template page set already.
+        if (self::is_valid_template_page($template_page)) {
+            return;
+        }
+
+        $admin_bar->add_menu([
+            'id'    => 'granola-add-template',
+            'title' => \__('Add Template', 'granola'),
+            'href'  => \add_query_arg([
+                'action' => 'create_template_page',
+                'object_type' => 'wp_taxonomy',
+                'object_id' => $taxonomy_name,
+                'nonce' => \wp_create_nonce('create_template_page'),
+            ], \admin_url('admin-post.php')),
+            'meta'  => [
+                'title' => \__('Add Template', 'granola'),
+            ],
+        ]);
+    }
+
+    /**
+     * Filters the global $submenu to add post type edit link(s) to the WP admin bar.
+     *
+     * @param \WP_Admin_Bar $admin_bar An array of WP admin menu items.
+     */
+    public static function add_term_add_template_admin_bar_link_front_end(\WP_Admin_Bar $admin_bar): void
+    {
+        // Bail early - on an admin screen.
+        if (\is_admin()) {
+            return;
+        }
+
+        // Bail early - not on a taxonomy page.
+        if (!\Granola\Helpers::is_taxonomy()) {
+            return;
+        }
+
+        // Bail early - user doesn't have the right capabilities.
+        if (!\current_user_can('edit_posts')) {
+            return;
+        }
+
+        $queried_object = \get_queried_object();
+
+        if (!$queried_object instanceof \WP_Term) {
+            return;
+        }
+
+        $template_page_id = \get_term_meta($queried_object->term_id, 'template_page', true);
+
+        // If no template page ID, return.
+        if (!empty($template_page_id)) {
+            return;
+        }
+
+        // If we have a template page ID, get the post content.
+        $template_page = \get_post($template_page_id);
+
+        // Bail early - template page set already.
+        if (self::is_valid_template_page($template_page)) {
+            return;
+        }
+
+        $admin_bar->add_menu([
+            'id'    => 'granola-add-template',
+            'title' => \__('Add Template', 'granola'),
+            'href'  => \add_query_arg([
+                'action' => 'create_template_page',
+                'object_type' => 'wp_term',
+                'object_id' => $queried_object->term_taxonomy_id,
+                'nonce' => \wp_create_nonce('create_template_page'),
+            ], \admin_url('admin-post.php')),
+            'meta'  => [
+                'title' => \__('Add Template', 'granola'),
+            ],
+        ]);
+    }
+
+    /**
+     * Filters the global $submenu to add post type edit link(s) to the WP admin bar.
+     *
+     * @param \WP_Admin_Bar $admin_bar An array of WP admin menu items.
+     */
+    public static function add_post_type_archive_template_admin_bar_link(\WP_Admin_Bar $admin_bar): void
+    {
+        // Bail early - not on an archive page.
+        if (!\is_archive()) {
+            return;
+        }
+
+        // Bail early - user doesn't have the right capabilities.
+        if (!\current_user_can('edit_posts')) {
+            return;
+        }
+
+        $queried_object = \get_queried_object();
+
+        if (!$queried_object instanceof \WP_Post_Type) {
+            return;
+        }
+
+        $template_page = self::get_template_page($queried_object);
+
+        // Bail early - template page set already.
+        if (self::is_valid_template_page($template_page)) {
+            return;
+        }
+
+        $admin_bar->add_menu([
+            'id'    => 'granola-add-template',
+            'title' => \__('Add Template', 'granola'),
+            'href'  => \add_query_arg([
+                'action' => 'create_template_page',
+                'object_type' => 'wp_post_type',
+                'object_id' => $queried_object->name,
+                'nonce' => \wp_create_nonce('create_template_page'),
+            ], \admin_url('admin-post.php')),
+            'meta'  => [
+                'title' => \__('Add Template', 'granola'),
+            ],
+        ]);
+    }
+
+    /**
+     * Filters the global $submenu to add post type edit link(s) to the WP admin bar.
+     *
+     * @param \WP_Admin_Bar $admin_bar An array of WP admin menu items.
+     */
+    public static function add_term_add_template_admin_bar_link(\WP_Admin_Bar $admin_bar): void
+    {
+        // Bail early - not on an admin screen.
+        if (!\is_admin()) {
+            return;
+        }
+
+        // Bail early - user doesn't have the right capabilities.
+        if (!\current_user_can('edit_posts')) {
+            return;
+        }
+
+        $screen = \get_current_screen();
+        $taxonomies = self::get_template_taxonomies();
+
+        // Bail early - not currently editing a valid taxonomy term.
+        if (empty($screen->taxonomy) || $screen->base !== 'term' || !in_array($screen->taxonomy, $taxonomies, true)) {
+            return;
+        }
+
+        $term = self::get_term_being_edited();
+
+        // Bail early - invalid term page.
+        if (empty($term)) {
+            return;
+        }
+
+        $template_page_id = \get_term_meta($term->term_id, 'template_page', true);
+        $template_page = \get_post($template_page_id);
+
+        // Bail early - template page set already.
+        if (self::is_valid_template_page($template_page)) {
+            return;
+        }
+
+        $admin_bar->add_menu([
+            'id'    => 'granola-add-template',
+            'title' => \__('Add Template', 'granola'),
+            'href'  => \add_query_arg([
+                'action' => 'create_template_page',
+                'object_type' => 'wp_term',
+                'object_id' => $term->term_taxonomy_id,
+                'nonce' => \wp_create_nonce('create_template_page'),
+            ], \admin_url('admin-post.php')),
+            'meta'  => [
+                'title' => \__('Add Template', 'granola'),
+            ],
+        ]);
+    }
+
+    /**
+     * Filters the global $submenu to add post type edit link(s) to the WP admin bar.
+     *
+     * @param \WP_Admin_Bar $admin_bar An array of WP admin menu items.
+     */
+    public static function add_404_add_template_admin_bar_link(\WP_Admin_Bar $admin_bar): void
+    {
+        // Bail early - on an admin screen or not on a 404 page.
+        if (\is_admin() || !\is_404()) {
+            return;
+        }
+
+        // Bail early - user doesn't have the right capabilities.
+        if (!\current_user_can('edit_posts')) {
+            return;
+        }
+
+        $template_page_id = \get_option('404_template_page', 0);
+
+        // Bail early - template page set already.
+        if (!empty($template_page_id)) {
+            return;
+        }
+
+        $template_page = \get_post($template_page_id);
+
+        // Bail early - template page set already.
+        if (self::is_valid_template_page($template_page)) {
+            return;
+        }
+
+        $admin_bar->add_menu([
+            'id'    => 'granola-add-template',
+            'title' => \__('Add Template', 'granola'),
+            'href'  => \add_query_arg([
+                'action' => 'create_template_page',
+                'object_type' => '404',
+                'object_id' => '0',
+                'nonce' => \wp_create_nonce('create_template_page'),
+            ], \admin_url('admin-post.php')),
+            'meta'  => [
+                'title' => \__('Add Template', 'granola'),
+            ],
+        ]);
+    }
+
+    /**
+     * Filters the global $submenu to add post type edit link(s) to the WP admin bar on the Search page.
+     *
+     * @param \WP_Admin_Bar $admin_bar An array of WP admin menu items.
+     */
+    public static function add_search_add_template_admin_bar_link(\WP_Admin_Bar $admin_bar): void
+    {
+
+        // Bail early - on an admin screen or not on a 404 page.
+        if (\is_admin() || !\is_search()) {
+            return;
+        }
+
+        // Bail early - user doesn't have the right capabilities.
+        if (!\current_user_can('edit_posts')) {
+            return;
+        }
+
+        $template_page_id = \get_option('search_template_page', 0);
+
+        // Bail early - template page set already.
+        if (!empty($template_page_id)) {
+            return;
+        }
+
+        $page_object = \Granola\WordPress\PageObject::get();
+        $template_page = self::get_template_page($page_object);
+
+        // Bail early - template page set already.
+        if (self::is_valid_template_page($template_page)) {
+            return;
+        }
+
+        $admin_bar->add_menu([
+            'id'    => 'granola-add-template',
+            'title' => \__('Add Template', 'granola'),
+            'href'  => \add_query_arg([
+                'action' => 'create_template_page',
+                'object_type' => 'search',
+                'object_id' => '0',
+                'nonce' => \wp_create_nonce('create_template_page'),
+            ], \admin_url('admin-post.php')),
+            'meta'  => [
+                'title' => \__('Add Template', 'granola'),
+            ],
+        ]);
     }
 
     /**
@@ -561,7 +701,13 @@ class TemplatePage
      */
     public static function add_view_toolbar_button(\WP_Admin_Bar $admin_bar): void
     {
-        if (!\current_user_can('edit_posts') || !\is_admin()) {
+        // Bail early - not on an admin screen.
+        if (!\is_admin()) {
+            return;
+        }
+
+        // Bail early - user doesn't have the right capabilities.
+        if (!\current_user_can('edit_posts')) {
             return;
         }
 
@@ -613,7 +759,13 @@ class TemplatePage
      */
     public static function add_admin_bar_edit_toolbar_button(\WP_Admin_Bar $admin_bar): void
     {
-        if (!\current_user_can('edit_posts') || !\is_admin()) {
+        // Bail early - not on an admin screen.
+        if (!\is_admin()) {
+            return;
+        }
+
+        // Bail early - user doesn't have the right capabilities.
+        if (!\current_user_can('edit_posts')) {
             return;
         }
 
@@ -666,11 +818,8 @@ class TemplatePage
 
         $template_page = \get_post($template_page_id);
 
-        if (
-            empty($template_page)
-            || !($template_page instanceof \WP_Post)
-            || $template_page->post_status === 'trash'
-        ) {
+        // Bail early - no valid template page set.
+        if (!self::is_valid_template_page($template_page)) {
             return;
         }
 
@@ -700,24 +849,124 @@ class TemplatePage
      */
     public static function add_post_type_edit_toolbar_button(\WP_Admin_Bar $admin_bar): void
     {
-        if (!\current_user_can('edit_posts') || \is_admin()) {
+        // Bail early - not on the front-end.
+        if (\is_admin()) {
             return;
         }
 
-        // Bail early - not on an template page.
-        if (!\is_archive() && !\is_home() && !\is_404()) {
+        // Bail early - not on an archive.
+        if (!\is_archive() && !\is_home()) {
             return;
         }
 
-        $template_page = self::get_template_page(
-            \Granola\WordPress\PageObject::get()
-        );
+        // Bail early - user doesn't have the right capabilities.
+        if (!\current_user_can('edit_posts')) {
+            return;
+        }
 
-        if (
-            empty($template_page)
-            || !($template_page instanceof \WP_Post)
-            || $template_page->post_status === 'trash'
-        ) {
+        $page_object = \Granola\WordPress\PageObject::get();
+        $template_page = self::get_template_page($page_object);
+
+        // Bail early - no valid template page set.
+        if (!self::is_valid_template_page($template_page)) {
+            return;
+        }
+
+        $admin_bar->add_menu([
+            'id'    => 'granola-edit-template',
+            'title' => sprintf(
+                // translators: 1: opening html tags. 2: closing html tags.
+                \_x('%1$sEdit Template Content%2$s', 'Admin bar edit link', 'granola'),
+                '<span class="ab-icon" aria-hidden="true"></span><span class="ab-label">',
+                '</span>'
+            ),
+            'href'  => \get_edit_post_link($template_page),
+            'meta'  => [
+                'title' => \_x('Edit Template Content', 'Admin bar edit link title', 'granola'),
+                'class' => 'granola-ab-item granola-edit-template'
+            ],
+        ]);
+    }
+
+    /**
+     * Add an 'Edit Template' button to the WP admin bar when viewing a 404 page
+     * on the front-end, which is linked to a granola-template post.
+     *
+     * @link https://developer.wordpress.org/reference/hooks/admin_bar_menu/
+     *
+     * @param \WP_Admin_Bar $admin_bar The WP_Admin_Bar instance, passed by reference.
+     */
+    public static function add_404_edit_toolbar_button(\WP_Admin_Bar $admin_bar): void
+    {
+        // Bail early - not on the front-end.
+        if (\is_admin()) {
+            return;
+        }
+
+        // Bail early - not on a 404 page.
+        if (!\is_404()) {
+            return;
+        }
+
+        // Bail early - user doesn't have the right capabilities.
+        if (!\current_user_can('edit_posts')) {
+            return;
+        }
+
+        $page_object = \Granola\WordPress\PageObject::get();
+        $template_page = self::get_template_page($page_object);
+
+        // Bail early - no valid template page set.
+        if (!self::is_valid_template_page($template_page)) {
+            return;
+        }
+
+        $admin_bar->add_menu([
+            'id'    => 'granola-edit-template',
+            'title' => sprintf(
+                // translators: 1: opening html tags. 2: closing html tags.
+                \_x('%1$sEdit Template Content%2$s', 'Admin bar edit link', 'granola'),
+                '<span class="ab-icon" aria-hidden="true"></span><span class="ab-label">',
+                '</span>'
+            ),
+            'href'  => \get_edit_post_link($template_page),
+            'meta'  => [
+                'title' => \_x('Edit Template Content', 'Admin bar edit link title', 'granola'),
+                'class' => 'granola-ab-item granola-edit-template'
+            ],
+        ]);
+    }
+
+    /**
+     * Add an 'Edit Template' button to the WP admin bar when viewing a search page
+     * on the front-end, which is linked to a granola-template post.
+     *
+     * @link https://developer.wordpress.org/reference/hooks/admin_bar_menu/
+     *
+     * @param \WP_Admin_Bar $admin_bar The WP_Admin_Bar instance, passed by reference.
+     */
+    public static function add_search_edit_toolbar_button(\WP_Admin_Bar $admin_bar): void
+    {
+        // Bail early - not on the front-end.
+        if (\is_admin()) {
+            return;
+        }
+
+        // Bail early - not on a search page.
+        if (!\is_search()) {
+            return;
+        }
+
+        // Bail early - user doesn't have the right capabilities.
+        if (!\current_user_can('edit_posts')) {
+            return;
+        }
+
+        $page_object = \Granola\WordPress\PageObject::get();
+        $template_page = self::get_template_page($page_object);
+
+        // Bail early - no valid template page set.
+        if (!self::is_valid_template_page($template_page)) {
             return;
         }
 
@@ -750,12 +999,18 @@ class TemplatePage
      */
     public static function remove_blog_home_edit_page_button(\WP_Admin_Bar $admin_bar): void
     {
-        if (!\current_user_can('edit_posts') || \is_admin()) {
+        // Bail early - on an admin screen.
+        if (\is_admin()) {
             return;
         }
 
         // Bail early - not on the blog archive page.
         if (!\is_home()) {
+            return;
+        }
+
+        // Bail early - user doesn't have the right capabilities.
+        if (!\current_user_can('edit_posts')) {
             return;
         }
 
@@ -765,7 +1020,7 @@ class TemplatePage
     /**
      * Retrieve the permalink for a Template Page's linked object instead of the Template Page's own permalink.
      *
-     * Does not return a filtered permalink for a 404 page (for hopefully obvious reasons).
+     * Does not return a filtered permalink for the 404 or search pages (for hopefully obvious reasons).
      *
      * @param string $permalink The template page's permalink.
      * @param \WP_Post $post The template post object.
@@ -788,16 +1043,15 @@ class TemplatePage
         return $permalink;
     }
 
-
     /**
-     * Filters the Template Page menu items in the admin Edit Menu screen to prevent unlinked Template Pages and the
-     * 404 Template Page from being available to add to nav menus via the the 'Most Recent', 'View All', and 'Search'
-     * menu item selection lists.
+     * Filters the Template Page menu items in the admin Edit Menu screen to prevent unlinked Template Pages, the 404,
+     * and the Search Template Page from being available to add to nav menus via the the 'Most Recent', 'View All',
+     * and 'Search' menu item selection lists.
      *
      * @link https://developer.wordpress.org/reference/hooks/wp_setup_nav_menu_item/
      *
      * @param object|null $item The menu item object.
-     * @return object|null The same menu item object. Null if unlinked or linked to the 404 page.
+     * @return object|null The same menu item object. Null if unlinked or linked to the 404 or Search pages.
      */
     public static function filter_admin_nav_menu_item(?object $item)
     {
@@ -816,7 +1070,6 @@ class TemplatePage
 
         return $item;
     }
-
 
     /**
      * Filter the initially available Template Page menu items in the customizer.
@@ -875,7 +1128,7 @@ class TemplatePage
     {
         $object = self::get_templated_object($page);
 
-        return !empty($object) && is_object($object) && (!$object instanceof \WP_Taxonomy) && $object->name !== '404';
+        return !empty($object) && is_object($object) && (!$object instanceof \WP_Taxonomy) && empty($object->type);
     }
 
     /**
@@ -892,7 +1145,14 @@ class TemplatePage
 
         $template_page = self::get_template_page($object);
 
-        if (empty($template_page) || $template_page->post_status !== 'publish') {
+        // Bail early - invalid template page found,
+        if (!self::is_valid_template_page($template_page)) {
+            return false;
+        }
+
+        // Only return the content (to the public) if the template page has been published.
+        // Draft, Pending, etc statuses are valid but should only be viewed by users who can see unpublished content.
+        if ($template_page->post_status !== 'publish' && !\current_user_can('edit_posts')) {
             return false;
         }
 
@@ -921,6 +1181,8 @@ class TemplatePage
             }
         } elseif ($object instanceof \WP_Query && $object->is_404()) {
             $template_id = \get_option('404_template_page', 0);
+        } elseif ($object instanceof \WP_Query && $object->is_search()) {
+            $template_id = \get_option('search_template_page', 0);
         } else {
             $template_id = \get_option("{$object->name}_template_page", 0);
         }
@@ -933,13 +1195,27 @@ class TemplatePage
         if (!empty($template_id)) {
             $template_page = \get_post($template_id);
 
-            if (!empty($template_page) && $template_page->post_status !== 'trash') {
+            if (self::is_valid_template_page($template_page)) {
                 return $template_page;
             }
         }
 
         return false;
     }
+
+    /**
+     * Determines whether the passed object is a valid template page.
+     *
+     * A valid template page is a WP_Post object that hasn't been trashed.
+     *
+     * @param mixed $object The potential Template Page to check.
+     * @return boolean Whether the passed object is a valid template page.
+     */
+    public static function is_valid_template_page(mixed $object): bool
+    {
+        return !empty($object) && $object instanceof \WP_Post && $object->post_status !== 'trash';
+    }
+
 
     /**
      * Retrieves the object that the given Template Page is linked to, if one exists.
@@ -962,6 +1238,8 @@ class TemplatePage
         } elseif ($object_data->type === 'wp_taxonomy') {
             $object = \get_taxonomy($object_data->id);
         } elseif ($object_data->type === '404') {
+            $object = (object) $object_data;
+        } elseif ($object_data->type === 'search') {
             $object = (object) $object_data;
         }
 
@@ -1009,35 +1287,6 @@ class TemplatePage
     public static function get_template_post_types(): array
     {
         return \apply_filters('granola/templates/post-types', []);
-    }
-
-    /**
-     * Deletes a template page option field when the related template page post is trashed.
-     *
-     */
-    public static function remove_template_option($post_id, $post): void
-    {
-        // Bail early - wrong post type.
-        if (\get_post_type($post_id) !== self::SLUG) {
-            return;
-        }
-
-        $object = self::get_templated_object($post);
-
-        // Bail early - no templated object found.
-        if (empty($object)) {
-            return;
-        }
-
-        if ($object instanceof \WP_Post_Type || $object instanceof \WP_Taxonomy) {
-            \delete_option("{$object->name}_template_page");
-        } elseif ($object instanceof \WP_Term) {
-            \delete_term_meta($object->term_id, 'template_page');
-        } elseif ($object->type === '404') {
-            \delete_option('404_template_page');
-        }
-
-        return;
     }
 
     /**

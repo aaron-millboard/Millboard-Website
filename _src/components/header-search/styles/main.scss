@@ -1,9 +1,9 @@
 .header-search {
-    --input--placeholder-color: var(--color--black);
-    --header-search--icon-size: 1em;
     $this: &;
 
-    display: block;
+    display: grid;
+    align-content: center;
+    padding: var(--space--2xl) var(--space--2xl) var(--space--xl);
     opacity: 0;
     pointer-events: none;
     transition: opacity var(--submenu--transition-duration) var(--submenu--transition-ease),
@@ -20,112 +20,53 @@
         visibility: visible;
 
         > a {
-            // background-color: var(--link--background-color--hover);
             color: var(--link--color--hover);
         }
     }
 
     &__inner {
         @include align-width--l;
-        display: flex;
-        flex-direction: column;
-    }
 
-    &__input-wrapper {
-        width: 100%;
-        display: flex;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space--xl);
         align-items: center;
-        margin: 0 auto;
-        gap: var(--space--xs);
-        justify-items: center;
-        border-bottom: 1px solid var(--color--black);
-        padding-top: var(--space--3xs);
-        padding-bottom: var(--space--2xs);
-        transition: transition(color, background-color, border-color, box-shadow, transform);
-
-        &:focus-within {
-            #{$this}__label {
-                opacity: 0;
-                pointer-events: none;
-                visibility: hidden;
-            }
-
-            #{$this}__submit {
-                position: relative;
-                opacity: 1;
-                pointer-events: all;
-                visibility: visible;
-            }
-        }
     }
 
     &__label {
-        margin-top: var(--space--2xs);
+        @include heading-attributes;
+        @include typestyle-xlarge;
+
+        grid-row: 1;
+        grid-column: 1;
+        font-weight: var(--type--3--font-weight);
+        text-transform: uppercase;
+
         @include mq($until: 'site-header') {
             display: none;
         }
     }
 
-    &__input {
-        @include typestyle-h5;
-
-        --input--color: var(--color--black);
-        --input--color--focus: var(--color--black);
-        --input--background-color: transparent;
-        --input--background-color--focus: transparent;
-
-        padding: 0;
-        border: 0;
-        border-radius: 0;
-
-        @include interact {
-            box-shadow: unset;
-        }
-    }
-
     &__close {
         @include button-reset-hard;
+        @include typestyle-small;
+        @include mask-icon;
+
+        position: absolute;
+        top: var(--space--4xs);
+        right: var(--space--3xs);
+        display: inline-flex;
         width: max-content;
-        align-self: end;
-        margin-top: 0.5rem;
-        margin-bottom: 0.5rem;
+        align-items: center;
+        gap: var(--space--4xs);
 
-        @include mq('site-header') {
-            margin-bottom: 0rem;
-        }
+        &::after {
+            --icon-size: #{px-to-rem(18)};
 
-        &-icon {
-            pointer-events: none;
-        }
-    }
-
-    &__submit {
-        --button--padding-y: 0.75rem;
-
-        display: block;
-        flex: 0 0 auto;
-
-        @include mq($until: 'site-header') {
-            @include button--icon;
-            @include button--square;
-
-            margin: 0;
-            color: var(--color--foreground);
-            cursor: pointer;
-
-            &::after {
-                mask-image: url(#{asset-path('images/icons/chevron-right.svg')});
-                mask-size: var(--header-search--icon-size);
-
-                @include mq('site-header') {
-                    mask-image: url(#{asset-path('images/icons/search.svg')});
-                }
-            }
-        }
-
-        @include mq('site-header') {
-            @include button;
-            @include button--interaction;
+            display: block;
+            width: var(--icon-size);
+            height: var(--icon-size);
+            mask-image: url(#{asset-path('images/icons/cross.svg')});
         }
     }
 }

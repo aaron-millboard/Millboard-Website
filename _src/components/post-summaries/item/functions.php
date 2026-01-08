@@ -13,6 +13,7 @@ function filter_args(array $args): ?array
         'image' => null,
         'content' => '',
         'object' => null,
+        'tags' => [],
     ], $args);
 
     // ---------------------------------------
@@ -41,12 +42,15 @@ function filter_args(array $args): ?array
 
     $args['content'] = \get_the_excerpt($object->ID);
 
-    if (\has_post_thumbnail($object->ID)) {
-        $args['image'] = [
-            'ID' => \get_post_thumbnail_id($object->ID),
-        ];
+    if ($object instanceof \WP_Post) {
+        $pt_object = \get_post_type_object($object->post_type);
 
-        $args['classes'][] = 'has-image';
+        $args['tags'][] = [
+            'content' => $pt_object->labels->singular_name ?? '',
+            'classes' => [
+                'g-tag',
+            ],
+        ];
     }
 
     // -------------------------------------------------------------------------

@@ -47,6 +47,10 @@
                 <?php if (!empty($args['cta'])) { ?>
                     <?= \Granola\Component::get('link', $args['cta']); ?>
                 <?php } ?>
+
+                <?php if (\is_search()) { ?>
+                    <?= \Granola\Component::get('search-form'); ?>
+                <?php } ?>
             </div>
         </div>
     </div>

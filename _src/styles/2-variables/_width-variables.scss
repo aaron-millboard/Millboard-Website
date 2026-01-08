@@ -1,8 +1,8 @@
-
 // As custom properties can't be used in media queries,
 // we create these as a map so they can be called by the
 // width() function.
 $widths: (
+    '3xs': 288px,
     'xxs': 560px,
     'xs': 720px,
     's': 765px,

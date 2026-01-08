@@ -45,7 +45,7 @@ function filter_args(array $args): ?array
     }
 
     // Filterable items output component.
-    $args['items_component'] = 'cards-automatic';
+    $args['items_component'] = \apply_filters('granola/components/template-loop/items-component', 'cards-automatic');
 
     // Filterable items output component arguments.
     $args['items_component_args'] = \apply_filters(
@@ -57,4 +57,19 @@ function filter_args(array $args): ?array
     // Return the filtered args.
     // -------------------------------------------------------------------------
     return $args;
+}
+
+/**
+ * Filters what component should be used to display the template loop items on search pages.
+ *
+ * @param string $component The name of the component to filter.
+ * @return string The filtered name of the component used to display posts.
+ */
+function filter_search_template_loop(string $component): string
+{
+    if (\is_search()) {
+        return 'post-summaries';
+    }
+
+    return $component;
 }

@@ -11,13 +11,12 @@ function filter_args(array $args): ?array
         'classes' => [],
         'current_item' => 0,
         'label' => \__('Filter by', 'granola'),
-        'show' => true,
     ], $args);
 
     // ---------------------------------------
     // Bail early - return null for no output.
     // ---------------------------------------
-    if ($args['show'] === false) {
+    if (\is_search()) {
         return null;
     }
 
@@ -29,6 +28,8 @@ function filter_args(array $args): ?array
         'wp-block',
         'alignfull',
     ], $args['classes']);
+
+    $all_link = false;
 
     if (!empty($args['object'])) {
         $object = $args['object'];
