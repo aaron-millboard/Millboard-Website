@@ -10,11 +10,12 @@ function filter_args(array $args): ?array
     $args = array_merge([
         'background_color' => 'brand-2',
         'classes' => [],
-        'site_name' => get_bloginfo('name'),
+        'site_name' => \get_bloginfo('name'),
         'year' => date('Y'),
         'copyright_label' => '',
         'wholegrain_label' => sprintf(
-            __('A website for people and planet by %s', 'granola'),
+            // translators: A link to Wholegrain's website.
+            \__('A website for people and planet by %s', 'granola'),
             \Granola\Component::get('link', [
                 'url' => 'https://wholegraindigital.com',
                 'content' => 'Wholegrain',
@@ -27,7 +28,7 @@ function filter_args(array $args): ?array
 
     $args['copyright_label'] = sprintf(
         // translators: 1: site name. 2: year.
-        __('%1$s © %2$s ', 'granola'),
+        \__('%1$s © %2$s ', 'granola'),
         $args['site_name'],
         $args['year'],
     );

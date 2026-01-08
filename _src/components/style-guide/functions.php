@@ -192,6 +192,7 @@ function filter_page_header_args($args): ?array
 
         if (isset($args['heading']['heading'])) {
             $args['heading']['heading'] = sprintf(
+                // translators: The original page heading.
                 __('Style Guide: %s', 'granola'),
                 $args['heading']['heading']
             );

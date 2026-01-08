@@ -77,26 +77,34 @@ function filter_args(array $args): ?array
         $args['pips'][] = [
             'classes' => ['slider__pip', 'g-button'],
             'role' => 'tab',
-            'aria-label' => __('Go to slide', 'granola') . ' ' . ($index + 1),
+            'aria-label' => sprintf(
+                // translators: slide number
+                \__('Go to slide %s', 'granola'),
+                ($index + 1)
+            ),
             'data-index' => $index,
             'aria-selected' => $index === 0 ? 'true' : 'false',
             'visually_hidden_text' => true,
             'aria-controls' => $args['ref'] . '-slide-' . ($index + 1),
-            'content' => __('Slide', 'granola') . ' ' . ($index + 1),
+            'content' => sprintf(
+                // translators: slide number
+                \__('Slide %s', 'granola'),
+                ($index + 1)
+            ),
         ];
     }
 
     // Build navigation - 2 buttons for previous and next.
     foreach (range(0, 1) as $index) {
-        $label = $index === 0 ? 'previous' : 'next';
-        $aria_label = $index === 0 ? sprintf(__('%s slide', 'granola'), ucfirst($label)) : sprintf(__('%s slide', 'granola'), ucfirst($label));
+        $aria_label = ($index === 0) ? \__('Previous slide', 'granola') : \__('Next slide', 'granola');
+
         $args['navigation'][] = [
             'classes' => [
                 'slider__navigation',
                 'g-button',
                 'g-button--square',
                 'g-button--arrow',
-                'slider__navigation--' . $label
+                'slider__navigation--' . ($index === 0 ? 'previous' : 'next'),
             ],
             'role' => 'tab',
             'aria-label' => $aria_label,
