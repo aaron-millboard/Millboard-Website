@@ -80,6 +80,8 @@ function get_search_query_post_type_tags(\WP_Query $query): array
     $sidebar_query = new \WP_Query([
         'posts_per_page' => 500, // arbitrary large number.
         's' => $query->query['s'],
+        'post_status' => 'publish',
+        'perm' => 'readable',
 
         // Query optimisation.
         'no_found_rows' => true,
