@@ -41,7 +41,7 @@ function filter_args(array $args): ?array
         ];
 
         if (!empty($args['image'])) {
-             $args['video']['image'] = $args['image'];
+            $args['video']['image'] = $args['image'];
         }
 
         $args['media_type'] = 'video';
