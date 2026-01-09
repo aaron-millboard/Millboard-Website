@@ -22,6 +22,8 @@ if (!$checkout->is_registration_enabled() && $checkout->is_registration_required
     <?php if ($checkout->get_checkout_fields()) : ?>
         <div class="checkout__fields" id="customer_details">
 
+            <div id="checkout__notices"></div>
+
             <!-- Contact Information Section -->
             <div class="checkout__section">
 
