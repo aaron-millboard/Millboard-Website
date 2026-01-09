@@ -30,8 +30,8 @@ namespace Granola\Components\GravityForms;
 
 // Override automatic update settings.
 // https://docs.gravityforms.com/gform_disable_auto_update/
-\add_filter('gform_disable_auto_update', '__return_true');
-\add_filter('option_gform_enable_background_updates', '__return_false');
+\add_filter('gform_disable_auto_update', '__return_false');
+\add_filter('option_gform_enable_background_updates', '__return_true');
 
 // Override the AJAX spinner URL (which appears next to the submit button on AJAX) submission.
 // \add_filter('gform_ajax_spinner_url', __NAMESPACE__ . '\\spinner_url', 10);
