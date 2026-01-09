@@ -14,8 +14,6 @@ export default class HeroHeader {
         this.iframe = this.media.querySelector('.hero-header__iframe');
         this.controlButton = this.media.querySelector('.hero-header__controls');
 
-        console.log(this.iframe, this.controlButton);
-
         this.init();
     }
 
