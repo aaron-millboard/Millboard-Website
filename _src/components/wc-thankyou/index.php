@@ -34,18 +34,18 @@
 
                 <div class="thankyou__details__item">
                     <div class="label"><?php esc_html_e('Billing address', 'woocommerce'); ?></div>
-                    <div class="value"><?php 
+                    <div class="value"><?php
                         $billing_parts = array_filter([
                             $order->get_billing_address_1(),
                             $order->get_billing_address_2(),
                             $order->get_billing_city(),
                             $order->get_billing_postcode()
                         ]);
-                        echo esc_html(implode(', ', $billing_parts));
-                    ?></div>
+                                       echo esc_html(implode(', ', $billing_parts));
+                                        ?></div>
                 </div>
 
-                <?php if ($order->has_shipping_address()) : 
+                <?php if ($order->has_shipping_address()) :
                     $shipping_parts = array_filter([
                         $order->get_shipping_address_1(),
                         $order->get_shipping_address_2(),
@@ -58,13 +58,14 @@
                         $order->get_billing_city(),
                         $order->get_billing_postcode()
                     ]);
-                    if (implode(', ', $shipping_parts) !== implode(', ', $billing_parts)) : 
-                ?>
+                    if (implode(', ', $shipping_parts) !== implode(', ', $billing_parts)) :
+                        ?>
                     <div class="thankyou__details__item">
                         <div class="label"><?php esc_html_e('Shipping address', 'woocommerce'); ?></div>
                         <div class="value"><?php echo esc_html(implode(', ', $shipping_parts)); ?></div>
                     </div>
-                <?php endif; endif; ?>
+                    <?php endif;
+                endif; ?>
 
                 <?php if ($order->get_payment_method_title()) : ?>
                     <div class="thankyou__details__item">
@@ -73,6 +74,12 @@
                     </div>
                 <?php endif; ?>
 
+            </div>
+
+            <div class="thankyou__details__actions">
+                <a href="<?php echo esc_url(wc_get_page_permalink('shop')); ?>" class="back-to-shop">
+                    <?php esc_html_e('Back to website', 'granola'); ?>
+                </a>
             </div>
 
         <?php endif; ?>

@@ -63,11 +63,6 @@
                     justify-content: flex-start;
                 }
 
-                &:last-child {
-                    border-bottom: none;
-                    padding-bottom: 0;
-                }
-
                 .label {
                     @include typestyle-base;
                     color: var(--color--foreground);
@@ -81,6 +76,34 @@
                 .value {
                     @include typestyle-base;
                     font-weight: 400;
+                }
+            }
+
+            &__actions {
+                display: flex;
+                justify-content: flex-start;
+                padding-top: var(--space--m);
+
+                .back-to-shop {
+                    @include typestyle-h6;
+                    font-weight: normal;
+                    text-transform: uppercase;
+                    text-decoration: none;
+                    display: flex;
+                    align-items: center;
+                    gap: var(--space--s);
+
+                    &::before {
+                        transform: rotate(180deg);
+                        width: #{px-to-rem(16)};
+                        height: #{px-to-rem(16)};
+                        background-color: var(--color--foreground);
+                        content: '';
+                        mask-image: url(#{asset-path('images/icons/chevron-right.svg')});
+                        mask-position: center;
+                        mask-repeat: no-repeat;
+                        mask-size: #{px-to-rem(16)};
+                    }
                 }
             }
         }

@@ -35,6 +35,10 @@
         display: none;
     }
 
+    &__inner {
+        padding-bottom: var(--space--m);
+    }
+
 }
 
 
@@ -331,8 +335,8 @@
 
                 &__name,
                 &__colour {
-                    @include typestyle-h5;
-                    @include typestyle-base;
+                    @include typestyle-h6;
+                    font-weight: 300;
                 }
 
                 &__name {
