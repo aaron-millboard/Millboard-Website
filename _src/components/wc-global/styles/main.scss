@@ -1,5 +1,44 @@
-/* Class .woocommerce also set on <body> in WooCommerce pages so we target only blocks */
+/* WooCommerce Page Header Styles */
+// Speecial adjustments for page header
+.woocommerce-order-received .page-header,
+.woocommerce-checkout .page-header,
+.woocommerce-cart .page-header,
+.woocommerce-account .page-header {
 
+    &__breadcrumbs {
+        display: none;
+    }
+
+    &__wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    &__header {
+        flex-direction: column-reverse;
+    }
+
+    &__content {
+
+        padding-top: var(--space--l);
+        text-align: center;
+        justify-content: center;
+        align-items: center;
+
+        &--last {
+            display: none;
+        }
+    }
+
+    &__image-wrapper {
+        display: none;
+    }
+
+}
+
+
+/* Class .woocommerce also set on <body> in WooCommerce pages so we target only blocks */
 .blocks > .woocommerce {
     --block--max-width: var(--width--responsive--l);
 
@@ -11,7 +50,8 @@
     padding-bottom: var(--space--xl);
 
     // Style WooCommerce notices
-    .woocommerce-notices-wrapper > div {
+    .woocommerce-notices-wrapper > div,
+    .woocommerce-NoticeGroup li {
         margin-bottom: var(--space--l);
         padding: var(--space--s) var(--space--s);
         display: flex;

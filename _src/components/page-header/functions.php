@@ -142,6 +142,22 @@ function filter_args(array $args): ?array
 
             unset($args['object']);
         }
+
+
+        // WC Checkout Order Received page
+        if ((class_exists('\WooCommerce')) && is_order_received_page()) {
+            // Get WC order
+            $order_id = absint(\get_query_var('order-received'));
+            $order = wc_get_order($order_id);
+            $is_failed = $order ? $order->has_status('failed') : false;
+            if ($is_failed) {
+                $args['heading'] = __('Sorry', 'granola');
+                $args['preheading'] = __('There was an issue with your order', 'granola');
+            } else {
+                $args['heading'] = __('Thank you', 'granola');
+                $args['preheading'] = __('Your order has been received', 'granola');
+            }
+        }
     }
 
     // -------------------------------------------------------------------------

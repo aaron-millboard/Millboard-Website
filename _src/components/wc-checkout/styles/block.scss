@@ -25,6 +25,25 @@
             column-gap: var(--space--4xl);
         }
 
+        #checkout__notices {
+            display: none;
+        }
+
+        .woocommerce-NoticeGroup {
+            ul {
+                margin: 0;
+                padding: 0;
+                list-style: none;
+                display: flex;
+                flex-direction: column;
+                gap: var(--space--s);
+            }
+
+            li {
+                margin: 0;
+            }
+        }
+
         // Wrapper for all checkout fieldss
         &__fields {
             display: flex;
