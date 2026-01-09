@@ -24,12 +24,13 @@
 
     &__media {
         position: relative;
+        overflow: hidden;
         display: grid;
+        aspect-ratio: 16 / 9;
     }
 
     &__image {
         display: block;
-        aspect-ratio: 16 / 9;
         grid-row: 1;
         grid-column: 1;
         width: 100%;

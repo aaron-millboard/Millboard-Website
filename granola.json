@@ -15,7 +15,8 @@
         "enable_webmanifest": false,
 
         "image_sizes": {
-            "granola_super": [2500, 2500, false],
+            "granola_super": [ 2500, 2500 ],
+            "hero": [ 2800, 1575 ],
             "1536x1536": false
         },
         "jpeg_upload_quality": 90,

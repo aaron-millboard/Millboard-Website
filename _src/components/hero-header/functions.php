@@ -38,8 +38,9 @@ function filter_args(array $args): ?array
         ];
 
         if (!empty($args['image'])) {
-            $args['attributes']['style']['--hero-header--image'] = 'url(' . $args['image']['url'] . ')';
+            $args['image']['size'] = 'hero';
             $args['image']['classes'] = ['hero-header__image'];
+            $args['attributes']['style']['--hero-header--image'] = 'url(' . $args['image']['sizes']['hero'] . ')';
         }
     } elseif (!empty($args['heading'])) {
         // Make heading <h1> if strapline not set.
