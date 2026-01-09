@@ -94,9 +94,9 @@ function filter_args(array $args): ?array
             $weight = $button['weight'] ?? 'primary';
             $button = $button['button'];
             return [
-                'url' => $button['url'],
-                'target' => $button['target'],
-                'content' => $button['title'],
+                'url' => $button['url'] ?? '',
+                'target' => $button['target'] ?? '',
+                'content' => $button['title'] ?? '',
                 'classes' => [
                     $weight === 'primary' ? 'g-button--primary' : 'g-button--secondary',
                 ]
