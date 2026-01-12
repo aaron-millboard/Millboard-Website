@@ -1,0 +1,172 @@
+@import '../../../core';
+@import './variables.scss';
+@import './filters.scss';
+@import './map.scss';
+@import './icons.scss';
+
+.map {
+    --color--dark-grey: #849695;
+
+    $this: &;
+
+    &.has-background {
+        padding-right: 0;
+        padding-left: 0;
+    }
+
+    &__map-container,
+    &__table-container {
+        overflow: hidden;
+        border: 0;
+
+        // Hide and show the table or the map.
+        &[aria-hidden='true'] {
+            display: none;
+            visibility: hidden;
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // View Switcher.
+    // -------------------------------------------------------------------------
+    &__view-switcher {
+        display: flex;
+        flex-flow: row nowrap;
+        align-items: flex-end;
+        justify-content: center;
+        margin: 0;
+        gap: var(--map--tab--gap);
+
+        // Hide opened buttons.
+        [aria-expanded='true'] {
+            display: none;
+            visibility: hidden;
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Marker Pop Up.
+    // -------------------------------------------------------------------------
+    &__map-marker-popup {
+        @include color-context('white');
+
+        position: absolute;
+        z-index: $map-z-index-popups;
+        top: 0.25rem;
+        left: 0.25rem;
+        width: calc(100% - 0.6rem);
+        max-height: 50%;
+        padding: var(--space--xs) var(--space--container-padding);
+        box-shadow: 0 0 px-to-rem(14) 0 hsla(var(--color--black--hsl), 0.25);
+        cursor: auto;
+        overflow-y: auto;
+        pointer-events: auto;
+
+        @include mq(medium) {
+            width: px-to-rem(400);
+            height: 100%;
+            max-height: calc(100% - 0.6rem);
+            padding: var(--space--xs) var(--border-radius--xl) var(--border-radius--xl);
+        }
+
+        &__inner {
+            color: var(--color--black);
+        }
+
+        &[aria-hidden='true'] {
+            display: none;
+        }
+
+        &__heading {
+            margin-top: 0;
+            font-family: var(--type--2--font-family);
+            font-size: rfs(28, 30);
+            font-weight: var(--type--2--font-weight);
+        }
+
+        &__energy-type {
+            display: flex;
+            width: 100%;
+            flex-flow: row nowrap;
+            align-items: center;
+            padding-top: var(--space--xs);
+            margin: 0 auto var(--space--xs);
+            gap: var(--space--xs);
+
+            > span,
+            > p {
+                margin: 0;
+            }
+
+            #{$this}__icon {
+                width: $map-icon-size-l;
+                height: $map-icon-size-l;
+            }
+        }
+
+        &__energy-type-name {
+            @include typestyle-small;
+        }
+
+        &__summary {
+            @include typestyle-small;
+        }
+
+        &__close {
+            display: flex;
+            clear: both;
+            float: right;
+            font-size: 1rem;
+            gap: var(--space--xxxs);
+
+            &__cross {
+                --cross--color: currentColor;
+
+                @include cross;
+
+                width: 1rem;
+                height: 1rem;
+            }
+        }
+
+        .map__additional-info-td {
+            &__stats {
+                display: flex;
+                flex-flow: column;
+                gap: var(--grid--row-gap);
+            }
+
+            &__stat {
+                display: flex;
+                flex-flow: row;
+                gap: var(--space--m);
+
+                &-label {
+                    position: static !important;
+                    overflow: visible;
+                    width: #{px-to-rem(120)};
+                    height: initial;
+                    flex-shrink: 0;
+                    order: -1;
+                    clip: initial;
+                    clip-path: initial;
+                    font-size: #{px-to-rem(16)};
+                    line-height: 1.2rem;
+                    text-transform: uppercase;
+
+                    @include mq(medium) {
+                        width: max(#{px-to-rem(120)}, 30%);
+                    }
+                }
+            }
+        }
+
+        button {
+            --button--color: var(--color--black);
+            --button--border-color: var(--color--black);
+
+            --button--border-color--hover: var(--color--black);
+            --button--background-color--hover: var(--color--black);
+        }
+    }
+}

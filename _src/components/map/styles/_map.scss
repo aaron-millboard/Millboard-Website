@@ -1,0 +1,222 @@
+@import '../../../core';
+@import './variables.scss';
+
+/* stylelint-disable selector-max-compound-selectors -- We need this specificity to override the LeafletJS styles. */
+/* stylelint-disable selector-max-id -- We need this specificity to override the LeafletJS styles. */
+#leaflet-map-container {
+    --leaflet-map--icon--offset: 28%;
+
+    width: 100%;
+    height: 80vh;
+    max-height: px-to-rem(700);
+    background: var(--color--white);
+
+    .leaflet-tile-pane {
+        filter: hue-rotate(367deg);
+    }
+
+    &.leaflet-container {
+        @include typestyle-base;
+    }
+
+    // Marker icon.
+    .leaflet-marker-icon {
+        @include typestyle-small;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--color--green);
+        border-radius: px-to-rem(26);
+        background-color: var(--color--midgreen);
+        box-shadow: 0 0 0px 7px hsla(var(--color--midgreen--hsl), 0.4);
+        color: var(--color--green);
+
+        &__icon-container {
+            display: flex;
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+            align-items: center;
+            justify-content: center;
+            border-radius: px-to-rem(26);
+            gap: #{px-to-rem(4)};
+
+            &--opstatus-operational {
+                background-color: var(--color--#{$map-opstatus-operational-color-name});
+                box-shadow: 0 0 0 $map-marker-box-shadow-spread
+                    hsla(var(--color--#{$map-opstatus-operational-color-name}--hsl), 0.4);
+            }
+
+            &--opstatus-underauthorization {
+                background-color: var(--color--#{$map-opstatus-underauthorization-color-name});
+                box-shadow: 0 0 0 $map-marker-box-shadow-spread
+                    hsla(var(--color--#{$map-opstatus-underauthorization-color-name}--hsl), 0.4);
+            }
+
+            &--opstatus-underconstruction {
+                background-color: var(--color--#{$map-opstatus-underconstruction-color-name});
+                box-shadow: 0 0 0 $map-marker-box-shadow-spread
+                    hsla(var(--color--#{$map-opstatus-underconstruction-color-name}--hsl), 0.4);
+            }
+
+            &.has-multiple {
+                > * {
+                    position: absolute;
+
+                    &:first-child {
+                        left: calc(var(--leaflet-map--icon--offset) * -1);
+                    }
+
+                    &:last-child {
+                        left: var(--leaflet-map--icon--offset);
+                    }
+                }
+            }
+        }
+
+        &__icon {
+            &--v2,
+            &--energytype-biomass,
+            &--energytype-solar,
+            &--energytype-storage,
+            &--energytype-waste-to-energy,
+            &--energytype-wind {
+                @include map-icon;
+
+                width: 100%;
+                height: 100%;
+            }
+
+            &--energytype-biomass {
+                @include map-icon--biomass;
+
+                &--v2 {
+                    color: var(--color--mint);
+                }
+            }
+
+            &--energytype-storage {
+                @include map-icon--storage;
+
+                &--v2 {
+                    color: var(--color--dawn-orange);
+                }
+            }
+
+            &--energytype-solar {
+                @include map-icon--solar;
+            }
+
+            &--energytype-waste-to-energy {
+                @include map-icon--waste-to-energy;
+
+                &--v2 {
+                    color: var(--color--earth);
+                }
+            }
+
+            &--energytype-wind {
+                @include map-icon--wind;
+
+                &--v2 {
+                    color: var(--color--ocean-blue);
+                }
+            }
+
+            &--energytype-solar {
+                @include map-icon--solar;
+
+                &--v2 {
+                    color: var(--color--sunrise);
+                }
+            }
+
+            &--energytype-waste-to-energy {
+                @include map-icon--waste-to-energy;
+            }
+        }
+    }
+
+    .leaflet-tooltip {
+        padding: 0 var(--border-radius--m);
+        border: 0;
+        border-radius: var(--border-radius--m);
+        background-color: var(--color--brand-1);
+        box-shadow: 0px 0px #{px-to-rem(7)} hsla(var(--color--brand-1--hsl), 25%);
+        color: var(--color--white);
+        font-size: rfs(15, 15);
+
+        &::before {
+            border-top-color: var(--color--brand-1);
+        }
+    }
+
+    // Zoom control.
+    .leaflet-control-zoom {
+        --color--background: var(--color--white);
+        --color--foreground: #666;
+        --map--zoom--border-radius: #{px-to-rem(3)};
+
+        display: flex;
+        flex-flow: column nowrap;
+        border: 0;
+        margin-right: #{px-to-rem(40)}; // Assuming the zoom is placed bottom right.
+        margin-bottom: #{px-to-rem(40)}; // Assuming the zoom is placed bottom right.
+        box-shadow: 0px 2px 5px 2px hsla(var(--color--black--hsl), 10%);
+        gap: 0;
+    }
+
+    .leaflet-control-zoom-in,
+    .leaflet-control-zoom-out {
+        overflow: hidden;
+        width: $map-zoom-button-size;
+        height: $map-zoom-button-size;
+        justify-content: flex-start;
+        border: 0;
+        background: transparent;
+        border-bottom-left-radius: var(--map--zoom--border-radius);
+        border-bottom-right-radius: var(--map--zoom--border-radius);
+        cursor: pointer;
+
+        &:hover {
+            > span {
+                background: var(--color--foreground);
+                color: var(--color--background);
+                // background: hsl(var(--color--black--h), var(--color--black--s), 25%);
+            }
+        }
+
+        &:active {
+            > span {
+                transform: translateY(1px);
+            }
+        }
+
+        > span {
+            display: block;
+            width: 100%;
+            height: 100%;
+            background: var(--color--background);
+            color: var(--color--foreground);
+            transform: translateY(0px);
+        }
+    }
+
+    .leaflet-control-zoom-in {
+        border-bottom-left-radius: 0px;
+        border-bottom-right-radius: 0px;
+        border-top-left-radius: var(--map--zoom--border-radius);
+        border-top-right-radius: var(--map--zoom--border-radius);
+
+        &::after {
+            position: absolute;
+            z-index: 1;
+            display: block;
+            width: 100%;
+            height: #{px-to-rem(1)};
+            background: var(--color--foreground);
+            content: '';
+        }
+    }
+}

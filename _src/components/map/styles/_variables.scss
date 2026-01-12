@@ -1,0 +1,94 @@
+// https://leafletjs.com/reference.html#map-popuppane
+$map-z-index-filters: 698;
+$map-z-index-popups: 699;
+
+// Size here used everywhere.
+$map-icon-size-m: 1em; // Sizes defined in map.js class properties. So want to override.
+$map-icon-size-l: 1.5rem;
+$map-zoom-button-size: px-to-rem(40);
+$map-marker-box-shadow-spread: px-to-rem(7);
+
+$map-opstatus-operational-color-name: 'mint';
+$map-opstatus-underauthorization-color-name: 'sunrise';
+$map-opstatus-underconstruction-color-name: 'dawn-orange';
+
+$map-table-border: 1px solid currentColor;
+
+@mixin map-icon {
+    --mask-icon--size: contain;
+
+    @include mask-icon;
+
+    display: inline-block;
+    width: $map-icon-size-m;
+    height: $map-icon-size-m;
+
+    &::after {
+        display: block;
+        border-radius: 0;
+        mask-image: url(#{asset-path('images/icons/marker.svg')});
+        mask-position: center center;
+        mask-repeat: no-repeat;
+        opacity: 0.8;
+    }
+}
+
+@mixin map-icon--example {
+    &::after {
+        mask-image: url(#{asset-path('images/icons/example.svg')});
+    }
+}
+
+@mixin map-icon--storage {
+    &::after {
+        mask-image: url(#{asset-path('images/icons/energy-storage.svg')});
+    }
+}
+
+@mixin map-icon--solar {
+    &::after {
+        mask-image: url(#{asset-path('images/icons/solar.svg')});
+    }
+}
+
+@mixin map-icon--waste-to-energy {
+    &::after {
+        mask-image: url(#{asset-path('images/icons/waste-to-energy.svg')});
+    }
+}
+
+@mixin map-icon--wind {
+    &::after {
+        mask-image: url(#{asset-path('images/icons/wind.svg')});
+    }
+}
+
+@mixin map-icon--map {
+    &::after {
+        mask-image: url(#{asset-path('images/icons/map.svg')});
+    }
+}
+
+@mixin map-icon--table {
+    &::after {
+        mask-image: url(#{asset-path('images/icons/list.svg')});
+    }
+}
+
+@mixin map-icon--funnel {
+    &::after {
+        mask-image: url(#{asset-path('images/icons/funnel.svg')});
+    }
+}
+
+@mixin map-icon--filter {
+    &::after {
+        mask-image: url(#{asset-path('images/icons/filter.svg')});
+    }
+}
+
+@mixin map-icon--filter--close {
+    &::after {
+        mask-image: url(#{asset-path('images/icons/close.svg')});
+    }
+}
