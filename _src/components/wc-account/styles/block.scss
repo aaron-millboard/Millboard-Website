@@ -1,0 +1,94 @@
+.woocommerce .account {
+
+    $this: &;
+
+    display: grid;
+    grid-template-columns: 1fr;
+    column-gap: var(--space--3xl);
+    row-gap: var(--space--l);
+
+    @include mq('large') {
+        grid-template-columns: 1fr 2fr;
+    }
+
+    &__nav {
+        margin: 0;
+        padding: 0;
+
+        &__items {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        &__item {
+            margin: 0;
+            padding: var(--space--2xs);
+            border-bottom: 1px solid var(--color--brand-5);
+
+            a {
+                @include typestyle-h6;
+                text-decoration: none;
+            }
+
+            &--active {
+                background-color: var(--color--brand-5);
+                color: var(--color--brand-1);
+            }
+
+            &--active a {
+                text-decoration: underline;
+            }
+        }
+
+        &__logout {
+            @include typestyle-h6;
+            font-weight: normal;
+            text-transform: uppercase;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: var(--space--s);
+            margin-left: auto;
+            margin-top: var(--space--l);
+
+            &::after {
+                width: #{px-to-rem(16)};
+                height: #{px-to-rem(16)};
+                background-color: var(--color--foreground);
+                content: '';
+                mask-image: url(#{asset-path('images/icons/chevron-right.svg')});
+                mask-position: center;
+                mask-repeat: no-repeat;
+                mask-size: #{px-to-rem(16)};
+            }
+        }
+    }
+
+    &__content {
+
+        h2 {
+            @include typestyle-h4;
+            margin-top: 0;
+            margin-bottom: 0;
+        }
+
+        .account__form {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space--s);
+
+            fieldset {
+                border: none;
+                padding: 0;
+                margin: 0;
+            }
+        }
+
+        .woocommerce__actions {
+            margin-top: var(--space--l);
+        }
+
+    }
+
+}

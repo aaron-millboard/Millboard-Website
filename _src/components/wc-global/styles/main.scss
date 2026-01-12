@@ -5,6 +5,9 @@
 .woocommerce-cart .page-header,
 .woocommerce-account .page-header {
 
+    // color context
+    --input--color--focus: var(--color--foreground);
+
     &__breadcrumbs {
         display: none;
     }
@@ -19,9 +22,14 @@
         flex-direction: column-reverse;
     }
 
+    &__heading {
+        @include typestyle-h4;
+    }
+
     &__content {
 
-        padding-top: var(--space--l);
+        padding-top: var(--space--xl);
+        padding-bottom: var(--space--xl);
         text-align: center;
         justify-content: center;
         align-items: center;
@@ -50,8 +58,6 @@
     margin-left: auto;
     margin-right: auto;
     position: relative;
-    padding-top: var(--space--xl);
-    padding-bottom: var(--space--xl);
 
     // Style WooCommerce notices
     .woocommerce-notices-wrapper > div,
@@ -199,6 +205,7 @@
         }
     }
 
+    // Cart item card (used in cart and checkout review order)
     .cart__item {
 
         $this: &;
@@ -346,5 +353,6 @@
 
         }
     }
+    
 
 }
