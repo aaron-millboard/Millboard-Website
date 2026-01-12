@@ -76,64 +76,11 @@
         }
 
         &__icon {
-            &--v2,
-            &--energytype-biomass,
-            &--energytype-solar,
-            &--energytype-storage,
-            &--energytype-waste-to-energy,
-            &--energytype-wind {
+            &--v2 {
                 @include map-icon;
 
                 width: 100%;
                 height: 100%;
-            }
-
-            &--energytype-biomass {
-                @include map-icon--biomass;
-
-                &--v2 {
-                    color: var(--color--mint);
-                }
-            }
-
-            &--energytype-storage {
-                @include map-icon--storage;
-
-                &--v2 {
-                    color: var(--color--dawn-orange);
-                }
-            }
-
-            &--energytype-solar {
-                @include map-icon--solar;
-            }
-
-            &--energytype-waste-to-energy {
-                @include map-icon--waste-to-energy;
-
-                &--v2 {
-                    color: var(--color--earth);
-                }
-            }
-
-            &--energytype-wind {
-                @include map-icon--wind;
-
-                &--v2 {
-                    color: var(--color--ocean-blue);
-                }
-            }
-
-            &--energytype-solar {
-                @include map-icon--solar;
-
-                &--v2 {
-                    color: var(--color--sunrise);
-                }
-            }
-
-            &--energytype-waste-to-energy {
-                @include map-icon--waste-to-energy;
             }
         }
     }

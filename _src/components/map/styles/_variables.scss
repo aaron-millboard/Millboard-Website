@@ -39,30 +39,6 @@ $map-table-border: 1px solid currentColor;
     }
 }
 
-@mixin map-icon--storage {
-    &::after {
-        mask-image: url(#{asset-path('images/icons/energy-storage.svg')});
-    }
-}
-
-@mixin map-icon--solar {
-    &::after {
-        mask-image: url(#{asset-path('images/icons/solar.svg')});
-    }
-}
-
-@mixin map-icon--waste-to-energy {
-    &::after {
-        mask-image: url(#{asset-path('images/icons/waste-to-energy.svg')});
-    }
-}
-
-@mixin map-icon--wind {
-    &::after {
-        mask-image: url(#{asset-path('images/icons/wind.svg')});
-    }
-}
-
 @mixin map-icon--map {
     &::after {
         mask-image: url(#{asset-path('images/icons/map.svg')});

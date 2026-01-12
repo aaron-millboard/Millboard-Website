@@ -17,26 +17,6 @@
         flex-shrink: 0;
         pointer-events: none;
 
-        &--biomass {
-            @include map-icon--biomass;
-        }
-
-        &--storage {
-            @include map-icon--storage;
-        }
-
-        &--solar {
-            @include map-icon--solar;
-        }
-
-        &--waste-to-energy {
-            @include map-icon--waste-to-energy;
-        }
-
-        &--wind {
-            @include map-icon--wind;
-        }
-
         &--operational,
         &--underauthorization,
         &--underconstruction {

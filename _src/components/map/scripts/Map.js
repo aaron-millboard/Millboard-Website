@@ -92,7 +92,6 @@ class Map {
         this.initLeafletMarkers();
         this.initFilters();
         this.initSearch();
-        this.initMapPopUp();
 
         // Some leaflet related stuff...
         L.DomEvent.disableClickPropagation(this.markerPopupEl);
@@ -269,46 +268,6 @@ class Map {
         }
     }
 
-    handleMarkerClick(event) {
-        const marker = event.target;
-        const rowData = Map.getDataFromRowElement(marker.options.themeData.tableDataRowElement);
-
-        this.markerPopupEl.className = [
-            'map__map-marker-popup',
-            `map__map-marker-popup--energy-type-${rowData.energyTypeSlug}`,
-        ]
-            .join(' ')
-            .trim();
-
-        const popupHeadingEl = this.markerPopupEl.querySelector('.map__map-marker-popup__heading');
-        const popupEnergyTypeEl = this.markerPopupEl.querySelector('.map__map-marker-popup__energy-type');
-        const popupSummaryEl = this.markerPopupEl.querySelector('.map__map-marker-popup__summary');
-
-        popupHeadingEl.textContent = rowData.name;
-        // Set energy type inner HTML:
-        const energyTypes = JSON.parse(rowData.energyTypeSlug);
-        let energyTypeHtml = `<span class="map__map-marker-popup__energy-type-name">${
-            energyTypes.length > 1 ? 'Technologies' : 'Technology'
-        }</span>`;
-
-        energyTypes.forEach((type) => {
-            const className = type.replaceAll('_', '-');
-            let label = type.replaceAll('_', ' ');
-            label = label.charAt(0).toUpperCase() + label.slice(1);
-
-            energyTypeHtml += `<span class="map__icon map__icon--${className}"></span>`;
-            energyTypeHtml += `<span class="map__icon__name">${label}</span>`;
-        });
-
-        popupEnergyTypeEl.innerHTML = energyTypeHtml;
-
-        // Set row data inner HTML.
-        popupSummaryEl.innerHTML = rowData.summaryHTML;
-
-        // this.setActiveMarker(marker);
-        this.openMarkerPopup(marker);
-    }
-
     openMarkerPopup(marker) {
         /* eslint-disable-next-line no-underscore-dangle -- There doesn't seem to be a LJS getter for the div. */
         marker._icon.classList.add('is-popped');
@@ -355,30 +314,6 @@ class Map {
 
     isMobileViewport() {
         return isElementVisible(this.mobileMediaQueryRefEl);
-    }
-
-    /**
-     * Set up the map pop up.
-     */
-    initMapPopUp() {
-        this.markerPopupEl = this.el.querySelector('.map__map-marker-popup');
-        this.markerPopupCloseEl = this.markerPopupEl.querySelector('.map__map-marker-popup__close');
-        this.markerPopupCloseEl.addEventListener('click', () => {
-            this.closeMarkerPopup();
-        });
-
-        // Add marker el close event listener.
-        this.markerPopupEl.addEventListener('focusout', (event) => {
-            if (this.markerPopupEl.contains(event.relatedTarget)) {
-                return;
-            }
-
-            if (this.markerPopupEl === event.relatedTarget) {
-                return;
-            }
-
-            this.closeMarkerPopup();
-        });
     }
 
     /**
@@ -462,8 +397,6 @@ class Map {
             if (rowCountrySlug in this.markerSubGroupsByFilterableValue) {
                 this.markerSubGroupsByFilterableValue[rowCountrySlug].addLayer(marker);
             }
-
-            marker.on('click', this.handleMarkerClick.bind(this));
 
             // Add the marker to the leaflet layer.
             // this.allMarkersSubGroup.addLayer(marker);

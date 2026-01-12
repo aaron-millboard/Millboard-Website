@@ -21,31 +21,13 @@
     <div class="map__body">
         <div class="map__items">
             <?php foreach ($args['items'] as $item) { ?>
+                <?= Granola\Component::get('map/listing', $item); ?>
             <?php } ?>
         </div>
 
         <div id="map-map-container" class="map__map-container">
             <!-- data-map-world-svg-url="<?= \Granola\Paths::theme_asset_url('svgs/world-2d-map-basic.svg'); ?>"> -->
             <div id="leaflet-map-container"></div>
-
-            <div class="map__map-marker-popup" aria-hidden="true" tabindex="-1">
-                <div class="map__map-marker-popup__inner">
-                    <button class="map__map-marker-popup__close g-button g-button--label">
-                        <?= __('Close', 'granola'); ?>
-                        <span class="map__map-marker-popup__close__cross"></span>
-                    </button>
-
-                    <div class="map__map-marker-popup__energy-type">
-                        <span class="map__icon" aria-hidden></span>
-                        <p class="map__map-marker-popup__energy-type-name"></p>
-                    </div>
-
-                    <p class="map__map-marker-popup__heading"></p>
-                    <div class="map__map-marker-popup__links"></div>
-                    <div class="map__map-marker-popup__stats"></div>
-                    <div class="map__map-marker-popup__summary"></div>
-                </div>
-            </div>
         </div>
     </div>
 </div>
