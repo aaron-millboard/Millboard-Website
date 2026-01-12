@@ -2,6 +2,11 @@
 
 namespace Granola\Components\WC_Globals;
 
+add_action("init", function () {
+    // Declare WooCommerce support
+    add_theme_support('woocommerce');
+});
+
 // Disable WooCommerce default styles
 add_filter('woocommerce_enqueue_styles', '__return_empty_array');
 
