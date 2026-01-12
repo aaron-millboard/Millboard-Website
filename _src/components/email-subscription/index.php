@@ -12,15 +12,19 @@
             <div class="email-subscription__column email-subscription__column--content">
 
                 <div class="email-subscription__header">
-                    <?php if (!empty($args['preheading'])) { ?>
-                        <h2 class="email-subscription__preheading">
-                            <?= wp_kses_post($args['preheading']); ?>
-                        </h2>
-                    <?php } ?>
-                    
-                    <?php if (!empty($args['heading'])) { ?>
+                    <?php if (!empty($args['preheading']) && !empty($args['heading'])) { ?>
                         <h2 class="email-subscription__heading">
-                            <?= wp_kses_post($args['heading']); ?>
+                            <?php if (!empty($args['preheading'])) { ?>
+                                <span class="email-subscription__preheading-text">
+                                    <?= wp_kses_post($args['preheading']); ?>
+                                </span>
+                            <?php } ?>
+
+                            <?php if (!empty($args['heading'])) { ?>
+                                <span class="email-subscription__heading-text">
+                                    <?= wp_kses_post($args['heading']); ?>
+                                </span>
+                            <?php } ?>
                         </h2>
                     <?php } ?>
                 </div>
