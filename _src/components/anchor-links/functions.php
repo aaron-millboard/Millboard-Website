@@ -143,6 +143,10 @@ function get_anchor_links_data(?int $post_id = null): array
 
         // Generate an ID attribute, if needed, and insert into heading tag.
         if (empty($id)) {
+            // Compress whitespace to avoid newline issues.
+            $text = preg_replace('/\s+/', ' ', $text);
+
+            // Return to starting tag and update ID attribute.
             $id = sanitize_title($text);
         }
 
@@ -207,8 +211,13 @@ function set_content_headings_ids(string $content): string
 
         // Generate an ID attribute, if needed, and insert into heading tag.
         if (empty($id)) {
+            // Compress whitespace to avoid newline issues.
+            $text = preg_replace('/\s+/', ' ', $text);
+
             // Return to starting tag and update ID attribute.
             $id = sanitize_title($text);
+
+            // Insert new ID.
             $tags->seek('current_heading_start');
             $tags->set_attribute('id', $id);
 

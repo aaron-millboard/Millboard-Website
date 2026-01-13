@@ -5,38 +5,35 @@ namespace Granola\Components\EmailSubscription;
 \add_filter('granola/component/email-subscription', __NAMESPACE__ . '\\filter_args');
 
 \add_filter('gform_submit_button', function ($button, $form) {
-
     $form_id = absint(get_field('gravity_form_id', 'options') ?: 0);
     if ($form['id'] !== $form_id) {
         return $button;
     }
-    $button_xml        = simplexml_load_string($button);
-    $button_attributes = '';
-    $button_text       = 'Submit';
 
-    // combine the existing button attributes into a new string
-    foreach ($button_xml->Attributes() as $key => $value) :
-        // exclude the "type" and "value" attributes
-        if ($key !== 'type' && $key !== 'value') :
-            $button_attributes .= sprintf(' %s=\'%s\'', $key, $value);
-        endif;
+    $button_attributes = [];
+    $button_text = \__('Submit', 'granola');
+    $button_xml = simplexml_load_string($button);
 
-        // store the "value" attributes value
-        if ($key === 'value') :
+    // Collate the existing button attributes into an array.
+    foreach ($button_xml->Attributes() as $key => $value) {
+        // Store the "value" attribute separately to use as button content.
+        if ($key === 'value') {
             $button_text = $value;
-        endif;
-    endforeach;
+        } else {
+            $button_attributes[$key] = (string) $value;
+        }
+    }
 
-    // Chevron SVG icon
-    $icon = \Granola\SVG::get('icons/chevron-right.svg');
+    // Add class attribute if it's missing.
+    if (empty($button_attributes['class'])) {
+        $button_attributes['class'] = '';
+    }
 
-    ob_start();
-    ?>
-        <button <?= $button_attributes; ?> aria-label="<?= esc_attr($button_text); ?>">
-            <?= $icon; ?>
-        </button>
-        <?php
-        $new_button = ob_get_clean();
+    // Append Granola button class.
+    $button_attributes['class'] .= ' g-button';
 
-        return $new_button;
+    return \Granola\Component::get('button', [
+        'content' => $button_text,
+        'attributes' => $button_attributes,
+    ]);
 }, 10, 2);
