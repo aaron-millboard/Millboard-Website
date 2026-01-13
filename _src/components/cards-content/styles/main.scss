@@ -70,8 +70,7 @@
 
         &:hover,
         &:focus-within {
-            background-color: var(--color--brand-1);
-            color: var(--color--background);
+            @include color-context('brand-1');
 
             #{$this}__card-footer--message {
                 opacity: 0;
@@ -195,7 +194,6 @@
                 gap: var(--space--s);
                 align-items: center;
                 z-index: 1;
-                color: var(--color--background);
                 width: max-content;
 
                 &::before {
@@ -209,7 +207,7 @@
                 &::after {
                     width: #{px-to-rem(16)};
                     height: #{px-to-rem(16)};
-                    background-color: var(--color--background);
+                    background-color: currentColor;
                     content: '';
                     mask-image: url(#{asset-path('images/icons/chevron-right.svg')});
                     mask-position: center;
@@ -217,15 +215,6 @@
                     mask-size: #{px-to-rem(16)};
                 }
             }
-        }
-    }
-
-    &.has-brand-2-background-color {
-        #{$this}__card-title,
-        #{$this}__card-content,
-        #{$this}__card-footer {
-            color: var(--color--black);
-            --color--background: var(--color--black);
         }
     }
 }
