@@ -48,6 +48,7 @@
     }
 
     &__card {
+        overflow: hidden;
         display: flex;
         flex-direction: column;
         gap: var(--space--m);
@@ -69,8 +70,7 @@
 
         &:hover,
         &:focus-within {
-            background-color: var(--color--brand-1);
-            color: var(--color--background);
+            @include color-context('brand-1');
 
             #{$this}__card-footer--message {
                 opacity: 0;
@@ -80,13 +80,12 @@
             #{$this}__card-footer--cta {
                 opacity: 1;
                 visibility: visible;
-                top: 0;
+                top: 50%;
             }
 
             #{$this}__card-image-wrapper {
                 img {
-                    width: 220px;
-                    height: 220px;
+                    height: px-to-rem(220);
                 }
             }
         }
@@ -101,7 +100,7 @@
         margin: 0 auto;
 
         @include mq(large) {
-            max-width: 50%;
+            max-width: 75%;
         }
     }
 
@@ -110,6 +109,7 @@
         display: flex;
         flex-direction: column;
         gap: var(--space--m);
+        aspect-ratio: 1 / 1;
     }
 
     &__card-image-wrapper {
@@ -118,9 +118,9 @@
             top: 0;
             left: 50%;
             transform: translateX(-50%);
-            width: 100%;
+            max-width: none;
             height: 100%;
-            object-fit: cover;
+            aspect-ratio: 1 / 1;
             transition: all 0.3s ease-in-out;
         }
 
@@ -135,8 +135,10 @@
 
     &__card-description {
         @include typestyle-small;
+
         transition: all 0.3s ease-in-out;
         text-align: center;
+        max-width: px-to-rem(440); // magic number.
 
         p {
             margin: 0 0 var(--space--xs);
@@ -153,7 +155,8 @@
         margin-left: auto;
         margin-right: auto;
         width: 100%;
-        height: 2rem;
+        height: px-to-rem(32);
+        flex: 1 0 auto;
 
         &--message {
             @include typestyle-h6;
@@ -171,15 +174,15 @@
 
         &--cta {
             position: absolute;
+            top: calc(50% + 3rem);
             left: 50%;
-            transform: translateX(-50%);
+            transform: translate(-50%, -50%);
             width: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
             opacity: 0;
             visibility: hidden;
-            top: 3rem;
             transition: all 0.3s ease-in-out;
 
             a {
@@ -191,7 +194,6 @@
                 gap: var(--space--s);
                 align-items: center;
                 z-index: 1;
-                color: var(--color--background);
                 width: max-content;
 
                 &::before {
@@ -205,7 +207,7 @@
                 &::after {
                     width: #{px-to-rem(16)};
                     height: #{px-to-rem(16)};
-                    background-color: var(--color--background);
+                    background-color: currentColor;
                     content: '';
                     mask-image: url(#{asset-path('images/icons/chevron-right.svg')});
                     mask-position: center;
@@ -213,15 +215,6 @@
                     mask-size: #{px-to-rem(16)};
                 }
             }
-        }
-    }
-
-    &.has-brand-2-background-color {
-        #{$this}__card-title,
-        #{$this}__card-content,
-        #{$this}__card-footer {
-            color: var(--color--black);
-            --color--background: var(--color--black);
         }
     }
 }
