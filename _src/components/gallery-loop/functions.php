@@ -32,6 +32,17 @@ function filter_args(array $args): ?array
         'paged' => $paged,
     ];
 
+    // Filter by image_category if provided in URL
+    if (isset($_GET['image_category']) && !empty($_GET['image_category'])) {
+        $query_args['tax_query'] = [
+            [
+                'taxonomy' => 'image_category',
+                'field' => 'slug',
+                'terms' => sanitize_text_field($_GET['image_category']),
+            ],
+        ];
+    }
+
     $query = new \WP_Query($query_args);
     $image_rows = [];
     $posts_array = [];
@@ -164,6 +175,7 @@ function filter_args(array $args): ?array
         'taxonomy' => 'image_category',
         'object' => null,
         'show_images' => true,
+        'preserve_url' => true,
     ];
 
     // ---------------------------------------

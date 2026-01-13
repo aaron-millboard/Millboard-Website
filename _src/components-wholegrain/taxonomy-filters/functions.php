@@ -12,6 +12,7 @@ function filter_args(array $args): ?array
         'current_item' => 0,
         'label' => \__('Filter by', 'granola'),
         'show_images' => false,
+        'preserve_url' => false,
     ], $args);
 
     // ---------------------------------------
@@ -65,6 +66,24 @@ function filter_args(array $args): ?array
     }
 
     if (!empty($args['taxonomy'])) {
+        // Check for active term from query parameter if preserve_url is enabled
+        $current_term_slug = '';
+        if ($args['preserve_url'] && isset($_GET[$args['taxonomy']])) {
+            $current_term_slug = sanitize_text_field($_GET[$args['taxonomy']]);
+        }
+
+        // Prepare URLs based on preserve_url setting
+        if ($args['preserve_url']) {
+            // Get current URL without query parameters
+            $current_url = strtok($_SERVER['REQUEST_URI'], '?');
+            $all_link = $current_url;
+            
+            // Mark "All" as current if no filter is active
+            if (empty($current_term_slug)) {
+                $button_classes_all[] = 'taxonomy-filters__item--current';
+            }
+        }
+
         $all = [
             'title' => \_x('All', 'Category filter clear button text', 'granola'),
             'url' => $all_link,
@@ -75,9 +94,17 @@ function filter_args(array $args): ?array
 
         if (!empty($items)) {
             foreach ($items as $key => $item) {
+                // Generate URL based on preserve_url setting
+                if ($args['preserve_url']) {
+                    $current_url = strtok($_SERVER['REQUEST_URI'], '?');
+                    $item_url = add_query_arg($args['taxonomy'], $item->slug, $current_url);
+                } else {
+                    $item_url = \get_term_link($item->slug, $item->taxonomy);
+                }
+
                 $args['items'][$key] = [
                     'title' => $item->name,
-                    'url' => \get_term_link($item->slug, $item->taxonomy),
+                    'url' => $item_url,
                     'classes' => $button_classes,
                 ];
 
@@ -90,8 +117,15 @@ function filter_args(array $args): ?array
                     }
                 }
 
-                if ($args['current_item'] === $item->term_id) {
-                    $args['items'][$key]['classes'][] = 'taxonomy-filters__item--current';
+                // Check if current based on preserve_url mode
+                if ($args['preserve_url']) {
+                    if ($current_term_slug === $item->slug) {
+                        $args['items'][$key]['classes'][] = 'taxonomy-filters__item--current';
+                    }
+                } else {
+                    if ($args['current_item'] === $item->term_id) {
+                        $args['items'][$key]['classes'][] = 'taxonomy-filters__item--current';
+                    }
                 }
             }
 
