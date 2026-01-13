@@ -1,0 +1,21 @@
+@import '../../../core';
+
+// Import gallery component styles since we use gallery/items
+@import '../../gallery/styles/block.scss';
+
+.gallery-loop {
+
+    .gallery__list {
+        column-gap: var(--space--xl);
+        row-gap: var(--space--2xl);
+    }
+
+    .taxonomy-filters__item {
+        border-color: var(--color--brand-1);
+    }
+
+    .navigation {
+        margin-top: var(--space--xl);
+    }
+
+}

@@ -11,6 +11,7 @@ function filter_args(array $args): ?array
         'classes' => [],
         'current_item' => 0,
         'label' => \__('Filter by', 'granola'),
+        'show_images' => false,
     ], $args);
 
     // ---------------------------------------
@@ -29,16 +30,22 @@ function filter_args(array $args): ?array
         'alignfull',
     ], $args['classes']);
 
+    // Add taxonomy-specific class if taxonomy is set
+    if (!empty($args['taxonomy'])) {
+        $args['classes'][] = 'taxonomy-filters--' . $args['taxonomy'];
+    }
+
     $all_link = false;
+
+    // Initialize button classes
+    $button_classes = [
+        'g-button',
+        'taxonomy-filters__item',
+    ];
+    $button_classes_all = $button_classes;
 
     if (!empty($args['object'])) {
         $object = $args['object'];
-
-        $button_classes = [
-            'g-button',
-            'taxonomy-filters__item',
-        ];
-        $button_classes_all = $button_classes;
 
         if ($object instanceof \WP_Term) {
             $args['taxonomy'] = $object->taxonomy;
@@ -73,6 +80,15 @@ function filter_args(array $args): ?array
                     'url' => \get_term_link($item->slug, $item->taxonomy),
                     'classes' => $button_classes,
                 ];
+
+                // Add image if show_images is enabled and term has an image
+                if ($args['show_images']) {
+                    $term_image = \get_field('image', $item);
+                    if ($term_image && !empty($term_image['sizes']['thumbnail'])) {
+                        $args['items'][$key]['image'] = $term_image['sizes']['thumbnail'];
+                        $args['items'][$key]['image_alt'] = $term_image['alt'] ?? $item->name;
+                    }
+                }
 
                 if ($args['current_item'] === $item->term_id) {
                     $args['items'][$key]['classes'][] = 'taxonomy-filters__item--current';

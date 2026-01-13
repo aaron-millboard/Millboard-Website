@@ -11,6 +11,9 @@ function filter_args(array $args): ?array
         'items' => [],
         'object' => \Granola\WordPress\PageObject::get(),
         'items_component_args' => [],
+        'taxonomy' => 'category',
+        'filter_label' => \__('Explore and filter all articles', 'granola'),
+        'post_type' => null,
     ], $args);
 
     if (empty($args['items'])) {
@@ -22,22 +25,28 @@ function filter_args(array $args): ?array
 
     // Fill items into items component args.
     $args['items_component_args']['items'] = $args['items'];
+    $args['items_component_args']['wp_query'] = false;
 
     // Pass post type
-    // check if archive page
-    if (is_archive()) {
+    // Use provided post_type or detect automatically
+    if (!empty($args['post_type'])) {
+        $post_type = $args['post_type'];
+    } elseif (is_archive()) {
         $post_type = get_queried_object()->name;
+        global $wp_query;
+        $post_type = get_post_type($wp_query->query_vars['post_type']);
     } else {
         $post_type = get_post_type($args['object']);
     }
     $args['items_component_args']['post_type'] = $post_type;
 
-
     // Set limit to 12
     $args['items_component_args']['limit'] = 12;
 
-    // Set columns to 3
-    $args['items_component_args']['columns'] = 3;
+    // Set columns to 3 if not already set
+    if (!isset($args['items_component_args']['columns'])) {
+        $args['items_component_args']['columns'] = 3;
+    }
 
     // Set columns to 2 for case studies
     if ($post_type === 'case-study') {

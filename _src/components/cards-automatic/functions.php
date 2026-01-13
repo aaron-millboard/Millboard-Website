@@ -15,6 +15,7 @@ function filter_args(array $args): ?array
         ],
         // Config.
         'card_source' => 'recent', // recent, selected.
+        'wp_query' => true,
         'limit' => 3,
         'columns' => null,
         'post_type' => 'post',
@@ -34,7 +35,10 @@ function filter_args(array $args): ?array
     // ---------------------------------------
     // Set up the items.
     // ---------------------------------------
-    if ($args['card_source'] === 'recent') {
+    if ($args['wp_query'] === false) {
+        // Use items that were already provided (e.g., from template-loop)
+        $objects = $args['items'];
+    } elseif ($args['card_source'] === 'recent') {
         // ---------------------------------------
         // Make a query.
         // ---------------------------------------

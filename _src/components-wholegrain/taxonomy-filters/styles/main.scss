@@ -56,9 +56,22 @@
         --button--padding-x: var(--space--2xs);
         text-transform: none;
 
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space--2xs);
+
         &--current {
             @include button--interacted;
         }
 
+    }
+
+    &__image {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        overflow: hidden;
+        object-fit: cover;
+        flex-shrink: 0;
     }
 }

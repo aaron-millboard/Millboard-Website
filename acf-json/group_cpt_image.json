@@ -1,0 +1,32 @@
+{
+    "key": "group_cpt_image",
+    "title": "Gallery Image Settings",
+    "fields": [
+        {
+            "key": "cpt_image_colour_taxonomy",
+            "label": "Colour category",
+            "name": "colour",
+            "type": "taxonomy",
+            "instructions": "You can add as many categories as you like in the right sidebar, however, make sure to assign one as a colour here.",
+            "taxonomy": "image_category",
+            "field_type": "select",
+            "return_format": "name"
+        },
+        {
+            "key": "cpt_image_colour_override",
+            "label": "Colour (text)",
+            "name": "colour_override",
+            "type": "text",
+            "instructions": "Override colour category for this image (optional)"
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "post_type",
+                "operator": "==",
+                "value": "image"
+            }
+        ]
+    ]
+}
