@@ -120,13 +120,29 @@
 
         .gform_button {
             @include button-reset-hard;
-            color: var(--color--foreground);
+            @include button--icon;
+
+            --button--padding-y: 0;
+            --button--padding-x: 0;
+            --button--border-width: 0;
+
+            color: var(--color--white);
+            background-color: var(--color--white);
             width: #{px-to-rem(40)};
             height: #{px-to-rem(40)};
-            padding: #{px-to-rem(8)};
             display: flex;
+            padding: 0;
             justify-content: center;
             align-items: center;
+
+            &::after {
+                --mask-icon--size: #{px-to-rem(24)};
+
+                content: '';
+                // display: inline-block;
+                flex: 0 0 auto;
+                mask-image: url(#{asset-path('images/icons/chevron-right.svg')});
+            }
         }
     }
 }
