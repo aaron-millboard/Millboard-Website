@@ -221,7 +221,7 @@ export default (env, argv) => {
                         watchOptions: {
                             ignoreInitial: true,
                         },
-                        reloadDelay: 0,
+                        reloadDelay: 1000,
                         notify: false,
                         open: false,
                         // Inject CSS changes without full page reload
