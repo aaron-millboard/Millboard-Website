@@ -107,7 +107,13 @@
                 background: transparent;
                 border: 0;
                 padding: var(--space--s) 0;
-                border-bottom: 1px solid var(--color--foreground);
+                border-bottom: var(--border-width--s) solid var(--color--foreground);
+
+                &:focus-visible {
+                    box-shadow: none;
+                    border-bottom: var(--border-width--l) solid var(--color--foreground);
+                    padding-bottom: calc(var(--space--s) - 2px);
+                }
             }
         }
 

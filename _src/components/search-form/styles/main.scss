@@ -9,10 +9,13 @@
         gap: var(--space--xs);
         justify-items: center;
         border-bottom: 1px solid var(--color--black);
-        padding: 0;
+        padding: 0 0 2px;
         transition: transition(color, background-color, border-color, box-shadow, transform);
 
         &:focus-within {
+            padding-bottom: 0;
+            border-bottom: 3px solid var(--color--black);
+
             #{$this}__submit {
                 position: relative;
                 opacity: 1;
@@ -50,7 +53,7 @@
 
         display: block;
         flex: 0 0 auto;
-        margin: 0;
+        margin: 0 0 -2px; // offset for bottom padding + border
         color: var(--color--foreground);
         cursor: pointer;
 
