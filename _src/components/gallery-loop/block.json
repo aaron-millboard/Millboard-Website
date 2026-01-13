@@ -1,0 +1,38 @@
+{
+    "$schema": "https://advancedcustomfields.com/schemas/json/main/block.json",
+    "apiVersion": 2,
+    "name": "acf/gallery-loop",
+    "title": "Gallery Loop",
+    "category": "granola-blocks",
+    "description": "Display gallery images with category filtering in a 2-column grid.",
+    "icon": "images-alt2",
+    "keywords": [
+        "gallery",
+        "images",
+        "loop",
+        "filter",
+        "archive"
+    ],
+    "acf": {
+        "mode": "auto",
+        "renderCallback": "\\Granola\\Component::acf_render_callback"
+    },
+    "supports": {
+        "align": [
+            "wide",
+            "full"
+        ],
+        "anchor": true,
+        "color": {
+            "text": false,
+            "background": false
+        },
+        "mode": false
+    },
+    "attributes": {
+        "align": {
+            "type": "string",
+            "default": "full"
+        }
+    }
+}

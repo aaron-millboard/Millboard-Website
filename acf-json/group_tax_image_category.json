@@ -1,0 +1,21 @@
+{
+    "key": "group_tax_image_category",
+    "title": "Image Category Settings",
+    "fields": [
+        {
+            "key": "tax_image_category_image",
+            "label": "Select thumbnail",
+            "name": "image",
+            "type": "image"
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "taxonomy",
+                "operator": "==",
+                "value": "image_category"
+            }
+        ]
+    ]
+}

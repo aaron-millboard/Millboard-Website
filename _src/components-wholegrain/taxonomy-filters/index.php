@@ -13,7 +13,14 @@
     <ul class="taxonomy-filters__list flex-list">
         <?php foreach ($args['items'] as $item) { ?>
             <li class="taxonomy-filters__item-wrap">
-                <?= \Granola\Component::get('link', $item); ?>
+                <?php if (!empty($item['image'])) { ?>
+                    <a href="<?= esc_url($item['url']); ?>" class="<?= implode(' ', $item['classes']); ?>">
+                        <img src="<?= esc_url($item['image']); ?>" alt="<?= esc_attr($item['image_alt']); ?>" class="taxonomy-filters__image" />
+                        <span><?= esc_html($item['title']); ?></span>
+                    </a>
+                <?php } else { ?>
+                    <?= \Granola\Component::get('link', $item); ?>
+                <?php } ?>
             </li>
         <?php } ?>
     </ul>
