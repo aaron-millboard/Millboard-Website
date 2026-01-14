@@ -37,7 +37,7 @@ class Cleanup
         // ---------------------------------------
         // Hide ACF from Admin Sidebar Menu.
         // ---------------------------------------
-        \add_action('admin_init', [__CLASS__, 'hide_acf_on_production']);
+        \add_filter('acf/settings/show_admin', [__CLASS__, 'hide_acf_on_production']);
 
         // ---------------------------------------
         // Cleanup Admin Dashboard.
@@ -124,12 +124,15 @@ class Cleanup
     /**
      * Hide ACF from Admin Sidebar Menu.
      */
-    public static function hide_acf_on_production(): void
+    public static function hide_acf_on_production(): bool
     {
-        if (\wp_get_environment_type() === 'production') {
-            // Only allow fields to be edited on development
-            \add_filter('acf/settings/show_admin', '__return_false');
+        // Explicitly allow ACF settings on '.test' URLs.
+        if (str_ends_with(\get_site_url(), '.test')) {
+            return true;
         }
+
+        // Fallback - check against environment type and hide on production.
+        return \wp_get_environment_type() !== 'production';
     }
 
     /**
