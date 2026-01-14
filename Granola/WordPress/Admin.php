@@ -7,7 +7,6 @@ class Admin
     public static function init(): void
     {
         \add_action('init', [__CLASS__, 'disallow_file_edit']);
-        \add_action('init', [__CLASS__, 'set_environment_type']);
         \add_action('admin_head', [__CLASS__, 'add_wp_admin_submenu_global_filter'], 15);
         \add_action('wp_dashboard_setup', [__CLASS__, 'remove_draft_widget'], 1);
         \add_filter('get_user_option_admin_color', [__CLASS__, 'admin_color']);
@@ -26,23 +25,6 @@ class Admin
     public static function disallow_file_edit()
     {
         define('DISALLOW_FILE_EDIT', true);
-    }
-
-    /**
-     * Sets the environment type if not already set, for local development.
-     */
-    public static function set_environment_type(): void
-    {
-        // Bail early - environment type already defined.
-        if (defined('WP_ENVIRONMENT_TYPE')) {
-            return;
-        }
-
-        $env = \Granola\Paths::resolve('.env.js');
-
-        if (file_exists($env)) {
-            define('WP_ENVIRONMENT_TYPE', 'development');
-        }
     }
 
     /**
