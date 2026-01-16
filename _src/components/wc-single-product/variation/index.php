@@ -1,4 +1,4 @@
-<div class="product__variations__selector product__variations__selector--<?php echo esc_attr(sanitize_title($args['attribute'])); ?>">
+<div class="product__variations__radio-group product__variations__radio-group--<?php echo esc_attr(sanitize_title($args['attribute'])); ?>">
 
     <?php
     if (!empty($args['terms'])) {

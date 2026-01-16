@@ -2,19 +2,15 @@ window.addEventListener('load', () => {
 
 	// Get all quantity containers (for cart page with multiple products)
 	const quantityContainers = document.querySelectorAll('.quantity');
-	
-	quantityContainers.forEach((container) => {
+
+	// Function to initialize quantity inputs with +/- buttons
+	const initQuantityInputs = (container) => {
 		const quantityInput = container.querySelector('input[type="number"], input.qty');
 		const minusButton = container.querySelector('.quantity-minus');
 		const plusButton = container.querySelector('.quantity-plus');
 		
-		// Look for wastage checkbox in parent wrapper (sibling of .quantity)
-		const wrapper = container.parentElement;
-		const wastageCheckbox = wrapper ? wrapper.querySelector('.quantity-wastage-checkbox') : null;
-		
 		if (!quantityInput) return;
 		
-		let quantityBeforeWastage = null;
 		let isButtonClick = false;
 
 		// Handle minus button
@@ -27,11 +23,6 @@ window.addEventListener('load', () => {
 				if (currentValue > minValue) {
 					isButtonClick = true;
 					quantityInput.value = currentValue - step;
-					
-					// Update the base quantity if wastage is checked
-					if (wastageCheckbox && wastageCheckbox.checked && quantityBeforeWastage !== null) {
-						quantityBeforeWastage = Math.round((currentValue - step) / 1.1);
-					}
 					
 					quantityInput.dispatchEvent(new Event('change', { bubbles: true }));
 					setTimeout(() => { isButtonClick = false; }, 10);
@@ -50,51 +41,21 @@ window.addEventListener('load', () => {
 					isButtonClick = true;
 					quantityInput.value = currentValue + step;
 					
-					// Update the base quantity if wastage is checked
-					if (wastageCheckbox && wastageCheckbox.checked && quantityBeforeWastage !== null) {
-						quantityBeforeWastage = Math.round((currentValue + step) / 1.1);
-					}
-					
 					quantityInput.dispatchEvent(new Event('change', { bubbles: true }));
 					setTimeout(() => { isButtonClick = false; }, 10);
 				}
 			});
 		}
-
-		// Handle wastage checkbox
-		if (wastageCheckbox) {
-			wastageCheckbox.addEventListener('change', (e) => {
-				if (e.target.checked) {
-					// Store current quantity
-					quantityBeforeWastage = parseInt(quantityInput.value) || 1;
-					// Add 10% and round to nearest integer
-					const withWastage = Math.round(quantityBeforeWastage * 1.1);
-					quantityInput.value = withWastage;
-					quantityInput.dispatchEvent(new Event('change', { bubbles: true }));
-				} else {
-					// Restore previous quantity
-					if (quantityBeforeWastage !== null) {
-						quantityInput.value = quantityBeforeWastage;
-						quantityBeforeWastage = null;
-						quantityInput.dispatchEvent(new Event('change', { bubbles: true }));
-					}
-				}
-			});
-			
-			// Reset checkbox when quantity is manually changed (but not by +/- buttons)
-			quantityInput.addEventListener('input', () => {
-				if (wastageCheckbox.checked && !isButtonClick) {
-					wastageCheckbox.checked = false;
-					quantityBeforeWastage = null;
-				}
-			});
-		}
+	};
+	
+	// Initialize all quantity inputs on the page
+	quantityContainers.forEach((container) => {
+		initQuantityInputs(container);
 	});
 
 	// Auto-update cart when quantity changes (with debounce)
 	let timeout;
 	const cartForm = document.querySelector('form.woocommerce-cart-form');
-	
 	if (cartForm) {
 		cartForm.addEventListener('change', function(event) {
 			if (event.target.matches('input.qty')) {
