@@ -21,6 +21,15 @@
             "instructions": "Enable this to show '10% wastage' checkbox on product page",
             "default_value": 0,
             "ui": 1
+        },
+        {
+            "key": "cpt_product_enable_calculator",
+            "label": "Enable calculator",
+            "name": "enable_calculator",
+            "type": "true_false",
+            "instructions": "Enable this to show calculator on product page",
+            "default_value": 0,
+            "ui": 1
         }
     ],
     "location": [

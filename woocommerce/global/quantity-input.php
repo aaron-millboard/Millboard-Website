@@ -20,6 +20,11 @@
 
 defined('ABSPATH') || exit;
 
+$show_extra_info = true;
+if (isset($args['show_extra_info']) && $args['show_extra_info'] === false) {
+    $show_extra_info = false;
+}
+
 /* translators: %s: Quantity. */
 $label = ! empty($args['product_name']) ? sprintf(esc_html__('%s quantity', 'woocommerce'), wp_strip_all_tags($args['product_name'])) : esc_html__('Quantity', 'woocommerce');
 
@@ -28,13 +33,20 @@ global $product;
 $show_wastage = false;
 if ($product) {
     $show_wastage = get_field('add_wastage_option', $product->get_id());
+
+    if (!$show_extra_info) {
+        $show_wastage = false;
+    }
 }
 
 ?>
 <div class="quantity-wrapper">
 
-    <?php if (is_product()) : ?>
-        <label class="quantity-label"><?php esc_html_e('SELECT QUANTITY:', 'woocommerce'); ?></label>
+    <?php if (is_product() && $show_extra_info) : ?>
+        <label class="quantity-label"><?php esc_html_e('Select quantity:', 'granola'); ?></label>
+        <span class="quantity-description">
+            <?php esc_html_e('Sold per m2', 'granola'); ?>
+        </span>
     <?php endif; ?>
     
     <div class="quantity">

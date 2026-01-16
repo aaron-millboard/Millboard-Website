@@ -18,7 +18,7 @@
         <div class="product__content-section product__header">
 
             <?php if (!empty($args['preheading'])) { ?>
-                <div class="product__preheading is-style-typestyle-h6">
+                <div class="product__preheading">
                     <?= wp_kses_post($args['preheading']); ?>
                 </div>
             <?php } ?>
@@ -30,7 +30,7 @@
             <?php } ?>
 
             <?php if (!empty($args['description'])) { ?>
-                <div class="product__description is-style-typestyle-body">
+                <div class="product__description">
                     <?= wp_kses_post($args['description']); ?>
                 </div>
             <?php } ?>
@@ -42,7 +42,6 @@
             <?php } ?>
 
         </div>
-
 
         <?php
 

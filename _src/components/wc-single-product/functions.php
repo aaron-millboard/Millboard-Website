@@ -57,3 +57,16 @@ function filter_args(array $args): ?array
     // -------------------------------------------------------------------------
         return $args;
 }
+
+// Add radio buttons for variations instead of dropdowns
+function render_radio_variations($html, $args)
+{
+
+    if (!$args['options'] || !$args['product']) {
+        return $html;
+    }
+
+    $html .= \Granola\Component::get('wc-single-product/variation', $args);
+
+    return $html;
+}

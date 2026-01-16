@@ -146,7 +146,7 @@
             text-transform: uppercase;
         }
 
-        &__selector {
+        &__radio-group {
 
             > input {
                 display: none;
@@ -154,7 +154,7 @@
 
         }
 
-        &__selector--pa_colour {
+        &__radio-group--pa_colour {
 
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -199,7 +199,7 @@
 
         }
 
-        &__selector--pa_width {
+        &__radio-group--pa_width {
 
             display: flex;
             flex-direction: row;
@@ -240,27 +240,213 @@
         }
 
         #{$this}__calculator-cta {
-            a {
-                @include typestyle-small;
-                text-transform: uppercase;
-                display: flex;
-                justify-content: start;
-                align-items: center;
-                gap: var(--space--3xs);
-                width: 100%;
 
-                svg {
-                    width: 2.5rem;
-                    height: 2.5rem;
-                }
+            display: flex;
+            flex-direction: row;
+            height: fit-content;
+            padding: 10px;
+            border: 1px solid var(--color--brand-1);
+            gap: var(--space--2xs);
+            text-decoration: none;
+
+            &--content {
+                display: flex;
+                flex-direction: column;
             }
 
             &-heading {
                 @include typestyle-h6;
-                margin-bottom: var(--space--3xs);
+                margin-bottom: var(--space--4xs);
+                
+            }
+
+            &-description {
+                @include typestyle-small;
+                text-decoration: underline;
+            }
+
+            svg {
+                width: 2.5rem;
+                height: 2.5rem;
+            }
+
+        }
+
+    }
+
+    &__calculator {
+
+        display: none;
+        border: 1px solid var(--color--brand-5);
+        margin-top: var(--space--m);
+        
+        &__header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--space--2xs);
+            background-color: var(--color--brand-5);
+            color: var(--color--brand-2);
+
+            &--title {
+                @include typestyle-h6;
+                margin: 0;
+                text-transform: uppercase;
+            }
+
+            &--close {
+                color: var(--color--brand-2);
+                display: flex;
+                align-items: center;
+                gap: var(--space--4xs);
+                text-decoration: none;
+                cursor: pointer;
+                svg {
+                    width: 16px;
+                    height: 16px;
+                }
             }
         }
 
+        &__body {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space--2xs);
+            padding: var(--space--s);
+        }
+
+        &__section {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space--2xs);
+            padding-bottom: var(--space--s);
+            border-bottom: 1px solid var(--color--brand-1);
+
+            &__content {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+                gap: var(--space--m);
+            }
+
+        }
+
+        &__section--inputs {
+
+            #{$this}__calculator__section__content {
+                align-items: flex-end;
+            }
+
+        }
+
+        &--label {
+            @include typestyle-small;
+            margin-bottom: var(--space--2xs);
+        }
+
+        &__radios {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space--2xs);
+        }
+
+        &--radio {
+            @include radio-field;
+            --input--color: var(--color--brand-5);
+            --input--background-color: transparent;
+            --input--background-color--highlight: transparent;
+
+            label {
+                margin: 0;
+                padding: 0;
+
+
+                &::after,
+                &::before {
+                    border-radius: 9999px;
+                }
+            }
+        }
+
+        .quantity {
+            input {
+                width: 5rem !important;
+            }
+        }
+
+        &-checkbox {
+            display: flex;
+            align-items: center;
+            gap: var(--space--xs);
+            cursor: pointer;
+
+            input[type="checkbox"] {
+                cursor: pointer;
+            }
+
+            span {
+                @include typestyle-small;
+            }
+        }
+
+        &-results {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space--s);
+            padding-top: var(--space--m);
+            border-top: 1px solid var(--color--neutral-30);
+        }
+
+        &-result {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            &--total {
+                padding-top: var(--space--s);
+                border-top: 1px solid var(--color--neutral-30);
+
+                #{$this}__calculator-result-label {
+                    @include typestyle-h6;
+                    font-weight: 600;
+                    text-transform: uppercase;
+                }
+
+                #{$this}__calculator-result-value {
+                    @include typestyle-h5;
+                    font-weight: 700;
+                }
+            }
+
+            &-label {
+                @include typestyle-small;
+                font-weight: 600;
+                text-transform: uppercase;
+            }
+
+            &-value {
+                @include typestyle-h6;
+                font-weight: 600;
+            }
+        }
+
+        &__notice {
+            display: flex;
+            gap: var(--space--s);
+            align-items: flex-start;
+
+            svg {
+                width: 20px;
+                height: 20px;
+                flex-shrink: 0;
+            }
+
+            span {
+                @include typestyle-small;
+                margin: 0;
+            }
+        }
     }
 
     &__add-to-cart-wrapper {
