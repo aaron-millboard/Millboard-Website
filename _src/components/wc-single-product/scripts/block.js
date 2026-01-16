@@ -127,7 +127,6 @@ window.addEventListener('load', () => {
 	// Listen for quantity changes
 	if (quantityInput) {
 		quantityInput.addEventListener('change', updateTotalPrice);
-		quantityInput.addEventListener('input', updateTotalPrice);
 	}
 
 });
@@ -169,46 +168,55 @@ window.addEventListener('load', () => {
 	};
 
 	// Calculate and update results
-	const updateCalculatorResults = () => {
+	const updateCalculatorResults = (forceUpdate = false) => {
+
 		if (!areaInput || !resultArea || !resultPrice) return;
 
-		let inputValue = parseFloat(areaInput.value) || 0;
-		const selectedUnit = document.querySelector('input[name="calculator_unit"]:checked')?.value || 'meters';
+		let selectedUnit = document.querySelector('input[name="calculator_unit"]:checked')?.value || 'meters';
 		const includeWastage = wastageCheckbox?.checked || false;
 
+		let sqMeters;
+		let areaInMeters;
+
+		if (forceUpdate) {
+			sqMeters = mainQuantityInput ? parseInt(mainQuantityInput.value) || 1 : 1;
+			selectedUnit = 'meters'; // Force meters for main quantity sync
+		} else {
+			sqMeters = parseInt(areaInput.value) || 1;
+		}
+
 		// Convert to square meters if needed
-		let areaInMeters = selectedUnit === 'feet' ? inputValue / SQUARE_METERS_TO_FEET : inputValue;
+		areaInMeters = selectedUnit === 'feet' ? sqMeters / SQUARE_METERS_TO_FEET : sqMeters;
 
 		// Add wastage if checked
 		if (includeWastage) {
-			areaInMeters = areaInMeters * 1.1;
+			if(!forceUpdate) {
+				areaInMeters = areaInMeters * 1.1;
+			}
 		}
 
 		// Round up the area in meters
-		const totalSquareMeters = Math.ceil(areaInMeters);
+		let totalSquareMeters = Math.ceil(areaInMeters);
 
 		// Update area display - always show square meters, rounded up, no decimals
 		resultArea.textContent = totalSquareMeters;
 
-		// Sync main product quantity with total square meters (without triggering price update)
-		if (mainQuantityInput && mainQuantityInput.value != totalSquareMeters) {
-
-			// Set flag to prevent main wastage handler from applying wastage again
-			if (window.calculatorEnabled) {
-				window.calculatorEnabled.set(true);
+		// Adjust areaInput value based on units and wastage enabled
+		if(forceUpdate) {
+			let adjustedInputValue = totalSquareMeters;
+			if (selectedUnit === 'feet') {
+				adjustedInputValue = Math.ceil(totalSquareMeters * SQUARE_METERS_TO_FEET);
 			}
-
+			if (includeWastage) {
+				adjustedInputValue = Math.ceil(adjustedInputValue / 1.1);
+			}
+			areaInput.value = adjustedInputValue;
+		} else {
 			mainQuantityInput.value = totalSquareMeters;
-
-			// Reset flag after a short delay
-			setTimeout(() => {
-				if (window.calculatorEnabled) {
-					window.calculatorEnabled.set(false);
-				}
-			}, 50);
+			mainQuantityInput.dispatchEvent(new Event('change', { bubbles: true }));
 		}
 
-		// Calculate price
+		// Get unit price if not cached
 		if (calculatorUnitPrice === null) {
 			calculatorUnitPrice = getUnitPrice();
 		}
@@ -219,16 +227,11 @@ window.addEventListener('load', () => {
 			resultPrice.textContent = `${currencySymbol}${totalPrice.toFixed(2)}`;
 		}
 
-		// trigger price update in main quantity input
-		if (mainQuantityInput) {
-			mainQuantityInput.dispatchEvent(new Event('change', { bubbles: true }));
-		}
-
-		
 	};
 
 	// Handle unit conversion in input field
 	const handleUnitChange = (newUnit) => {
+
 		if (!areaInput) return;
 
 		const currentValue = parseFloat(areaInput.value) || 0;
@@ -247,8 +250,6 @@ window.addEventListener('load', () => {
 			
 			if (newValue !== undefined) {
 				areaInput.value = newValue;
-				// Trigger input event so WooCommerce updates
-				areaInput.dispatchEvent(new Event('input', { bubbles: true }));
 			}
 		}
 
@@ -257,21 +258,23 @@ window.addEventListener('load', () => {
 	};
 
 	// Open calculator
-	calculatorCta.addEventListener('click', (e) => {
-		e.preventDefault();
+	calculatorCta.addEventListener('click', (event) => {
+
+		event.preventDefault();
+
+		if(calculator.opened === true) return;
+		
+		calculatorUnitPrice = null;
 		
 		// Sync calculator with main product values
 		if (mainQuantityInput && areaInput) {
-			const mainQty = parseInt(mainQuantityInput.value) || 1;
-			areaInput.value = mainQty;
+			areaInput.value = parseInt(mainQuantityInput.value) || 1;
 		}
 		
 		// Reset unit to meters
 		const metersRadio = document.querySelector('input[name="calculator_unit"][value="meters"]');
-		if (metersRadio) {
-			metersRadio.checked = true;
-			previousUnit = 'meters';
-		}
+		metersRadio.checked = true;
+		previousUnit = 'meters';
 		
 		// Sync wastage checkbox
 		if (wastageCheckbox && mainWastageCheckbox) {
@@ -280,67 +283,64 @@ window.addEventListener('load', () => {
 		
 		// Show calculator
 		calculator.style.display = 'block';
-		
-		// Reset and update
-		calculatorUnitPrice = null;
-		updateCalculatorResults();
+
+		// Update calculator display
+		updateCalculatorResults(true);
+
+		// Set calculator opened flag
+		calculator.opened = true;
+
 	});
 
 	// Close calculator
 	if (calculatorClose) {
-		calculatorClose.addEventListener('click', (e) => {
-			e.preventDefault();
+		calculatorClose.addEventListener('click', (event) => {
+			event.preventDefault();
 			calculator.style.display = 'none';
+			calculator.opened = false;
 		});
 	}
 
 	// Handle unit changes with conversion
 	unitRadios.forEach(radio => {
-		radio.addEventListener('change', (e) => {
-			handleUnitChange(e.target.value);
+		radio.addEventListener('change', (event) => {
+			handleUnitChange(event.target.value);
 		});
 	});
 
 	// Handle wastage checkbox
-	if (wastageCheckbox) {
-		wastageCheckbox.addEventListener('change', (e) => {
-			updateCalculatorResults();
-			// Sync with main wastage checkbox
-			if (mainWastageCheckbox) {
-				mainWastageCheckbox.checked = e.target.checked;
-				mainWastageCheckbox.dispatchEvent(new Event('change', { bubbles: true }));
-			}
-		});
-	}
-
-	// Sync main wastage checkbox to calculator
-	if (mainWastageCheckbox && wastageCheckbox) {
-		mainWastageCheckbox.addEventListener('change', (e) => {
-			wastageCheckbox.checked = e.target.checked;
-			updateCalculatorResults();
-		});
-	}
-
-	// Handle input changes
-	if (areaInput) {
-		areaInput.addEventListener('input', updateCalculatorResults);
-		areaInput.addEventListener('change', updateCalculatorResults);
-	}
-
-	// Sync main quantity input with calculator input (convert from selected unit to meters)
-	if (mainQuantityInput && areaInput) {
-		mainQuantityInput.addEventListener('input', () => {
-			const mainValue = parseInt(mainQuantityInput.value) || 0;
-			if (mainValue > 0 && areaInput.value != mainValue) {
-				areaInput.value = mainValue;
-				// Reset unit to meters when syncing from main
-				const metersRadio = document.querySelector('input[name="calculator_unit"][value="meters"]');
-				if (metersRadio && !metersRadio.checked) {
-					previousUnit = 'meters';
-					metersRadio.checked = true;
-				}
+	if (wastageCheckbox && mainWastageCheckbox) {
+		wastageCheckbox.addEventListener('change', (event) => {
+			setTimeout(() => {
+				// Sync main checkbox state
+				mainWastageCheckbox.checked = event.target.checked;
 				updateCalculatorResults();
-			}
+			}, 100);
+		});
+		mainWastageCheckbox.addEventListener('change', (event) => {
+			setTimeout(() => {
+				// Sync calculator checkbox state
+				wastageCheckbox.checked = event.target.checked;
+				updateCalculatorResults(true);
+			}, 100);
+		});
+	}
+
+	// Handle quantity input changes
+	if (areaInput) {
+		areaInput.addEventListener('change', (event) => {
+			setTimeout(() => {
+				updateCalculatorResults();
+			}, 100);
+		});
+	}
+	
+	// Sync from main quantity input changes
+	if (mainQuantityInput) {
+		mainQuantityInput.addEventListener('input', (event) => {
+			setTimeout(() => {
+				updateCalculatorResults(true);
+			}, 100);
 		});
 	}
 
@@ -348,31 +348,23 @@ window.addEventListener('load', () => {
 	// Listen to WooCommerce's variation events for reliable price updates
 	const variationForm = document.querySelector('.variations_form');
 	
-	if (variationForm) {
-		variationForm.addEventListener('found_variation', () => {
-			calculatorUnitPrice = null;
+	if (variationForm && typeof jQuery !== 'undefined') {
+		jQuery(variationForm).on('found_variation', () => {
+			calculatorUnitPrice = null; // Reset to get new price
+			// Wait for WooCommerce to update the price in DOM
 			setTimeout(() => {
 				updateCalculatorResults();
-			}, 100);
+			}, 50);
 		});
 		
-		variationForm.addEventListener('show_variation', () => {
-			calculatorUnitPrice = null;
+		jQuery(variationForm).on('show_variation', () => {
+			calculatorUnitPrice = null; // Reset to get new price
+			// Wait for WooCommerce to update the price in DOM
 			setTimeout(() => {
 				updateCalculatorResults();
-			}, 100);
+			}, 50);
 		});
 	}
-	
-	// Fallback for custom radio buttons
-	document.addEventListener('change', (event) => {
-		if (event.target.matches('.product__variations__radio-group input')) {
-			calculatorUnitPrice = null;
-			setTimeout(() => {
-				updateCalculatorResults();
-			}, 300);
-		}
-	});
 
 });
 
@@ -380,53 +372,36 @@ window.addEventListener('load', () => {
 // Wastage box handling
 window.addEventListener('load', () => {
 
-	const quantityContainers = document.querySelectorAll('.quantity');
-	let isSyncingFromCalculator = false;
+	const container = document.querySelector('.quantity--with-wastage');
 
-	quantityContainers.forEach((container) => {
+	// Look for wastage checkbox in parent wrapper (sibling of .quantity)
+	const wrapper = container.parentElement;
+	const wastageCheckbox = wrapper ? wrapper.querySelector('.quantity-wastage-checkbox') : null;
+	const quantityInput = container.querySelector('input[type="number"], input.qty');
 
-		// Look for wastage checkbox in parent wrapper (sibling of .quantity)
-		const wrapper = container.parentElement;
-		const wastageCheckbox = wrapper ? wrapper.querySelector('.quantity-wastage-checkbox') : null;
-		const quantityInput = container.querySelector('input[type="number"], input.qty');
+	if(!wrapper || !wastageCheckbox || !quantityInput ) return;
 
-		// Skip if this is the calculator's quantity input
-		if (quantityInput?.closest('.product__calculator')) {
-			return;
-		}
+	// Handle wastage checkbox
+	if (wastageCheckbox && quantityInput) {
+		
+		wastageCheckbox.addEventListener('click', (event) => {
 
-		// Handle wastage checkbox
-		if (wastageCheckbox && quantityInput) {
-			
-			let baseValue = null;
+			let value = parseInt(quantityInput.value) || 1;
 
-			wastageCheckbox.addEventListener('change', (event) => {
+			if (event.target.checked) {
+				// Add 10% and round up
+				value = Math.ceil(value * 1.1);
+			} else {
+				// Remove 10% and round down
+				value = Math.floor(value / 1.1);
+			}
 
-				// Don't apply wastage if syncing from calculator (calculator already applied it)
-				if (isSyncingFromCalculator) return;
+			if( value < 1 ) value = 1;
 
-				let value = parseInt(quantityInput.value) || 1;
+			quantityInput.value = value;
+			quantityInput.dispatchEvent(new Event('change', { bubbles: true }));
 
-				if (event.target.checked) {
-					// Store base value before adding wastage
-					baseValue = value;
-					// Add 10% and round up
-					value = Math.ceil(value * 1.1);
-				} else {
-					// Use stored base value if available, otherwise divide and round up
-					value = baseValue !== null ? baseValue : Math.ceil(value / 1.1);
-					baseValue = null;
-				}
+		});
+	}
 
-				quantityInput.value = value;
-				quantityInput.dispatchEvent(new Event('change', { bubbles: true }));
-
-			});
-		}
-	});
-
-	// Expose flag for calculator to use
-	window.calculatorEnabled = {
-		set: (value) => { isSyncingFromCalculator = value; }
-	};
 });

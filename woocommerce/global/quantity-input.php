@@ -49,7 +49,7 @@ if ($product) {
         </span>
     <?php endif; ?>
     
-    <div class="quantity">
+    <div class="quantity <?php echo $show_wastage ? 'quantity--with-wastage' : ''; ?>">
         <?php
 
         /**

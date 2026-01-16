@@ -117,7 +117,7 @@ if (!is_wp_error($categories) && ! empty($categories)) {
 
             <div class="product__calculator-wastage">
                 <label class="product__calculator-checkbox">
-                    <input type="checkbox" name="calculator_wastage">
+                    <input class="quantity-wastage-checkbox" type="checkbox" name="calculator_wastage">
                     <span><?= __('Add 10% for wastage', 'granola'); ?></span>
                 </label>
             </div>

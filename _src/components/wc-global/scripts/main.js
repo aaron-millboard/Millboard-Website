@@ -5,6 +5,7 @@ window.addEventListener('load', () => {
 
 	// Function to initialize quantity inputs with +/- buttons
 	const initQuantityInputs = (container) => {
+
 		const quantityInput = container.querySelector('input[type="number"], input.qty');
 		const minusButton = container.querySelector('.quantity-minus');
 		const plusButton = container.querySelector('.quantity-plus');
@@ -15,11 +16,14 @@ window.addEventListener('load', () => {
 
 		// Handle minus button
 		if (minusButton) {
-			minusButton.addEventListener('click', () => {
+			minusButton.addEventListener('click', (event) => {
+
+				event.preventDefault();
+
 				const currentValue = parseInt(quantityInput.value) || 1;
 				const minValue = parseInt(quantityInput.getAttribute('min')) || 1;
 				const step = parseInt(quantityInput.getAttribute('step')) || 1;
-				
+								
 				if (currentValue > minValue) {
 					isButtonClick = true;
 					quantityInput.value = currentValue - step;
@@ -32,7 +36,10 @@ window.addEventListener('load', () => {
 		
 		// Handle plus button
 		if (plusButton) {
-			plusButton.addEventListener('click', () => {
+			plusButton.addEventListener('click', (event) => {
+
+				event.preventDefault();
+
 				const currentValue = parseInt(quantityInput.value) || 1;
 				const maxValue = parseInt(quantityInput.getAttribute('max')) || Infinity;
 				const step = parseInt(quantityInput.getAttribute('step')) || 1;
@@ -42,6 +49,8 @@ window.addEventListener('load', () => {
 					quantityInput.value = currentValue + step;
 					
 					quantityInput.dispatchEvent(new Event('change', { bubbles: true }));
+					quantityInput.dispatchEvent(new Event('input', { bubbles: true }));
+					
 					setTimeout(() => { isButtonClick = false; }, 10);
 				}
 			});
