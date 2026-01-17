@@ -1,12 +1,9 @@
 import debounce from 'lodash.debounce';
 import L from 'leaflet/dist/leaflet.js';
-import 'leaflet.markercluster/dist/leaflet.markercluster.js';
 import LFeatureGroupSubGroup from './Leaflet.FeatureGroup.SubGroup.js';
 import isElementVisible from '../../../scripts/helpers/isElementVisible.js';
 
 // https://leafletjs.com/reference.html
-// https://github.com/Leaflet/Leaflet.markercluster
-
 class Map {
     constructor(element) {
         // Elements
@@ -491,43 +488,6 @@ class Map {
         // this.lmap.on('pm:drawstart', function (e) {
         //     console.log('drawstart', e);
         // });
-    }
-
-    /**
-     * Initialise leaflet cluster groups.
-     */
-    initLeafletClusterGroups() {
-        // http://leaflet.github.io/Leaflet.markercluster/#all-options
-        // const markerSizeMiddle = this.LMAP_MARKER_RADIUS / 2; // Icon radius / 2 to center it.
-        this.TEMPmarkersClusterGroup = L.markerClusterGroup({
-            iconCreateFunction(cluster) {
-                return L.divIcon({
-                    html: `
-                        <span class="leaflet-marker-icon__cluster-count">${cluster.getChildCount()}</span>
-                        <span class="screen-reader-text">plants in this cluster</span>
-                        `,
-                    // iconSize: [26, 26],
-                    // iconAnchor: [13, 4], // Icon radius / 2, and I'm not 100% sure on 4 to center it.
-                    // tooltipAnchor: [13, 13], // Icon radius / 2 to center it.
-                    iconSize: [46, 46],
-                    iconAnchor: [23, 10], // Icon radius / 2, and I'm not 100% sure on 4 to center it.
-                    tooltipAnchor: [23, 23], // Icon radius / 2 to center it.
-                });
-            },
-            showCoverageOnHover: true,
-            zoomToBoundsOnClick: true,
-            maxClusterRadius: 65, // This is the area with-in-which markers get clustered....
-            // Was 46, bumped to cluster all of Italy.
-            // This plugin can't handle decimals apparently...
-            disableClusteringAtZoom: Math.ceil(this.LMAP_MAX_ZOOM - this.LMAP_ZOOM_DELTA),
-            spiderfyOnMaxZoom: false,
-            removeOutsideVisibleBounds: true,
-        });
-
-        this.allMarkersSubGroup = new LFeatureGroupSubGroup(this.TEMPmarkersClusterGroup);
-        this.filteredMarkersSubGroup = new LFeatureGroupSubGroup(this.TEMPmarkersClusterGroup);
-
-        this.lmap.addLayer(this.TEMPmarkersClusterGroup);
     }
 
     initFilterClearApplyButtons() {
