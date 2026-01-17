@@ -9,8 +9,8 @@ class Map {
         // Elements
         this.el = element;
 
-        // Plants.
-        this.plantRowEls = this.el.querySelectorAll('tbody tr');
+        // Listings.
+        this.listingEls = this.el.querySelectorAll('.map__listing');
 
         // Map container.
         this.mapContainerEl = this.el.querySelector('.map__map-container');
@@ -30,7 +30,6 @@ class Map {
         // Search.
         this.searchInput = this.el.querySelector('#map--map--search_input');
 
-        // Country map.
         this.mobileMediaQueryRefEl = document.querySelector('.site-header__burger');
 
         this.appliedFilterSlugsByFiltergroup = {};
@@ -50,7 +49,7 @@ class Map {
         this.LMAP_INITIAL_ZOOM = 6; // Was 3.5.
         this.LMAP_MIN_ZOOM = 2.4;
         this.LMAP_MAX_ZOOM = 15; // Was 7.2
-        this.LMAP_INITIAL_CENTER = [48.31067378249822, -27.66215289352289]; // Move center to europe.
+        this.LMAP_INITIAL_CENTER = [54, -2]; // Move center to UK.
 
         this.LMAP_MARKER_RADIUS = 34; // Previously was 26.
 
@@ -87,25 +86,25 @@ class Map {
         // lmapImageOverlay.addTo(this.lmap);
 
         this.initLeafletMarkers();
-        this.initFilters();
-        this.initSearch();
+        // this.initFilters();
+        // this.initSearch();
 
         // Some leaflet related stuff...
-        L.DomEvent.disableClickPropagation(this.markerPopupEl);
-        L.DomEvent.disableScrollPropagation(this.markerPopupEl);
-        L.DomEvent.disableClickPropagation(this.filtersContainerEl);
-        // L.DomEvent.disableScrollPropagation(this.filtersContainerEl);
+        // L.DomEvent.disableClickPropagation(this.markerPopupEl);
+        // L.DomEvent.disableScrollPropagation(this.markerPopupEl);
+        // L.DomEvent.disableClickPropagation(this.filtersContainerEl);
+        // // L.DomEvent.disableScrollPropagation(this.filtersContainerEl);
 
-        // Adding these as actual Leaflet controls was proving a right faff...
-        // this.lmap.getContainer().appendChild(this.filtersContainerEl);
-        this.lmap.getContainer().appendChild(this.markerPopupEl);
+        // // Adding these as actual Leaflet controls was proving a right faff...
+        // // this.lmap.getContainer().appendChild(this.filtersContainerEl);
+        // this.lmap.getContainer().appendChild(this.markerPopupEl);
 
-        // Init UI interactivity.
-        this.initFilterClearApplyButtons();
-        this.initCountryMapViewButtons();
+        // // Init UI interactivity.
+        // this.initFilterClearApplyButtons();
+        // this.initCountryMapViewButtons();
 
-        // Do a filter/search.
-        this.triggerFormFilter(false);
+        // // Do a filter/search.
+        // this.triggerFormFilter(false);
     }
 
     /**
@@ -162,7 +161,7 @@ class Map {
 
             let countOfshowForThisFilterNameForAllFilters = 0;
 
-            // For marker X (Rene plant)
+            // For marker X
             // Check each of the selected filters.
             // Loop over the filters selected by the user.
             // Gather data on what has been added.
@@ -265,47 +264,11 @@ class Map {
         }
     }
 
-    openMarkerPopup(marker) {
-        /* eslint-disable-next-line no-underscore-dangle -- There doesn't seem to be a LJS getter for the div. */
-        marker._icon.classList.add('is-popped');
-
-        this.activePopupMarker = marker;
-
-        // Crude way to solve this quickly...
-        // Basically, SOMETHING is happening at Leaflet's end with the default events
-        // when a marker is clicked that stops this happening unless we very slightly delay it with a timeout.
-        // setTimeout(() => {
-        //     this.markerPopupCloseEl.focus();
-        // }, 1);
-
-        this.markerPopupEl.removeAttribute('aria-hidden');
-    }
-
-    closeMarkerPopup() {
-        if (this.activePopupMarker instanceof L.Marker) {
-            /* eslint-disable-next-line no-underscore-dangle -- There doesn't seem to be a LJS getter for the div. */
-            this.activePopupMarker._icon.classList.remove('is-popped');
-            /* eslint-disable-next-line no-underscore-dangle -- There doesn't seem to be a LJS getter for the div. */
-            this.activePopupMarker._icon.focus(); // Focus leaving the popup should close the marker.
-            this.activePopupMarker = null;
-        }
-
-        this.markerPopupEl.setAttribute('aria-hidden', 'true');
-    }
-
     static getDataFromRowElement(element) {
         return {
-            // lat: parseInt(element.dataset.mapItemLatValue, 10),
-            // lng: parseInt(element.dataset.mapItemLngValue, 10),
-            lat: element.dataset.mapItemLatValue,
-            lng: element.dataset.mapItemLngValue,
-            name: element.querySelector('th').textContent,
-            opstatusName: element.dataset.mapItemOpstatusValueDisplay,
-            opstatusSlug: element.dataset.mapItemOpstatusValue,
-            summaryHTML: element.querySelector('.map__additional-info-td__main').innerHTML,
-            energyTypeName: element.querySelector('[data-map-table-col="energytype"]').textContent,
-            energyTypeSlug: element.dataset.mapItemEnergytypeValue,
-            countrySlug: element.dataset.mapItemCountryValue.toLowerCase(),
+            lat: element.dataset.mapItemLat,
+            lng: element.dataset.mapItemLng,
+            name: element.querySelector('.map__listing__title').textContent,
         };
     }
 
@@ -317,9 +280,8 @@ class Map {
      * Leaflet Markers setup.
      */
     initLeafletMarkers() {
-        // const markerSizeMiddle = (this.LMAP_MARKER_RADIUS / 2) * -1; // Icon radius / 2 to center it.
         const markerSizeMiddle = this.LMAP_MARKER_RADIUS / 2; // Icon radius / 2 to center it.
-        this.plantRowEls.forEach((el) => {
+        this.listingEls.forEach((el) => {
             // Get data.
             const rowData = Map.getDataFromRowElement(el);
 
@@ -327,34 +289,17 @@ class Map {
             const rowLat = parseFloat(rowData.lat);
             const rowLng = parseFloat(rowData.lng);
             const rowTitle = rowData.name;
-            const rowTypeSlug = rowData.energyTypeSlug;
-            const energyTypes = JSON.parse(rowTypeSlug);
-            const rowOperationalStatusSlug = rowData.opstatusSlug;
-            const rowCountrySlug = rowData.countrySlug;
 
-            let markerHtml = `<span class="leaflet-marker-icon__icon-container
-            leaflet-marker-icon__icon-container--opstatus-${rowOperationalStatusSlug}--v2
-            ${energyTypes.length > 1 ? 'has-multiple' : null}"
-            aria-hidden="true">`;
-            energyTypes.forEach((type, index) => {
-                const className = type.replaceAll('_', '-');
-
-                markerHtml += `<span class="leaflet-marker-icon__icon--v2
-                    leaflet-marker-icon__icon--energytype-${className}--v2"></span>`;
-
-                // Screen reader text.
-                if (index === 0) {
-                    markerHtml += `<span class="screen-reader-text">${rowTitle}</span>`;
-                }
-            });
-
+            let markerHtml = `<span class="leaflet-marker-icon__icon-container" aria-hidden="true">`;
+            markerHtml += `<span class="leaflet-marker-icon__icon"></span>`;
+            markerHtml += `<span class="screen-reader-text">${rowTitle}</span>`;
             markerHtml += ' </span>';
 
             // https://leafletjs.com/reference.html#marker
             const marker = L.marker([rowLat, rowLng], {
                 // title: rowTitle,
                 // alt: rowLabel,
-                // autoPanOnFocus: true,
+                autoPanOnFocus: true,
                 icon: L.divIcon({
                     html: markerHtml,
                     iconSize: [this.LMAP_MARKER_RADIUS, this.LMAP_MARKER_RADIUS],
@@ -364,36 +309,16 @@ class Map {
                 themeData: {
                     tableDataRowElement: el,
                 },
-                options: {
-                    energytype: rowTypeSlug,
-                    plantopstatus: rowOperationalStatusSlug,
-                    country: rowCountrySlug,
-                },
             });
-
-            /* eslint-disable-next-line no-underscore-dangle -- There doesn't seem to be a LJS getter for the div. */
-            // marker._icon.classList.add(`leaflet-marker-icon--opstatus-${rowOperationalStatusSlug}`);
 
             // https://leafletjs.com/reference.html#layer-bindtooltip
             // https://leafletjs.com/reference.html#tooltip-option
-            marker.bindTooltip(rowTitle, {
-                direction: 'top',
-                offset: [13, 13],
-                permanent: false,
-                sticky: false,
-            });
-
-            if (rowTypeSlug in this.markerSubGroupsByFilterableValue) {
-                this.markerSubGroupsByFilterableValue[rowTypeSlug].addLayer(marker);
-            }
-
-            if (rowOperationalStatusSlug in this.markerSubGroupsByFilterableValue) {
-                this.markerSubGroupsByFilterableValue[rowOperationalStatusSlug].addLayer(marker);
-            }
-
-            if (rowCountrySlug in this.markerSubGroupsByFilterableValue) {
-                this.markerSubGroupsByFilterableValue[rowCountrySlug].addLayer(marker);
-            }
+            // marker.bindTooltip(rowTitle, {
+            //     direction: 'top',
+            //     offset: [13, 13],
+            //     permanent: false,
+            //     sticky: false,
+            // });
 
             // Add the marker to the leaflet layer.
             // this.allMarkersSubGroup.addLayer(marker);
@@ -406,7 +331,7 @@ class Map {
 
         // Add all markers sub groups to map.
         // this.lmap.addLayer(this.allMarkersSubGroup);
-        // this.lmap.addLayer(this.allMarkersFlatGroup);
+        this.lmap.addLayer(this.allMarkersFlatGroup);
     }
 
     /**
