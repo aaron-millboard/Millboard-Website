@@ -13,6 +13,7 @@ function filter_args(array $args): ?array
         'table_rows' => [],
         'post_type' => 'supplier',
         'items' => [],
+        'sidebar_heading' => [],
     ], $args);
 
     // ---------------------------------------
@@ -271,6 +272,25 @@ function filter_args(array $args): ?array
             ])
         ])
     ];
+
+    if (!empty($args['items'])) {
+        $args['sidebar_heading'] = [
+            'el' => 'h3',
+            'content' => sprintf(
+                \_n(
+                    // translators: the number of map results.
+                    'Displaying: %s result',
+                    'Displaying: %s results',
+                    count($args['items']),
+                    'granola'
+                ),
+                count($args['items'])
+            ),
+            'classes' => [
+                'map__sidebar__heading',
+            ],
+        ];
+    }
 
     // -------------------------------------------------------------------------
     // Return the filtered args.

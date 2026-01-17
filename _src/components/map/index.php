@@ -19,10 +19,14 @@
     </div>
 
     <div class="map__body">
-        <div class="map__items">
-            <?php foreach ($args['items'] as $item) { ?>
-                <?= Granola\Component::get('map/listing', $item); ?>
-            <?php } ?>
+        <div class="map__sidebar">
+            <?= \Granola\Component::get('heading', $args['sidebar_heading']) ?>
+
+            <div class="map__items">
+                <?php foreach ($args['items'] as $item) { ?>
+                    <?= Granola\Component::get('map/listing', $item); ?>
+                <?php } ?>
+            </div>
         </div>
 
         <div id="map-map-container" class="map__map-container">
