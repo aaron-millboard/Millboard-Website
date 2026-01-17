@@ -226,8 +226,8 @@
         line-height: 1;
 
         #{$this}__icon {
-            width: $map-icon-size-l;
-            height: $map-icon-size-l;
+            width: $map-icon-size-m;
+            height: $map-icon-size-m;
 
             @include mq(medium) {
                 display: none;

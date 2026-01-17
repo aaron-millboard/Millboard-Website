@@ -3,8 +3,7 @@ $map-z-index-filters: 698;
 $map-z-index-popups: 699;
 
 // Size here used everywhere.
-$map-icon-size-m: 1em; // Sizes defined in map.js class properties. So want to override.
-$map-icon-size-l: 1.5rem;
+$map-icon-size-m: px-to-rem(40); // Sizes defined in map.js class properties. So want to override.
 $map-zoom-button-size: px-to-rem(40);
 $map-marker-box-shadow-spread: px-to-rem(7);
 

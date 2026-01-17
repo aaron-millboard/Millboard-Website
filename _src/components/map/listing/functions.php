@@ -20,6 +20,18 @@ function filter_args(array $args): ?array
 
     // \Granola\Debug::dump($args);
 
+    $args['attributes']['data-map-item-lat'] = $args['address']['lat'];
+    $args['attributes']['data-map-item-lng'] = $args['address']['lng'];
+
+    // Finally set address.
+    $args['address'] = $args['address']['address'];
+
+
+    $args['link'] = [
+        'content' => \__('Contact installer', 'granola'),
+        'url' => $args['website'],
+    ];
+
     // -------------------------------------------------------------------------
     // Return the filtered args.
     // -------------------------------------------------------------------------

@@ -3,12 +3,17 @@
         <?= esc_html($args['title']); ?>
     </h3>
 
-    <span class="map__listing__phone">
-        <?= esc_html($args['phone']); ?>
-    </span>
+    <?php if (!empty($args['address'])) { ?>
+        <span class="map__listing__address">
+            <?= esc_html($args['address']); ?>
+        </span>
+    <?php } ?>
 
-    <?= \Granola\Component::get('link', [
-        'content' => __('Contact installer', 'granola'),
-        'url' => $args['website'],
-    ]); ?>
+    <?php if (!empty($args['phone'])) { ?>
+        <span class="map__listing__phone">
+            <?= esc_html($args['phone']); ?>
+        </span>
+    <?php } ?>
+
+    <?= \Granola\Component::get('link', $args['link']); ?>
 </div>
