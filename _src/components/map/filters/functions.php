@@ -27,92 +27,35 @@ function filter_args(array $args): ?array
     // -------------------------------------------------------------------------
     $args['filters'] = [
         [
-            'id' => 'energytype',
-            'icons' => true,
-            'label' => __('Filter by technology'),
-            'order' => 2,
+            'id' => 'installer-type',
+            'icons' => false,
+            'label' => \__('Filter', 'granola'),
             'facets' => [
                 [
-                    'slug' => 'biomass',
-                    'label' => 'Biomass',
+                    'slug' => 'approved-installer-decking',
+                    'label' => 'Approved Installer (Decking)',
                 ],
                 [
-                    'slug' => 'storage',
-                    'label' => 'Energy storage',
+                    'slug' => 'approved-installer-cladding',
+                    'label' => 'Approved Installer (Cladding)',
                 ],
                 [
-                    'slug' => 'solar',
-                    'label' => 'Solar',
-                ],
-                [
-                    'slug' => 'waste-to-energy',
-                    'label' => 'Waste to energy',
-                ],
-                [
-                    'slug' => 'wind',
-                    'label' => 'Wind',
-                ],
-            ],
-        ],
-        [
-            'id' => 'plantopstatus',
-            'icons' => true,
-            'label' => __('Filter by status'),
-            'order' => 3,
-            'facets' => [
-                [
-                    'slug' => 'operational',
-                    'label' => \Granola\Components\Map\get_plant_operational_status_label_by_slug('operational'),
-                ],
-                [
-                    'slug' => 'underconstruction',
-                    'label' => \Granola\Components\Map\get_plant_operational_status_label_by_slug('underconstruction'),
-                ],
-                [
-                    'slug' => 'underauthorization',
-                    'label' => \Granola\Components\Map\get_plant_operational_status_label_by_slug('underauthorization'),
+                    'slug' => 'advanced-installer',
+                    'label' => 'Advanced installer',
                 ],
             ],
         ],
     ];
-
-    // Add countries.
-    // Countries need to be collected from the main components matrix.
-    // Then re-ordered by total plants per country.
-    // Then the UK needs to be put in first position.
-    $countries = \Granola\Components\Map\get_country_label_by_two_letter_code('all');
-    $countries_ordered_by_size = order_countries_by_totals($countries);
-
-    $args['filters']['country'] = [
-        'id' => 'country',
-        'icons' => false,
-        'label' => __('Filter by location'),
-        'order' => 1,
-        'facets' => [],
-    ];
-
-    foreach ($countries_ordered_by_size as $key => $country) {
-        // Guard.
-        if (!isset($countries[$key])) {
-            continue;
-        }
-
-        $args['filters']['country']['facets'][] = [
-            'slug' => $key,
-            'label' => $countries[$key],
-        ];
-    }
-
-
-    // Sort the filters for correct order.
-    usort($args['filters'], fn($a, $b) => $a['order'] <=> $b['order']);
 
     $args['buttons']['clear'] = [
-        'classes' => ['map__filters__buttons__clear', 'g-button'],
         'content' => \Granola\Component::get('element', [
             'content' => __('Clear all', 'granola'),
             'el' => 'span',
         ]),
+        'classes' => [
+            'map__filters__buttons__clear',
+            'g-button',
+        ],
     ];
 
     // -------------------------------------------------------------------------

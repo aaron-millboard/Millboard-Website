@@ -274,15 +274,6 @@
         justify-content: flex-start;
         gap: var(--space--s);
 
-        @include mq(medium) {
-            position: absolute;
-            right: var(--map--tab--padding--x);
-            bottom: var(--space--s);
-            width: auto;
-            justify-content: center;
-            justify-content: flex-end;
-        }
-
         &__clear {
             --button--background-color: var(--color--background);
             --button--border-color: var(--color--dark-grey);
