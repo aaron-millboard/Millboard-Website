@@ -1,0 +1,9 @@
+@import '../../../core';
+
+.case-study-details {
+    $this: &;
+
+    &__heading {
+        @include typestyle-h3;
+    }
+}
