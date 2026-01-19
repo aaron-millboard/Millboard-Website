@@ -353,7 +353,7 @@ window.addEventListener('load', () => {
 			calculatorUnitPrice = null; // Reset to get new price
 			// Wait for WooCommerce to update the price in DOM
 			setTimeout(() => {
-				updateCalculatorResults();
+				updateCalculatorResults(true);
 			}, 50);
 		});
 		
@@ -361,7 +361,7 @@ window.addEventListener('load', () => {
 			calculatorUnitPrice = null; // Reset to get new price
 			// Wait for WooCommerce to update the price in DOM
 			setTimeout(() => {
-				updateCalculatorResults();
+				updateCalculatorResults(true);
 			}, 50);
 		});
 	}
