@@ -44,7 +44,8 @@
 
         &__media {
             
-            aspect-ratio: auto;
+            aspect-ratio: 1 / 1;
+            max-width: 100%;
 
             @include mq($until: large) {
                 order: -1;
