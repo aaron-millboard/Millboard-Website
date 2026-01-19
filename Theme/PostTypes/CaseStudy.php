@@ -15,6 +15,18 @@ class CaseStudy
         \add_action('init', [__CLASS__, 'register_post_type']);
         \add_action('acf/init', [__CLASS__, 'add_settings_page']);
         \add_filter('granola/templates/post-types', [__CLASS__, 'filter_granola_templates_post_types']);
+        \add_action('init', [__CLASS__, 'add_rewrite_rules'], 10, 0);
+    }
+
+    /**
+     * Filter Category rewrite rules so we can view category archives for this post type only.
+     *
+     * @return void
+     */
+    public static function add_rewrite_rules()
+    {
+        \add_rewrite_rule('^case-studies/category/([^/]*)/?', 'index.php?category_name=$matches[1]&post_type=' . self::SLUG, 'top');
+        \add_rewrite_rule('^case-studies/category/(.+?)/page/?([0-9]{1,})/?$', 'index.php?category_name=$matches[1]&paged=$matches[2]&post_type=' . self::SLUG, 'top');
     }
 
     /**
