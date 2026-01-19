@@ -35,11 +35,12 @@ function filter_args(array $args): ?array
             $args['tags'] = array_map(function ($term) {
                 return [
                     'content' => $term->name,
+                    'url' => \get_term_link($term),
                     'classes' => [
                         'case-study-details__tag',
                         'g-tag',
+                        'is-interactive',
                     ],
-                    // TODO: add tag link.
                 ];
             }, $terms);
         }

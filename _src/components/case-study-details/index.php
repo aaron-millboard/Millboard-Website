@@ -8,7 +8,7 @@
             <?php if (!empty($args['tags'])) { ?>
                 <div class="case-study-tags__tags">
                     <?php foreach ($args['tags'] as $tag) { ?>
-                        <?= \Granola\Component::get('element', $tag); ?>
+                        <?= \Granola\Component::get('link', $tag); ?>
                     <?php } ?>
                 </div>
             <?php } ?>
