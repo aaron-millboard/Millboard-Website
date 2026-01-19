@@ -6,6 +6,16 @@
     $this: &;
     $media-object: '.media-object';
 
+    z-index: 0;
+
+    &:has(.video-item.video-item--play) {
+        z-index: 999;
+    }
+
+    &__heading {
+        @include typestyle-h1;
+        line-height: 1.15;
+    }
 
     @include mq($until: medium) {
         --media-object--gap: var(--space--s);
@@ -26,12 +36,33 @@
         &__buttons {
             --flex-column--gap: var(--space--s);
 
-            align-items: center;
-
             @include mq(medium) {
                 --media-object--content--justify-content: flex-start;
+                align-items: center;
             }
         }
+
+        &__media {
+            
+            aspect-ratio: auto;
+
+            @include mq($until: large) {
+                order: -1;
+                padding: 0 var(--media-object--inner-padding-x);
+            }
+
+            img {
+                aspect-ratio: 1 / 1;
+                @include mq($until: medium) {
+                    position: relative;
+                }
+            }
+
+            .video-item {
+                aspect-ratio: 1 / 1;
+            }
+        }
+        
     }
 
     &:not(.has-background) {
@@ -44,7 +75,18 @@
         }
     }
 
+    // Make it containerised on full align
+    &.alignfull #{$media-object}__inner {
+        @include align-width--l;
+        padding: var(--space--2xl) 0;
+
+        @include mq($until: large) {
+            padding: var(--space--xl) 0;
+        }
+    }
+
     &.has-background {
+
         --media-object--inner-padding-x: 0;
 
         @include mq($until: medium) {
@@ -93,6 +135,18 @@
 
         #{$media-object}__heading-secondary {
             align-self: flex-end;
+        }
+    }
+
+    ul.list {
+
+        flex-direction: row;
+        flex-wrap: wrap;
+        
+        li {
+            display: flex;
+            width: max-content;
+            align-items: center;
         }
     }
 }

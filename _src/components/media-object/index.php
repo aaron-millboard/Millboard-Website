@@ -23,7 +23,7 @@
 
         <div class="media-object__content flex-column">
             <?php if (!empty($args['meta_prefix'])) { ?>
-                <div class="media-object__meta-prefix is-style-typestyle-meta">
+                <div class="media-object__meta-prefix">
                     <?= wp_kses_post($args['meta_prefix']); ?>
                 </div>
             <?php } ?>

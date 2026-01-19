@@ -62,7 +62,7 @@ function filter_args(array $args): ?array
     // -------------------------------------------------------------------------
     if (!empty($args['heading']) && !empty($args['heading_inset'])) {
         $args['classes'][] = 'media-content--has-heading-inset';
-        $args['heading_class'] = 'is-style-typestyle-h1';
+        $args['heading_class'] = 'media-content__heading';
         $args['heading'] = \Granola\Component::get('element', [
             'el' => 'span',
             'content' => $args['heading'],
@@ -73,6 +73,9 @@ function filter_args(array $args): ?array
             'classes' => ['media-object__heading-secondary'],
         ]);
     }
+    $args['url'] = false;
+    $args['attributes']['data-link'] = 'false';
+    $args['component_clickable'] = false;
 
     // -------------------------------------------------------------------------
     // Buttons.
@@ -81,11 +84,12 @@ function filter_args(array $args): ?array
     if (!empty($args['buttons'])) {
         $args['buttons'] = array_map(function ($button) {
             $weight = $button['weight'] ?? 'primary';
-            $button = $button['button'];
+            $button_data = $button['button'] ?? $button;
+
             return [
-                'url' => $button['url'] ?? '',
-                'target' => $button['target'] ?? '',
-                'content' => $button['title'] ?? '',
+                'url' => $button_data['url'] ?? '',
+                'target' => $button_data['target'] ?? '',
+                'content' => $button_data['title'] ?? $button_data['content'] ?? '',
                 'classes' => [
                     $weight === 'primary' ? 'g-button--primary' : 'g-button--secondary',
                 ]
