@@ -13,8 +13,7 @@
     },
     "supports": {
         "align": [
-            "wide",
-            "center"
+            "full"
         ],
         "anchor": true,
         "color": {
@@ -24,7 +23,7 @@
     "attributes": {
         "align": {
             "type": "string",
-            "default": "wide"
+            "default": "full"
         }
     }
 }

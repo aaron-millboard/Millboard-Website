@@ -96,6 +96,10 @@
         padding-inline: var(--media-object--inner-padding-x);
     }
 
+    &__meta-prefix {
+        @include typestyle-h6;
+    }
+
     &__buttons,
     &__labels,
     &__meta {
