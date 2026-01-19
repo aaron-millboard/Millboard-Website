@@ -45,11 +45,10 @@ class Map {
         // Variables for the Leaflet Map.
         this.LMAP_ZOOM_DELTA = 1.4; // Ws 0.8
         this.LMAP_ZOOM_SNAP = this.LMAP_ZOOM_DELTA;
-        this.LMAP_INITIAL_ZOOM = 4.22; // Was 3.5.
         this.LMAP_INITIAL_ZOOM = 6; // Was 3.5.
         this.LMAP_MIN_ZOOM = 2.4;
         this.LMAP_MAX_ZOOM = 15; // Was 7.2
-        this.LMAP_INITIAL_CENTER = [54, -2]; // Move center to UK.
+        this.LMAP_INITIAL_CENTER = [55, -5]; // Move center to UK.
 
         this.LMAP_MARKER_RADIUS = 34; // Previously was 26.
 
@@ -64,44 +63,20 @@ class Map {
     init() {
         this.filtergroupEls.forEach((el) => {
             const id = el.getAttribute('name').split('map-filtergroup-')[1];
-
             this.appliedFilterSlugsByFiltergroup[id] = [];
         });
 
         this.initLeafletMap();
-        // this.initLeafletClusterGroups();
-
-        // Use an SVG image for the map rather than tiling functionality to save bytez.
-        // const imageUrl = this.LMAP_WORLD_2D_SVG;
-        // const imageBounds = L.latLngBounds(this.LMAP_WORLD_2D_SVG_BOUNDS);
-        // // const wantedZoom = this.lmap.getBoundsZoom(bounds, true);
-        // // const center = bounds.getCenter();
-        // // this.lmap.setView(center, wantedZoom);
-
-        // const lmapImageOverlay = L.imageOverlay(imageUrl, imageBounds, {
-        //     interactive: false,
-        //     crossOrigin: false,
-        // });
-
-        // lmapImageOverlay.addTo(this.lmap);
-
         this.initLeafletMarkers();
         // this.initFilters();
         // this.initSearch();
 
         // Some leaflet related stuff...
-        // L.DomEvent.disableClickPropagation(this.markerPopupEl);
-        // L.DomEvent.disableScrollPropagation(this.markerPopupEl);
         // L.DomEvent.disableClickPropagation(this.filtersContainerEl);
         // // L.DomEvent.disableScrollPropagation(this.filtersContainerEl);
 
-        // // Adding these as actual Leaflet controls was proving a right faff...
-        // // this.lmap.getContainer().appendChild(this.filtersContainerEl);
-        // this.lmap.getContainer().appendChild(this.markerPopupEl);
-
         // // Init UI interactivity.
         // this.initFilterClearApplyButtons();
-        // this.initCountryMapViewButtons();
 
         // // Do a filter/search.
         // this.triggerFormFilter(false);
@@ -394,18 +369,22 @@ class Map {
         //     console.log(event.target.getCenter());
         // });
 
-        // Working: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
-        // Other EN lang only: https://stackoverflow.com/questions/18589621/setting-map-language-to-english-in-openstreetmap-with-leafletjs
-        const mapTileProvider = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png';
+        const mapTileProvider = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
         const tileLayer = L.tileLayer(mapTileProvider, {
             maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
         });
         this.lmap.addLayer(tileLayer);
+
+        // L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        //     maxZoom: 19,
+        // }).addTo(this.lmap);
+
 
         // Add leaflet zoom controller.
         // https://leafletjs.com/reference.html#control-zoom
         const lmapZoomControl = L.control.zoom({
-            position: 'bottomright',
+            position: 'topright',
         });
 
         lmapZoomControl.addTo(this.lmap);
