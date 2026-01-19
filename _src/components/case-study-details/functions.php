@@ -9,7 +9,8 @@ function filter_args(array $args): ?array
     // -------------------------------------------------------------------------
     $args = array_merge([
         'classes' => [],
-        'heading' => 'Hello World',
+        'tags' => [],
+        'details' => [],
     ], $args);
 
     // -------------------------------------------------------------------------
@@ -27,9 +28,26 @@ function filter_args(array $args): ?array
         return null;
     }
 
+    if (\is_singular('case-study')) {
+        $terms = \get_the_terms(\get_post(), 'category');
+
+        if (!empty($terms)) {
+            $args['tags'] = array_map(function ($term) {
+                return [
+                    'content' => $term->name,
+                    'classes' => [
+                        'case-study-details__tag',
+                        'g-tag',
+                    ],
+                    // TODO: add tag link.
+                ];
+            }, $terms);
+        }
+    }
+
     if (!empty($args['heading'])) {
         $args['heading'] = [
-            'heading' => $args['heading'],
+            'content' => $args['heading'],
             'classes' => ['case-study-details__heading'],
         ];
     }

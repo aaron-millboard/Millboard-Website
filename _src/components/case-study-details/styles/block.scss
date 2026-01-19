@@ -3,7 +3,59 @@
 .case-study-details {
     $this: &;
 
+    &__inner {
+        @include align-width--l;
+
+        display: grid;
+        gap: var(--space--l);
+        padding-bottom: var(--space--2xl);
+        border-bottom: var(--border--1);
+
+        @include mq(large) {
+            grid-template-columns: 1fr px-to-rem(400);
+        }
+    }
+
     &__heading {
         @include typestyle-h3;
+    }
+
+    &__details {
+        margin: 0;
+
+        tr {
+            &:first-child {
+                th,
+                td {
+                    padding-top: 0;
+                }
+            }
+
+            &:last-child {
+                th,
+                td {
+                    padding-bottom: 0;
+                }
+            }
+        }
+
+        th,
+        td {
+            padding: var(--space--2xs) 0;
+            word-break: break-word;
+        }
+
+        th {
+            border-right: 0;
+        }
+
+        td {
+            padding-left: var(--space--xs);
+            font-weight: var(--type--2--font-weight);
+        }
+    }
+
+    &__header-col {
+        min-width: 30%; // magic number.
     }
 }
