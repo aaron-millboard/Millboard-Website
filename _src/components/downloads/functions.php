@@ -53,7 +53,7 @@ function filter_args(array $args): ?array
                 'rel'    => $args['cta']['rel'] ?? '',
             ],
             'classes' => [
-                'page-header__cta',
+                'downloads__cta',
                 'g-button'
             ],
         ];
