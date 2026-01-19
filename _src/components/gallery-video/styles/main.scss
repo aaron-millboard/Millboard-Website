@@ -7,6 +7,12 @@
         margin-right: auto;
         position: relative;
         padding: var(--space--3xl) 0;
+        padding-bottom: var(--space--5xl);
+
+        @include mq(large) {
+            padding: var(--space--3xl) 0;
+            padding-bottom: var(--space--4xl);
+        }
     }
 
     &__header {
@@ -44,6 +50,7 @@
             flex-direction: column;
             flex-wrap: nowrap;
             gap: var(--space--m);
+            row-gap: var(--space--2xl);
 
             @include mq(large) {
                 gap: var(--space--2xl);
@@ -58,6 +65,19 @@
         @include mq(large) {
             overflow-x: visible;
         }
+
+        &::-webkit-scrollbar {
+            height: 4px;
+        }
+        
+        &::-webkit-scrollbar-track {
+            background-color: var(--color--foreground);
+        }
+        
+        &::-webkit-scrollbar-thumb {
+            background: var(--color--brand-4);
+            border-radius: 0px;
+        }
     }
 
     &__sidebar {
@@ -67,11 +87,14 @@
         gap: var(--space--xs);
         overflow-x: auto;
         width: max-content;
+        padding-bottom: var(--space--l);
 
         @include mq(large) {
             gap: var(--space--s);
             flex-direction: column;
+            padding-bottom: 0;
         }
+
     }
 
     &__thumbnail {
@@ -110,7 +133,6 @@
 
         @include mq(large) {
             width: #{px-to-rem(168)};
-            aspect-ratio: 4 / 3;
         }
     }
 
@@ -203,7 +225,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-top: var(--space--s);
+        margin-top: var(--space--3xs);
         gap: var(--space--m);
 
         &__play {
@@ -247,14 +269,14 @@
             font-family: var(--type--2--font-family);
             font-weight: var(--type--2--font-weight);
             text-transform: uppercase;
-            font-size: #{rfs(14, 15)};
             opacity: 0.8;
+            letter-spacing: 0.1em;
         }
 
         #{$this}__subcaption {
-            font-size: #{rfs(14, 15)};
             text-transform: uppercase;
             opacity: 0.8;
+            letter-spacing: 0.1em;
         }
     }
 

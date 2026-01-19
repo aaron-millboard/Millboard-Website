@@ -68,7 +68,7 @@
 
                             <?php if (!empty($item['caption']) || !empty($item['subcaption'])) { ?>
                                 <div class="gallery-video__meta">
-                                    <div class="gallery-video__captions">
+                                    <div class="gallery-video__captions nflm is-style-typestyle-small is-style-typestyle-meta">
                                         <?php if (!empty($item['caption'])) { ?>
                                             <div class="gallery-video__caption">
                                                 <?= wp_kses_post($item['caption']); ?>
