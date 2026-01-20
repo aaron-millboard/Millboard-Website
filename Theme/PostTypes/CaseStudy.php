@@ -65,12 +65,13 @@ class CaseStudy
                 'category',
             ],
             'template' => [
+                ['acf/case-study-details'],
                 [
                     'core/paragraph',
                     [
                         'placeholder' => 'Add content...',
                     ]
-                ]
+                ],
             ],
 
             // Extended post type configuration.

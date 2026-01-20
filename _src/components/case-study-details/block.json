@@ -7,7 +7,7 @@
     "icon": "list-view",
     "keywords": [ ],
     "acf": {
-        "mode": "edit",
+        "mode": "auto",
         "renderCallback": "\\Granola\\Component::acf_render_callback",
         "postTypes": [
             "case-study"
