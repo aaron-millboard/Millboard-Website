@@ -11,6 +11,7 @@ function filter_args(array $args): ?array
         'classes' => [],
         'tags' => [],
         'details' => [],
+        'heading' => null,
     ], $args);
 
     // -------------------------------------------------------------------------
@@ -24,8 +25,10 @@ function filter_args(array $args): ?array
     // ---------------------------------------
     // Bail early - return null for no output.
     // ---------------------------------------
-    if (empty($args['heading'])) {
+    if (empty($args['heading']) && empty($args['is_preview'])) {
         return null;
+    } elseif (empty($args['heading'])) {
+        $args['heading'] = \__('Add case study details heading', 'granola');
     }
 
     if (\is_singular('case-study')) {
