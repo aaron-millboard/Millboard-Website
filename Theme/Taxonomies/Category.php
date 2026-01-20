@@ -13,6 +13,7 @@ class Category
     public static function init(): void
     {
         \add_filter('granola/templates/taxonomies', [__CLASS__, 'filter_granola_templates_taxonomies']);
+        \add_filter('category_link', [__CLASS__, 'filter_category_link'], 10);
     }
 
     /**
@@ -26,5 +27,22 @@ class Category
     {
         $taxonomies[] = self::SLUG;
         return $taxonomies;
+    }
+
+    /**
+     * Filter Category links to point to Case Study URLs, where relevant, and to Blog URLs elsewhere.
+     *
+     * @param string $term_link The original Category URL.
+     * @return string The filtered Category URL.
+     */
+    public static function filter_category_link(string $term_link): string
+    {
+        // Case study singles and archive point category links to case study filtered URLs.
+        if (\is_singular('case-study') || \is_post_type_archive('case-study')) {
+            return str_replace('category', 'case-studies/category', $term_link);
+        }
+
+        // Fallback - all other versions should point to the blog.
+        return str_replace('category', 'blog/category', $term_link);
     }
 }

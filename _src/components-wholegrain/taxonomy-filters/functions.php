@@ -77,7 +77,7 @@ function filter_args(array $args): ?array
             // Get current URL without query parameters
             $current_url = strtok($_SERVER['REQUEST_URI'], '?');
             $all_link = $current_url;
-            
+
             // Mark "All" as current if no filter is active
             if (empty($current_term_slug)) {
                 $button_classes_all[] = 'taxonomy-filters__item--current';
