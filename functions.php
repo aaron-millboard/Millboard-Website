@@ -59,7 +59,6 @@ if (file_exists($autoloader = __DIR__ . '/vendor/autoload.php')) {
 // ----------------------------------------------------
 // Custom Post Types.
 // ----------------------------------------------------
-// \Theme\PostTypes\Event::init();
 \Theme\PostTypes\Page::init();
 \Theme\PostTypes\Post::init();
 \Theme\PostTypes\CaseStudy::init();
@@ -68,7 +67,6 @@ if (file_exists($autoloader = __DIR__ . '/vendor/autoload.php')) {
 // ----------------------------------------------------
 // Custom Taxonomies.
 // ----------------------------------------------------
-// \Theme\Taxonomies\Location::init();
 \Theme\Taxonomies\Category::init();
 \Theme\Taxonomies\ImageCategory::init();
 
