@@ -24,17 +24,19 @@
 
                     <div class="logo-grid__items">
                         <?php foreach ($args['items'] as $item) { ?>
-                            <?php if (!empty($item['link'])) { ?>
-                                <?= \Granola\Component::get('link', array_merge($item['link'], [
-                                    'classes' => ['logo-grid__item'],
-                                    'content' => \Granola\Component::get('image', $item['image']),
-                                    'content_filter' => false,
-                                ])); ?>
-                            <?php } else { ?>
-                                <div class="logo-grid__item">
-                                    <?= \Granola\Component::get('image', $item['image']); ?>
-                                </div>
-                            <?php } ?>
+                            <div class="logo-grid__item-wrapper">
+                                <?php if (!empty($item['link'])) { ?>
+                                    <?= \Granola\Component::get('link', array_merge($item['link'], [
+                                        'classes' => ['logo-grid__item'],
+                                        'content' => \Granola\Component::get('image', $item['image']),
+                                        'content_filter' => false,
+                                    ])); ?>
+                                <?php } else { ?>
+                                    <div class="logo-grid__item">
+                                        <?= \Granola\Component::get('image', $item['image']); ?>
+                                    </div>
+                                <?php } ?>
+                            </div>
                         <?php } ?>
                     </div>
 

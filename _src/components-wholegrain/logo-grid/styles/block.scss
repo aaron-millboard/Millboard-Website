@@ -80,16 +80,26 @@
         }
     }
 
+    &__item-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: calc(100% / var(--grid--columns) - var(--grid--column-gap));
+    }
+
     &__item {
         display: flex;
-
-        width: calc(100% / var(--grid--columns) - var(--grid--column-gap));
-        align-items: center;
+        width: 100%;
         justify-content: center;
+        padding: 1rem;
         aspect-ratio: var(--logo-grid--item--aspect-ratio);
 
         > * {
             object-fit: contain;
+        }
+
+        img {
+            filter: grayscale(100%);
         }
     }
 }
