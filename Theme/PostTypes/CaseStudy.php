@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Registers 'Event' CPT & handles related functionality.
+ * Registers 'Case Study' CPT & handles related functionality.
  */
 
 namespace Theme\PostTypes;
@@ -92,9 +92,6 @@ class CaseStudy
                 ],
                 'author' => [
                     'title' => 'Author',
-                ],
-                'location' => [
-                    'taxonomy' => 'category',
                 ],
                 'updated' => [
                     'title'      => 'Updated',
