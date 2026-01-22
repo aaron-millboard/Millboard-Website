@@ -1,11 +1,11 @@
 {
     "$schema": "https://advancedcustomfields.com/schemas/json/main/block.json",
     "apiVersion": 2,
-    "name": "template-loop",
+    "name": "acf/template-loop",
     "title": "Template Loop",
     "category": "granola-blocks",
     "icon": "controls-repeat",
-    "keywords": [],
+    "keywords": [ ],
     "acf": {
         "mode": "edit",
         "renderCallback": "\\Granola\\Component::acf_render_callback",
