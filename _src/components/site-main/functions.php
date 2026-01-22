@@ -21,8 +21,10 @@ function filter_args(array $args): ?array
 
     if (!empty($args['object'])) {
         // Use the <article> wrapper on specific post type(s).
-        if ($args['object'] instanceof \WP_Post && \get_post_type($args['object']) === 'post') {
-            $args['inner_el'] = 'article';
+        if ($args['object'] instanceof \WP_Post) {
+            if (in_array(\get_post_type($args['object']), ['post', 'advice-centre'], true)) {
+                $args['inner_el'] = 'article';
+            }
         }
 
         // Display default header if one isn't added in the content.
