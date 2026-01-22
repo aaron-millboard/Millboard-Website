@@ -92,8 +92,6 @@ wp.domReady(() => {
             wp.blocks.unregisterBlockType(blockType.name);
         } else if (disallowedBlocks.indexOf(blockType.name) >= 0) {
             wp.blocks.unregisterBlockType(blockType.name);
-        } else {
-            console.log(blockType.name);
         }
     });
 });
