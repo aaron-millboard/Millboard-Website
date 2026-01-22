@@ -18,7 +18,8 @@
         "align": false,
         "anchor": true,
         "color": {
-            "text": false
+            "text": false,
+            "background": false
         },
         "mode": false,
         "multiple": false
