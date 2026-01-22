@@ -13,6 +13,7 @@
         "renderCallback": "\\Granola\\Component::acf_render_callback",
         "postTypes": [
             "page",
+            "advice-centre",
             "granola-template"
         ]
     },

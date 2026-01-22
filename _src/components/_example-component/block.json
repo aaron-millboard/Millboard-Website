@@ -5,15 +5,11 @@
     "title": "Example Component",
     "category": "granola-blocks",
     "icon": "block-default",
-    "keywords": [],
+    "keywords": [ ],
     "acf": {
         "mode": "edit",
         "renderCallback": "\\Granola\\Component::acf_render_callback",
-        "postTypes": [
-            "page",
-            "post",
-            "granola-template"
-        ]
+        "postTypes": [ ]
     },
     "supports": {
         "anchor": true,

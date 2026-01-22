@@ -6,12 +6,13 @@
     "description": "Call to action block with button",
     "category": "granola-blocks",
     "icon": "id",
-    "keywords": [],
+    "keywords": [ ],
     "acf": {
         "mode": "edit",
         "renderCallback": "\\Granola\\Component::acf_render_callback",
         "postTypes": [
             "page",
+            "advice-centre",
             "post",
             "granola-template"
         ]

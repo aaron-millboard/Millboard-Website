@@ -5,12 +5,13 @@
     "title": "Cookies Preferences",
     "category": "granola-blocks",
     "icon": "privacy",
-    "keywords": [],
+    "keywords": [ ],
     "acf": {
         "mode": "preview",
         "renderCallback": "\\Granola\\Component::acf_render_callback",
         "postTypes": [
-            "page"
+            "page",
+            "advice-centre"
         ]
     },
     "supports": {
