@@ -1,28 +1,21 @@
 <?php
-
     // We need to access the global product object
     global $product;
-
 ?>
 
 <div <?= \Granola\Helpers::build_attributes($args['attributes']); ?>>
-
     <div class="product__gallery">
-
         <?php echo \Granola\Component::get('wc-single-product/gallery'); ?>
-
     </div>
 
     <div class="product__content">
-
         <div class="product__content-section product__header">
-
             <?php if (!empty($args['preheading'])) { ?>
                 <div class="product__preheading">
                     <?= wp_kses_post($args['preheading']); ?>
                 </div>
             <?php } ?>
-            
+
             <?php if (!empty($args['heading'])) { ?>
                 <h1 class="product__heading">
                     <?= wp_kses_post($args['heading']); ?>
@@ -40,7 +33,6 @@
                     <?= \Granola\Component::get('link', $args['header_cta']); ?>
                 </div>
             <?php } ?>
-
         </div>
 
         <?php
@@ -59,8 +51,6 @@
              */
 
             do_action('woocommerce_single_product_summary');
-
         ?>
-
     </div>
 </div>

@@ -1,16 +1,16 @@
 {
     "$schema": "https://advancedcustomfields.com/schemas/json/main/block.json",
     "apiVersion": 2,
-    "name": "acf/template-loop",
-    "title": "Template Loop",
+    "name": "acf/wc-single-product",
+    "title": "Product Details",
     "category": "granola-blocks",
-    "icon": "controls-repeat",
+    "icon": "cart",
     "keywords": [ ],
     "acf": {
         "mode": "edit",
         "renderCallback": "\\Granola\\Component::acf_render_callback",
         "postTypes": [
-            "granola-template"
+            "product"
         ],
         "align": "full"
     },
@@ -18,7 +18,8 @@
         "align": false,
         "anchor": true,
         "color": {
-            "text": false
+            "text": false,
+            "background": false
         },
         "mode": false,
         "multiple": false

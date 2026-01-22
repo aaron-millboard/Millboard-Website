@@ -82,6 +82,14 @@ wp.domReady(() => {
             if (allowedCoreBlocks.indexOf(blockType.name) === -1) {
                 wp.blocks.unregisterBlockType(blockType.name);
             }
+        } else if (blockType.name.indexOf('woocommerce/') === 0) {
+            wp.blocks.unregisterBlockType(blockType.name);
+        } else if (blockType.name.indexOf('yoast/') === 0) {
+            wp.blocks.unregisterBlockType(blockType.name);
+        } else if (blockType.name.indexOf('yoast-seo/') === 0) {
+            wp.blocks.unregisterBlockType(blockType.name);
+        } else if (blockType.name.indexOf('safe-svg/') === 0) {
+            wp.blocks.unregisterBlockType(blockType.name);
         } else if (disallowedBlocks.indexOf(blockType.name) >= 0) {
             wp.blocks.unregisterBlockType(blockType.name);
         }

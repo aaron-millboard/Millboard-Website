@@ -218,7 +218,6 @@
 
     /* WC PRODUCT */
     &--type--product {
-
         --page-header--padding-top: var(--space--s);
         --page-header--padding-bottom: var(--space--s);
 
@@ -226,7 +225,6 @@
             display: none;
         }
     }
-
 
     .breadcrumbs {
         padding-top: var(--space--responsive--m);
@@ -296,5 +294,9 @@
     // Adjust gradient color for brand backgrounds
     &.has-brand-6-background-color {
         --page-header--gradient-color: rgba(255, 255, 255, 0.15);
+    }
+
+    & + .woocommerce {
+        margin-top: calc(var(--block--margin-top) * -0.5);
     }
 }
