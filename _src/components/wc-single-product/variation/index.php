@@ -1,4 +1,4 @@
-<div class="product__variations__radio-group product__variations__radio-group--<?= esc_attr(sanitize_title($args['attribute'])); ?>">
+<div class="product__variations__radio-group product__variations__radio-group--<?= esc_attr(sanitize_title($args['attribute'])); ?>" data-product-attribute="<?= esc_attr(sanitize_title($args['attribute'])); ?>">
     <?php if (!empty($args['terms'])) { ?>
         <?php foreach ($args['terms'] as $term) { ?>
             <?php if (in_array($term->slug, $args['options'], true)) { ?>

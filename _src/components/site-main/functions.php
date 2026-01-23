@@ -42,6 +42,19 @@ function filter_args(array $args): ?array
             ]);
         }
 
+        if (\is_product()) {
+            $attributes = array_keys($args['object']->get_attributes());
+
+            foreach ($attributes as $attribute) {
+                $var = \get_query_var('attribute_' . $attribute);
+
+
+                if (!empty($var)) {
+                    $args['attributes']['data-' . $attribute] = $var;
+                }
+            }
+        }
+
         if (empty($args['id']) && empty($args['attributes']['id'])) {
             $args['attributes']['id'] = 'main';
         }

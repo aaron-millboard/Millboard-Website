@@ -64,11 +64,34 @@ window.addEventListener('load', () => {
 			return;
 		}
 
-		// // Set first as active by default
-		// radiosPerGroup[0].checked = true;
+		const attr = radioGroup.dataset.productAttribute;
 
-		// // Update select by passing the first radio as selected
-		// syncRadiosToSelect([radiosPerGroup[0]]);
+		if (!attr) {
+			return;
+		}
+
+		const main = document.querySelector('main');
+
+		const attrValue = main.dataset[attr];
+
+		if (attrValue) {
+			const input = [...radiosPerGroup].find(element => element.value === attrValue);
+
+			if (input) {
+				// Set first as active by default
+				input.checked = true;
+
+				// Update select by passing the first radio as selected
+				syncRadiosToSelect([input]);
+				return;
+			}
+		}
+
+		// Set first as active by default
+		radiosPerGroup[0].checked = true;
+
+		// Update select by passing the first radio as selected
+		syncRadiosToSelect([radiosPerGroup[0]]);
     });
 
 
