@@ -57,4 +57,16 @@ class Product
         $query_vars[] = 'attribute_pa_colour';
         return $query_vars;
     }
+
+
+    public static function get_product_by_sku($sku)
+    {
+        if (empty($sku)) {
+            return null;
+        }
+
+        return \wc_get_product(
+            \wc_get_product_id_by_sku($sku)
+        );
+    }
 }

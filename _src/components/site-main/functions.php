@@ -55,7 +55,7 @@ function filter_args(array $args): ?array
             }
 
             // Alt. for board width:
-            $product = get_product_by_sku(\get_query_var('sku'));
+            $product = \Theme\PostTypes\Product::get_product_by_sku(\get_query_var('sku'));
 
             if (!empty($product)) {
                 $board_width = $product->get_attribute('pa_board-width');
@@ -75,16 +75,4 @@ function filter_args(array $args): ?array
     // Return the filtered args.
     // -------------------------------------------------------------------------
     return $args;
-}
-
-
-function get_product_by_sku($sku)
-{
-    if (empty($sku)) {
-        return null;
-    }
-
-    return \wc_get_product(
-        \wc_get_product_id_by_sku($sku)
-    );
 }
