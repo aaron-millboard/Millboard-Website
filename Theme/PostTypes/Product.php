@@ -31,9 +31,9 @@ class Product
 
     public static function activate_gutenberg_block_editor($can_edit, $post_type)
     {
-        // if ($post_type === 'product') {
-        //     return true;
-        // }
+        if ($post_type === 'product') {
+            return true;
+        }
 
         return $can_edit;
     }
