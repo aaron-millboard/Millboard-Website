@@ -30,6 +30,4 @@ if (post_password_required()) {
  */
 do_action('woocommerce_before_single_product');
 
-echo \Granola\Component::get('site-main', [
-    'content' => apply_filters('the_content', get_the_content()),
-]);
+echo apply_filters('the_content', get_the_content());
