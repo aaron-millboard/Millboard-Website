@@ -42,6 +42,30 @@ function filter_args(array $args): ?array
             ]);
         }
 
+        if (\is_product()) {
+            $attributes = array_keys($args['object']->get_attributes());
+
+            foreach ($attributes as $attribute) {
+                $var = \get_query_var('attribute_' . $attribute);
+
+
+                if (!empty($var)) {
+                    $args['attributes']['data-' . $attribute] = $var;
+                }
+            }
+
+            // Alt. for board width:
+            $product = \Theme\PostTypes\Product::get_product_by_sku(\get_query_var('sku'));
+
+            if (!empty($product)) {
+                $board_width = $product->get_attribute('pa_board-width');
+
+                if (!empty($board_width)) {
+                    $args['attributes']['data-pa_board-width'] = $board_width;
+                }
+            }
+        }
+
         if (empty($args['id']) && empty($args['attributes']['id'])) {
             $args['attributes']['id'] = 'main';
         }

@@ -20,11 +20,11 @@ window.addEventListener('load', () => {
 			const radioName = radio.getAttribute('name');
 			const radioValue = radio.getAttribute('value');
 			const selectElement = document.querySelector(`select[name="${radioName}"]`);
-			
+
 			if (selectElement) {
 				selectElement.value = radioValue;
 				selectElement.dispatchEvent(new Event('change', { bubbles: true }));
-				
+
 				// Reset after dispatching the event
 				unitPrice = null;
 				setTimeout(() => {
@@ -40,7 +40,7 @@ window.addEventListener('load', () => {
 		const selectName = selectElement.getAttribute('name');
 		const selectValue = selectElement.value;
 		const radioElement = document.querySelector(`.product__variations__radio-group input[name="${selectName}"][value="${selectValue}"]`);
-		
+
 		if (radioElement) {
 			radioElement.checked = true;
 		}
@@ -51,7 +51,7 @@ window.addEventListener('load', () => {
 			resetQuantity();
 		}, 200);
 
-	};	
+	};
 
 	// Step 2. Set default selections on page load for each radio group (size, color, etc.)
     radioGroups.forEach((radioGroup) => {
@@ -60,14 +60,37 @@ window.addEventListener('load', () => {
         const radiosPerGroup = radioGroup.querySelectorAll('input[type="radio"]');
 
 		// Bail early if no radios found
-		if( radiosPerGroup.length === 0 ) return;
+		if (radiosPerGroup.length === 0) {
+			return;
+		}
+
+		const attr = radioGroup.dataset.productAttribute;
+
+		if (!attr) {
+			return;
+		}
+
+		const main = document.querySelector('main');
+		const attrValue = main.getAttribute(`data-${attr}`);
+
+		if (attrValue) {
+			const input = [...radiosPerGroup].find(element => element.value === attrValue);
+
+			if (input) {
+				// Set first as active by default
+				input.checked = true;
+
+				// Update select by passing the first radio as selected
+				syncRadiosToSelect([input]);
+				return;
+			}
+		}
 
 		// Set first as active by default
 		radiosPerGroup[0].checked = true;
 
 		// Update select by passing the first radio as selected
 		syncRadiosToSelect([radiosPerGroup[0]]);
-
     });
 
 
@@ -91,29 +114,29 @@ window.addEventListener('load', () => {
         }
 
 	});
-	
+
 	// Function to update total price
 	const updateTotalPrice = () => {
 
 		if (!quantityInput) return;
-		
+
 		// Re-query the price element each time (it may be recreated by WooCommerce)
 		let priceAmount = document.querySelector('.woocommerce-variation-price .woocommerce-Price-amount.amount bdi');
-		
+
 		if (!priceAmount) return;
-		
+
 		// Get unit price if not already stored or if variation changed
 		if (unitPrice === null) {
 			const priceText = priceAmount.textContent;
 			unitPrice = parseFloat(priceText.replace(/[^0-9.]/g, ''));
 		}
-		
+
 		const quantity = parseInt(quantityInput.value) || 1;
 		const totalPrice = (unitPrice * quantity).toFixed(2);
-		
+
 		// Get the currency symbol element
 		const currencySymbol = priceAmount.querySelector('.woocommerce-Price-currencySymbol');
-		
+
 		// Update the price display, preserving the currency symbol element
 		if (currencySymbol) {
 			priceAmount.innerHTML = '';
@@ -123,7 +146,7 @@ window.addEventListener('load', () => {
 			priceAmount.textContent = totalPrice;
 		}
 	};
-	
+
 	// Listen for quantity changes
 	if (quantityInput) {
 		quantityInput.addEventListener('change', updateTotalPrice);
@@ -156,13 +179,13 @@ window.addEventListener('load', () => {
 	const getUnitPrice = () => {
 		const priceElement = document.querySelector('.woocommerce-variation-price .woocommerce-Price-amount.amount bdi');
 		if (!priceElement) return null;
-		
+
 		const priceText = priceElement.textContent;
 		const displayedPrice = parseFloat(priceText.replace(/[^0-9.]/g, ''));
-		
+
 		// Get current main quantity to calculate actual unit price
 		const currentMainQty = mainQuantityInput ? parseInt(mainQuantityInput.value) || 1 : 1;
-		
+
 		// Divide by quantity to get true unit price
 		return displayedPrice / currentMainQty;
 	};
@@ -235,11 +258,11 @@ window.addEventListener('load', () => {
 		if (!areaInput) return;
 
 		const currentValue = parseFloat(areaInput.value) || 0;
-		
+
 		// Only convert if there's a unit change
 		if (previousUnit !== newUnit && currentValue > 0) {
 			let newValue;
-			
+
 			if (previousUnit === 'meters' && newUnit === 'feet') {
 				// Converting from meters to feet - multiply and round up
 				newValue = Math.ceil(currentValue * SQUARE_METERS_TO_FEET);
@@ -247,7 +270,7 @@ window.addEventListener('load', () => {
 				// Converting from feet to meters - divide and round up
 				newValue = Math.ceil(currentValue / SQUARE_METERS_TO_FEET);
 			}
-			
+
 			if (newValue !== undefined) {
 				areaInput.value = newValue;
 			}
@@ -263,24 +286,24 @@ window.addEventListener('load', () => {
 		event.preventDefault();
 
 		if(calculator.opened === true) return;
-		
+
 		calculatorUnitPrice = null;
-		
+
 		// Sync calculator with main product values
 		if (mainQuantityInput && areaInput) {
 			areaInput.value = parseInt(mainQuantityInput.value) || 1;
 		}
-		
+
 		// Reset unit to meters
 		const metersRadio = document.querySelector('input[name="calculator_unit"][value="meters"]');
 		metersRadio.checked = true;
 		previousUnit = 'meters';
-		
+
 		// Sync wastage checkbox
 		if (wastageCheckbox && mainWastageCheckbox) {
 			wastageCheckbox.checked = mainWastageCheckbox.checked;
 		}
-		
+
 		// Show calculator
 		calculator.style.display = 'block';
 
@@ -334,7 +357,7 @@ window.addEventListener('load', () => {
 			}, 100);
 		});
 	}
-	
+
 	// Sync from main quantity input changes
 	if (mainQuantityInput) {
 		mainQuantityInput.addEventListener('input', (event) => {
@@ -347,7 +370,7 @@ window.addEventListener('load', () => {
 	// Reset calculator when variation changes
 	// Listen to WooCommerce's variation events for reliable price updates
 	const variationForm = document.querySelector('.variations_form');
-	
+
 	if (variationForm && typeof jQuery !== 'undefined') {
 		jQuery(variationForm).on('found_variation', () => {
 			calculatorUnitPrice = null; // Reset to get new price
@@ -356,7 +379,7 @@ window.addEventListener('load', () => {
 				updateCalculatorResults(true);
 			}, 50);
 		});
-		
+
 		jQuery(variationForm).on('show_variation', () => {
 			calculatorUnitPrice = null; // Reset to get new price
 			// Wait for WooCommerce to update the price in DOM
@@ -383,7 +406,7 @@ window.addEventListener('load', () => {
 
 	// Handle wastage checkbox
 	if (wastageCheckbox && quantityInput) {
-		
+
 		wastageCheckbox.addEventListener('click', (event) => {
 
 			let value = parseInt(quantityInput.value) || 1;
