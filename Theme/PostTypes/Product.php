@@ -14,6 +14,7 @@ class Product
     {
         \add_filter('use_block_editor_for_post_type', [__CLASS__, 'activate_gutenberg_block_editor'], 10, 2);
         \add_filter('register_post_type_args', [__CLASS__, 'filter_register_post_type_args'], 10, 2);
+        \add_action('init', [__CLASS__, 'add_rewrite_rules'], 10, 0);
     }
 
     public static function filter_register_post_type_args($args, $post_type)
@@ -36,5 +37,15 @@ class Product
         }
 
         return $can_edit;
+    }
+
+    /**
+     * Filter Product rewrite rules so that attributes can be used in URLs.
+     *
+     * @return void
+     */
+    public static function add_rewrite_rules()
+    {
+        \add_rewrite_rule('product/([^/]+)/([^/]+)/?$', 'index.php?product=$matches[1]&attribute_pa_colour=$matches[2]', 'top');
     }
 }
