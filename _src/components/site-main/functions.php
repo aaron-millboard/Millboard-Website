@@ -53,6 +53,17 @@ function filter_args(array $args): ?array
                     $args['attributes']['data-' . $attribute] = $var;
                 }
             }
+
+            // Alt. for board width:
+            $product = get_product_by_sku(\get_query_var('sku'));
+
+            if (!empty($product)) {
+                $board_width = $product->get_attribute('pa_board-width');
+
+                if (!empty($board_width)) {
+                    $args['attributes']['data-pa_board-width'] = $board_width;
+                }
+            }
         }
 
         if (empty($args['id']) && empty($args['attributes']['id'])) {
@@ -64,4 +75,16 @@ function filter_args(array $args): ?array
     // Return the filtered args.
     // -------------------------------------------------------------------------
     return $args;
+}
+
+
+function get_product_by_sku($sku)
+{
+    if (empty($sku)) {
+        return null;
+    }
+
+    return \wc_get_product(
+        \wc_get_product_id_by_sku($sku)
+    );
 }

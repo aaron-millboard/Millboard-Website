@@ -48,10 +48,12 @@ class Product
     public static function add_rewrite_rules()
     {
         \add_rewrite_rule('product/([^/]+)/([^/]+)/?$', 'index.php?product=$matches[1]&attribute_pa_colour=$matches[2]', 'top');
+        \add_rewrite_rule('product/([^/]+)/([^/]+)/([^/]+)?$', 'index.php?product=$matches[1]&attribute_pa_colour=$matches[2]&sku=$matches[3]', 'top');
     }
 
     public static function filter_query_vars($query_vars)
     {
+        $query_vars[] = 'sku';
         $query_vars[] = 'attribute_pa_colour';
         return $query_vars;
     }

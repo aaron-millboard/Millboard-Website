@@ -71,8 +71,7 @@ window.addEventListener('load', () => {
 		}
 
 		const main = document.querySelector('main');
-
-		const attrValue = main.dataset[attr];
+		const attrValue = main.getAttribute(`data-${attr}`);
 
 		if (attrValue) {
 			const input = [...radiosPerGroup].find(element => element.value === attrValue);
