@@ -9,7 +9,7 @@
                     value="<?= esc_attr($term->slug); ?>"
                     <?php checked($args[ 'selected' ], $term->slug, false); ?>
                 >
-                <label for="<?= esc_attr($args['name'] . '-' . $term->slug); ?>">
+                <label for="<?= esc_attr($args['name'] . '-' . $term->slug); ?>" data-text="<?= esc_attr($term->name); ?>">
 
                     <?php $term_image_id = get_term_meta($term->term_id, 'image', true); ?>
                     <?php if ($term_image_id) { ?>
