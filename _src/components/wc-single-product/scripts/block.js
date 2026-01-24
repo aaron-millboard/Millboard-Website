@@ -53,9 +53,45 @@ window.addEventListener('load', () => {
 		}, 200);
 	};
 
+	const syncVariationToUrl = () => {
+		const variationForm = document.querySelector('.variations_form');
+
+		if (!variationForm) {
+			return;
+		}
+
+		const productId = variationForm.dataset.product_id;
+		const selectedAttributes = getSelectedAttributes();
+
+		// Generate Rest API URL from selected attributes to calculate new page URL.
+		const url = new URL(window.params.product_variation_url);
+		url.searchParams.set('product_id', productId);
+
+		selectedAttributes.forEach((attr) => {
+			url.searchParams.set(attr.name, attr.value);
+		});
+
+		// Retrive updated page URL based on attribute selection on current product.
+		fetch(url.toString())
+            .then((r) => {
+                if (!r.ok) {
+                    throw Error(r);
+                }
+                return r.json();
+            })
+            .then((r) => {
+				window.history.replaceState(null, '', r);
+            });
+	};
+
 	const getSelectedAttributes = () => {
 		const checkedRadios = document.querySelectorAll('.product__variations__radio-group input:checked');
-		return [...checkedRadios].map((radio) => radio.value);
+		return [...checkedRadios].map((radio) => {
+			return {
+				name: radio.name.startsWith('attribute_') ? radio.name.substr(10) : radio.name,
+				value: radio.value
+			}
+		});
 	}
 
 	// Step 2. Set default selections on page load for each radio group (size, color, etc.)
@@ -113,6 +149,8 @@ window.addEventListener('load', () => {
         if (event.target.matches('.variations select')) {
 			syncSelectToRadios(event.target);
         }
+
+		syncVariationToUrl();
 	});
 
 	// Function to update total price
