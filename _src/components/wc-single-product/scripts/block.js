@@ -53,6 +53,11 @@ window.addEventListener('load', () => {
 		}, 200);
 	};
 
+	const getSelectedAttributes = () => {
+		const checkedRadios = document.querySelectorAll('.product__variations__radio-group input:checked');
+		return [...checkedRadios].map((radio) => radio.value);
+	}
+
 	// Step 2. Set default selections on page load for each radio group (size, color, etc.)
     radioGroups.forEach((radioGroup) => {
 		// Collect all available radios in the group (single terms)
