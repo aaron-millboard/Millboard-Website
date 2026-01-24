@@ -1,5 +1,4 @@
 window.addEventListener('load', () => {
-
 	// Step 1. Initialize all variables
     const radioGroups = document.querySelectorAll('.product__variations__radio-group');
 	const quantityInput = document.querySelector('.quantity input[type="number"], input.qty');
@@ -14,9 +13,7 @@ window.addEventListener('load', () => {
     }
 
 	const syncRadiosToSelect = (radios) => {
-
 		radios.forEach((radio) => {
-
 			const radioName = radio.getAttribute('name');
 			const radioValue = radio.getAttribute('value');
 			const selectElement = document.querySelector(`select[name="${radioName}"]`);
@@ -32,11 +29,13 @@ window.addEventListener('load', () => {
 				}, 200);
 			}
 		});
-
 	};
 
 	const syncSelectToRadios = (selectElement) => {
-		if (!selectElement) return;
+		if (!selectElement) {
+			return;
+		}
+
 		const selectName = selectElement.getAttribute('name');
 		const selectValue = selectElement.value;
 		const radioElement = document.querySelector(`.product__variations__radio-group input[name="${selectName}"][value="${selectValue}"]`);
@@ -50,12 +49,10 @@ window.addEventListener('load', () => {
 		setTimeout(() => {
 			resetQuantity();
 		}, 200);
-
 	};
 
 	// Step 2. Set default selections on page load for each radio group (size, color, etc.)
     radioGroups.forEach((radioGroup) => {
-
 		// Collect all available radios in the group (single terms)
         const radiosPerGroup = radioGroup.querySelectorAll('input[type="radio"]');
 
@@ -96,34 +93,33 @@ window.addEventListener('load', () => {
 
 	// Handle radio button changes for variation selection
 	document.addEventListener('change', (event) => {
-
 		// Collect all currently checked radios
 		const checkedRadios = document.querySelectorAll('.product__variations__radio-group input:checked');
 
-		// Check if this event is coming from our radio buttons and sync to select
+		// Check if this event is coming from our radio buttons and sync to select.
 		if (event.target.matches('.product__variations__radio-group input')) {
-
-			// Update all attributes (not just the changed one)
+			// Update all attributes (not just the changed one).
 			syncRadiosToSelect(checkedRadios);
 		}
 
-        // make it vice versa - when select changes, update radio buttons
+        // make it vice versa - when select changes, update radio buttons.
         if (event.target.matches('.variations select')) {
-			const selectElement = event.target;
-			syncSelectToRadios(selectElement);
+			syncSelectToRadios(event.target);
         }
-
 	});
 
 	// Function to update total price
 	const updateTotalPrice = () => {
-
-		if (!quantityInput) return;
+		if (!quantityInput) {
+			return;
+		}
 
 		// Re-query the price element each time (it may be recreated by WooCommerce)
 		let priceAmount = document.querySelector('.woocommerce-variation-price .woocommerce-Price-amount.amount bdi');
 
-		if (!priceAmount) return;
+		if (!priceAmount) {
+			return;
+		}
 
 		// Get unit price if not already stored or if variation changed
 		if (unitPrice === null) {
@@ -151,13 +147,10 @@ window.addEventListener('load', () => {
 	if (quantityInput) {
 		quantityInput.addEventListener('change', updateTotalPrice);
 	}
-
 });
-
 
 // Decking Calculator
 window.addEventListener('load', () => {
-
 	const calculator = document.querySelector('.product__calculator');
 	const calculatorCta = document.querySelector('.product__calculator-cta');
 	const calculatorClose = document.querySelector('.product__calculator__header--close');
@@ -169,7 +162,9 @@ window.addEventListener('load', () => {
 	const resultArea = calculator?.querySelector('[data-result="area"]');
 	const resultPrice = calculator?.querySelector('[data-result="price"]');
 
-	if (!calculator || !calculatorCta) return;
+	if (!calculator || !calculatorCta) {
+		return;
+	}
 
 	let calculatorUnitPrice = null;
 	let previousUnit = 'meters';
@@ -178,7 +173,9 @@ window.addEventListener('load', () => {
 	// Get unit price from WooCommerce (always divide by main quantity to get true unit price)
 	const getUnitPrice = () => {
 		const priceElement = document.querySelector('.woocommerce-variation-price .woocommerce-Price-amount.amount bdi');
-		if (!priceElement) return null;
+		if (!priceElement) {
+			return null
+		}
 
 		const priceText = priceElement.textContent;
 		const displayedPrice = parseFloat(priceText.replace(/[^0-9.]/g, ''));
@@ -192,8 +189,9 @@ window.addEventListener('load', () => {
 
 	// Calculate and update results
 	const updateCalculatorResults = (forceUpdate = false) => {
-
-		if (!areaInput || !resultArea || !resultPrice) return;
+		if (!areaInput || !resultArea || !resultPrice) {
+			return;
+		}
 
 		let selectedUnit = document.querySelector('input[name="calculator_unit"]:checked')?.value || 'meters';
 		const includeWastage = wastageCheckbox?.checked || false;
@@ -213,7 +211,7 @@ window.addEventListener('load', () => {
 
 		// Add wastage if checked
 		if (includeWastage) {
-			if(!forceUpdate) {
+			if (!forceUpdate) {
 				areaInMeters = areaInMeters * 1.1;
 			}
 		}
@@ -225,7 +223,7 @@ window.addEventListener('load', () => {
 		resultArea.textContent = totalSquareMeters;
 
 		// Adjust areaInput value based on units and wastage enabled
-		if(forceUpdate) {
+		if (forceUpdate) {
 			let adjustedInputValue = totalSquareMeters;
 			if (selectedUnit === 'feet') {
 				adjustedInputValue = Math.ceil(totalSquareMeters * SQUARE_METERS_TO_FEET);
@@ -249,13 +247,13 @@ window.addEventListener('load', () => {
 			const currencySymbol = document.querySelector('.woocommerce-variation-price .woocommerce-Price-currencySymbol')?.textContent || '£';
 			resultPrice.textContent = `${currencySymbol}${totalPrice.toFixed(2)}`;
 		}
-
 	};
 
 	// Handle unit conversion in input field
 	const handleUnitChange = (newUnit) => {
-
-		if (!areaInput) return;
+		if (!areaInput) {
+			return;
+		}
 
 		const currentValue = parseFloat(areaInput.value) || 0;
 
@@ -282,10 +280,11 @@ window.addEventListener('load', () => {
 
 	// Open calculator
 	calculatorCta.addEventListener('click', (event) => {
-
 		event.preventDefault();
 
-		if(calculator.opened === true) return;
+		if (calculator.opened === true) {
+			return;
+		}
 
 		calculatorUnitPrice = null;
 
@@ -312,7 +311,6 @@ window.addEventListener('load', () => {
 
 		// Set calculator opened flag
 		calculator.opened = true;
-
 	});
 
 	// Close calculator
@@ -388,13 +386,11 @@ window.addEventListener('load', () => {
 			}, 50);
 		});
 	}
-
 });
 
 
 // Wastage box handling
 window.addEventListener('load', () => {
-
 	const container = document.querySelector('.quantity--with-wastage');
 
 	// Look for wastage checkbox in parent wrapper (sibling of .quantity)
@@ -402,7 +398,9 @@ window.addEventListener('load', () => {
 	const wastageCheckbox = wrapper ? wrapper.querySelector('.quantity-wastage-checkbox') : null;
 	const quantityInput = container.querySelector('input[type="number"], input.qty');
 
-	if(!wrapper || !wastageCheckbox || !quantityInput ) return;
+	if (!wrapper || !wastageCheckbox || !quantityInput ) {
+		return;
+	}
 
 	// Handle wastage checkbox
 	if (wastageCheckbox && quantityInput) {
@@ -419,12 +417,12 @@ window.addEventListener('load', () => {
 				value = Math.floor(value / 1.1);
 			}
 
-			if( value < 1 ) value = 1;
+			if (value < 1) {
+				value = 1;
+			}
 
 			quantityInput.value = value;
 			quantityInput.dispatchEvent(new Event('change', { bubbles: true }));
-
 		});
 	}
-
 });
