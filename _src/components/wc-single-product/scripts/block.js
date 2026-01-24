@@ -20,7 +20,9 @@ window.addEventListener('load', () => {
 
 			if (selectElement) {
 				selectElement.value = radioValue;
-				selectElement.dispatchEvent(new Event('change', { bubbles: true }));
+
+				// TODO: check this - triggers partial feedback loop as radios are also listening for select change.
+				// selectElement.dispatchEvent(new Event('change', { bubbles: true }));
 
 				// Reset after dispatching the event
 				unitPrice = null;
