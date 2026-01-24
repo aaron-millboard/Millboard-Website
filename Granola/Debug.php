@@ -17,11 +17,7 @@ class Debug
             return;
         }
 
-        if (is_array($message) || is_object($message)) {
-            error_log(var_export($message, true));
-        } else {
-            error_log($message);
-        }
+        error_log(var_export($message, true));
 
         // Bail - no need to continue
         if (empty($echo)) {
