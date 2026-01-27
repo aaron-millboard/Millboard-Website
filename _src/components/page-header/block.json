@@ -14,6 +14,8 @@
         "postTypes": [
             "page",
             "advice-centre",
+            "distributor",
+            "installer",
             "granola-template"
         ]
     },
