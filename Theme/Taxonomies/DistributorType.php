@@ -1,14 +1,14 @@
 <?php
 
 /**
- * Registers the 'supplier-type' custom taxonomy and handles related functionality.
+ * Registers the Distributor Type custom taxonomy and handles related functionality.
  */
 
 namespace Theme\Taxonomies;
 
-class SupplierType
+class DistributorType
 {
-    protected const SLUG = 'supplier_type';
+    protected const SLUG = 'distributor_type';
 
     public static function init(): void
     {
@@ -29,7 +29,7 @@ class SupplierType
         \register_extended_taxonomy(
             self::SLUG,
             [
-                'supplier',
+                'distributor',
             ],
             [
                 // Core taxonomy configuration.
@@ -45,8 +45,8 @@ class SupplierType
             ],
             [
                 // Override the base names used for labels (optional).
-                'singular' => \__('Supplier Type', 'granola'),
-                'plural'   => \__('Supplier Types', 'granola'),
+                'singular' => \__('Distributor Type', 'granola'),
+                'plural'   => \__('Distributor Types', 'granola'),
                 'slug'     => self::SLUG,
             ]
         );

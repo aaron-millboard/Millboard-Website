@@ -66,15 +66,15 @@ if (file_exists($autoloader = __DIR__ . '/vendor/autoload.php')) {
 \Theme\PostTypes\Page::init();
 \Theme\PostTypes\Post::init();
 \Theme\PostTypes\Product::init();
-\Theme\PostTypes\Supplier::init();
+\Theme\PostTypes\Distributor::init();
 
 // ----------------------------------------------------
 // Custom Taxonomies.
 // ----------------------------------------------------
 \Theme\Taxonomies\Category::init();
 \Theme\Taxonomies\ImageCategory::init();
+\Theme\Taxonomies\DistributorType::init();
 \Theme\Taxonomies\InstallerType::init();
-\Theme\Taxonomies\SupplierType::init();
 
 // ----------------------------------------------------
 // Custom Plugin functionality.

@@ -1,6 +1,6 @@
 {
     "key": "group_6961405e46af3",
-    "title": "Post Type - Supplier",
+    "title": "Distributor Details",
     "fields": [
         {
             "key": "field_6961405e576f1",
@@ -84,7 +84,7 @@
             {
                 "param": "post_type",
                 "operator": "==",
-                "value": "supplier"
+                "value": "distributor"
             }
         ]
     ],
@@ -99,5 +99,5 @@
     "show_in_rest": 0,
     "display_title": "",
     "granola_save_location": 0,
-    "modified": 1767981329
+    "modified": 1769529889
 }

@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Registers the 'installer-type' custom taxonomy and handles related functionality.
+ * Registers the Installer Type custom taxonomy and handles related functionality.
  */
 
 namespace Theme\Taxonomies;

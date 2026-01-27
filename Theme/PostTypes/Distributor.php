@@ -1,14 +1,14 @@
 <?php
 
 /**
- * Registers 'Supplier' CPT & handles related functionality.
+ * Registers 'Distributor' CPT & handles related functionality.
  */
 
 namespace Theme\PostTypes;
 
-class Supplier
+class Distributor
 {
-    protected const SLUG = 'supplier';
+    protected const SLUG = 'distributor';
 
     public static function init(): void
     {
@@ -36,9 +36,9 @@ class Supplier
             'show_in_rest' => true,
             'menu_position' => 25, // Below comments.
             'menu_icon' => 'dashicons-location',
-            'enter_title_here' => 'Supplier Name',
+            'enter_title_here' => 'Distributor Name',
             'rewrite' => [
-                'slug' => 'suppliers',
+                'slug' => 'distributors',
             ],
             'supports' => [
                 'title',
@@ -47,7 +47,7 @@ class Supplier
                 'custom-fields',
             ],
             'taxonomies' => [
-                'supplier_type',
+                'distributor_type',
             ],
             'template' => [
                 [
@@ -62,7 +62,7 @@ class Supplier
             'admin_filters' => [],
             'admin_cols' => [
                 'title' => [
-                    'title' => 'Supplier Name',
+                    'title' => 'Distributor Name',
                 ],
                 'updated' => [
                     'title'      => 'Updated',
@@ -72,8 +72,8 @@ class Supplier
             ],
         ], [
             // Override the base names used for labels (optional).
-            'singular' => \__('Supplier', 'granola'),
-            'plural'   => \__('Suppliers', 'granola'),
+            'singular' => \__('Distributor', 'granola'),
+            'plural'   => \__('Distributors', 'granola'),
             'slug'     => self::SLUG,
         ]);
     }
@@ -88,9 +88,9 @@ class Supplier
         }
 
         \acf_add_options_sub_page([
-            'page_title'  => \__('Suppliers Settings', 'granola'),
-            'menu_title'  => \__('Suppliers Settings', 'granola'),
-            'menu_slug'   => 'acf-options-suppliers-settings',
+            'page_title'  => \__('Distributors Settings', 'granola'),
+            'menu_title'  => \__('Distributors Settings', 'granola'),
+            'menu_slug'   => 'acf-options-distributors-settings',
             'parent_slug' => 'edit.php?post_type=' . self::SLUG,
         ]);
     }
