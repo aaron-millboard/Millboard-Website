@@ -21,8 +21,10 @@ function filter_args(array $args): ?array
 
     if (!empty($args['object'])) {
         // Use the <article> wrapper on specific post type(s).
-        if ($args['object'] instanceof \WP_Post && \get_post_type($args['object']) === 'post') {
-            $args['inner_el'] = 'article';
+        if ($args['object'] instanceof \WP_Post) {
+            if (in_array(\get_post_type($args['object']), ['post', 'advice-centre'], true)) {
+                $args['inner_el'] = 'article';
+            }
         }
 
         // Display default header if one isn't added in the content.
@@ -38,6 +40,30 @@ function filter_args(array $args): ?array
             $args['header'] = \Granola\Component::get('page-header', [
                 'object' => $args['object'],
             ]);
+        }
+
+        if (\is_product()) {
+            $attributes = array_keys($args['object']->get_attributes());
+
+            foreach ($attributes as $attribute) {
+                $var = \get_query_var('attribute_' . $attribute);
+
+
+                if (!empty($var)) {
+                    $args['attributes']['data-' . $attribute] = $var;
+                }
+            }
+
+            // Alt. for board width:
+            $product = \Theme\PostTypes\Product::get_product_by_sku(\get_query_var('sku'));
+
+            if (!empty($product)) {
+                $board_width = $product->get_attribute('pa_board-width');
+
+                if (!empty($board_width)) {
+                    $args['attributes']['data-pa_board-width'] = $board_width;
+                }
+            }
         }
 
         if (empty($args['id']) && empty($args['attributes']['id'])) {

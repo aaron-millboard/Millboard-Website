@@ -1,5 +1,4 @@
 .product {
-
     $this: &;
 
     display: grid;
@@ -18,7 +17,6 @@
 
     &__gallery {
         .woocommerce-product-gallery {
-
             display: flex;
             flex-direction: column;
             gap: var(--space--m);
@@ -64,15 +62,12 @@
                         aspect-ratio: 2.5 / 1;
                         object-fit: cover;
                     }
-                    
                 }
             }
-
         }
     }
 
     &__content {
-
         padding-top: var(--space--xl);
         display: flex;
         flex-direction: column;
@@ -84,7 +79,6 @@
         }
 
         #{$this}__header {
-
             display: flex;
             flex-direction: column;
             gap: var(--space--3xs);
@@ -100,7 +94,6 @@
             }
 
             #{$this}__header-cta {
-
                 padding: var(--space--s) 0;
 
                 a {
@@ -118,9 +111,7 @@
                     }
                 }
             }
-
         }
-
     }
 
     form > .variations {
@@ -130,7 +121,6 @@
     }
 
     &__variations {
-
         display: flex;
         flex-direction: column;
         gap: var(--space--xs);
@@ -147,22 +137,18 @@
         }
 
         &__radio-group {
-
             > input {
                 display: none;
             }
-
         }
 
         &__radio-group--pa_colour {
-
             display: grid;
             grid-template-columns: 1fr 1fr;
             column-gap: var(--space--2xl);
             row-gap: var(--space--xs);
 
             label {
-
                 display: flex;
                 align-items: center;
                 gap: var(--space--3xs);
@@ -196,11 +182,9 @@
                     border: 2px solid var(--color--black);
                 }
             }
-
         }
 
-        &__radio-group--pa_width {
-
+        &__radio-group--pa_board-width {
             display: flex;
             flex-direction: row;
             column-gap: var(--space--xs);
@@ -212,8 +196,31 @@
                 padding: var(--space--2xs) var(--space--s);
                 border: 2px solid var(--color--brand-3);
                 display: flex;
+                flex-direction: column; // https://css-tricks.com/bold-on-hover-without-the-layout-shift/
                 align-items: center;
                 justify-content: center;
+
+                // https://css-tricks.com/bold-on-hover-without-the-layout-shift/
+                &::after {
+                    content: attr(data-text);
+                    content: attr(data-text) / ''; // speech output: alt text after the "/".
+                    height: 0;
+                    visibility: hidden;
+                    overflow: hidden;
+                    user-select: none;
+                    pointer-events: none;
+                    font-weight: 600;
+
+                    @media speech {
+                        display: none;
+                    }
+                }
+
+                @include interact {
+                    text-decoration: underline;
+                    font-weight: 600;
+                    background-color: var(--color--brand-1);
+                }
             }
 
             // checked state
@@ -222,7 +229,6 @@
                 font-weight: 600;
                 background-color: var(--color--brand-1);
             }
-
         }
     }
 
@@ -240,7 +246,6 @@
         }
 
         #{$this}__calculator-cta {
-
             display: flex;
             flex-direction: row;
             height: fit-content;
@@ -257,7 +262,6 @@
             &-heading {
                 @include typestyle-h6;
                 margin-bottom: var(--space--4xs);
-                
             }
 
             &-description {
@@ -269,17 +273,14 @@
                 width: 2.5rem;
                 height: 2.5rem;
             }
-
         }
-
     }
 
     &__calculator {
-
         display: none;
         border: 1px solid var(--color--brand-5);
         margin-top: var(--space--m);
-        
+
         &__header {
             display: flex;
             justify-content: space-between;
@@ -329,15 +330,12 @@
                 justify-content: space-between;
                 gap: var(--space--m);
             }
-
         }
 
         &__section--inputs {
-
             #{$this}__calculator__section__content {
                 align-items: flex-end;
             }
-
         }
 
         &--label {
@@ -361,7 +359,6 @@
                 margin: 0;
                 padding: 0;
 
-
                 &::after,
                 &::before {
                     border-radius: 9999px;
@@ -381,7 +378,7 @@
             gap: var(--space--xs);
             cursor: pointer;
 
-            input[type="checkbox"] {
+            input[type='checkbox'] {
                 cursor: pointer;
             }
 
@@ -481,10 +478,9 @@
         }
 
         button {
-            @include button;    
+            @include button;
             @include button--interaction;
             @include button--solid;
         }
     }
-
 }

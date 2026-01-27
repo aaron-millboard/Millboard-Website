@@ -4,12 +4,12 @@ namespace Granola\Components\WC_SingleProduct;
 
 function filter_args(array $args): ?array
 {
-
     global $product;
 
     if (empty($product) || ! $product instanceof \WC_Product) {
         return [];
     }
+
 
     // -------------------------------------------------------------------------
     // Default arguments.
@@ -26,10 +26,10 @@ function filter_args(array $args): ?array
     // -------------------------------------------------------------------------
     // 1. Required classes and ID
     // -------------------------------------------------------------------------
-    $args['classes'] = array_merge(
-        $args['classes'],
-        wc_get_product_class('', $product)
-    );
+    $args['classes'] = array_merge([
+        'wp-block',
+    ], \wc_get_product_class('', $product));
+
     $args['id'] = "product-{$product->get_id()}";
 
     // -------------------------------------------------------------------------
@@ -37,7 +37,7 @@ function filter_args(array $args): ?array
     // -------------------------------------------------------------------------
 
     // Preheading - get name of first category
-    $categories = wp_get_post_terms($product->get_id(), 'product_cat');
+    $categories = \wp_get_post_terms($product->get_id(), 'product_cat');
     if (!is_wp_error($categories) && ! empty($categories)) {
         $args['preheading'] = $categories[0]->name;
     }
@@ -55,13 +55,12 @@ function filter_args(array $args): ?array
     // -------------------------------------------------------------------------
     // Return the filtered args.
     // -------------------------------------------------------------------------
-        return $args;
+    return $args;
 }
 
 // Add radio buttons for variations instead of dropdowns
 function render_radio_variations($html, $args)
 {
-
     if (!$args['options'] || !$args['product']) {
         return $html;
     }

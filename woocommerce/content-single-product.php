@@ -18,8 +18,6 @@
 
 defined('ABSPATH') || exit;
 
-global $product;
-
 if (post_password_required()) {
     echo get_the_password_form(); // WPCS: XSS ok.
     return;
@@ -32,5 +30,4 @@ if (post_password_required()) {
  */
 do_action('woocommerce_before_single_product');
 
-// Get Granola WC Single Product component
-echo \Granola\Component::get('wc-single-product');
+echo apply_filters('the_content', get_the_content());

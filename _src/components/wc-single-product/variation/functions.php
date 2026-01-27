@@ -21,12 +21,12 @@ function filter_args(array $args): ?array
     // Get terms
     // ---------------------------------------
     if (taxonomy_exists($args['attribute'])) {
-        $args['terms'] = wc_get_product_terms(
+        $args['terms'] = \wc_get_product_terms(
             $args['product']->get_id(),
             $args['attribute'],
-            array(
+            [
                 'fields' => 'all',
-            )
+            ]
         );
     }
 

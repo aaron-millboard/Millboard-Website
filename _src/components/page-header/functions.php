@@ -102,10 +102,8 @@ function filter_args(array $args): ?array
                     $object->data->display_name
                 );
             }
-        }
-
-        // WP Products
-        elseif ((class_exists('\WooCommerce')) && $object instanceof \WC_Product) {
+        } elseif ((class_exists('\WooCommerce')) && $object instanceof \WC_Product) {
+            // WP Products
             // Adjust background color for products
             $args['background_color'] = 'brand-2';
         }
@@ -131,13 +129,13 @@ function filter_args(array $args): ?array
             if ($object->post_type === 'post' || $object->post_type === 'case-study') {
                 $args['type'] = 'post';
 
-                $args['preheading'] = __('Featured article', 'granola');
+                $args['preheading'] = \__('Featured article', 'granola');
 
                 // Show CTA if this is not current post
-                if (!is_singular('post') || get_the_ID() !== $object->ID) {
+                if (\get_the_ID() !== $object->ID) {
                     $args['cta'] = [
-                        'title' => __('Read article', 'granola'),
-                        'url' => get_permalink($object),
+                        'title' => \__('Read article', 'granola'),
+                        'url' => \get_permalink($object),
                     ];
                 } else {
                     // If this is current post, no CTA
@@ -150,17 +148,17 @@ function filter_args(array $args): ?array
 
 
         // WC Checkout Order Received page
-        if ((class_exists('\WooCommerce')) && is_order_received_page()) {
+        if ((class_exists('\WooCommerce')) && \is_order_received_page()) {
             // Get WC order
             $order_id = absint(\get_query_var('order-received'));
-            $order = wc_get_order($order_id);
+            $order = \wc_get_order($order_id);
             $is_failed = $order ? $order->has_status('failed') : false;
             if ($is_failed) {
-                $args['heading'] = __('Sorry', 'granola');
-                $args['preheading'] = __('There was an issue with your order', 'granola');
+                $args['heading'] = \__('Sorry', 'granola');
+                $args['preheading'] = \__('There was an issue with your order', 'granola');
             } else {
-                $args['heading'] = __('Thank you', 'granola');
-                $args['preheading'] = __('Your order has been received', 'granola');
+                $args['heading'] = \__('Thank you', 'granola');
+                $args['preheading'] = \__('Your order has been received', 'granola');
             }
         }
     }

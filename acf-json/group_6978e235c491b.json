@@ -1,9 +1,9 @@
 {
-    "key": "group_6961405e46af3",
-    "title": "Distributor Details",
+    "key": "group_6978e235c491b",
+    "title": "Installer Details",
     "fields": [
         {
-            "key": "field_6961405e576f1",
+            "key": "field_6978e235c8c7a",
             "label": "Address",
             "name": "address",
             "aria-label": "",
@@ -22,7 +22,7 @@
             "zoom": ""
         },
         {
-            "key": "field_696140df576f2",
+            "key": "field_6978e235c8c82",
             "label": "Email",
             "name": "email",
             "aria-label": "",
@@ -41,7 +41,7 @@
             "append": ""
         },
         {
-            "key": "field_696140ed576f3",
+            "key": "field_6978e235c8c89",
             "label": "Phone",
             "name": "phone",
             "aria-label": "",
@@ -62,7 +62,7 @@
             "append": ""
         },
         {
-            "key": "field_696140ff576f4",
+            "key": "field_6978e235c8c90",
             "label": "Website",
             "name": "website",
             "aria-label": "",
@@ -84,7 +84,7 @@
             {
                 "param": "post_type",
                 "operator": "==",
-                "value": "distributor"
+                "value": "installer"
             }
         ]
     ],
@@ -99,5 +99,5 @@
     "show_in_rest": 0,
     "display_title": "",
     "granola_save_location": 0,
-    "modified": 1769529889
+    "modified": 1769529920
 }

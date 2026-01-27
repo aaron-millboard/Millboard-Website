@@ -1,19 +1,19 @@
 <?php
 
 /**
- * Registers 'Event' CPT & handles related functionality.
+ * Registers 'Advice Centre' CPT & handles related functionality.
  */
 
 namespace Theme\PostTypes;
 
-class Event
+class AdviceCentre
 {
-    protected const SLUG = 'event';
+    protected const SLUG = 'advice-centre';
 
     public static function init(): void
     {
         \add_action('init', [__CLASS__, 'register_post_type']);
-        \add_action('acf/init', [__CLASS__, 'add_settings_page']);
+        // \add_action('acf/init', [__CLASS__, 'add_settings_page']);
         \add_filter('granola/templates/post-types', [__CLASS__, 'filter_granola_templates_post_types']);
     }
 
@@ -31,12 +31,11 @@ class Event
         \register_extended_post_type(self::SLUG, [
             // Core post type configuration.
             'public' => true,
-            'has_archive' => true,
-            'hierarchical' => false,
+            'has_archive' => false,
+            'hierarchical' => true,
             'show_in_rest' => true,
             'menu_position' => 25, // Below comments.
-            'menu_icon' => 'dashicons-calendar',
-            'enter_title_here' => 'Event Name',
+            'menu_icon' => 'dashicons-format-status',
             'supports' => [
                 'title',
                 'editor',
@@ -46,24 +45,18 @@ class Event
                 'author',
                 'custom-fields',
             ],
-            'taxonomies' => [
-                'location',
-            ],
+            'taxonomies' => [],
             'template' => [
                 [
                     'core/paragraph',
                     [
                         'placeholder' => 'Add content...',
                     ]
-                ]
+                ],
             ],
 
             // Extended post type configuration.
-            'admin_filters' => [
-                'location' => [
-                    'taxonomy' => 'location',
-                ],
-            ],
+            'admin_filters' => [],
             'admin_cols' => [
                 'thumbnail' => [
                     'title'          => 'Thumbnail',
@@ -77,9 +70,6 @@ class Event
                 'author' => [
                     'title' => 'Author',
                 ],
-                'location' => [
-                    'taxonomy' => 'location',
-                ],
                 'updated' => [
                     'title'      => 'Updated',
                     'post_field' => 'post_modified',
@@ -88,8 +78,8 @@ class Event
             ],
         ], [
             // Override the base names used for labels (optional).
-            'singular' => \__('Event', 'granola'),
-            'plural'   => \__('Events', 'granola'),
+            'singular' => \__('Advice Article', 'granola'),
+            'plural'   => \__('Advice Articles', 'granola'),
             'slug'     => self::SLUG,
         ]);
     }
@@ -104,9 +94,9 @@ class Event
         }
 
         \acf_add_options_sub_page([
-            'page_title'  => \__('Events Settings', 'granola'),
-            'menu_title'  => \__('Events Settings', 'granola'),
-            'menu_slug'   => 'acf-options-events-settings',
+            'page_title'  => \__('Advice Articles Settings', 'granola'),
+            'menu_title'  => \__('Advice Articles Settings', 'granola'),
+            'menu_slug'   => 'acf-options-advice-articles-settings',
             'parent_slug' => 'edit.php?post_type=' . self::SLUG,
         ]);
     }

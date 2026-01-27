@@ -1,31 +1,28 @@
 {
     "$schema": "https://advancedcustomfields.com/schemas/json/main/block.json",
     "apiVersion": 2,
-    "name": "call-to-action",
-    "title": "Call to Action",
-    "description": "Call to action block with button",
+    "name": "acf/wc-single-product",
+    "title": "Product Details",
     "category": "granola-blocks",
-    "icon": "id",
+    "icon": "cart",
     "keywords": [ ],
     "acf": {
         "mode": "edit",
         "renderCallback": "\\Granola\\Component::acf_render_callback",
         "postTypes": [
-            "page",
-            "advice-centre",
-            "post",
-            "granola-template"
-        ]
+            "product"
+        ],
+        "align": "full"
     },
     "supports": {
-        "align": [
-            "wide",
-            "full"
-        ],
+        "align": false,
         "anchor": true,
         "color": {
-            "text": false
-        }
+            "text": false,
+            "background": false
+        },
+        "mode": false,
+        "multiple": false
     },
     "attributes": {
         "align": {

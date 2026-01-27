@@ -1,31 +1,25 @@
 {
     "$schema": "https://advancedcustomfields.com/schemas/json/main/block.json",
     "apiVersion": 2,
-    "name": "call-to-action",
-    "title": "Call to Action",
-    "description": "Call to action block with button",
+    "name": "acf/case-study-details",
+    "title": "Case Study Details",
     "category": "granola-blocks",
-    "icon": "id",
+    "icon": "list-view",
     "keywords": [ ],
     "acf": {
-        "mode": "edit",
+        "mode": "auto",
         "renderCallback": "\\Granola\\Component::acf_render_callback",
         "postTypes": [
-            "page",
-            "advice-centre",
-            "post",
-            "granola-template"
+            "case-study"
         ]
     },
     "supports": {
-        "align": [
-            "wide",
-            "full"
-        ],
         "anchor": true,
+        "align": false,
         "color": {
             "text": false
-        }
+        },
+        "mode": false
     },
     "attributes": {
         "align": {
