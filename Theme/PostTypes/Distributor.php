@@ -51,12 +51,22 @@ class Distributor
             ],
             'template' => [
                 [
+                    'acf/page-header',
+                    [
+                        'lock' => [
+                            'remove' => true,
+                            'move' => true,
+                        ]
+                    ]
+                ],
+                [
                     'core/paragraph',
                     [
                         'placeholder' => 'Add content...',
                     ]
                 ]
             ],
+
 
             // Extended post type configuration.
             'admin_filters' => [],
