@@ -62,6 +62,7 @@ if (file_exists($autoloader = __DIR__ . '/vendor/autoload.php')) {
 \Theme\PostTypes\AdviceCentre::init();
 \Theme\PostTypes\CaseStudy::init();
 \Theme\PostTypes\Image::init();
+\Theme\PostTypes\Installer::init();
 \Theme\PostTypes\Page::init();
 \Theme\PostTypes\Post::init();
 \Theme\PostTypes\Product::init();
