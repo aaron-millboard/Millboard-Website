@@ -46,7 +46,9 @@ class Supplier
                 'revisions',
                 'custom-fields',
             ],
-            'taxonomies' => [],
+            'taxonomies' => [
+                'supplier_type',
+            ],
             'template' => [
                 [
                     'core/paragraph',
@@ -60,7 +62,7 @@ class Supplier
             'admin_filters' => [],
             'admin_cols' => [
                 'title' => [
-                    'title' => 'Title',
+                    'title' => 'Supplier Name',
                 ],
                 'updated' => [
                     'title'      => 'Updated',

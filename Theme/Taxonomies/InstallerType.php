@@ -1,14 +1,14 @@
 <?php
 
 /**
- * Registers the 'image_category' custom taxonomy and handles related functionality.
+ * Registers the 'installer-type' custom taxonomy and handles related functionality.
  */
 
 namespace Theme\Taxonomies;
 
-class ImageCategory
+class InstallerType
 {
-    protected const SLUG = 'image_category';
+    protected const SLUG = 'installer_type';
 
     public static function init(): void
     {
@@ -29,24 +29,24 @@ class ImageCategory
         \register_extended_taxonomy(
             self::SLUG,
             [
-                'image',
+                'installer',
             ],
             [
                 // Core taxonomy configuration.
-                'hierarchical'      => true,
+                'hierarchical'      => false,
                 'show_admin_column' => true,
                 'show_in_rest'      => true,
 
                 // Extended taxonomy configuration.
                 'meta_box'         => 'simple',
                 'exclusive'        => true, // Only one can be selected.
-                'required'         => true,
+                'required'         => false,
                 'dashboard_glance' => true,
             ],
             [
                 // Override the base names used for labels (optional).
-                'singular' => \__('Image Category', 'granola'),
-                'plural'   => \__('Image Categories', 'granola'),
+                'singular' => \__('Installer Type', 'granola'),
+                'plural'   => \__('Installer Types', 'granola'),
                 'slug'     => self::SLUG,
             ]
         );

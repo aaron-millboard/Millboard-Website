@@ -46,7 +46,9 @@ class Installer
                 'revisions',
                 'custom-fields',
             ],
-            'taxonomies' => [],
+            'taxonomies' => [
+                'installer_type',
+            ],
             'template' => [
                 [
                     'core/paragraph',
@@ -60,7 +62,7 @@ class Installer
             'admin_filters' => [],
             'admin_cols' => [
                 'title' => [
-                    'title' => 'Title',
+                    'title' => 'Installer Name',
                 ],
                 'updated' => [
                     'title'      => 'Updated',

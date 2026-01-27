@@ -73,6 +73,8 @@ if (file_exists($autoloader = __DIR__ . '/vendor/autoload.php')) {
 // ----------------------------------------------------
 \Theme\Taxonomies\Category::init();
 \Theme\Taxonomies\ImageCategory::init();
+\Theme\Taxonomies\InstallerType::init();
+\Theme\Taxonomies\SupplierType::init();
 
 // ----------------------------------------------------
 // Custom Plugin functionality.
