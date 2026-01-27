@@ -33,7 +33,7 @@ class Supplier
             'show_ui' => true,
             'has_archive' => false,
             'hierarchical' => false,
-            'show_in_rest' => false,
+            'show_in_rest' => true,
             'menu_position' => 25, // Below comments.
             'menu_icon' => 'dashicons-location',
             'enter_title_here' => 'Supplier Name',
@@ -42,8 +42,7 @@ class Supplier
             ],
             'supports' => [
                 'title',
-                // 'editor',
-                // 'excerpt',
+                'editor',
                 'revisions',
                 'custom-fields',
             ],
