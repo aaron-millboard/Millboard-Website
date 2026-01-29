@@ -66,6 +66,8 @@ const allowedCoreBlocks = [
     // 'core/post-featured-image',
     // 'core/post-terms',
     // 'core/loginout',
+
+    'woocommerce/classic-shortcode',
 ];
 
 /**
@@ -83,7 +85,9 @@ wp.domReady(() => {
                 wp.blocks.unregisterBlockType(blockType.name);
             }
         } else if (blockType.name.indexOf('woocommerce/') === 0) {
-            wp.blocks.unregisterBlockType(blockType.name);
+            if (allowedCoreBlocks.indexOf(blockType.name) === -1) {
+                wp.blocks.unregisterBlockType(blockType.name);
+            }
         } else if (blockType.name.indexOf('yoast/') === 0) {
             wp.blocks.unregisterBlockType(blockType.name);
         } else if (blockType.name.indexOf('yoast-seo/') === 0) {
