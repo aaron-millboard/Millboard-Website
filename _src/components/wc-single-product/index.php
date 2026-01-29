@@ -1,8 +1,3 @@
-<?php
-    // We need to access the global product object
-    global $product;
-?>
-
 <div <?= \Granola\Helpers::build_attributes($args['attributes']); ?>>
     <div class="product__gallery">
         <?php echo \Granola\Component::get('wc-single-product/gallery'); ?>
