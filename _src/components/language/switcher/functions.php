@@ -74,7 +74,11 @@ function get_button_content(string $current_language, bool $is_expanded = false)
         'content' => '',
     ]);
 
-    $parts[] = $current_language;
+    $parts[] = \Granola\Component::get('element', [
+        'el' => 'span',
+        'classes' => ['language-switcher__button__label'],
+        'content' => $current_language,
+    ]);
 
     $parts[] = \Granola\Component::get('element', [
         'el' => 'span',
