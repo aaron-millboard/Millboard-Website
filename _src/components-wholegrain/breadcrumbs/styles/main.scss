@@ -24,6 +24,7 @@
 
     &__yoast-separator {
         padding-inline: 0.7ch;
+        color: var(--color--brand-4);
 
         &:nth-last-child(2) {
             display: none;
