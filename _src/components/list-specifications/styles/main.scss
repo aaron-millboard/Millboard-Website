@@ -49,7 +49,7 @@
     &__specification {
         display: flex;
         flex-direction: row;
-        gap: var(--space--3xs);
+        gap: var(--space--m);
         justify-content: space-between;
         padding: var(--space--s) 0;
         border-bottom: 1px solid var(--list-specifications--border-color);
@@ -57,11 +57,13 @@
 
     &__specification-name {
         @include typestyle-base;
+        flex-shrink: 0;
     }
 
     &__specification-value {
         @include typestyle-base;
         font-weight: 700;
+        text-align: end;
     }
 
     // Background color support
