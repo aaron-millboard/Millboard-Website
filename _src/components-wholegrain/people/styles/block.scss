@@ -31,4 +31,11 @@
             grid-template-columns: repeat(3, 1fr);
         }
     }
+
+    &__subheading {
+        // Font styles moved to typestyle-meta mixin.
+        // font-weight: var(--type--3--font-weight);
+        padding-bottom: var(--space--2xs);
+        // letter-spacing: calc(var(--type--font-size--base) * 0.1167); // 2.1/18px font-size = 0.1167.
+    }
 }

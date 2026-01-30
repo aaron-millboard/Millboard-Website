@@ -1,14 +1,14 @@
 .people {
     --input--border-radius: 0px;
 
-    .cards__items {
-        --grid--column-gap: var(--space--xs);
+    &__items {
+        @include grid(1, 2, 3);
 
-        @include grid(2);
+        gap: var(--space--xs);
 
         > * {
             width: 100%;
-            border: 3px dashed var(--color--sand);
+            border: 1px dashed var(--color--foreground);
             margin: 0 !important;
         }
     }
