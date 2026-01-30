@@ -1,7 +1,7 @@
 @import './menu';
 
 // These are set as SCSS variables so they can be used in the color-context mixin
-$site-header--bottom--background: 'brand-2';
+$site-header--bottom--background: 'brand-1';
 $site-header--top--background: 'white';
 
 :root {
@@ -19,7 +19,7 @@ $site-header--top--background: 'white';
 }
 
 .site-header {
-    --site-header--height: #{px-to-rem(140)};
+    --site-header--height: 6.5rem;
     --site-header--logo-width: #{px-to-rem(120)};
 
     --site-header--spacing: var(--space--m);
@@ -48,10 +48,26 @@ $site-header--top--background: 'white';
     }
 
     @include mq($until: 'site-header') {
+
+        max-width: 100%;
+        background-color: var(--color--brand-2);
+
+        #{$this}__inner {
+            max-width: 100%;
+        }
+        
         &.is-open {
-            position: fixed;
-            height: calc(100% - var(--wp--admin-bar-height));
+            height: var(--site-header--height);
             transition: height var(--site-header--menu--duration) 0s;
+            background-color: #ffffff;
+
+            #{$this}__inner {
+                height: max-content;
+
+                &__navigation {
+                    background-color: var(--color--brand-1);
+                }
+            }
         }
     }
 
@@ -80,7 +96,7 @@ $site-header--top--background: 'white';
         }
 
         .menu-list {
-            margin-top: var(--space--l);
+            margin-top: 0;
             padding-right: var(--space--container-padding);
             padding-left: var(--space--container-padding);
             display: flex;
@@ -104,7 +120,7 @@ $site-header--top--background: 'white';
         }
 
         .menu-item--depth-0 > .menu-item__wrap > a {
-            font-weight: 100;
+            font-weight: 400;
             font-family: var(--type--1--font-family);
         }
 
@@ -133,12 +149,13 @@ $site-header--top--background: 'white';
         align-items: center;
         padding-right: var(--space--container-padding);
         padding-left: var(--space--container-padding);
-        background-color: var(--color--#{$site-header--top--background});
         gap: var(--site-header--spacing);
         justify-content: center;
+        margin-top: var(--space--2xs);
 
         @include mq('site-header') {
             width: 100%;
+            margin-top: 0;
             padding-right: 0;
             padding-left: 0;
             background-color: transparent;
@@ -171,6 +188,14 @@ $site-header--top--background: 'white';
                 transition: all var(--site-header--menu--duration) var(--site-header--menu--ease)
                     var(--site-header--menu--duration);
                 visibility: visible;
+                margin-top: 0;
+                position: absolute;
+                top: var(--site-header--height);
+                left: 0;
+
+                #{$this}__navigation {
+                    background-color: var(--color--#{$site-header--bottom--background});
+                }
             }
 
             > * {
@@ -179,7 +204,7 @@ $site-header--top--background: 'white';
             }
 
             > *:first-child {
-                margin-top: var(--site-header--spacing);
+                padding-top: var(--site-header--spacing);
             }
 
             > *:last-child {
@@ -207,7 +232,7 @@ $site-header--top--background: 'white';
         --burger--border-color: transparent;
 
         --burger--color--hover: var(--color--black);
-        --burger--background-color--hover: transparent;
+        --burger--background-color--hover: var(--color--brand-1);
         --burger--border-color--hover: transparent;
 
         --burger--size: var(--site-header--button-size);

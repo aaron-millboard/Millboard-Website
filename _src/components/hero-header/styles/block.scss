@@ -168,6 +168,7 @@
     }
 
     &__cta {
+        position: relative;
         display: grid;
         gap: var(--space--2xs);
     }
