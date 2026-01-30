@@ -1,0 +1,71 @@
+.product-variation-selector {
+    $this: &;
+
+    &__heading {
+        @include typestyle-h3;
+    }
+
+    &__variations {
+        display: flex;
+        flex-flow: row wrap;
+        gap: var(--space--2xs);
+
+        #{$this}--colour & {
+            display: grid;
+
+            @include mq(small) {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    }
+
+    &__link {
+        flex: 0 1 auto;
+
+        &--board_width {
+            display: flex;
+            background-color: transparent;
+            padding: var(--space--2xs) var(--space--s);
+            border: 2px solid var(--color--brand-3);
+            margin: 0;
+            flex-direction: column; // https://css-tricks.com/bold-on-hover-without-the-layout-shift/
+            align-items: center;
+            justify-content: center;
+
+            // https://css-tricks.com/bold-on-hover-without-the-layout-shift/
+            &::after {
+                content: attr(data-text);
+                content: attr(data-text) / ''; // speech output: alt text after the "/".
+                height: 0;
+                visibility: hidden;
+                overflow: hidden;
+                user-select: none;
+                pointer-events: none;
+                font-weight: 600;
+
+                @media speech {
+                    display: none;
+                }
+            }
+
+            @include interact {
+                text-decoration: underline;
+                font-weight: var(--type--3--font-weight);
+                background-color: var(--color--brand-1);
+            }
+
+            &#{$this}__link--current {
+                background-color: var(--color--brand-1);
+            }
+        }
+
+        &--colour {
+            @include link--2;
+        }
+
+        &--current {
+            font-weight: var(--type--3--font-weight);
+            text-decoration: underline;
+        }
+    }
+}

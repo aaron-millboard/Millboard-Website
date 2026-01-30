@@ -1,0 +1,79 @@
+<?php
+
+namespace Granola\Components\ProductVariationSelector;
+
+function filter_args(array $args): ?array
+{
+    // -------------------------------------------------------------------------
+    // Default arguments.
+    // -------------------------------------------------------------------------
+    $args = array_merge([
+        'classes' => [],
+        'heading' => null,
+        'variation' => null,
+        'variants' => [],
+    ], $args);
+
+    // -------------------------------------------------------------------------
+    // Required classes.
+    // -------------------------------------------------------------------------
+    $args['classes'] = array_merge([
+        'product-variation-selector',
+    ], $args['classes']);
+
+    // ---------------------------------------
+    // Bail early - return null for no output.
+    // ---------------------------------------
+    if (empty($args['variation'])) {
+        return null;
+    }
+
+    $product = \wc_get_product(\get_the_ID());
+    if (empty($product)) {
+        return null;
+    }
+
+    \Granola\Debug::dump($args);
+
+    $variation = $args['variation'];
+    $variants = \get_field($variation . '_variations', \get_the_ID());
+
+    if (empty($variants)) {
+        return null;
+    }
+
+    foreach ($variants as $variant) {
+        $is_current = $variant['product']->ID === \get_the_ID();
+
+        $args['variants'][] = [
+            'content' => $variant[$variation]->name,
+            'url' => $is_current ? '' : \get_permalink($variant['product']->ID),
+            'classes' => [
+                'product-variation-selector__link',
+                'product-variation-selector__link--' . $variation,
+                $is_current ? 'product-variation-selector__link--current' : null,
+            ],
+            'attributes' => [
+                'data-text' => $variant[$variation]->name,
+            ],
+        ];
+    }
+
+
+    if (!empty($args['heading'])) {
+        $args['heading'] = [
+            'content' => $args['heading'],
+            'classes' => [
+                'product-variation-selector__heading',
+                'is-style-typestyle-h6',
+            ],
+        ];
+    }
+
+    $args['classes'][] = 'product-variation-selector--' . $args['variation'];
+
+    // -------------------------------------------------------------------------
+    // Return the filtered args.
+    // -------------------------------------------------------------------------
+    return $args;
+}
