@@ -101,6 +101,8 @@ function filter_args(array $args): ?array
         $pattern = $image_row['pattern'] ?? '50:50';
         $pattern_parts = explode(':', $pattern);
 
+        \Granola\Debug::dump($image_row);
+
         // Process the first image.
         $image_1 = process_image($image_row['image_1'], $image_index, $args, $pattern_parts[0] ?? 100, false);
         $image_index += 1;
@@ -154,8 +156,18 @@ function filter_args(array $args): ?array
  */
 function process_image(array $row, int $key, array $args, int $pattern_part, bool $is_last = false): array|false
 {
-    if (empty($row['image'])) {
+    if (empty($row['image']) && empty($row['gallery_image'])) {
         return false;
+    }
+
+    if (!empty($row['gallery_image'])) {
+        $gallery_post_id = $row['gallery_image'];
+        $image_id = get_post_thumbnail_id($gallery_post_id);
+        $row['image'] = $image_id;
+
+        if (empty($row['caption_main'])) {
+            $row['caption_main'] = get_the_title($gallery_post_id);
+        }
     }
 
     // Collect images and alt.
