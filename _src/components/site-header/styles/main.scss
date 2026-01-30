@@ -55,7 +55,7 @@ $site-header--top--background: 'white';
         #{$this}__inner {
             max-width: 100%;
         }
-        
+
         &.is-open {
             height: var(--site-header--height);
             transition: height var(--site-header--menu--duration) 0s;
@@ -96,6 +96,12 @@ $site-header--top--background: 'white';
 
         @include mq('site-header') {
             width: 100%;
+        }
+
+        .site-header__navigation--top {
+            @include mq('site-header') {
+                width: max-content;
+            }
         }
 
         .menu-list {
