@@ -75,6 +75,9 @@ $site-header--top--background: 'white';
     }
 
     &__top-navigation {
+        display: flex;
+        gap: var(--space--s);
+
         @include mq('site-header') {
             width: 100%;
         }

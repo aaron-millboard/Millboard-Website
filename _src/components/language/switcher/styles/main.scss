@@ -1,0 +1,149 @@
+@use 'sass:math';
+
+.language-switcher {
+    --language-switcher--translate-y: #{px-to-rem(-5)};
+    --language-switcher--width: #{px-to-rem(105)};
+    --language-switcher--menu-offset: 0px;
+    --mask-icon--size: #{px-to-rem(24)};
+
+    $this: &;
+
+    @include typestyle-h6;
+
+    position: relative;
+    align-self: center;
+    font-weight: 100;
+
+
+    // @include mq($until: 'site-header') {
+    //     order: 3;
+    //     transform: translateY(calc((var(--space--l) - var(--space--3xs)) * -1));
+    // }
+
+    // ---------------------------------------------------------------------
+    // Expandable element styles.
+    // ---------------------------------------------------------------------
+    &__items {
+        @include list-reset-hard;
+
+        display: flex;
+        width: var(--language-switcher--width);
+        flex-flow: column;
+        padding: var(--space--3xs);
+        background: var(--color--white);
+        gap: var(--space--3xs);
+        transition: transition(opacity, transform, visibility);
+
+        @include mq('site-header') {
+            position: absolute;
+            top: calc(100% + var(--language-switcher--menu-offset));
+            border: var(--border--1);
+        }
+
+        // Fills in the gap between the menu item and the
+        // dropdown so that the mouse doesn't lose hover
+        // going between them.
+        @include mq('site-header') {
+
+            &::after {
+                position: absolute;
+                top: calc(var(--language-switcher--menu-offset) * -1);
+                left: 0;
+                width: 100%;
+                height: var(--language-switcher--menu-offset);
+                content: '';
+                opacity: 0;
+            }
+        }
+
+        &[hidden] {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(var(--language-switcher--translate-y));
+            visibility: hidden;
+
+        }
+
+        &:not([hidden]) {
+            --language-switcher--translate-y: 0px;
+
+            z-index: var(--z-index--modal);
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+            visibility: visible;
+        }
+
+        .menu {
+            &-list {
+                flex-flow: column;
+                gap: var(--space--4xs);
+            }
+
+            // Get items to fill the width of the menu.
+            &-item {
+                padding: 0;
+
+                a {
+                    display: block;
+                    text-align: center
+                }
+
+                &__wrap {
+                    display: block;
+                }
+            }
+
+        }
+    }
+
+    // ---------------------------------------------------------------------
+    // Button styles.
+    // ---------------------------------------------------------------------
+    &__button {
+
+        @include button-reset-hard;
+
+        display: flex;
+        align-items: center;
+        gap: var(--space--3xs);
+        text-transform: uppercase;
+
+        &__icon {
+            @include mask-icon('after');
+
+            display: inline-block;
+            width: var(--mask-icon--size);
+            height: var(--mask-icon--size);
+            pointer-events: none; // So doesn't block click events on the button.
+
+            &::after {
+                display: block;
+                mask-image: var(--mask-icon--image);
+                transform: rotate(90deg);
+
+            }
+
+            &--globe {
+                --mask-icon--image: url(#{asset-path('images/icons/globe.svg')});
+            }
+
+            &--chevron {
+                --mask-icon--image: url(#{asset-path('images/icons/chevron-right.svg')});
+
+
+                &::after {
+                    transform: rotate(90deg);
+                }
+
+                [aria-expanded='true'] & {
+                    &::after {
+                        transform: rotate(-90deg);
+                    }
+                }
+            }
+
+
+        }
+    }
+}
