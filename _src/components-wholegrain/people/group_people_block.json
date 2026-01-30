@@ -22,7 +22,7 @@
         },
         {
             "key": "field_5fawaef9fcf16d",
-            "label": "Subheading",
+            "label": "Meta Heading",
             "name": "subheading",
             "aria-label": "",
             "type": "text",
@@ -70,7 +70,7 @@
                 "id": ""
             },
             "default_value": "",
-            "tabs": "all",
+            "tabs": "visual",
             "toolbar": "basic_formatting",
             "media_upload": 0,
             "delay": 0

@@ -13,7 +13,7 @@
                 <?php } ?>
 
                 <?php if (!empty($args['paragraph'])) { ?>
-                    <div class="people__paragraph">
+                    <div class="people__paragraph is-style-typestyle-xlarge">
                         <?= wp_kses_post($args['paragraph']); ?>
                     </div>
                 <?php } ?>
