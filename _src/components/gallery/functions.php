@@ -101,8 +101,6 @@ function filter_args(array $args): ?array
         $pattern = $image_row['pattern'] ?? '50:50';
         $pattern_parts = explode(':', $pattern);
 
-        \Granola\Debug::dump($image_row);
-
         // Process the first image.
         $image_1 = process_image($image_row['image_1'], $image_index, $args, $pattern_parts[0] ?? 100, false);
         $image_index += 1;
