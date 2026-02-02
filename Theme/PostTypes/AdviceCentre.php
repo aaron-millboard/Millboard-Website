@@ -31,7 +31,7 @@ class AdviceCentre
         \register_extended_post_type(self::SLUG, [
             // Core post type configuration.
             'public' => true,
-            'has_archive' => false,
+            'has_archive' => true,
             'hierarchical' => true,
             'show_in_rest' => true,
             'menu_position' => 25, // Below comments.
