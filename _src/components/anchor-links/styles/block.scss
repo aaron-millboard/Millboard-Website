@@ -3,6 +3,7 @@
 .anchor-links {
     --transition--duration: 500ms;
     --anchor-links--max-width: #{px-to-rem(375)};
+    --anchor-links--max-width: calc((100% - 765px) / 2 - 2rem);
 
     $this: &;
 
@@ -17,6 +18,7 @@
         z-index: var(--z-index--backdrop);
         top: calc(-1px + var(--wp--admin-bar-height) + var(--space--xs)); // Allow for wp-admin bar.
         pointer-events: none;
+        height: 0;
     }
 
     // Hide the element.

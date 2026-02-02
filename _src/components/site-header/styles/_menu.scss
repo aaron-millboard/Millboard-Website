@@ -112,6 +112,7 @@
             }
 
             > .menu-item__wrap {
+                z-index: 10;
                 > a {
                     @include typestyle-h6;
                     font-size: 1rem;
@@ -119,7 +120,7 @@
                 }
             }
 
-            &:hover::after {
+            &:hover::before {
                 content: '';
                 position: absolute;
                 bottom: 0;
@@ -127,6 +128,7 @@
                 width: 100%;
                 height: 2rem;
                 background-color: transparent;
+                z-index: 0;
             }
         }
 
