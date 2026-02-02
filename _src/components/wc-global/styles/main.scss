@@ -72,6 +72,13 @@
     }
 
     // Style WooCommerce notices
+    .woocommerce-notices-wrapper {
+        max-width: var(--block--max-width);
+        margin-left: auto;
+        margin-right: auto;
+        position: relative;
+    }
+    
     .woocommerce-notices-wrapper > div,
     .woocommerce-NoticeGroup li {
         margin-bottom: var(--space--l);
