@@ -25,6 +25,9 @@ function filter_args(array $args): ?array
             if (in_array(\get_post_type($args['object']), ['post', 'advice-centre'], true)) {
                 $args['inner_el'] = 'article';
             }
+
+            // Add post type class
+            $args['classes'][] = 'site-main--' . \get_post_type($args['object']);
         }
 
         // Display default header if one isn't added in the content.
