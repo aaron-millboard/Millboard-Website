@@ -27,8 +27,7 @@
         color: var(--color--brand-4);
 
         &:nth-last-child(2) {
-            display: none;
-
+            
             .search-results & {
                 display: inline;
             }
@@ -36,7 +35,6 @@
     }
 
     .breadcrumb_last {
-        display: none;
         font-weight: var(--type--2--font-weight);
         text-decoration: underline;
 
