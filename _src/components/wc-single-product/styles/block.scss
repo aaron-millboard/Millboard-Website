@@ -184,7 +184,7 @@
             }
         }
 
-        &__radio-group--pa_board-width {
+        &__radio-group:not(.product__variations__radio-group--pa_colour) {
             display: flex;
             flex-direction: row;
             column-gap: var(--space--xs);
