@@ -14,7 +14,9 @@
             "page",
             "advice-centre",
             "post",
-            "granola-template"
+            "granola-template",
+            "distributor",
+            "installer"
         ]
     },
     "supports": {
