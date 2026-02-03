@@ -1,7 +1,7 @@
 {
     "$schema": "https://advancedcustomfields.com/schemas/json/main/block.json",
     "apiVersion": 2,
-    "name": "cookies-preferences",
+    "name": "acf/cookies-preferences",
     "title": "Cookies Preferences",
     "category": "granola-blocks",
     "icon": "privacy",
