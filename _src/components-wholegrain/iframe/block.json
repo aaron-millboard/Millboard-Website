@@ -1,7 +1,7 @@
 {
     "$schema": "https://advancedcustomfields.com/schemas/json/main/block.json",
     "apiVersion": 2,
-    "name": "iframe",
+    "name": "acf/iframe",
     "title": "iFrame",
     "description": "Call to action block with button",
     "category": "granola-blocks",

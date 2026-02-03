@@ -1,12 +1,12 @@
 {
     "$schema": "https://advancedcustomfields.com/schemas/json/main/block.json",
     "apiVersion": 2,
-    "name": "media-content",
+    "name": "acf/media-content",
     "title": "Media & Content",
     "description": "Content with Image or Video",
     "category": "granola-blocks",
     "icon": "id",
-    "keywords": [],
+    "keywords": [ ],
     "acf": {
         "mode": "edit",
         "renderCallback": "\\Granola\\Component::acf_render_callback"

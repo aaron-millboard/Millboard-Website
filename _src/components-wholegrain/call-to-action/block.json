@@ -1,7 +1,7 @@
 {
     "$schema": "https://advancedcustomfields.com/schemas/json/main/block.json",
     "apiVersion": 2,
-    "name": "call-to-action",
+    "name": "acf/call-to-action",
     "title": "Call to Action",
     "description": "Call to action block with button",
     "category": "granola-blocks",
