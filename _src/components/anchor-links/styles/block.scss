@@ -2,8 +2,7 @@
 
 .anchor-links {
     --transition--duration: 500ms;
-    --anchor-links--max-width: #{px-to-rem(375)};
-    --anchor-links--max-width: calc((100% - 765px) / 2 - 2rem);
+    --anchor-links--max-width: calc(var(--block--right-space) - var(--space--l));
 
     $this: &;
 
@@ -16,9 +15,14 @@
     &__wrapper {
         position: sticky;
         z-index: var(--z-index--backdrop);
-        top: calc(-1px + var(--wp--admin-bar-height) + var(--space--xs)); // Allow for wp-admin bar.
+        top: var(--space--s);
+       
         pointer-events: none;
-        height: 0;
+
+        @include mq(large) {
+            height: 0;
+            top: calc(-1px + var(--wp--admin-bar-height) + var(--space--xs)); // Allow for wp-admin bar.
+        }
     }
 
     // Hide the element.
@@ -31,6 +35,7 @@
         padding: var(--space--3xs) var(--space--s);
         border: 0.5px solid var(--color--charcoal);
         gap: var(--sapce--3xs);
+        min-width: var(--anchor-links--min-width);
         max-width: var(--anchor-links--max-width);
 
         @include mq(medium) {
