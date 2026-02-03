@@ -1,13 +1,27 @@
 .wp-block-separator {
-    --block--spacing--top: var(--space--responsive--l);
-    --block--spacing--bottom: var(--space--responsive--l);
+    --block--margin--top: var(--space--l);
+    --block--margin--bottom: var(--space--l);
 
     $this: &;
 
     width: 100%;
+    max-width: var(--block--max-width);
     height: var(--hr--thickness, 2px);
     background-color: var(--hr--color);
     clear: both;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: var(--block--margin--top);
+    margin-bottom: var(--block--margin--bottom);
+    padding: 0;
+
+    &:not(:where(.alignfull, .alignwide, .alignnone)) {
+        @include mq(large) {
+            width: calc(var(--block--max-width) - var(--block--right-space));
+            margin-left: calc(50% - (var(--block--max-width) / 2));
+            margin-right: auto;
+        }
+    }
 
     .blocks > & {
         + * {
