@@ -24,3 +24,14 @@
         margin-top: 0.4em;
     }
 }
+
+:root body :where(a.wp-element-button, a.wp-block-button__link) {
+    @include button;
+    @include button--interaction;
+}
+
+:root body :where(.is-style-outline > a.wp-element-button, .is-style-outline > a.wp-block-button__link.is-style-outline) {
+    @include button;
+    @include button--secondary;
+    @include button--interaction;
+}
