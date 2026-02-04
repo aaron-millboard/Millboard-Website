@@ -71,11 +71,17 @@
         padding-top: var(--space--xl);
         display: flex;
         flex-direction: column;
-        gap: var(--space--s);
+        gap: var(--space--l);
 
         &-section {
-            padding-bottom: var(--space--m);
+            padding-bottom: var(--space--l);
             border-bottom: 1px solid var(--color--brand-1);
+        }
+
+        #{$this}__description {
+            @include no-first-last-margin;
+
+            margin-top: var(--space--2xs);
         }
 
         #{$this}__header {
@@ -86,6 +92,8 @@
 
             #{$this}__preheading {
                 @include typestyle-h6;
+
+                font-weight: var(--type--2--font-weight);
             }
 
             #{$this}__heading {
@@ -94,7 +102,7 @@
             }
 
             #{$this}__header-cta {
-                padding: var(--space--s) 0;
+                margin-top: var(--space--2xs);
 
                 a {
                     @include typestyle-small;

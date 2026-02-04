@@ -29,6 +29,16 @@ echo wc_get_stock_html($product); // WPCS: XSS ok.
 if ($product->is_in_stock()) : ?>
     <?php do_action('woocommerce_before_add_to_cart_form'); ?>
 
+    <?= \Granola\Component::get('product-variation-selector', [
+        'heading' => __('Select colour:', 'granola'),
+        'variation' => 'colour',
+    ]); ?>
+
+    <?= \Granola\Component::get('product-variation-selector', [
+        'heading' => __('Select board width:', 'granola'),
+        'variation' => 'board_width',
+    ]); ?>
+
     <form class="cart" action="<?php echo esc_url(apply_filters('woocommerce_add_to_cart_form_action', $product->get_permalink())); ?>" method="post" enctype='multipart/form-data'>
         <?php do_action('woocommerce_before_add_to_cart_button'); ?>
 
@@ -46,7 +56,9 @@ if ($product->is_in_stock()) : ?>
         do_action('woocommerce_after_add_to_cart_quantity');
         ?>
 
-        <button type="submit" name="add-to-cart" value="<?php echo esc_attr($product->get_id()); ?>" class="single_add_to_cart_button button alt<?php echo esc_attr(wc_wp_theme_get_element_class_name('button') ? ' ' . wc_wp_theme_get_element_class_name('button') : ''); ?>"><?php echo esc_html($product->single_add_to_cart_text()); ?></button>
+        <div class="product__add-to-cart-wrapper">
+            <button type="submit" name="add-to-cart" value="<?php echo esc_attr($product->get_id()); ?>" class="single_add_to_cart_button button alt<?php echo esc_attr(wc_wp_theme_get_element_class_name('button') ? ' ' . wc_wp_theme_get_element_class_name('button') : ''); ?>"><?php echo esc_html($product->single_add_to_cart_text()); ?></button>
+        </div>
 
         <?php do_action('woocommerce_after_add_to_cart_button'); ?>
     </form>
