@@ -2,8 +2,8 @@
 
 .call-to-action {
     // Padding.
-    padding-top: var(--space--2xl);
-    padding-bottom: var(--space--xl);
+    padding-top: px-to-rem(64);
+    padding-bottom: px-to-rem(64);
 
     &__inner {
         margin: auto;
@@ -19,10 +19,12 @@
     &__content {
         @include no-first-last-margin;
 
-        margin-top: var(--space--2xl);
+        margin-top: var(--space--xl);
+        line-height: 1.6;
 
         @include mq(large) {
             column-count: 2;
+            gap: var(--space--xl);
         }
     }
 
