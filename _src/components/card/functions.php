@@ -135,6 +135,7 @@ function handle_wp_object_args(array $args, object $object): array
                 foreach ($terms as $term) {
                     $args['labels'][] = [
                         'content' => $term->name,
+                        'url' => \get_term_link($term->term_id),
                     ];
                 }
             }
