@@ -8,6 +8,7 @@ if (!$checkout->is_registration_enabled() && $checkout->is_registration_required
     return;
 }
 
+// do_action('woocommerce_before_checkout_form', $checkout); // TODO: reactivate.
 ?>
 
 <form
@@ -20,13 +21,13 @@ if (!$checkout->is_registration_enabled() && $checkout->is_registration_required
 >
 
     <?php if ($checkout->get_checkout_fields()) : ?>
-        <div class="checkout__fields" id="customer_details">
+        <?php do_action('woocommerce_checkout_before_customer_details'); ?>
 
+        <div class="checkout__fields" id="customer_details">
             <div id="checkout__notices"></div>
 
             <!-- Contact Information Section -->
             <div class="checkout__section">
-
                 <div class="checkout__section-header">
                     <h2><?php esc_html_e('Contact information', 'granola'); ?></h2>
                     <div><?php esc_html_e("We'll use this email to send you details and updates about your order.", 'granola'); ?></div>
@@ -48,7 +49,6 @@ if (!$checkout->is_registration_enabled() && $checkout->is_registration_required
                                         <input class="woocommerce-form__input woocommerce-form__input-checkbox input-checkbox" id="createaccount" <?php checked(( true === $checkout->get_value('createaccount') || ( true === apply_filters('woocommerce_create_account_default_checked', false) ) ), true); ?> type="checkbox" name="createaccount" value="1" /> <span><?php esc_html_e('Create an account?', 'woocommerce'); ?></span>
                                     </label>
                                 </p>
-
                             <?php endif; ?>
 
                             <?php if ($checkout->get_checkout_fields('account')) : ?>
@@ -58,26 +58,20 @@ if (!$checkout->is_registration_enabled() && $checkout->is_registration_required
                                     <?php endforeach; ?>
                                     <div class="clear"></div>
                                 </div>
-
                             <?php endif; ?>
-
                         </div>
                     <?php endif; ?>
-
                 </div>
-
             </div>
 
             <!-- Billing Address Section -->
             <div class="checkout__section">
-
                 <div class="checkout__section-header">
                     <h2><?php esc_html_e('Billing address', 'granola'); ?></h2>
                     <div><?php esc_html_e("Enter the address where you want your order delivered.", 'granola'); ?></div>
                 </div>
 
                 <div class="checkout__section-fields">
-
                     <?php
                     $fields = $checkout->get_checkout_fields('billing');
                     foreach ($fields as $key => $field) {
@@ -95,21 +89,17 @@ if (!$checkout->is_registration_enabled() && $checkout->is_registration_required
                             </label>
                         </div>
                     <?php endif; ?>
-
                 </div>
-
             </div>
 
             <?php if (true === WC()->cart->needs_shipping_address()) : ?>
                 <div class="checkout__section shipping_address woocommerce-shipping-fields__field-wrapper">
-
                     <div class="checkout__section-header">
                         <h2><?php esc_html_e('Shipping address', 'granola'); ?></h2>
                         <div><?php esc_html_e("Enter the address where you want your order delivered.", 'granola'); ?></div>
                     </div>
 
                     <div class="checkout__section-fields">
-
                         <?php
                         $fields = $checkout->get_checkout_fields('shipping');
 
@@ -118,51 +108,50 @@ if (!$checkout->is_registration_enabled() && $checkout->is_registration_required
                         }
                         ?>
                     </div>
-
                 </div>
-
             <?php endif; ?>
 
             <?php if (WC()->cart->needs_shipping() && WC()->cart->show_shipping()) : ?>
                 <div class="checkout__section">
-
                     <div class="checkout__section-header">
                         <h2><?php esc_html_e('Shipping method', 'granola'); ?></h2>
                     </div>
 
                     <div class="checkout__section-shipping">
-
                         <?php if (WC()->cart->needs_shipping() && WC()->cart->show_shipping()) : ?>
                             <?php do_action('woocommerce_review_order_before_shipping'); ?>
 
                             <?php wc_cart_totals_shipping_html(); ?>
 
                             <?php do_action('woocommerce_review_order_after_shipping'); ?>
-
                         <?php endif; ?>
-        
                     </div>
-
                 </div>
             <?php endif; ?>
-
         </div>
+
+        <?php // do_action('woocommerce_checkout_after_customer_details'); ?>
     <?php endif; ?>
 
     <div class="checkout__summary">
-        
+        <?php do_action('woocommerce_checkout_before_order_review_heading'); ?>
+
         <div class="woocommerce__section-header" id="order_review_heading">
             <?php esc_html_e('Order summary', 'granola'); ?>
         </div>
 
-        <?php woocommerce_order_review(); ?>
+        <?php do_action('woocommerce_checkout_before_order_review'); ?>
 
+        <div id="order_review" class="woocommerce-checkout-review-order">
+            <?php woocommerce_order_review(); ?>
+        </div>
+
+        <?php do_action('woocommerce_checkout_after_order_review'); ?>
     </div>
 
     <div class="checkout__fields" id="payment_details">
-
         <?php woocommerce_checkout_payment(); ?>
-
     </div>
-
 </form>
+
+<?php do_action('woocommerce_after_checkout_form', $checkout); ?>
