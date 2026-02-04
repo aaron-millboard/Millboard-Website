@@ -34,7 +34,7 @@ function filter_args(array $args): ?array
     }
 
     $variation = $args['variation'];
-    $variants = \get_field($variation . '_variations', \get_the_ID());
+    $variants = $args['variations'];
 
     if (empty($variants)) {
         return null;

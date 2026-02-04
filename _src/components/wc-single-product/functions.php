@@ -21,6 +21,8 @@ function filter_args(array $args): ?array
         'heading' => '',
         'description' => '',
         'header_cta' => [],
+        'colour_variations' => [],
+        'board_width_variations' => [],
     ], $args);
 
     // -------------------------------------------------------------------------
