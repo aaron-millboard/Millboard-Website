@@ -20,8 +20,8 @@
             "pagination": 0,
             "min": 0,
             "max": 0,
-            "collapsed": "",
-            "button_label": "Add Row",
+            "collapsed": "field_697be09645f3e",
+            "button_label": "Add Variation",
             "rows_per_page": 20,
             "sub_fields": [
                 {
@@ -34,7 +34,7 @@
                     "required": 0,
                     "conditional_logic": 0,
                     "wrapper": {
-                        "width": "",
+                        "width": "50",
                         "class": "",
                         "id": ""
                     },
@@ -61,7 +61,7 @@
                     "required": 0,
                     "conditional_logic": 0,
                     "wrapper": {
-                        "width": "",
+                        "width": "50",
                         "class": "",
                         "id": ""
                     },
@@ -104,8 +104,8 @@
             "pagination": 0,
             "min": 0,
             "max": 0,
-            "collapsed": "",
-            "button_label": "Add Row",
+            "collapsed": "field_697be0c445f3f",
+            "button_label": "Add Variation",
             "rows_per_page": 20,
             "sub_fields": [
                 {
@@ -118,7 +118,7 @@
                     "required": 0,
                     "conditional_logic": 0,
                     "wrapper": {
-                        "width": "",
+                        "width": "50",
                         "class": "",
                         "id": ""
                     },
@@ -145,7 +145,7 @@
                     "required": 0,
                     "conditional_logic": 0,
                     "wrapper": {
-                        "width": "",
+                        "width": "50",
                         "class": "",
                         "id": ""
                     },
@@ -174,9 +174,9 @@
     "location": [
         [
             {
-                "param": "taxonomy",
+                "param": "block",
                 "operator": "==",
-                "value": "product_cat"
+                "value": "acf\/wc-single-product"
             }
         ]
     ],
@@ -191,5 +191,5 @@
     "show_in_rest": 0,
     "display_title": "",
     "granola_save_location": 0,
-    "modified": 1769772249
+    "modified": 1770218044
 }
