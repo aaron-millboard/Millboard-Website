@@ -17,9 +17,11 @@
 
     &__gallery {
         .woocommerce-product-gallery {
+            overflow: auto;
             display: flex;
             flex-direction: column;
             gap: var(--space--m);
+            aspect-ratio: 1 / 2;
 
             &__trigger {
                 display: none;
@@ -34,6 +36,11 @@
                     aspect-ratio: 1 / 1;
                     object-fit: cover;
                 }
+            }
+
+            // First gallery item.
+            .flex-viewport {
+                flex: 0 0 auto;
             }
 
             ol.flex-control-nav {
@@ -52,15 +59,10 @@
                         aspect-ratio: 1 / 1;
                         object-fit: cover;
                     }
-                }
 
-                // Target 3rd li
-                li:nth-child(3) {
-                    grid-column: span 2;
-
-                    img {
-                        aspect-ratio: 2.5 / 1;
-                        object-fit: cover;
+                    // Target every 3rd li.
+                    &:nth-child(3n) {
+                        grid-column: span 2;
                     }
                 }
             }
