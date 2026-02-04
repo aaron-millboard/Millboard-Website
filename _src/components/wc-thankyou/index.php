@@ -99,20 +99,15 @@ $order = $args['order'] ?? null;
                                             <?php echo $_product->get_title(); ?>
                                         </div>
 
-                                        <?php
-                                        // check if have pa_colour attribute and display it
-                                        $attributes = $_product->get_attributes();
-                                        if (isset($attributes['pa_colour'])) {
-                                            $term = get_term_by('slug', $attributes['pa_colour'], 'pa_colour');
-                                            if (!empty($term)) {
-                                                ?>
+                                        <?php $attributes = $_product->get_attributes(); ?>
+                                        <?php if (isset($attributes['pa_colour'])) { // display pa_colour attribute if it exists. ?>
+                                            <?php $term = get_term_by('id', $attributes['pa_colour']->get_options()[0], 'pa_colour'); ?>
+                                            <?php if (!empty($term)) { ?>
                                                 <div class="cart__item__details__colour">
                                                     <?php echo esc_html($term->name); ?>
                                                 </div>
-                                                <?php
-                                            }
-                                        }
-                                        ?>
+                                            <?php } ?>
+                                        <?php } ?>
                                     </div>
 
                                     <div class="cart__item__details__top--right">
