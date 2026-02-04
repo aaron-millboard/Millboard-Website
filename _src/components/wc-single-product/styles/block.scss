@@ -6,11 +6,11 @@
     column-gap: var(--space--xl);
 
     @include mq('large') {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     }
 
     @include mq('xlarge') {
-        grid-template-columns: 1.5fr 1fr;
+        grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
     }
 
     // Column 1. Gallery
