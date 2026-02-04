@@ -1,14 +1,13 @@
 .product-variation-selector {
     $this: &;
 
-    &__heading {
-        @include typestyle-h3;
-    }
+    padding-bottom: var(--space--l);
+    border-bottom: var(--border--1);
 
     &__variations {
         display: flex;
         flex-flow: row wrap;
-        gap: var(--space--2xs);
+        gap: var(--space--xs);
 
         #{$this}--colour & {
             display: grid;
@@ -37,6 +36,10 @@
         &--current {
             font-weight: var(--type--3--font-weight);
             text-decoration: underline;
+
+            > #{$this}__image {
+                outline-color: var(--color--black);
+            }
         }
 
         &--board_width {
@@ -75,7 +78,7 @@
         &--colour {
             @include link--2;
 
-            gap: var(--space--3xs);
+            gap: var(--space--2xs);
         }
     }
 
