@@ -33,8 +33,6 @@ function filter_args(array $args): ?array
         return null;
     }
 
-    \Granola\Debug::dump($args);
-
     $variation = $args['variation'];
     $variants = \get_field($variation . '_variations', \get_the_ID());
 
@@ -45,8 +43,16 @@ function filter_args(array $args): ?array
     foreach ($variants as $variant) {
         $is_current = $variant['product']->ID === \get_the_ID();
 
+        $image = \get_field('image', $variant[$variation]);
+
         $args['variants'][] = [
-            'content' => $variant[$variation]->name,
+            'content' => $variant[$variation]->name . \Granola\Component::get('image', [
+                'attachment_id' => $image['attachment_id'] ?? 0,
+                'size' => 'thumbnail',
+                'classes' => [
+                    'product-variation-selector__image',
+                ],
+            ]),
             'url' => $is_current ? '' : \get_permalink($variant['product']->ID),
             'classes' => [
                 'product-variation-selector__link',
