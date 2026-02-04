@@ -33,8 +33,10 @@ function filter_args(array $args): ?array
         $post_type = $args['post_type'];
     } elseif (is_archive()) {
         $post_type = get_queried_object()->name;
-        global $wp_query;
-        $post_type = get_post_type($wp_query->query_vars['post_type']);
+        if (!$post_type) {
+            global $wp_query;
+            $post_type = get_post_type($wp_query->query_vars['post_type']);
+        }
     } else {
         $post_type = get_post_type($args['object']);
     }
@@ -51,6 +53,7 @@ function filter_args(array $args): ?array
     // Set columns to 2 for case studies
     if ($post_type === 'case-study') {
         $args['items_component_args']['columns'] = 2;
+        $args['filter_label'] = __('Explore and filter all case studies', 'granola');
     }
 
     // Filterable items output component.
