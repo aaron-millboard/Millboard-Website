@@ -2,7 +2,7 @@
     $this: &;
 
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     column-gap: var(--space--xl);
 
     @include mq('large') {
@@ -38,7 +38,7 @@
 
             ol.flex-control-nav {
                 display: grid;
-                grid-template-columns: 1fr 1fr;
+                grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
                 gap: var(--space--m);
                 list-style: none;
                 padding: 0;
@@ -152,7 +152,7 @@
 
         &__radio-group--pa_colour {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
             column-gap: var(--space--2xl);
             row-gap: var(--space--xs);
 
@@ -246,11 +246,11 @@
 
     &__toggles {
         display: grid;
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
         gap: var(--space--l);
 
         @include mq('large') {
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
         }
 
         #{$this}__calculator-cta {
