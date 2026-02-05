@@ -83,6 +83,11 @@
             &-item {
                 padding: 0;
 
+                &--home,
+                &--custom-internal {
+                    text-decoration: underline;
+                }
+
                 a {
                     @include link--2;
 
