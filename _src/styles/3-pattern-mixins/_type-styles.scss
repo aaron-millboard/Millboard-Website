@@ -33,7 +33,10 @@
 @mixin heading-attributes {
     line-height: 1.36;
     font-weight: var(--type--1--font-weight);
-    letter-spacing: 0.14em; // 14%
+
+    &.is-style-typestyle-uppercase {
+        letter-spacing: 0.14em; // 14%
+    }
 
     // Make a tags that are children of headings inherit styling
     a {

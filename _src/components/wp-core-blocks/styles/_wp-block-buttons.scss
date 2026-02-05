@@ -1,7 +1,7 @@
 .wp-block-buttons {
     @include flex-list;
-    margin-top: var(--space--base);
-    margin-bottom: var(--space--base);
+    margin-top: var(--space--l);
+    margin-bottom: var(--space--l);
 
     column-gap: var(--space--m);
     row-gap: var(--space--s);
@@ -30,7 +30,9 @@
     @include button--interaction;
 }
 
-:root body :where(.is-style-outline > a.wp-element-button, .is-style-outline > a.wp-block-button__link.is-style-outline) {
+:root
+    body
+    :where(.is-style-outline > a.wp-element-button, .is-style-outline > a.wp-block-button__link.is-style-outline) {
     @include button;
     @include button--secondary;
     @include button--interaction;
