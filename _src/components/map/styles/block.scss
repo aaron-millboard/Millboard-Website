@@ -71,6 +71,10 @@
 
         &__meta {
             order: -1;
+            display: flex;
+            flex-flow: row wrap;
+            align-items: center;
+            gap: var(--space--3xs);
 
             &:not(:empty) {
                 margin-bottom: var(--space--s);
@@ -79,6 +83,12 @@
             .g-tag {
                 border-color: var(--color--brand-4);
             }
+        }
+
+        &__distance {
+            @include typestyle-small;
+
+            font-weight: var(--type--2--font-weight);
         }
 
         &__phone,

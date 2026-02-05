@@ -62,6 +62,8 @@ class Map {
     }
 
     init() {
+        this.LMAP_DISTANCE_CENTER = L.latLng(52.3, -1.4);
+
         this.filtergroupEls.forEach((el) => {
             const id = el.getAttribute('name').split('map-filtergroup-')[1];
             this.appliedFilterSlugsByFiltergroup[id] = [];
@@ -263,6 +265,7 @@ class Map {
             const rowData = Map.getDataFromRowElement(el);
 
             // Get data values.
+            const rowLatLng = L.latLng(rowData.lat, rowData.lng);
             const rowLat = parseFloat(rowData.lat);
             const rowLng = parseFloat(rowData.lng);
             const rowTitle = rowData.name;
@@ -286,6 +289,19 @@ class Map {
                     tableDataRowElement: el,
                 },
             });
+
+            const METERS_TO_MILES_RATIO = 0.000621371;
+            const distMeters = rowLatLng.distanceTo(this.LMAP_DISTANCE_CENTER);
+            const distMiles = Math.round(METERS_TO_MILES_RATIO * distMeters * 100) / 100; // 2 decimal points.
+
+            const rowMeta = el.querySelector('.map__listing__meta');
+
+            if (rowMeta) {
+                const distEl = document.createElement('span');
+                distEl.classList.add('map__listing__distance');
+                distEl.textContent = distMiles + ' miles'; // TODO: translate
+                rowMeta.appendChild(distEl);
+            }
 
             // Add the marker to the leaflet layer.
             // this.allMarkersSubGroup.addLayer(marker);
