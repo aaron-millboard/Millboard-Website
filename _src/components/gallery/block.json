@@ -1,7 +1,7 @@
 {
     "$schema": "https://advancedcustomfields.com/schemas/json/main/block.json",
     "apiVersion": 2,
-    "name": "gallery",
+    "name": "acf/gallery",
     "title": "Gallery",
     "category": "granola-blocks",
     "icon": "images-alt",

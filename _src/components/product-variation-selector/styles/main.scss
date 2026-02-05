@@ -1,0 +1,96 @@
+.product-variation-selector {
+    $this: &;
+
+    padding-bottom: var(--space--l);
+    border-bottom: var(--border--1);
+
+    &__variations {
+        display: flex;
+        flex-flow: row wrap;
+        gap: var(--space--xs);
+
+        #{$this}--colour & {
+            display: grid;
+            justify-items: start;
+
+            @include mq(small) {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    }
+
+    &__link {
+        flex: 0 1 auto;
+        display: flex;
+        align-items: center;
+
+        @include interact {
+            text-decoration: underline;
+            font-weight: var(--type--3--font-weight);
+
+            > #{$this}__image {
+                outline-color: var(--color--black);
+            }
+        }
+
+        &--current {
+            font-weight: var(--type--3--font-weight);
+            text-decoration: underline;
+
+            > #{$this}__image {
+                outline-color: var(--color--black);
+            }
+        }
+
+        &--board_width {
+            background-color: transparent;
+            padding: var(--space--2xs) var(--space--s);
+            border: 2px solid var(--color--brand-3);
+            margin: 0;
+            flex-direction: column; // https://css-tricks.com/bold-on-hover-without-the-layout-shift/
+            justify-content: center;
+
+            // https://css-tricks.com/bold-on-hover-without-the-layout-shift/
+            &::after {
+                content: attr(data-text);
+                content: attr(data-text) / ''; // speech output: alt text after the "/".
+                height: 0;
+                visibility: hidden;
+                overflow: hidden;
+                user-select: none;
+                pointer-events: none;
+                font-weight: 600;
+
+                @media speech {
+                    display: none;
+                }
+            }
+
+            @include interact {
+                background-color: var(--color--brand-1);
+            }
+
+            &#{$this}__link--current {
+                background-color: var(--color--brand-1);
+            }
+        }
+
+        &--colour {
+            @include link--2;
+
+            gap: var(--space--2xs);
+        }
+    }
+
+    &__image {
+        width: px-to-rem(32);
+        height: px-to-rem(32);
+        border-radius: 50%;
+        overflow: hidden;
+        object-fit: cover;
+        flex-shrink: 0;
+        order: -1;
+        outline: 1px solid transparent;
+        outline-offset: 2px;
+    }
+}

@@ -26,22 +26,6 @@
 
     &--secondary {
         @include button--secondary;
-
-        span {
-            &::after {
-                content: '';
-                width: 0px;
-                height: 1px;
-                display: block;
-                background: currentColor;
-                transition: 200ms;
-            }
-
-            &:hover::after {
-                width: 100%;
-            }
-        }
-
     }
 
     @include button--interaction;

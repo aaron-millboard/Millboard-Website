@@ -127,7 +127,7 @@
                             "name": "gallery_image",
                             "aria-label": "",
                             "type": "post_object",
-                            "instructions": "TODO: set this field to use gallery-image post type when created.",
+                            "instructions": "Select an image from the gallery posts.",
                             "required": 0,
                             "conditional_logic": [
                                 [
@@ -144,7 +144,7 @@
                                 "id": ""
                             },
                             "post_type": [
-                                "page"
+                                "image"
                             ],
                             "post_status": "",
                             "taxonomy": "",
@@ -337,7 +337,7 @@
                             "name": "gallery_image",
                             "aria-label": "",
                             "type": "post_object",
-                            "instructions": "TODO: set this field to use gallery-image post type when created.",
+                            "instructions": "Select an image from the gallery posts.",
                             "required": 0,
                             "conditional_logic": [
                                 [
@@ -354,7 +354,7 @@
                                 "id": ""
                             },
                             "post_type": [
-                                "page"
+                                "image"
                             ],
                             "post_status": "",
                             "taxonomy": "",

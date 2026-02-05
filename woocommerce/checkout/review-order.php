@@ -42,20 +42,35 @@ defined('ABSPATH') || exit;
                                 <div class="cart__item__details__name" data-title="<?php esc_attr_e('Product', 'woocommerce'); ?>">
                                     <?php echo $_product->get_title(); ?>
                                 </div>
+
                                 <?php
                                 // check if have pa_colour attribute and display it
                                 $attributes = $_product->get_attributes();
-                                if (isset($attributes['pa_colour'])) {
-                                    $term = get_term_by('slug', $attributes['pa_colour'], 'pa_colour');
-                                    if (!empty($term)) {
-                                        ?>
-                                        <div class="cart__item__details__colour">
-                                            <?php echo esc_html($term->name); ?>
-                                        </div>
-                                        <?php
+
+                                // Sort pa_color attribute to first place.
+                                usort($attributes, function ($attribute_1, $attribute_2) {
+                                    if ($attribute_1->get_name() === 'pa_colour') {
+                                        return -1;
                                     }
-                                }
-                                ?>
+
+                                    if ($attribute_2->get_name() === 'pa_colour') {
+                                        return 1;
+                                    }
+
+                                    return 0;
+                                });
+
+                                // Show other attributes
+                                foreach ($attributes as $key => $value) { ?>
+                                    <?php $term = get_term_by('id', $value->get_options()[0], $value->get_name()); ?>
+                                    <div class="cart__item__details__attribute cart__item__details__<?= esc_attr(str_replace('pa_', '', $value->get_name())); ?>">
+                                        <?= esc_html($term->name); ?>
+                                    </div>
+                                <?php } ?>
+
+                                <div class="product-price" data-title="<?php esc_attr_e('Price', 'woocommerce'); ?>">
+                                    <?php echo apply_filters('woocommerce_cart_item_price', WC()->cart->get_product_price($_product), $cart_item, $cart_item_key) . ' ' . esc_html__('per pack', 'granola'); ?>
+                                </div>
                             </div>
                             <div class="cart__item__details__top--right">
                                 <?php echo apply_filters('woocommerce_cart_item_subtotal', WC()->cart->get_product_subtotal($_product, $cart_item['quantity']), $cart_item, $cart_item_key); ?>
@@ -73,7 +88,7 @@ defined('ABSPATH') || exit;
                     </div>
 
                 </div>
-            
+
                 <?php
             }
         }

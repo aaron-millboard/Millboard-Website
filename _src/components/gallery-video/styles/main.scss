@@ -7,11 +7,9 @@
         margin-right: auto;
         position: relative;
         padding: var(--space--3xl) 0;
-        padding-bottom: var(--space--5xl);
 
         @include mq(large) {
             padding: var(--space--3xl) 0;
-            padding-bottom: var(--space--4xl);
         }
     }
 
@@ -69,11 +67,11 @@
         &::-webkit-scrollbar {
             height: 4px;
         }
-        
+
         &::-webkit-scrollbar-track {
             background-color: var(--color--foreground);
         }
-        
+
         &::-webkit-scrollbar-thumb {
             background: var(--color--brand-4);
             border-radius: 0px;
@@ -94,11 +92,11 @@
             flex-direction: column;
             padding-bottom: 0;
         }
-
     }
 
     &__thumbnail {
         @include button-reset-hard;
+
         flex-shrink: 0;
         width: #{px-to-rem(128)};
         aspect-ratio: 16 / 9;
@@ -137,25 +135,17 @@
     }
 
     &__player {
-        position: relative;
         width: 100%;
-
-        &::after {
-            content: '';
-            width: 100%;
-            aspect-ratio: 16 / 9;
-            display: block;
-        }
     }
 
     &__video {
-        position: absolute;
-        left: 0;
-        top: 0;
+        display: grid;
         width: 100%;
         visibility: hidden;
         opacity: 0;
-        transition: opacity 0.2s ease, visibility 0.2s ease;
+        transition:
+            opacity 0.2s ease,
+            visibility 0.2s ease;
 
         &--active {
             visibility: visible;
@@ -164,10 +154,11 @@
     }
 
     &__cover {
-        position: relative;
         aspect-ratio: 16 / 9;
         overflow: hidden;
         cursor: pointer;
+        grid-row: 1;
+        grid-column: 1;
 
         img {
             display: block;
@@ -179,6 +170,7 @@
 
     &__play-button {
         @include button-reset-hard;
+
         position: absolute;
         top: 50%;
         left: 50%;
@@ -204,14 +196,15 @@
     }
 
     &__iframe {
-        position: absolute;
-        top: 0;
-        left: 0;
         width: 100%;
         aspect-ratio: 16 / 9;
         opacity: 0;
         visibility: hidden;
-        transition: opacity 0.3s ease, visibility 0.3s ease;
+        transition:
+            opacity 0.3s ease,
+            visibility 0.3s ease;
+        grid-row: 1;
+        grid-column: 1;
 
         iframe {
             margin: 0;
@@ -266,17 +259,12 @@
         gap: 0;
 
         #{$this}__caption {
-            font-family: var(--type--2--font-family);
-            font-weight: var(--type--2--font-weight);
-            text-transform: uppercase;
-            opacity: 0.8;
-            letter-spacing: 0.1em;
+            letter-spacing: 1.5px;
         }
 
         #{$this}__subcaption {
-            text-transform: uppercase;
-            opacity: 0.8;
-            letter-spacing: 0.1em;
+            font-weight: var(--type--2--font-weight);
+            letter-spacing: 1.5px;
         }
     }
 

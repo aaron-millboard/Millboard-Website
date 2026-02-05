@@ -5,13 +5,13 @@
                 <?php if ($args['media_type'] === 'video' && !empty($args['video'])) { ?>
                     <?= \Granola\Component::get('video-item', $args['video']); ?>
                 <?php } else { ?>
-                    <?php if ($args['hover_effect']) { ?>
+                    <?php if ($args['hover_effect'] && !empty($args['hover_effect_top']) && !empty($args['hover_effect_bottom'])) { ?>
                         <div class="media-object__media--hover-effect">
                             <span class="media-object__media--hover-effect__top">
-                                <?= __('View', 'granola'); ?>
+                                <?= $args['hover_effect_top']; ?>
                             </span>
                             <span class="media-object__media--hover-effect__bottom">
-                                <?= __('Article', 'granola'); ?>
+                                <?= $args['hover_effect_bottom']; ?>
                             </span>
                         </div>
                     <?php } ?>
@@ -34,7 +34,7 @@
                 ]); ?>
             <?php } ?>
 
-            <?php if (!empty($args['heading']) || !empty($args['text'])) { ?>
+            <?php if (!empty($args['heading']) || !empty($args['text']) || !empty($args['subheading'])) { ?>
                 <div class="media-object__header flex-column">
                     <?php if (!empty($args['heading'])) { ?>
                         <?= \Granola\Component::get('heading', $args['heading']); ?>

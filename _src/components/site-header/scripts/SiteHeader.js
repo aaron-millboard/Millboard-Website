@@ -193,7 +193,8 @@ export default class SiteHeader {
         }
 
         this.el.classList.add('is-open');
-        document.documentElement.classList.add('no-scroll');
+        
+        // document.documentElement.classList.add('no-scroll');
 
         this.headerTogglerEls.forEach((toggle) => {
             toggle.setAttribute('aria-expanded', 'true');
@@ -207,9 +208,11 @@ export default class SiteHeader {
     }
 
     closeHeader(initial = false) {
+        
         // close the menu
         this.el.classList.remove('is-open');
-        document.documentElement.classList.remove('no-scroll');
+        
+        // document.documentElement.classList.remove('no-scroll');
 
         if (this.isBurgerModeActive()) {
             this.headerTogglerEls.forEach((toggle) => {

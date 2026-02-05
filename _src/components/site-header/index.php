@@ -9,6 +9,8 @@
                     'site-header__navigation site-header__navigation--top',
                 ],
             ]); ?>
+
+            <?= \Granola\Component::get('language/switcher'); ?>
         </div>
 
         <div class="site-header__top">

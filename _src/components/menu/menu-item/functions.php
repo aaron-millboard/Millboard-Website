@@ -168,6 +168,11 @@ function build_menu_item_classes(array $classes, object $item, array $args): arr
         $classes[] = 'current-menu-ancestor';
     }
 
+    // Ancestor Menu Item class.
+    if (!empty($item->is_internal_link)) {
+        $classes[] = 'menu-item--custom-internal';
+    }
+
     // TODO: .current-{object}-parent
     // TODO: .current-{type}-parent
 

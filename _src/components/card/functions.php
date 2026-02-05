@@ -23,6 +23,8 @@ function filter_args(array $args): ?array
         'media' => [],
         'orientation' => 'vertical',
         'hover_effect' => true,
+        'hover_effect_top' => __('View', 'granola'),
+        'hover_effect_bottom' => __('Article', 'granola'),
         // Display.
         'config' => [
             'show_read_more' => $args['show_read_more'] ?? false,
@@ -135,12 +137,16 @@ function handle_wp_object_args(array $args, object $object): array
                 foreach ($terms as $term) {
                     $args['labels'][] = [
                         'content' => $term->name,
+                        'url' => \get_term_link($term->term_id),
                     ];
                 }
             }
 
             // Image size for case studies
             $args['size'] = 'large';
+
+            // Override hover effect texts
+            $args['hover_effect_bottom'] = __('Case Study', 'granola');
         }
     } elseif ($object instanceof \WP_Term) {
         // -------------------------------------------------------------------------

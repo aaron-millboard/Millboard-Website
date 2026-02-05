@@ -52,6 +52,7 @@
 
 /* Class .woocommerce also set on <body> in WooCommerce pages so we target only blocks */
 .blocks > .woocommerce {
+
     --block--max-width: var(--width--responsive--l);
 
     max-width: var(--block--max-width);
@@ -59,7 +60,25 @@
     margin-right: auto;
     position: relative;
 
+    // Change container to full width on single product pages
+    &:has(.single-product) {
+        max-width: 100%;
+        .wp-block.product {
+            max-width: var(--block--max-width);
+            margin-left: auto;
+            margin-right: auto;
+            position: relative;
+        }
+    }
+
     // Style WooCommerce notices
+    .woocommerce-notices-wrapper {
+        max-width: var(--block--max-width);
+        margin-left: auto;
+        margin-right: auto;
+        position: relative;
+    }
+    
     .woocommerce-notices-wrapper > div,
     .woocommerce-NoticeGroup li {
         margin-bottom: var(--space--l);

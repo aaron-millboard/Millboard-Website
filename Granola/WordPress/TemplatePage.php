@@ -21,7 +21,7 @@ class TemplatePage
         // -------------------------------------------------------------------------
 
         // Register Template Page CPT to store on-page content for archives and "special" pages.
-        \add_action('init', [__CLASS__, 'register_post_type']);
+        \add_action('init', [__CLASS__, 'register_post_type'], 11);
 
         // Create a new Template Page post instance when requesting a valid "Add Template" URL.
         \add_action('admin_post_create_template_page', [__CLASS__, 'create_template_page']);
@@ -191,14 +191,14 @@ class TemplatePage
              *
              * Argument explanation:
              * capability_type: Use the 'post' post type capabilities for the `granola-template` post type by default.
-             * capabilities['create_posts']: Override `create_posts` "primitive capability" with custom capability name.
-             *                               This means no user roles will be able to create new granola-templates
-             *                               because this custom capability name should never be given to any roles.
+             * capabilities['create_posts']: Override `create_posts` "primitive capability" with 'do_not_allow' on
+             *                               multisites (as super-admin permissions override this setting) or false on
+             *                               single sites to prevent post creation except by custom buttons.
              * map_meta_cap: Required to enable overriding of `create_posts` "primitive capability".
              */
             'capability_type' => 'post',
             'capabilities' => [
-                'create_posts' => 'create_granola-template',
+                'create_posts' => \is_multisite() ? 'do_not_allow' : false,
             ],
             'map_meta_cap' => true, // Required.
         ], [

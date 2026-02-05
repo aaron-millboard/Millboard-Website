@@ -28,6 +28,10 @@ function filter_args(array $args): ?array
     if (!empty($args['buttons'])) {
         foreach ($args['buttons'] as $index => $button) {
             $args['buttons'][$index]['button']['classes'] = 'g-button';
+
+            if ($index > 0) {
+                $args['buttons'][$index]['button']['classes'] .= ' g-button--secondary';
+            }
         }
     }
 

@@ -45,6 +45,10 @@ function filter_args(array $args): ?array
     // Handle shared card args logic.
     $args = \Granola\Components\Cards\handle_shared_card_args_logic($args);
 
+    if (!empty($args['heading']['content'])) {
+        $args['heading']['classes'] = ['people__heading', 'is-style-typestyle-h3'];
+    }
+
     // ---------------------------------------
     // Set up the innerblocks tag.
     // ---------------------------------------
@@ -52,9 +56,9 @@ function filter_args(array $args): ?array
         'class' => 'people__items',
         'allowedBlocks' => ['acf/person-card'],
         'template' => [
-            ['acf/card'],
-            ['acf/card'],
-            ['acf/card'],
+            ['acf/person-card'],
+            ['acf/person-card'],
+            ['acf/person-card'],
         ],
         'templateLock' => false,
     ];

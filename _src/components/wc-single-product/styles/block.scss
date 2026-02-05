@@ -2,24 +2,32 @@
     $this: &;
 
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     column-gap: var(--space--xl);
 
     @include mq('large') {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     }
 
     @include mq('xlarge') {
-        grid-template-columns: 1.5fr 1fr;
+        grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
     }
 
     // Column 1. Gallery
 
     &__gallery {
         .woocommerce-product-gallery {
+            overflow: auto;
             display: flex;
             flex-direction: column;
             gap: var(--space--m);
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+            aspect-ratio: 1 / 2;
+
+            &::-webkit-scrollbar { 
+                display: none;
+            }
 
             &__trigger {
                 display: none;
@@ -36,9 +44,14 @@
                 }
             }
 
+            // First gallery item.
+            .flex-viewport {
+                flex: 0 0 auto;
+            }
+
             ol.flex-control-nav {
                 display: grid;
-                grid-template-columns: 1fr 1fr;
+                grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
                 gap: var(--space--m);
                 list-style: none;
                 padding: 0;
@@ -52,15 +65,10 @@
                         aspect-ratio: 1 / 1;
                         object-fit: cover;
                     }
-                }
 
-                // Target 3rd li
-                li:nth-child(3) {
-                    grid-column: span 2;
-
-                    img {
-                        aspect-ratio: 2.5 / 1;
-                        object-fit: cover;
+                    // Target every 3rd li.
+                    &:nth-child(3n) {
+                        grid-column: span 2;
                     }
                 }
             }
@@ -71,11 +79,17 @@
         padding-top: var(--space--xl);
         display: flex;
         flex-direction: column;
-        gap: var(--space--s);
+        gap: var(--space--l);
 
         &-section {
-            padding-bottom: var(--space--m);
+            padding-bottom: var(--space--l);
             border-bottom: 1px solid var(--color--brand-1);
+        }
+
+        #{$this}__description {
+            @include no-first-last-margin;
+
+            margin-top: var(--space--2xs);
         }
 
         #{$this}__header {
@@ -86,6 +100,8 @@
 
             #{$this}__preheading {
                 @include typestyle-h6;
+
+                font-weight: var(--type--2--font-weight);
             }
 
             #{$this}__heading {
@@ -94,7 +110,7 @@
             }
 
             #{$this}__header-cta {
-                padding: var(--space--s) 0;
+                margin-top: var(--space--2xs);
 
                 a {
                     @include typestyle-small;
@@ -144,7 +160,7 @@
 
         &__radio-group--pa_colour {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
             column-gap: var(--space--2xl);
             row-gap: var(--space--xs);
 
@@ -184,7 +200,7 @@
             }
         }
 
-        &__radio-group--pa_board-width {
+        &__radio-group:not(.product__variations__radio-group--pa_colour) {
             display: flex;
             flex-direction: row;
             column-gap: var(--space--xs);
@@ -238,11 +254,11 @@
 
     &__toggles {
         display: grid;
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
         gap: var(--space--l);
 
         @include mq('large') {
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
         }
 
         #{$this}__calculator-cta {

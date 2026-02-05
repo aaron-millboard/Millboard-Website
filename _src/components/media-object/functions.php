@@ -23,6 +23,8 @@ function filter_args(array $args): ?array
         'video' => null,
         'shape' => null,
         'hover_effect' => false,
+        'hover_effect_top' => '',
+        'hover_effect_bottom' => '',
     ], $args);
 
     // -------------------------------------------------------------------------

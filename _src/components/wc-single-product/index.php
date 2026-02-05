@@ -1,8 +1,3 @@
-<?php
-    // We need to access the global product object
-    global $product;
-?>
-
 <div <?= \Granola\Helpers::build_attributes($args['attributes']); ?>>
     <div class="product__gallery">
         <?php echo \Granola\Component::get('wc-single-product/gallery'); ?>
@@ -34,6 +29,18 @@
                 </div>
             <?php } ?>
         </div>
+
+        <?= \Granola\Component::get('product-variation-selector', [
+            'heading' => __('Select colour:', 'granola'),
+            'variation' => 'colour',
+            'variations' => $args['colour_variations'],
+        ]); ?>
+
+        <?= \Granola\Component::get('product-variation-selector', [
+            'heading' => __('Select board width:', 'granola'),
+            'variation' => 'board_width',
+            'variations' => $args['board_width_variations'],
+        ]); ?>
 
         <?php
 

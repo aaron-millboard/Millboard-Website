@@ -1,11 +1,10 @@
 .accordion__item {
-
     --accordion--button--size: #{px-to-rem(40)};
     --accordion--icon--size: #{px-to-rem(16)};
     --accordion--border--color: var(--color--brand-1);
 
     $this: &;
-    
+
     border-top: var(--border-width--m) solid var(--accordion--border--color);
     transition: all 0.2s ease-in-out;
 
@@ -43,7 +42,7 @@
         #{$this}__heading {
             @include heading-attributes;
             font-size: rfs(20, 24);
-            font-weight: 600;
+            font-weight: 400;
             letter-spacing: normal;
             padding: 0;
             margin: 0;
@@ -98,7 +97,13 @@
             padding-bottom: var(--space--m);
             gap: var(--space--m);
 
+            @include mq(xlarge) {
+                padding-right: var(--space--2xl);
+            }
+
             p {
+                @include typestyle-xlarge;
+                line-height: 1.6em;
                 margin: 0;
             }
 
@@ -108,5 +113,4 @@
             }
         }
     }
-
 }

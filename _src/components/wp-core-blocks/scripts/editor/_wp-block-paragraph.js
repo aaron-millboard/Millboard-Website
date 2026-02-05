@@ -5,5 +5,6 @@ wp.domReady(() => {
     wp.blocks.registerBlockStyle('core/paragraph', {
         name: 'typestyle-large',
         label: 'Large',
+        isDefault: true
     });
 });

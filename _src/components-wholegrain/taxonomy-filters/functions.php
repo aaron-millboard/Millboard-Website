@@ -45,6 +45,8 @@ function filter_args(array $args): ?array
     ];
     $button_classes_all = $button_classes;
 
+    $post_type = get_post_type();
+
     if (!empty($args['object'])) {
         $object = $args['object'];
 
@@ -53,15 +55,15 @@ function filter_args(array $args): ?array
             $args['current_item'] = $object->term_id;
 
             // The 'first' post type is selected if this taxonomy is registered to multiple post types.
-            $taxonomy = \get_taxonomy($object->taxonomy);
-            $all_link = \get_post_type_archive_link(reset($taxonomy->object_type));
+            $post_type = get_post_type();
+            $all_link = \get_post_type_archive_link($post_type);
         } elseif ($object instanceof \WP_Post_Type) {
             // Assume the taxonomy is 'category' by default.
             // Additional logic (or multiple filters) needed if multiple taxonomies are registered to this post type.
             $args['taxonomy'] = 'category';
 
             $button_classes_all[] = 'taxonomy-filters__item--current';
-            $all_link = \get_post_type_archive_link($object->name);
+            $all_link = \get_post_type_archive_link($post_type);
         }
     }
 
@@ -90,7 +92,30 @@ function filter_args(array $args): ?array
             'classes' => $button_classes_all,
         ];
 
-        $items = \get_terms($args['taxonomy']);
+        // Get post IDs for the current post type to filter terms
+        $post_ids = [];
+        if (!empty($post_type)) {
+            $posts = \get_posts([
+                'post_type' => $post_type,
+                'posts_per_page' => -1,
+                'fields' => 'ids',
+                'post_status' => 'publish',
+            ]);
+            $post_ids = $posts;
+        }
+
+        $term_args = [
+            'taxonomy' => $args['taxonomy'],
+            'parent' => 0,
+            'hide_empty' => true,
+        ];
+
+        // Filter by post type if we have post IDs
+        if (!empty($post_ids)) {
+            $term_args['object_ids'] = $post_ids;
+        }
+
+        $items = \get_terms($term_args);
 
         if (!empty($items)) {
             foreach ($items as $key => $item) {

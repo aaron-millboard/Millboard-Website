@@ -154,8 +154,18 @@ function filter_args(array $args): ?array
  */
 function process_image(array $row, int $key, array $args, int $pattern_part, bool $is_last = false): array|false
 {
-    if (empty($row['image'])) {
+    if (empty($row['image']) && empty($row['gallery_image'])) {
         return false;
+    }
+
+    if (!empty($row['gallery_image'])) {
+        $gallery_post_id = $row['gallery_image'];
+        $image_id = get_post_thumbnail_id($gallery_post_id);
+        $row['image'] = $image_id;
+
+        if (empty($row['caption_main'])) {
+            $row['caption_main'] = get_the_title($gallery_post_id);
+        }
     }
 
     // Collect images and alt.

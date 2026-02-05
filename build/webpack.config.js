@@ -277,15 +277,15 @@ export default (env, argv) => {
                                     // Lookup table: which glob imports apply to which file.
                                     const scssExpansions = {
                                         'main.scss': [
-                                            { search: `@import './components*/**/styles/main.scss';`, pattern: 'components*/*/styles/main.scss' }
+                                            { search: `@import './components*/**/styles/main.scss';`, pattern: 'components*/**/styles/main.scss' }
                                         ],
                                         'editor.scss': [
-                                            { search: `@import './components*/**/styles/main.scss';`, pattern: 'components*/*/styles/main.scss' },
-                                            { search: `@import './components*/**/styles/editor.scss';`, pattern: 'components*/*/styles/editor.scss' },
-                                            { search: `@import './components*/**/styles/block.scss';`, pattern: 'components*/*/styles/block.scss' }
+                                            { search: `@import './components*/**/styles/main.scss';`, pattern: 'components*/**/styles/main.scss' },
+                                            { search: `@import './components*/**/styles/editor.scss';`, pattern: 'components*/**/styles/editor.scss' },
+                                            { search: `@import './components*/**/styles/block.scss';`, pattern: 'components*/**/styles/block.scss' }
                                         ],
                                         'admin.scss': [
-                                            { search: `@import './components*/**/styles/admin.scss';`, pattern: 'components*/*/styles/admin.scss' }
+                                            { search: `@import './components*/**/styles/admin.scss';`, pattern: 'components*/**/styles/admin.scss' }
                                         ]
                                     };
 

@@ -14,23 +14,29 @@
 }
 
 @mixin typestyle-large {
-    font-size: rfs(17, 18);
-}
-
-@mixin typestyle-xlarge {
     font-size: rfs(18, 20);
 }
 
+@mixin typestyle-xlarge {
+    font-size: rfs(20, 24);
+}
+
 @mixin typestyle-meta {
-    font-size: var(--type--font-size--base);
-    line-height: 1.2;
+    font-size: rfs(14, 15);
+    font-family: var(--type--3--font-family);
+    font-weight: var(--type--3--font-weight);
+    line-height: 132%; /* 19.8px */
     text-transform: uppercase;
+    letter-spacing: calc(var(--type--font-size--base) * 0.1167);
 }
 
 @mixin heading-attributes {
     line-height: 1.36;
     font-weight: var(--type--1--font-weight);
-    letter-spacing: 0.14em; // 14%
+
+    &.is-style-typestyle-uppercase {
+        letter-spacing: 0.14em; // 14%
+    }
 
     // Make a tags that are children of headings inherit styling
     a {
