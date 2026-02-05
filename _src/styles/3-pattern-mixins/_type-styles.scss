@@ -14,11 +14,11 @@
 }
 
 @mixin typestyle-large {
-    font-size: rfs(17, 18);
+    font-size: rfs(18, 20);
 }
 
 @mixin typestyle-xlarge {
-    font-size: rfs(18, 20);
+    font-size: rfs(20, 24);
 }
 
 @mixin typestyle-meta {
