@@ -3,7 +3,7 @@
 .language-switcher {
     --language-switcher--translate-y: #{px-to-rem(-5)};
     --language-switcher--width: #{px-to-rem(105)};
-    --language-switcher--menu-offset: 0px;
+    --language-switcher--menu-offset: 8px;
     --mask-icon--size: #{px-to-rem(24)};
 
     $this: &;
@@ -13,6 +13,12 @@
     position: relative;
     align-self: center;
     font-weight: 100;
+
+    @include mq($until: 'site-header') {
+        margin-left: auto;
+        padding-right: var(--space--container-padding);
+        padding-left: var(--space--container-padding);
+    }
 
 
     // @include mq($until: 'site-header') {
@@ -33,18 +39,15 @@
         background: var(--color--white);
         gap: var(--space--3xs);
         transition: transition(opacity, transform, visibility);
-
-        @include mq('site-header') {
-            position: absolute;
-            top: calc(100% + var(--language-switcher--menu-offset));
-            border: var(--border--1);
-        }
+        border: var(--border--1);
+        position: absolute;
+        left: 0;
 
         // Fills in the gap between the menu item and the
         // dropdown so that the mouse doesn't lose hover
         // going between them.
         @include mq('site-header') {
-
+            top: calc(100% + var(--language-switcher--menu-offset));
             &::after {
                 position: absolute;
                 top: calc(var(--language-switcher--menu-offset) * -1);
@@ -61,6 +64,7 @@
             pointer-events: none;
             transform: translateY(var(--language-switcher--translate-y));
             visibility: hidden;
+            display: none;;
 
         }
 
@@ -72,6 +76,7 @@
             pointer-events: auto;
             transform: translateY(0);
             visibility: visible;
+            display: block;
         }
 
         .menu {
@@ -135,6 +140,9 @@
             &--chevron {
                 --mask-icon--image: url(#{asset-path('images/icons/chevron-right.svg')});
 
+                @include mq($until: 'site-header') {
+                    display: none;
+                }
 
                 &::after {
                     transform: rotate(90deg);

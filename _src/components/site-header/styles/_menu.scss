@@ -17,9 +17,6 @@
 
     $submenu-color: 'brand-2';
 
-    align-self: start;
-    width: 100%;
-
     @include mq('site-header') {
         --menu-item--gap: var(--space--s);
 
@@ -32,6 +29,7 @@
         flex-flow: row nowrap;
         align-self: start;
         padding: 0;
+        width: 100%;
     }
 
     // -----------------------------------------------------------------

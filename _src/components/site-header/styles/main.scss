@@ -111,7 +111,7 @@ $site-header--top--background: 'white';
             display: flex;
             flex-flow: row nowrap;
             align-items: center;
-            gap: 0;
+            gap: var(--space--3xs);
 
             @include mq('site-header') {
                 margin: 0;
@@ -122,6 +122,8 @@ $site-header--top--background: 'white';
 
         .menu-item {
             padding: var(--space--3xs) var(--space--3xs);
+            flex-shrink: 0;
+            letter-spacing: 1.5px;
 
             .menu-item__wrap > a {
                 @include typestyle-h6;
@@ -139,12 +141,14 @@ $site-header--top--background: 'white';
 
         .menu-item.is-active {
             background-color: var(--color--brand-1);
+            border-top: 0;
 
             > .menu-item__wrap > a {
-                font-weight: 400;
+                font-weight: 600;
                 font-family: var(--type--3--font-family);
                 cursor: default;
                 pointer-events: none;
+                text-decoration: underline;
 
                 @include interact {
                     text-decoration: none;
@@ -204,6 +208,7 @@ $site-header--top--background: 'white';
 
                 #{$this}__navigation {
                     background-color: var(--color--#{$site-header--bottom--background});
+                    width: 100%;
                 }
             }
 
