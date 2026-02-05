@@ -9,6 +9,7 @@ function filter_args(array $args): ?array
     // ---------------------------------------
     $args = array_merge([
         'classes' => [],
+        'link' => [],
     ], $args);
 
     // ---------------------------------------
@@ -17,8 +18,6 @@ function filter_args(array $args): ?array
     $args['classes'] = array_merge([
         'map__listing',
     ], $args['classes']);
-
-    // \Granola\Debug::dump($args);
 
     if (empty($args['address'])) {
         return null;

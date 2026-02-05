@@ -11,7 +11,7 @@ function filter_args(array $args): ?array
         'classes' => [],
         'buttons' => [],
         'table_rows' => [],
-        'post_type' => 'supplier',
+        'post_type' => 'installer',
         'items' => [],
         'sidebar_heading' => [],
     ], $args);
@@ -327,7 +327,7 @@ function get_item_data($args): array|null
 {
     $items = [];
     $post_query = new \WP_Query([
-        'post_type' => $args['post_type'] ?? 'supplier',
+        'post_type' => $args['post_type'] ?? 'installer',
         'posts_per_page' => 500, //arbitrary large number.
         'status' => 'publish',
         'perm' => 'readable',
