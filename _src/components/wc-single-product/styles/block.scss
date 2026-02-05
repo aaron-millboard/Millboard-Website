@@ -1,4 +1,7 @@
 .product {
+    --block--margin-top: var(--space--l);
+    --block--margin-bottom: var(--space--xl);
+
     $this: &;
 
     display: grid;
@@ -25,7 +28,7 @@
             scrollbar-width: none;
             aspect-ratio: 1 / 2;
 
-            &::-webkit-scrollbar { 
+            &::-webkit-scrollbar {
                 display: none;
             }
 

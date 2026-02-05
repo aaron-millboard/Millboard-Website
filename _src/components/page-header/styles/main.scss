@@ -13,6 +13,10 @@
 
     @include no-first-last-margin;
 
+    .single-product & {
+        --block--margin-bottom: 0;
+    }
+
     &__inner {
         max-width: var(--width--responsive--l);
         margin-left: auto;
