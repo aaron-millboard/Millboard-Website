@@ -27,6 +27,26 @@
         }
     }
 
+    &__header {
+        &__search {
+            display: grid;
+            align-items: center;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: var(--space--l);
+        }
+    }
+
+    &__distance {
+        display: flex;
+        gap: var(--space--3xs);
+        align-items: center;
+
+        &__label {
+            flex: 0 0 auto;
+            margin: 0;
+        }
+    }
+
     &__body {
         display: grid;
         gap: var(--space--xl);

@@ -3,16 +3,30 @@
 
 <div <?= \Granola\Helpers::build_attributes($args['attributes']); ?>>
     <div class="map__header">
-        <?= Granola\Component::get('button', $args['buttons']['filter']); ?>
-
         <div class="map__header__search">
             <input
                 id="map--map--search_input"
                 type="text"
                 name="map--map--search"
                 form="map-filters-form"
-                placeholder="<?= _x('Search', 'Map search input placeholder', 'granola'); ?>"
+                placeholder="<?= esc_html_x('Search...', 'Map search input placeholder', 'granola'); ?>"
             >
+
+            <div class="map__distance">
+                <label class="map__distance__label" for="map-distance-select">
+                    <?= esc_html_x('Distance', 'Map distance dropdown label', 'granola'); ?>
+                </label>
+
+                <select id="map-distance-select" class="map__distance__input">
+                    <option value="10">10 miles</option>
+                    <option value="25">25 miles</option>
+                    <option value="50">50 miles</option>
+                    <option value="100">100 miles</option>
+                    <option value="150">150 miles</option>
+                    <option value="250">250 miles</option>
+                    <option value="500">500 miles</option>
+                </select>
+            </div>
         </div>
 
         <?= Granola\Component::get('map/filters'); ?>

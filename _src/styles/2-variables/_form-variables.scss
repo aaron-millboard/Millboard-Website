@@ -3,21 +3,13 @@
 // ---------------------------------------------------
 
 @mixin form-variables {
-    --input--background-color: hsl(
-        var(--color--brand-2--h),
-        var(--color--brand-2--s),
-        98%
-    );
+    --input--background-color: hsl(var(--color--brand-2--h), var(--color--brand-2--s), 98%);
     --input--background-color--focus: var(--color--background);
-    --input--background-color--highlight: hsl(
-        var(--color--brand-2--h),
-        var(--color--brand-2--s),
-        90%
-    );
+    --input--background-color--highlight: hsl(var(--color--brand-2--h), var(--color--brand-2--s), 90%);
     --input--border-width: 1px;
     --input--border-color: var(--color--brand-1);
     --input--border-radius: 1.6875em;
-    --input--color: var(--color--brand-1);
+    --input--color: var(--color--foreground);
     --input--color--focus: var(--color--brand-1);
     --input--outline-color--focus: var(--input--border-color);
     --input--outline-width--focus: 1px;
@@ -25,7 +17,7 @@
     --input--padding-y: 0.9em;
     --input--padding-x: 1.4em;
     --input--padding: var(--input--padding-y) var(--input--padding-x);
-    --input--placeholder-color: hsla(var(--color--brand-1--hsl), 0.8);
+    --input--placeholder-color: hsla(var(--color--foreground--hsl), 0.6);
 
     --form--label-spacing: var(--space--s);
 
