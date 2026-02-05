@@ -1,11 +1,10 @@
 .accordion__item {
-
     --accordion--button--size: #{px-to-rem(40)};
     --accordion--icon--size: #{px-to-rem(16)};
     --accordion--border--color: var(--color--brand-1);
 
     $this: &;
-    
+
     border-top: var(--border-width--m) solid var(--accordion--border--color);
     transition: all 0.2s ease-in-out;
 
@@ -114,5 +113,4 @@
             }
         }
     }
-
 }
