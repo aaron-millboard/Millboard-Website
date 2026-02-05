@@ -43,7 +43,7 @@ function filter_args(array $args): ?array
     if (!empty($args['website'])) {
         $args['link'] = [
             'content' => \__('Contact installer', 'granola'),
-            'url' => $args['website'],
+            'url' => $args['url'],
             'classes' => [
                 'map__listing__link',
             ],

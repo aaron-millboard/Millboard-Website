@@ -346,6 +346,7 @@ function get_item_data($args): array|null
             'phone' => \get_field('phone', $wp_post_id),
             'email' => \get_field('email', $wp_post_id),
             'website' => \get_field('website', $wp_post_id),
+            'url' => \get_permalink($wp_post),
         ];
     }
 
