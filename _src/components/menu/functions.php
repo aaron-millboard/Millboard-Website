@@ -52,7 +52,7 @@ function filter_args(array $args): ?array
         if ($args['theme_location'] === 'top' && \get_field('permanently_active', $item)) {
             $item->classes[] = 'is-active';
         }
-        
+
         $menu_items[$item->ID] = $item;
     }
 

@@ -84,6 +84,8 @@
                 padding: 0;
 
                 a {
+                    @include link--2;
+
                     display: block;
                     text-align: center;
                 }
