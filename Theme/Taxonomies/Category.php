@@ -57,7 +57,7 @@ class Category
     public static function filter_yoast_breadcrumb_links(array $links): array
     {
         $new_links = [];
-        
+
         foreach ($links as $index => $link) {
             // Check if this is a category link
             if (isset($link['url']) && strpos($link['url'], '/category/') !== false) {
@@ -66,23 +66,23 @@ class Category
                     // Insert Case Studies archive breadcrumb before the category
                     $new_links[] = [
                         'url' => \home_url('/case-studies/'),
-                        'text' => 'Case Studies',
+                        'text' => get_post_type_object('case-study')->labels->name,
                     ];
-                    
+
                     // Update category URL
                     $link['url'] = str_replace('category', 'case-studies/category', $link['url']);
                 } else {
                     // Insert Blog archive breadcrumb before the category
                     $new_links[] = [
                         'url' => \home_url('/blog/'),
-                        'text' => 'Blog',
+                        'text' => __('Blog', 'granola'),
                     ];
-                    
+
                     // Update category URL
                     $link['url'] = str_replace('category', 'blog/category', $link['url']);
                 }
             }
-            
+
             $new_links[] = $link;
         }
 
