@@ -20,12 +20,6 @@
         padding-left: var(--space--container-padding);
     }
 
-
-    // @include mq($until: 'site-header') {
-    //     order: 3;
-    //     transform: translateY(calc((var(--space--l) - var(--space--3xs)) * -1));
-    // }
-
     // ---------------------------------------------------------------------
     // Expandable element styles.
     // ---------------------------------------------------------------------
@@ -49,6 +43,7 @@
         // going between them.
         @include mq('site-header') {
             right: 0;
+
             &::after {
                 position: absolute;
                 top: calc(var(--language-switcher--menu-offset) * -1);
@@ -65,8 +60,6 @@
             pointer-events: none;
             transform: translateY(var(--language-switcher--translate-y));
             visibility: hidden;
-            display: none;;
-
         }
 
         &:not([hidden]) {
@@ -90,16 +83,22 @@
             &-item {
                 padding: 0;
 
+                &--home,
+                &--custom-internal {
+                    text-decoration: underline;
+                }
+
                 a {
+                    @include link--2;
+
                     display: block;
-                    text-align: center
+                    text-align: center;
                 }
 
                 &__wrap {
                     display: block;
                 }
             }
-
         }
     }
 
@@ -107,7 +106,6 @@
     // Button styles.
     // ---------------------------------------------------------------------
     &__button {
-
         @include button-reset-hard;
 
         display: flex;
@@ -130,8 +128,6 @@
             &::after {
                 display: block;
                 mask-image: var(--mask-icon--image);
-                transform: rotate(90deg);
-
             }
 
             &--globe {
@@ -155,8 +151,6 @@
                     }
                 }
             }
-
-
         }
     }
 }
