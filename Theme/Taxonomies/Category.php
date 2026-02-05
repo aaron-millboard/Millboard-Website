@@ -39,26 +39,28 @@ class Category
     public static function filter_category_link(string $term_link): string
     {
         $post_type = get_post_type();
+
+        $posts_page = get_option('page_for_posts');
+        if ($posts_page) {
+            $post_page_slug = get_post_field('post_name', $posts_page);
+        } else {
+            $post_page_slug = 'blog';
+        }
+
         if ($post_type) {
             if ($post_type === 'post') {
-                $posts_page = get_option('page_for_posts');
-                if ($posts_page) {
-                    $archive_url = get_post_field('post_name', $posts_page);
-                } else {
-                    $archive_url = 'blog';
-                }
+                $url = str_replace('category', "{$post_page_slug}/category", $term_link);
+                $url = str_replace("{$post_page_slug}/{$post_page_slug}", $post_page_slug, $url);
             } else {
                 $cpt_object = get_post_type_object($post_type);
                 $archive_url = $cpt_object->rewrite['slug'];
+
+                $url = str_replace('category', "{$archive_url}/category", $term_link);
+                $url = str_replace("{$post_page_slug}/{$archive_url}", $archive_url, $url);
             }
         }
 
-        $new_url = str_replace('category', "{$archive_url}/category", $term_link);
-
-        // Remove potential duplication of archive slug in URL (e.g. /blog/blog/category/...)
-        $new_url = str_replace("{$archive_url}/{$archive_url}", $archive_url, $new_url);
-
-        return $new_url;
+        return $url;
     }
 
     /**
