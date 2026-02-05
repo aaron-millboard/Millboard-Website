@@ -14,6 +14,7 @@ class Category
     {
         \add_filter('granola/templates/taxonomies', [__CLASS__, 'filter_granola_templates_taxonomies']);
         \add_filter('category_link', [__CLASS__, 'filter_category_link'], 10);
+        \add_filter('wpseo_breadcrumb_links', [__CLASS__, 'filter_yoast_breadcrumb_links'], 10);
     }
 
     /**
@@ -44,5 +45,47 @@ class Category
 
         // Fallback - all other versions should point to the blog.
         return str_replace('category', 'blog/category', $term_link);
+    }
+
+    /**
+     * Filter Yoast breadcrumb links to insert Case Studies archive before category on case study pages,
+     * or Blog archive before category elsewhere.
+     *
+     * @param array $links The breadcrumb links array.
+     * @return array The filtered breadcrumb links array.
+     */
+    public static function filter_yoast_breadcrumb_links(array $links): array
+    {
+        $new_links = [];
+        
+        foreach ($links as $index => $link) {
+            // Check if this is a category link
+            if (isset($link['url']) && strpos($link['url'], '/category/') !== false) {
+                // Case study singles and archive - insert Case Studies archive before category
+                if (\is_singular('case-study') || \is_post_type_archive('case-study')) {
+                    // Insert Case Studies archive breadcrumb before the category
+                    $new_links[] = [
+                        'url' => \home_url('/case-studies/'),
+                        'text' => 'Case Studies',
+                    ];
+                    
+                    // Update category URL
+                    $link['url'] = str_replace('category', 'case-studies/category', $link['url']);
+                } else {
+                    // Insert Blog archive breadcrumb before the category
+                    $new_links[] = [
+                        'url' => \home_url('/blog/'),
+                        'text' => 'Blog',
+                    ];
+                    
+                    // Update category URL
+                    $link['url'] = str_replace('category', 'blog/category', $link['url']);
+                }
+            }
+            
+            $new_links[] = $link;
+        }
+
+        return $new_links;
     }
 }

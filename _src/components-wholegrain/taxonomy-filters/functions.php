@@ -53,15 +53,17 @@ function filter_args(array $args): ?array
             $args['current_item'] = $object->term_id;
 
             // The 'first' post type is selected if this taxonomy is registered to multiple post types.
-            $taxonomy = \get_taxonomy($object->taxonomy);
-            $all_link = \get_post_type_archive_link(reset($taxonomy->object_type));
+            $post_type = get_post_type();
+            $all_link = \get_post_type_archive_link($post_type);
         } elseif ($object instanceof \WP_Post_Type) {
             // Assume the taxonomy is 'category' by default.
             // Additional logic (or multiple filters) needed if multiple taxonomies are registered to this post type.
             $args['taxonomy'] = 'category';
 
             $button_classes_all[] = 'taxonomy-filters__item--current';
-            $all_link = \get_post_type_archive_link($object->name);
+
+            $post_type = get_post_type();
+            $all_link = \get_post_type_archive_link($post_type);
         }
     }
 
