@@ -11,7 +11,7 @@ function filter_args(array $args): ?array
         'classes' => [],
         'buttons' => [],
         'table_rows' => [],
-        'post_type' => 'installer',
+        'content_type' => 'installer',
         'items' => [],
         'sidebar_heading' => [],
     ], $args);
@@ -23,7 +23,6 @@ function filter_args(array $args): ?array
         'map',
         'wp-block',
     ], $args['classes']);
-
 
     $args['items'] = get_item_data($args);
 
@@ -273,24 +272,22 @@ function filter_args(array $args): ?array
         ])
     ];
 
-    if (!empty($args['items'])) {
-        $args['sidebar_heading'] = [
-            'el' => 'h3',
-            'content' => sprintf(
-                \_n(
-                    // translators: the number of map results.
-                    'Displaying: %s result',
-                    'Displaying: %s results',
-                    count($args['items']),
-                    'granola'
-                ),
-                count($args['items'])
+    $args['sidebar_heading'] = [
+        'el' => 'h3',
+        'content' => sprintf(
+            \_n(
+                // translators: the number of map results.
+                'Displaying: %s result',
+                'Displaying: %s results',
+                count($args['items']),
+                'granola'
             ),
-            'classes' => [
-                'map__sidebar__heading',
-            ],
-        ];
-    }
+            count($args['items'])
+        ),
+        'classes' => [
+            'map__sidebar__heading',
+        ],
+    ];
 
     // -------------------------------------------------------------------------
     // Return the filtered args.
@@ -327,7 +324,7 @@ function get_item_data($args): array|null
 {
     $items = [];
     $post_query = new \WP_Query([
-        'post_type' => $args['post_type'] ?? 'installer',
+        'post_type' => $args['content_type'],
         'posts_per_page' => 500, //arbitrary large number.
         'status' => 'publish',
         'perm' => 'readable',

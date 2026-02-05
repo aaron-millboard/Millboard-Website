@@ -23,14 +23,17 @@
             <?= \Granola\Component::get('heading', $args['sidebar_heading']) ?>
 
             <div class="map__items">
-                <?php foreach ($args['items'] as $item) { ?>
-                    <?= Granola\Component::get('map/listing', $item); ?>
+                <?php if (!empty($args['items'])) { ?>
+                    <?php foreach ($args['items'] as $item) { ?>
+                        <?= Granola\Component::get('map/listing', $item); ?>
+                    <?php } ?>
+                <?php } else { ?>
+                    <strong class="map__sidebar__no-content"><?= esc_html__('No listings found...', 'granola'); ?></strong>
                 <?php } ?>
             </div>
         </div>
 
         <div id="map-map-container" class="map__map-container">
-            <!-- data-map-world-svg-url="<?= \Granola\Paths::theme_asset_url('svgs/world-2d-map-basic.svg'); ?>"> -->
             <div id="leaflet-map-container"></div>
         </div>
     </div>

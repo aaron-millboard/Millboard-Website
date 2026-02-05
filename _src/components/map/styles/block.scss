@@ -40,6 +40,7 @@
     &__sidebar {
         display: grid;
         overflow: hidden;
+        align-content: start;
 
         &__heading {
             @include typestyle-h6;
