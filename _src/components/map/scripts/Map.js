@@ -50,7 +50,8 @@ class Map {
         this.LMAP_MAX_ZOOM = 15; // Was 7.2
         this.LMAP_INITIAL_CENTER = [55, -5]; // Move center to UK.
 
-        this.LMAP_MARKER_RADIUS = 34; // Previously was 26.
+        this.LMAP_MARKER_WIDTH = 31;
+        this.LMAP_MARKER_HEIGHT = 40;
 
         this.allMarkersFlatGroup = new L.FeatureGroup();
         this.filteredMarkersFlatGroup = new L.FeatureGroup();
@@ -255,7 +256,8 @@ class Map {
      * Leaflet Markers setup.
      */
     initLeafletMarkers() {
-        const markerSizeMiddle = this.LMAP_MARKER_RADIUS / 2; // Icon radius / 2 to center it.
+        const markerHoizontalMiddle = this.LMAP_MARKER_WIDTH / 2; // Icon width / 2 to center it.
+
         this.listingEls.forEach((el) => {
             // Get data.
             const rowData = Map.getDataFromRowElement(el);
@@ -272,28 +274,18 @@ class Map {
 
             // https://leafletjs.com/reference.html#marker
             const marker = L.marker([rowLat, rowLng], {
-                // title: rowTitle,
-                // alt: rowLabel,
                 autoPanOnFocus: true,
                 icon: L.divIcon({
                     html: markerHtml,
-                    iconSize: [this.LMAP_MARKER_RADIUS, this.LMAP_MARKER_RADIUS],
-                    iconAnchor: [0, markerSizeMiddle], // Icon radius / 2 to center it.
-                    tooltipAnchor: [0, this.LMAP_MARKER_RADIUS * -1], // Icon radius / 2 to center it.
+                    iconSize: [this.LMAP_MARKER_WIDTH, this.LMAP_MARKER_HEIGHT],
+                    iconAnchor: [markerHoizontalMiddle, this.LMAP_MARKER_HEIGHT], // Icon radius / 2 to center it.
                 }),
+
+                // Custom object data.
                 themeData: {
                     tableDataRowElement: el,
                 },
             });
-
-            // https://leafletjs.com/reference.html#layer-bindtooltip
-            // https://leafletjs.com/reference.html#tooltip-option
-            // marker.bindTooltip(rowTitle, {
-            //     direction: 'top',
-            //     offset: [13, 13],
-            //     permanent: false,
-            //     sticky: false,
-            // });
 
             // Add the marker to the leaflet layer.
             // this.allMarkersSubGroup.addLayer(marker);
