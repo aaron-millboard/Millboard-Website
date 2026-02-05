@@ -265,4 +265,33 @@ class Helpers
 
         return $html;
     }
+
+    /**
+     * Determine whether the current site is a local environment or not.
+     *
+     * @return boolean Whether the current site is a local environment.
+     */
+    public static function is_local_environment(): bool
+    {
+        $environment_type = \wp_get_environment_type();
+
+        // WP Environment is explicitly 'local'.
+        if ($environment_type === 'local') {
+            return true;
+        }
+
+        // Treat WP environment 'development' as a local environment.
+        if ($environment_type === 'development') {
+            return true;
+        }
+
+        $home_url = rtrim(\home_url(), '/');
+
+        // Treat sites with a TLD of `.test` as a local environment.
+        if (str_ends_with($home_url, '.test')) {
+            return true;
+        }
+
+        return false;
+    }
 }
