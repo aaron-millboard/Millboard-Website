@@ -29,7 +29,7 @@ class Distributor
 
         \register_extended_post_type(self::SLUG, [
             // Core post type configuration.
-            'public' => false,
+            'public' => true,
             'show_ui' => true,
             'has_archive' => false,
             'hierarchical' => false,
