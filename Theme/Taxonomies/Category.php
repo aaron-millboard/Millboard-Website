@@ -58,9 +58,10 @@ class Category
                 $url = str_replace('category', "{$archive_url}/category", $term_link);
                 $url = str_replace("{$post_page_slug}/{$archive_url}", $archive_url, $url);
             }
+            $term_link = $url;
         }
 
-        return $url;
+        return $term_link;
     }
 
     /**
