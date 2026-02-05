@@ -2,8 +2,8 @@
     // ---------------------------------------------------
     // Block context variables
     // ---------------------------------------------------
-    --blocks--margin-top: var(--space--responsive--2xl);
-    --blocks--margin-bottom: var(--space--responsive--2xl);
+    --blocks--margin-top: var(--space--2xl);
+    --blocks--margin-bottom: var(--space--2xl);
 
     --block--margin-top: var(--space--layout);
     --block--margin-bottom: var(--space--layout);
@@ -17,11 +17,11 @@
 
 @mixin blocks-variables--mq {
     @include mq(small) {
-        --block--padding-y: var(--space--responsive--2xl);
+        --block--padding-y: var(--space--2xl);
     }
 
     @include mq(medium) {
-        --block--padding-x: var(--space--responsive--xl);
+        --block--padding-x: var(--space--xl);
     }
 }
 
