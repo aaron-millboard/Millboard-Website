@@ -1,16 +1,10 @@
 ol,
 ul {
-    padding-left: calc(1.1em + var(--list--indent));
+    padding-left: 1.125rem;
     list-style-position: outside;
 }
 
-ol {
-    padding-left: 1.125rem;
-}
-
 ul {
-    padding-left: 1.5rem;
-
     li {
         &::marker {
             color: var(--list--marker-color, currentColor);
