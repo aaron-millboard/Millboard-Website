@@ -10,6 +10,7 @@ function filter_args(array $args): ?array
     $args = array_merge([
         'classes' => [],
         'link' => [],
+        'tag' => [],
     ], $args);
 
     // ---------------------------------------
@@ -29,7 +30,6 @@ function filter_args(array $args): ?array
     // Finally set address.
     $args['address'] = $args['address']['address'];
 
-
     if (!empty($args['phone'])) {
         $args['phone'] = [
             'content' => $args['phone'],
@@ -48,6 +48,24 @@ function filter_args(array $args): ?array
                 'map__listing__link',
             ],
         ];
+    }
+
+    if (!empty($args['post']) && $args['post'] instanceof \WP_Post) {
+        $terms = \Theme\Meta\ObjectMeta::get_object_labels($args['post'], [
+            'limit' => 1,
+            'taxonomies' => [
+                'installer_type',
+            ],
+        ]);
+
+        if (!empty($terms[0])) {
+            $args['tag'] = [
+                'content' => $terms[0]['name'],
+                'classes' => [
+                    'g-tag',
+                ],
+            ];
+        }
     }
 
     // -------------------------------------------------------------------------
