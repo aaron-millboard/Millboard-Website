@@ -93,6 +93,10 @@ function filter_args(array $args): ?array
         $item->is_current_parent = !empty($sorted_items[$item->ID]['is_current_parent']);
         $item->is_current_ancestor = !empty($sorted_items[$item->ID]['is_current_ancestor']);
 
+        if ($item->type === 'custom' && !empty($item->url)) {
+            $item->is_internal_link = !isset(parse_url($item->url)['host']) || str_starts_with($item->url, \home_url());
+        }
+
         // WP stores this as a string "0", but some plugins (e.g. WPML) store this as an int.
         if ($item->menu_item_parent === '0' || $item->menu_item_parent === 0) {
             $args['items'][] = $item;
