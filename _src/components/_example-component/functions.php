@@ -29,7 +29,7 @@ function filter_args(array $args): ?array
 
     if (!empty($args['heading'])) {
         $args['heading'] = [
-            'heading' => $args['heading'],
+            'content' => $args['heading'],
             'classes' => ['example-component__heading'],
         ];
     }

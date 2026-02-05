@@ -14,11 +14,11 @@
 }
 
 @mixin typestyle-large {
-    font-size: rfs(17, 18);
+    font-size: rfs(18, 20);
 }
 
 @mixin typestyle-xlarge {
-    font-size: rfs(18, 20);
+    font-size: rfs(20, 24);
 }
 
 @mixin typestyle-meta {
@@ -33,7 +33,10 @@
 @mixin heading-attributes {
     line-height: 1.36;
     font-weight: var(--type--1--font-weight);
-    letter-spacing: 0.14em; // 14%
+
+    &.is-style-typestyle-uppercase {
+        letter-spacing: 0.14em; // 14%
+    }
 
     // Make a tags that are children of headings inherit styling
     a {

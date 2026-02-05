@@ -17,21 +17,26 @@
 
         <?php if (!empty($args['widget'])) { ?>
             <div class="mega-menu-list__column mega-menu-list__column--widget">
-                <?php if (!empty($args['widget']['image'])) { ?>
-                    <div class="mega-menu-list__widget__image">
-                        <?= wp_get_attachment_image($args['widget']['image'], 'medium'); ?>
-                    </div>
-                <?php } ?>
-
                 <?php if (!empty($args['widget']['cta'])) { ?>
-                    <div class="mega-menu-list__widget__cta">
-                        <?= \Granola\Component::get('link', [
-                            'url' => $args['widget']['cta']['url'],
-                            'content' => $args['widget']['cta']['title'],
-                            'target' => $args['widget']['cta']['target'],
-                            'classes' => ['mega-menu-list__widget__cta__button'],
-                        ]); ?>
-                    </div>
+                    <a href="<?= esc_url($args['widget']['cta']['url']); ?>" class="mega-menu-list__column--widget">
+                <?php }; ?>
+                        <?php if (!empty($args['widget']['image'])) { ?>
+                            <div class="mega-menu-list__widget__image">
+                                <?= wp_get_attachment_image($args['widget']['image'], 'medium'); ?>
+                            </div>
+                        <?php } ?>
+
+                        <?php if (!empty($args['widget']['cta'])) { ?>
+                            <div class="mega-menu-list__widget__cta">
+                                <?= \Granola\Component::get('link', [
+                                    'url' => $args['widget']['cta']['url'],
+                                    'content' => $args['widget']['cta']['title'],
+                                    'target' => $args['widget']['cta']['target'],
+                                    'classes' => ['mega-menu-list__widget__cta__button'],
+                                    'el' => 'span'
+                                ]); ?>
+                            </div>
+                    </a>
                 <?php } ?>
             </div>
         <?php } ?>

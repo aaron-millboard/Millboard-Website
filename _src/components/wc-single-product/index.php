@@ -30,6 +30,18 @@
             <?php } ?>
         </div>
 
+        <?= \Granola\Component::get('product-variation-selector', [
+            'heading' => __('Select colour:', 'granola'),
+            'variation' => 'colour',
+            'variations' => $args['colour_variations'],
+        ]); ?>
+
+        <?= \Granola\Component::get('product-variation-selector', [
+            'heading' => __('Select board width:', 'granola'),
+            'variation' => 'board_width',
+            'variations' => $args['board_width_variations'],
+        ]); ?>
+
         <?php
 
             /**
