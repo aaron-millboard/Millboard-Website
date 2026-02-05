@@ -92,7 +92,10 @@ function filter_args(array $args): ?array
             'classes' => $button_classes_all,
         ];
 
-        $items = \get_terms($args['taxonomy']);
+        $items = \get_terms([
+            'taxonomy' => $args['taxonomy'],
+            'parent' => 0,
+        ]);
 
         if (!empty($items)) {
             foreach ($items as $key => $item) {
