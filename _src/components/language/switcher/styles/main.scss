@@ -41,13 +41,14 @@
         transition: transition(opacity, transform, visibility);
         border: var(--border--1);
         position: absolute;
-        left: 0;
+        top: calc(100% + var(--language-switcher--menu-offset));
+        right: var(--space--container-padding);
 
         // Fills in the gap between the menu item and the
         // dropdown so that the mouse doesn't lose hover
         // going between them.
         @include mq('site-header') {
-            top: calc(100% + var(--language-switcher--menu-offset));
+            right: 0;
             &::after {
                 position: absolute;
                 top: calc(var(--language-switcher--menu-offset) * -1);
