@@ -53,7 +53,12 @@ class Category
             }
         }
 
-        return str_replace('category', "{$archive_url}/category", $term_link);
+        $new_url = str_replace('category', "{$archive_url}/category", $term_link);
+
+        // Remove potential duplication of archive slug in URL (e.g. /blog/blog/category/...)
+        $new_url = str_replace("{$archive_url}/{$archive_url}", $archive_url, $new_url);
+
+        return $new_url;
     }
 
     /**
