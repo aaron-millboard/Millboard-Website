@@ -38,13 +38,22 @@ class Category
      */
     public static function filter_category_link(string $term_link): string
     {
-        // Case study singles and archive point category links to case study filtered URLs.
-        if (\is_singular('case-study') || \is_post_type_archive('case-study')) {
-            return str_replace('category', 'case-studies/category', $term_link);
+        $post_type = get_post_type();
+        if ($post_type) {
+            if ($post_type === 'post') {
+                $posts_page = get_option('page_for_posts');
+                if ($posts_page) {
+                    $archive_url = get_post_field('post_name', $posts_page);
+                } else {
+                    $archive_url = 'blog';
+                }
+            } else {
+                $cpt_object = get_post_type_object($post_type);
+                $archive_url = $cpt_object->rewrite['slug'];
+            }
         }
 
-        // Fallback - all other versions should point to the blog.
-        return str_replace('category', 'blog/category', $term_link);
+        return str_replace('category', "{$archive_url}/category", $term_link);
     }
 
     /**
@@ -61,26 +70,32 @@ class Category
         foreach ($links as $index => $link) {
             // Check if this is a category link
             if (isset($link['url']) && strpos($link['url'], '/category/') !== false) {
-                // Case study singles and archive - insert Case Studies archive before category
-                if (\is_singular('case-study') || \is_post_type_archive('case-study')) {
-                    // Insert Case Studies archive breadcrumb before the category
-                    $new_links[] = [
-                        'url' => \home_url('/case-studies/'),
-                        'text' => get_post_type_object('case-study')->labels->name,
-                    ];
-
-                    // Update category URL
-                    $link['url'] = str_replace('category', 'case-studies/category', $link['url']);
-                } else {
-                    // Insert Blog archive breadcrumb before the category
-                    $new_links[] = [
-                        'url' => \home_url('/blog/'),
-                        'text' => __('Blog', 'granola'),
-                    ];
-
-                    // Update category URL
-                    $link['url'] = str_replace('category', 'blog/category', $link['url']);
+                $post_type = get_post_type();
+                $archive_label = '';
+                if ($post_type) {
+                    if ($post_type === 'post') {
+                        $posts_page = get_option('page_for_posts');
+                        if ($posts_page) {
+                            $archive_url = get_post_field('post_name', $posts_page);
+                            $archive_label = get_the_title($posts_page);
+                        } else {
+                            $archive_url = 'blog';
+                            $archive_label = __('Blog', 'granola');
+                        }
+                    } else {
+                        $cpt_object = get_post_type_object($post_type);
+                        $archive_url = $cpt_object->rewrite['slug'];
+                        $archive_label = $cpt_object->labels->name;
+                    }
                 }
+
+                $new_links[] = [
+                    'url' => \home_url("/{$archive_url}/"),
+                    'text' => $archive_label,
+                ];
+
+                // Update category URL
+                $link['url'] = str_replace('category', "{$archive_url}/category", $link['url']);
             }
 
             $new_links[] = $link;
