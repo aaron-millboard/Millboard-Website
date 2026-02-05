@@ -34,7 +34,7 @@
                 ]); ?>
             <?php } ?>
 
-            <?php if (!empty($args['heading']) || !empty($args['text'])) { ?>
+            <?php if (!empty($args['heading']) || !empty($args['text']) || !empty($args['subheading'])) { ?>
                 <div class="media-object__header flex-column">
                     <?php if (!empty($args['heading'])) { ?>
                         <?= \Granola\Component::get('heading', $args['heading']); ?>
