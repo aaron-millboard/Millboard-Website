@@ -65,6 +65,12 @@
         }
     }
 
+    &__item-wrap {
+        &--current {
+            order: -1;
+        }
+    }
+
     &__image {
         width: 16px;
         height: 16px;
