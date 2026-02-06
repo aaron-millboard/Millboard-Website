@@ -53,6 +53,7 @@ function filter_args(array $args): ?array
 
 function get_taxonomy_items($args): array
 {
+    $items = [];
     $all_link = false;
 
     // Initialize button classes
@@ -84,97 +85,100 @@ function get_taxonomy_items($args): array
         }
     }
 
-    if (!empty($args['taxonomy'])) {
-        // Check for active term from query parameter if preserve_url is enabled
-        $current_term_slug = '';
-        if ($args['preserve_url'] && isset($_GET[$args['taxonomy']])) {
-            $current_term_slug = sanitize_text_field($_GET[$args['taxonomy']]);
-        }
+    if (empty($args['taxonomy'])) {
+        return $items;
+    }
 
-        // Prepare URLs based on preserve_url setting
-        if ($args['preserve_url']) {
-            // Get current URL without query parameters
-            $current_url = strtok($_SERVER['REQUEST_URI'], '?');
-            $all_link = $current_url;
+    // Check for active term from query parameter if preserve_url is enabled
+    $current_term_slug = '';
+    if ($args['preserve_url'] && isset($_GET[$args['taxonomy']])) {
+        $current_term_slug = sanitize_text_field($_GET[$args['taxonomy']]);
+    }
 
-            // Mark "All" as current if no filter is active
-            if (empty($current_term_slug)) {
-                $button_classes_all[] = 'taxonomy-filters__item--current';
-            }
-        }
+    // Prepare URLs based on preserve_url setting
+    if ($args['preserve_url']) {
+        // Get current URL without query parameters
+        $current_url = strtok($_SERVER['REQUEST_URI'], '?');
+        $all_link = $current_url;
 
-        $all = [
-            'title' => \_x('All', 'Category filter clear button text', 'granola'),
-            'url' => $all_link,
-            'classes' => $button_classes_all,
-        ];
-
-        // Get post IDs for the current post type to filter terms
-        $post_ids = [];
-        if (!empty($post_type)) {
-            $posts = \get_posts([
-                'post_type' => $post_type,
-                'posts_per_page' => -1,
-                'fields' => 'ids',
-                'post_status' => 'publish',
-            ]);
-            $post_ids = $posts;
-        }
-
-        $term_args = [
-            'taxonomy' => $args['taxonomy'],
-            'parent' => 0,
-            'hide_empty' => true,
-        ];
-
-        // Filter by post type if we have post IDs
-        if (!empty($post_ids)) {
-            $term_args['object_ids'] = $post_ids;
-        }
-
-        $items = [];
-        $terms = \get_terms($term_args);
-
-        if (!empty($terms)) {
-            foreach ($terms as $key => $item) {
-                // Generate URL based on preserve_url setting
-                if ($args['preserve_url']) {
-                    $current_url = strtok($_SERVER['REQUEST_URI'], '?');
-                    $item_url = add_query_arg($args['taxonomy'], $item->slug, $current_url);
-                } else {
-                    $item_url = \get_term_link($item->slug, $item->taxonomy);
-                }
-
-                $items[$key] = [
-                    'title' => $item->name,
-                    'url' => $item_url,
-                    'classes' => $button_classes,
-                ];
-
-                // Add image if show_images is enabled and term has an image
-                if ($args['show_images']) {
-                    $term_image = \get_field('image', $item);
-                    if ($term_image && !empty($term_image['sizes']['thumbnail'])) {
-                        $items[$key]['image'] = $term_image['sizes']['thumbnail'];
-                        $items[$key]['image_alt'] = $term_image['alt'] ?? $item->name;
-                    }
-                }
-
-                // Check if current based on preserve_url mode
-                if ($args['preserve_url']) {
-                    if ($current_term_slug === $item->slug) {
-                        $items[$key]['classes'][] = 'taxonomy-filters__item--current';
-                    }
-                } else {
-                    if ($args['current_item'] === $item->term_id) {
-                        $items[$key]['classes'][] = 'taxonomy-filters__item--current';
-                    }
-                }
-            }
-
-            array_unshift($items, $all);
+        // Mark "All" as current if no filter is active
+        if (empty($current_term_slug)) {
+            $button_classes_all[] = 'taxonomy-filters__item--current';
         }
     }
+
+    $all = [
+        'title' => \_x('All', 'Category filter clear button text', 'granola'),
+        'url' => $all_link,
+        'classes' => $button_classes_all,
+    ];
+
+    // Get post IDs for the current post type to filter terms
+    $post_ids = [];
+    if (!empty($post_type)) {
+        $posts = \get_posts([
+            'post_type' => $post_type,
+            'posts_per_page' => -1,
+            'fields' => 'ids',
+            'post_status' => 'publish',
+        ]);
+        $post_ids = $posts;
+    }
+
+    $term_args = [
+        'taxonomy' => $args['taxonomy'],
+        'parent' => 0,
+        'hide_empty' => true,
+    ];
+
+    // Filter by post type if we have post IDs
+    if (!empty($post_ids)) {
+        $term_args['object_ids'] = $post_ids;
+    }
+
+    $terms = \get_terms($term_args);
+
+    if (empty($terms)) {
+        return $items;
+    }
+
+    foreach ($terms as $key => $item) {
+        // Generate URL based on preserve_url setting
+        if ($args['preserve_url']) {
+            $current_url = strtok($_SERVER['REQUEST_URI'], '?');
+            $item_url = add_query_arg($args['taxonomy'], $item->slug, $current_url);
+        } else {
+            $item_url = \get_term_link($item->slug, $item->taxonomy);
+        }
+
+        $items[$key] = [
+            'title' => $item->name,
+            'url' => $item_url,
+            'classes' => $button_classes,
+        ];
+
+        // Add image if show_images is enabled and term has an image
+        if ($args['show_images']) {
+            $term_image = \get_field('image', $item);
+            if ($term_image && !empty($term_image['sizes']['thumbnail'])) {
+                $items[$key]['image'] = $term_image['sizes']['thumbnail'];
+                $items[$key]['image_alt'] = $term_image['alt'] ?? $item->name;
+            }
+        }
+
+        // Check if current based on preserve_url mode
+        if ($args['preserve_url']) {
+            if ($current_term_slug === $item->slug) {
+                $items[$key]['classes'][] = 'taxonomy-filters__item--current';
+            }
+        } else {
+            if ($args['current_item'] === $item->term_id) {
+                $items[$key]['classes'][] = 'taxonomy-filters__item--current';
+            }
+        }
+    }
+
+    array_unshift($items, $all);
 
     return $items;
 }
