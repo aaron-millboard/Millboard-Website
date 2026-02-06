@@ -13,6 +13,7 @@ class ImageCategory
     public static function init(): void
     {
         \add_action('init', [__CLASS__, 'register_taxonomy']);
+        \add_filter('granola/templates/taxonomies', [__CLASS__, 'filter_granola_templates_taxonomies']);
     }
 
     /**
@@ -50,5 +51,18 @@ class ImageCategory
                 'slug'     => self::SLUG,
             ]
         );
+    }
+
+    /**
+     * Filter the Granola Templates Taxonomies array to enable Template Pages for this taxonomy.
+     *
+     * @see /Granola/WordPress/TemplatePage.php
+     *
+     * @return array The filtered taxonomy array.
+     */
+    public static function filter_granola_templates_taxonomies($taxonomies): array
+    {
+        $taxonomies[] = self::SLUG;
+        return $taxonomies;
     }
 }
