@@ -1,13 +1,13 @@
 <section <?= \Granola\Helpers::build_attributes($args['attributes']); ?>>
+    <?= \Granola\Component::get('taxonomy-filters', $args['filters_args']); ?>
+
     <?php if (!empty($args['gallery_items_args']['image_rows'])) { ?>
-        <?= \Granola\Component::get('taxonomy-filters', $args['filters_args']); ?>
-        
         <div class="gallery gallery__list__wrapper alignwide">
             <?= \Granola\Component::get('gallery/items', $args['gallery_items_args']); ?>
         </div>
-        
+
         <?= \Granola\Component::get('pagination', $args['pagination_args']); ?>
-        
+
         <dialog <?= \Granola\Helpers::build_attributes($args['lighbox_attributes']); ?>>
             <main class="gallery__lightbox__main" role="document">
                 <figure class="gallery__lightbox__main-image">
@@ -52,7 +52,7 @@
                     </div>
                 </div>
             </main>
-        </dialog>    
+        </dialog>
     <?php } else { ?>
         <?= \Granola\Component::get('no-content', [
             'object' => \get_post_type_object('image'),

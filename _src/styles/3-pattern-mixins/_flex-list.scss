@@ -5,7 +5,17 @@
     align-items: center;
     justify-content: flex-start;
 
-    @include flex-grid--auto;
     @include flex-grid--items;
+    @include list-reset-hard--li;
+}
+
+@mixin flex-list-auto {
+    @include list-reset-hard;
+    @include flex-grid;
+
+    align-items: center;
+    justify-content: flex-start;
+
+    @include flex-grid--auto;
     @include list-reset-hard--li;
 }

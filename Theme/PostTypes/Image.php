@@ -77,6 +77,9 @@ class Image
                     'width'          => 48,
                     'height'         => 48,
                 ],
+                'image_category' => [
+                    'taxonomy' => 'image_category',
+                ],
                 'updated' => [
                     'title'      => 'Updated',
                     'post_field' => 'post_modified',

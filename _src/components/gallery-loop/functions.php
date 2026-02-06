@@ -34,13 +34,21 @@ function filter_args(array $args): ?array
 
     // Filter by image_category if provided in URL
     if (isset($_GET['image_category']) && !empty($_GET['image_category'])) {
-        $query_args['tax_query'] = [
-            [
-                'taxonomy' => 'image_category',
-                'field' => 'slug',
-                'terms' => sanitize_text_field($_GET['image_category']),
-            ],
-        ];
+        $terms = explode(' ', sanitize_text_field($_GET['image_category']));
+
+        foreach ($terms as $term) {
+            $query_args['tax_query'][] = [
+                [
+                    'taxonomy' => 'image_category',
+                    'field' => 'slug',
+                    'terms' => $term,
+                ],
+            ];
+        }
+
+        if (count($terms) > 1) {
+            $query_args['tax_query'][]['relation'] = 'AND';
+        }
     }
 
     $query = new \WP_Query($query_args);

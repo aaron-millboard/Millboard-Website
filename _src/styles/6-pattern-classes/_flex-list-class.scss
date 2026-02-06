@@ -1,3 +1,7 @@
 .flex-list {
     @include flex-list;
 }
+
+.flex-list--auto {
+    @include flex-list-auto;
+}

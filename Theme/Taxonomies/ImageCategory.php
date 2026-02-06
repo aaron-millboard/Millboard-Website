@@ -13,6 +13,7 @@ class ImageCategory
     public static function init(): void
     {
         \add_action('init', [__CLASS__, 'register_taxonomy']);
+        \add_filter('granola/templates/taxonomies', [__CLASS__, 'filter_granola_templates_taxonomies']);
     }
 
     /**
@@ -39,7 +40,7 @@ class ImageCategory
 
                 // Extended taxonomy configuration.
                 'meta_box'         => 'simple',
-                'exclusive'        => true, // Only one can be selected.
+                'exclusive'        => false, // Only one can be selected.
                 'required'         => true,
                 'dashboard_glance' => true,
             ],
@@ -47,8 +48,21 @@ class ImageCategory
                 // Override the base names used for labels (optional).
                 'singular' => \__('Image Category', 'granola'),
                 'plural'   => \__('Image Categories', 'granola'),
-                'slug'     => self::SLUG,
+                'slug'     => 'image-category',
             ]
         );
+    }
+
+    /**
+     * Filter the Granola Templates Taxonomies array to enable Template Pages for this taxonomy.
+     *
+     * @see /Granola/WordPress/TemplatePage.php
+     *
+     * @return array The filtered taxonomy array.
+     */
+    public static function filter_granola_templates_taxonomies($taxonomies): array
+    {
+        $taxonomies[] = self::SLUG;
+        return $taxonomies;
     }
 }
