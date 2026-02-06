@@ -72,7 +72,7 @@ function get_taxonomy_items($args): array
     $post_type = get_post_type();
 
     // Get current URL without query parameters.
-    $current_url = \home_url($_SERVER['REQUEST_URI']);
+    $current_url = \network_home_url($_SERVER['REQUEST_URI']);
     if (empty($args['preserve_url'])) {
         $current_url = strtok($current_url, '?');
     }
@@ -199,7 +199,7 @@ function get_reset_item($args): array
     }
 
     $title = \_x('All', 'Category filter clear button text', 'granola');
-    $url = strtok(\home_url($_SERVER['REQUEST_URI']), '?');
+    $url = strtok(\network_home_url($_SERVER['REQUEST_URI']), '?');
     $classes = [
         'g-button',
         'taxonomy-filters__item',
