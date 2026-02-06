@@ -1,6 +1,8 @@
 @import '../../../core';
 
 .taxonomy-filters {
+    $this: &;
+
     max-width: var(--width--responsive--l);
     margin-left: auto;
     margin-right: auto;
@@ -52,20 +54,35 @@
 
     &__item {
         --button--border-color: var(--color--brand-1);
-        --button--padding-y: calc(var(--space--3xs) + 3px);
+        --button--padding-y: var(--space--3xs);
         --button--padding-x: var(--space--2xs);
-        text-transform: none;
 
         display: inline-flex;
         align-items: center;
-        gap: var(--space--2xs);
+        gap: 10px;
+        text-transform: none;
 
         &--current {
             @include button--interacted;
+            @include mask-icon;
+
+            &::after {
+                --icon-size: #{px-to-rem(18)};
+
+                display: block;
+                width: var(--icon-size);
+                height: var(--icon-size);
+                mask-image: url(#{asset-path('images/icons/cross.svg')});
+            }
+
+            #{$this}__image {
+                border: 1px solid currentColor;
+            }
         }
     }
 
     &__item-wrap {
+        &--all,
         &--current {
             order: -1;
         }

@@ -221,6 +221,9 @@ function get_reset_item($args): array
         'title' => $title,
         'url' => $url,
         'classes' => $classes,
-        'li_classes' => ['taxonomy-filters__item-wrap'],
+        'li_classes' => [
+            'taxonomy-filters__item-wrap',
+            'taxonomy-filters__item-wrap--all',
+        ],
     ];
 }
