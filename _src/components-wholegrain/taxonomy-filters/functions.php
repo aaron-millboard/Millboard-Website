@@ -77,12 +77,6 @@ function get_taxonomy_items($args): array
         $current_url = strtok($current_url, '?');
     }
 
-    // Check for active term from query parameter if preserve_url is enabled
-    $current_term_slug = '';
-    if (!empty($args['preserve_url']) && isset($_GET[$args['taxonomy']])) {
-        $current_term_slug = \sanitize_text_field($_GET[$args['taxonomy']]);
-    }
-
     // Get post IDs for the current post type to filter terms
     $post_ids = [];
     if (!empty($post_type)) {
@@ -127,9 +121,17 @@ function get_taxonomy_items($args): array
     foreach ($terms as $key => $item) {
         // Generate URL based on preserve_url setting
         if (!empty($args['preserve_url'])) {
-            $item_url = \add_query_arg([
-                $args['taxonomy'] => $item->slug,
-            ], $current_url);
+            $query_arg = isset($_GET[$args['taxonomy']]) ? \sanitize_text_field($_GET[$args['taxonomy']]) : null;
+
+            if (!empty($query_arg) && strpos($query_arg, $item->slug) === false) {
+                $item_url = \add_query_arg([
+                    $args['taxonomy'] => str_replace(' ', '+', $query_arg) . '+' . $item->slug,
+                ], $current_url);
+            } else {
+                $item_url = \add_query_arg([
+                    $args['taxonomy'] => $item->slug,
+                ], $current_url);
+            }
         } else {
             $item_url = \get_term_link($item->slug, $item->taxonomy);
         }
@@ -150,13 +152,19 @@ function get_taxonomy_items($args): array
             }
         }
 
+        // Check for active term from query parameter if preserve_url is enabled
+        $current_term_slug = '';
+        if (!empty($args['preserve_url']) && isset($_GET[$args['taxonomy']])) {
+            $current_term_slug = \sanitize_text_field($_GET[$args['taxonomy']]);
+        }
+
         // Check if current.
-        if ($args['current_item_id'] === $item->term_id || $current_term_slug === $item->slug) {
+        if ($args['current_item_id'] === $item->term_id || strpos($current_term_slug, $item->slug) !== false) {
             $items[$key]['classes'][] = 'taxonomy-filters__item--current';
             $items[$key]['li_classes'][] = 'taxonomy-filters__item-wrap--current';
 
             $query_arg = \sanitize_text_field($_GET[$args['taxonomy']]);
-            $cleaned_arg = preg_replace("/\+?{$query_arg}\+?/", '', $query_arg);
+            $cleaned_arg = trim(str_replace($item->slug, '', $query_arg));
             if (empty($cleaned_arg)) {
                 $items[$key]['url'] = \remove_query_arg($args['taxonomy'], $current_url);
             } else {
@@ -195,23 +203,17 @@ function get_reset_item($args): array
         'taxonomy-filters__item',
     ];
 
-    $url = \home_url($_SERVER['REQUEST_URI']);
-    if (empty($args['preserve_url'])) {
-        $url = strtok($url, '?');
+    $url = strtok(\home_url($_SERVER['REQUEST_URI']), '?');
+
+    // Check for active term from query parameter if preserve_url is enabled
+    $current_term_slug = '';
+    if (isset($_GET[$args['taxonomy']])) {
+        $current_term_slug = \sanitize_text_field($_GET[$args['taxonomy']]);
     }
 
-    // Prepare URLs based on preserve_url setting
-    if (!empty($args['preserve_url'])) {
-        // Check for active term from query parameter if preserve_url is enabled
-        $current_term_slug = '';
-        if (isset($_GET[$args['taxonomy']])) {
-            $current_term_slug = \sanitize_text_field($_GET[$args['taxonomy']]);
-        }
-
-        // Mark "All" as current if no filter is active
-        if (empty($current_term_slug)) {
-            $button_classes_all[] = 'taxonomy-filters__item--current';
-        }
+    // Mark "All" as current if no filter is active
+    if (empty($current_term_slug)) {
+        $button_classes_all[] = 'taxonomy-filters__item--current';
     }
 
     return [
