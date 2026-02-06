@@ -72,11 +72,14 @@ function get_taxonomy_items($args): array
     $post_type = get_post_type();
 
     // Get current URL without query parameters.
-    $current_url = strtok($_SERVER['REQUEST_URI'], '?');
+    $current_url = \home_url($_SERVER['REQUEST_URI']);
+    if (empty($args['preserve_url'])) {
+        $current_url = strtok($current_url, '?');
+    }
 
     // Check for active term from query parameter if preserve_url is enabled
     $current_term_slug = '';
-    if ($args['preserve_url'] && isset($_GET[$args['taxonomy']])) {
+    if (!empty($args['preserve_url']) && isset($_GET[$args['taxonomy']])) {
         $current_term_slug = \sanitize_text_field($_GET[$args['taxonomy']]);
     }
 
@@ -135,6 +138,7 @@ function get_taxonomy_items($args): array
             'title' => $item->name,
             'url' => $item_url,
             'classes' => $button_classes,
+            'li_classes' => ['taxonomy-filters__item-wrap'],
         ];
 
         // Add image if show_images is enabled and term has an image
@@ -146,11 +150,20 @@ function get_taxonomy_items($args): array
             }
         }
 
-        // Check if current based on preserve_url mode
-        if (!empty($args['preserve_url']) && $current_term_slug === $item->slug) {
+        // Check if current.
+        if ($args['current_item_id'] === $item->term_id || $current_term_slug === $item->slug) {
             $items[$key]['classes'][] = 'taxonomy-filters__item--current';
-        } elseif (empty($args['preserve_url']) && $args['current_item_id'] === $item->term_id) {
-            $items[$key]['classes'][] = 'taxonomy-filters__item--current';
+            $items[$key]['li_classes'][] = 'taxonomy-filters__item-wrap--current';
+
+            $query_arg = \sanitize_text_field($_GET[$args['taxonomy']]);
+            $cleaned_arg = preg_replace("/\+?{$query_arg}\+?/", '', $query_arg);
+            if (empty($cleaned_arg)) {
+                $items[$key]['url'] = \remove_query_arg($args['taxonomy'], $current_url);
+            } else {
+                $items[$key]['url'] = \add_query_arg([
+                    $args['taxonomy'] => $cleaned_arg,
+                ], $current_url);
+            }
         }
     }
 
@@ -182,10 +195,13 @@ function get_reset_item($args): array
         'taxonomy-filters__item',
     ];
 
+    $url = \home_url($_SERVER['REQUEST_URI']);
+    if (empty($args['preserve_url'])) {
+        $url = strtok($url, '?');
+    }
+
     // Prepare URLs based on preserve_url setting
     if (!empty($args['preserve_url'])) {
-        $url = strtok($_SERVER['REQUEST_URI'], '?');
-
         // Check for active term from query parameter if preserve_url is enabled
         $current_term_slug = '';
         if (isset($_GET[$args['taxonomy']])) {
@@ -202,5 +218,6 @@ function get_reset_item($args): array
         'title' => \_x('All', 'Category filter clear button text', 'granola'),
         'url' => $url,
         'classes' => $classes,
+        'li_classes' => ['taxonomy-filters__item-wrap'],
     ];
 }
