@@ -167,14 +167,10 @@ function get_taxonomy_items($args): array
         }
 
         // Check if current based on preserve_url mode
-        if ($args['preserve_url']) {
-            if ($current_term_slug === $item->slug) {
-                $items[$key]['classes'][] = 'taxonomy-filters__item--current';
-            }
-        } else {
-            if ($args['current_item'] === $item->term_id) {
-                $items[$key]['classes'][] = 'taxonomy-filters__item--current';
-            }
+        if (!empty($args['preserve_url']) && $current_term_slug === $item->slug) {
+            $items[$key]['classes'][] = 'taxonomy-filters__item--current';
+        } elseif (empty($args['preserve_url']) && $args['current_item'] === $item->term_id) {
+            $items[$key]['classes'][] = 'taxonomy-filters__item--current';
         }
     }
 
