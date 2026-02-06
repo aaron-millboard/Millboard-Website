@@ -21,6 +21,7 @@ function filter_args(array $args): ?array
         'description' => '',
         'header_cta' => [],
         'colour_variations' => [],
+        'width_variations' => [],
         'board_width_variations' => [],
     ], $args);
 
@@ -53,6 +54,33 @@ function filter_args(array $args): ?array
     // CTA under description
     $args['header_cta'] = \get_field('header_cta', $product->get_id());
     $args['header_cta']['content'] = \Granola\SVG::get('icons-custom/pencil.svg') . $args['header_cta']['title'];
+
+    // -------------------------------------------------------------------------
+    // 3. Variations (to be used in the variation selector component)
+    // -------------------------------------------------------------------------
+
+    $protected_variations = ['colour', 'board_width', 'width'];
+    $args['variations'] = [];
+    foreach ($protected_variations as $protected_variation) {
+        $repeater_data = $args[$protected_variation . '_variations'];
+        // Skip if corresponding repeater is empty
+        if (empty($repeater_data)) {
+            continue;
+        }
+
+        // get attribute label
+        $label = wc_attribute_label($protected_variation);
+        // Try to repeat with hyphen if slug returned
+        if ($label === $protected_variation) {
+            $label = wc_attribute_label(str_replace('_', '-', $protected_variation));
+        }
+
+        $args['variations'][] = [
+            'variation' => $protected_variation,
+            'heading' => sprintf(__('Select %s:', 'granola'), strtolower($label)),
+            'variations' => $repeater_data,
+        ];
+    }
 
     // -------------------------------------------------------------------------
     // Return the filtered args.
