@@ -80,6 +80,7 @@
     }
     
     .woocommerce-notices-wrapper > div,
+    .woocommerce-notices-wrapper > ul > li,
     .woocommerce-NoticeGroup li {
         margin-bottom: var(--space--l);
         padding: var(--space--s) var(--space--s);
@@ -89,6 +90,7 @@
         background-color: var(--color--brand-1);
         gap: var(--space--xs);
         border-top: 3px solid transparent;
+        list-style: none;
 
         &::before {
             flex-shrink: 0;
