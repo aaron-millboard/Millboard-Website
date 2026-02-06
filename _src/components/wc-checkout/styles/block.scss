@@ -52,6 +52,16 @@
 
             li {
                 margin: 0;
+
+                a {
+                    margin-left: 0;
+                    gap: 0;
+                    width: 100%;
+
+                    ::after {
+                        margin-left: auto;
+                    }
+                }
             }
         }
 
