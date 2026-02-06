@@ -9,7 +9,7 @@ function filter_args(array $args): ?array
     // ---------------------------------------
     $args = array_merge([
         'classes' => [],
-        'current_item' => 0,
+        'current_item_id' => 0,
         'label' => \__('Filter by', 'granola'),
         'show_images' => false,
         'preserve_url' => false,
@@ -54,33 +54,14 @@ function filter_args(array $args): ?array
 function get_taxonomy_items($args): array
 {
     $items = [];
-    $all_link = false;
-
-    // Initialize button classes
-    $button_classes = [
-        'g-button',
-        'taxonomy-filters__item',
-    ];
-    $button_classes_all = $button_classes;
-
-    $post_type = get_post_type();
 
     if (!empty($args['object'])) {
-        $object = $args['object'];
-
-        if ($object instanceof \WP_Term) {
-            $args['taxonomy'] = $object->taxonomy;
-            $args['current_item'] = $object->term_id;
-
-            // The 'first' post type is selected if this taxonomy is registered to multiple post types.
-            $all_link = \get_post_type_archive_link($post_type);
-        } elseif ($object instanceof \WP_Post_Type) {
+        if ($args['object'] instanceof \WP_Term) {
+            $args['taxonomy'] = $args['object']->taxonomy;
+            $args['current_item_id'] = $args['object']->term_id;
+        } elseif ($args['object'] instanceof \WP_Post_Type) {
             // Assume the taxonomy is 'category' by default.
-            // Additional logic (or multiple filters) needed if multiple taxonomies are registered to this post type.
             $args['taxonomy'] = 'category';
-
-            $button_classes_all[] = 'taxonomy-filters__item--current';
-            $all_link = \get_post_type_archive_link($post_type);
         }
     }
 
@@ -88,30 +69,16 @@ function get_taxonomy_items($args): array
         return $items;
     }
 
+    $post_type = get_post_type();
+
     // Get current URL without query parameters.
     $current_url = strtok($_SERVER['REQUEST_URI'], '?');
 
     // Check for active term from query parameter if preserve_url is enabled
     $current_term_slug = '';
     if ($args['preserve_url'] && isset($_GET[$args['taxonomy']])) {
-        $current_term_slug = sanitize_text_field($_GET[$args['taxonomy']]);
+        $current_term_slug = \sanitize_text_field($_GET[$args['taxonomy']]);
     }
-
-    // Prepare URLs based on preserve_url setting
-    if ($args['preserve_url']) {
-        $all_link = $current_url;
-
-        // Mark "All" as current if no filter is active
-        if (empty($current_term_slug)) {
-            $button_classes_all[] = 'taxonomy-filters__item--current';
-        }
-    }
-
-    $all = [
-        'title' => \_x('All', 'Category filter clear button text', 'granola'),
-        'url' => $all_link,
-        'classes' => $button_classes_all,
-    ];
 
     // Get post IDs for the current post type to filter terms
     $post_ids = [];
@@ -148,6 +115,12 @@ function get_taxonomy_items($args): array
         return $items;
     }
 
+    // Initialize button classes.
+    $button_classes = [
+        'g-button',
+        'taxonomy-filters__item',
+    ];
+
     foreach ($terms as $key => $item) {
         // Generate URL based on preserve_url setting
         if (!empty($args['preserve_url'])) {
@@ -176,12 +149,58 @@ function get_taxonomy_items($args): array
         // Check if current based on preserve_url mode
         if (!empty($args['preserve_url']) && $current_term_slug === $item->slug) {
             $items[$key]['classes'][] = 'taxonomy-filters__item--current';
-        } elseif (empty($args['preserve_url']) && $args['current_item'] === $item->term_id) {
+        } elseif (empty($args['preserve_url']) && $args['current_item_id'] === $item->term_id) {
             $items[$key]['classes'][] = 'taxonomy-filters__item--current';
         }
     }
 
-    array_unshift($items, $all);
+    // Add reset link that shows "All" posts.
+    $reset_item = get_reset_item($args);
+    if (!empty($reset_item)) {
+        array_unshift($items, $reset_item);
+    }
 
     return $items;
+}
+
+function get_reset_item($args): array
+{
+    $post_type = get_post_type();
+
+    if (!empty($args['object'])) {
+        if ($args['object'] instanceof \WP_Term || $args['object'] instanceof \WP_Post_Type) {
+            $url = \get_post_type_archive_link($post_type);
+
+            if ($args['object'] instanceof \WP_Post_Type) {
+                $classes[] = 'taxonomy-filters__item--current';
+            }
+        }
+    }
+
+    $classes = [
+        'g-button',
+        'taxonomy-filters__item',
+    ];
+
+    // Prepare URLs based on preserve_url setting
+    if (!empty($args['preserve_url'])) {
+        $url = strtok($_SERVER['REQUEST_URI'], '?');
+
+        // Check for active term from query parameter if preserve_url is enabled
+        $current_term_slug = '';
+        if (isset($_GET[$args['taxonomy']])) {
+            $current_term_slug = \sanitize_text_field($_GET[$args['taxonomy']]);
+        }
+
+        // Mark "All" as current if no filter is active
+        if (empty($current_term_slug)) {
+            $button_classes_all[] = 'taxonomy-filters__item--current';
+        }
+    }
+
+    return [
+        'title' => \_x('All', 'Category filter clear button text', 'granola'),
+        'url' => $url,
+        'classes' => $classes,
+    ];
 }
