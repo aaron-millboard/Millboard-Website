@@ -71,7 +71,10 @@ class Category
                 $archive_url = $cpt_object->rewrite['slug'];
 
                 $url = str_replace('category', "{$archive_url}/category", $term_link);
+                // Remove duplicate with post URL
                 $url = str_replace("{$post_page_slug}/{$archive_url}", $archive_url, $url);
+                // remove duplicate with archive URL
+                $url = str_replace("{$archive_url}/{$archive_url}", $archive_url, $url);
             }
         }
         return $url;
