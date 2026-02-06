@@ -48,7 +48,7 @@ class ImageCategory
                 // Override the base names used for labels (optional).
                 'singular' => \__('Image Category', 'granola'),
                 'plural'   => \__('Image Categories', 'granola'),
-                'slug'     => self::SLUG,
+                'slug'     => 'image-category',
             ]
         );
     }
