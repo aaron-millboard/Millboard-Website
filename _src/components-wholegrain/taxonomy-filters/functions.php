@@ -73,7 +73,6 @@ function get_taxonomy_items($args): array
             $args['current_item'] = $object->term_id;
 
             // The 'first' post type is selected if this taxonomy is registered to multiple post types.
-            $post_type = get_post_type();
             $all_link = \get_post_type_archive_link($post_type);
         } elseif ($object instanceof \WP_Post_Type) {
             // Assume the taxonomy is 'category' by default.
@@ -89,6 +88,9 @@ function get_taxonomy_items($args): array
         return $items;
     }
 
+    // Get current URL without query parameters.
+    $current_url = strtok($_SERVER['REQUEST_URI'], '?');
+
     // Check for active term from query parameter if preserve_url is enabled
     $current_term_slug = '';
     if ($args['preserve_url'] && isset($_GET[$args['taxonomy']])) {
@@ -97,8 +99,6 @@ function get_taxonomy_items($args): array
 
     // Prepare URLs based on preserve_url setting
     if ($args['preserve_url']) {
-        // Get current URL without query parameters
-        $current_url = strtok($_SERVER['REQUEST_URI'], '?');
         $all_link = $current_url;
 
         // Mark "All" as current if no filter is active
@@ -116,13 +116,19 @@ function get_taxonomy_items($args): array
     // Get post IDs for the current post type to filter terms
     $post_ids = [];
     if (!empty($post_type)) {
-        $posts = \get_posts([
+        $post_query = new \WP_Query([
             'post_type' => $post_type,
-            'posts_per_page' => -1,
+            'posts_per_page' => 1000, // arbitrary large number.
             'fields' => 'ids',
             'post_status' => 'publish',
+
+            // Query optimisation.
+            'no_found_rows' => true,
+            'update_post_meta_cache' => false,
+            'update_post_term_cache' => false,
         ]);
-        $post_ids = $posts;
+
+        $post_ids = $post_query->posts;
     }
 
     $term_args = [
@@ -144,9 +150,10 @@ function get_taxonomy_items($args): array
 
     foreach ($terms as $key => $item) {
         // Generate URL based on preserve_url setting
-        if ($args['preserve_url']) {
-            $current_url = strtok($_SERVER['REQUEST_URI'], '?');
-            $item_url = add_query_arg($args['taxonomy'], $item->slug, $current_url);
+        if (!empty($args['preserve_url'])) {
+            $item_url = \add_query_arg([
+                $args['taxonomy'] => $item->slug,
+            ], $current_url);
         } else {
             $item_url = \get_term_link($item->slug, $item->taxonomy);
         }
