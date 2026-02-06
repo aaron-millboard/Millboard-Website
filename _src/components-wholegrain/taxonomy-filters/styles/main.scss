@@ -1,7 +1,6 @@
 @import '../../../core';
 
 .taxonomy-filters {
-
     max-width: var(--width--responsive--l);
     margin-left: auto;
     margin-right: auto;
@@ -34,6 +33,7 @@
 
     &__label {
         @include typestyle-h4;
+
         text-transform: uppercase;
         margin: 0;
         padding-top: var(--space--2xs);
@@ -63,7 +63,6 @@
         &--current {
             @include button--interacted;
         }
-
     }
 
     &__image {
