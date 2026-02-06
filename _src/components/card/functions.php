@@ -135,9 +135,13 @@ function handle_wp_object_args(array $args, object $object): array
             $terms = \get_the_terms($object->ID, 'category');
             if ($terms && !is_wp_error($terms)) {
                 foreach ($terms as $term) {
+                    // Get plain link
+                    $term_link = \get_term_link($term->term_id);
+                    // Filter link
+                    $term_link = \Theme\Taxonomies\Category::filter_category_link_per_cpt($term_link, 'case-study');
                     $args['labels'][] = [
                         'content' => $term->name,
-                        'url' => \get_term_link($term->term_id),
+                        'url' => $term_link,
                     ];
                 }
             }
