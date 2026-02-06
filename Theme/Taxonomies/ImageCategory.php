@@ -40,7 +40,7 @@ class ImageCategory
 
                 // Extended taxonomy configuration.
                 'meta_box'         => 'simple',
-                'exclusive'        => true, // Only one can be selected.
+                'exclusive'        => false, // Only one can be selected.
                 'required'         => true,
                 'dashboard_glance' => true,
             ],
