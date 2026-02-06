@@ -262,7 +262,7 @@ window.addEventListener('load', () => {
 		}
 
 		// Round up the area in meters
-		let totalSquareMeters = Math.ceil(areaInMeters);
+		let totalSquareMeters = Math.round(areaInMeters);
 
 		// Update area display - always show square meters, rounded up, no decimals
 		resultArea.textContent = totalSquareMeters;
@@ -271,10 +271,10 @@ window.addEventListener('load', () => {
 		if (forceUpdate) {
 			let adjustedInputValue = totalSquareMeters;
 			if (selectedUnit === 'feet') {
-				adjustedInputValue = Math.ceil(totalSquareMeters * SQUARE_METERS_TO_FEET);
+				adjustedInputValue = Math.round(totalSquareMeters * SQUARE_METERS_TO_FEET);
 			}
 			if (includeWastage) {
-				adjustedInputValue = Math.ceil(adjustedInputValue / 1.1);
+				adjustedInputValue = Math.round(adjustedInputValue / 1.1);
 			}
 			areaInput.value = adjustedInputValue;
 		} else {
@@ -308,10 +308,10 @@ window.addEventListener('load', () => {
 
 			if (previousUnit === 'meters' && newUnit === 'feet') {
 				// Converting from meters to feet - multiply and round up
-				newValue = Math.ceil(currentValue * SQUARE_METERS_TO_FEET);
+				newValue = Math.round(currentValue * SQUARE_METERS_TO_FEET);
 			} else if (previousUnit === 'feet' && newUnit === 'meters') {
 				// Converting from feet to meters - divide and round up
-				newValue = Math.ceil(currentValue / SQUARE_METERS_TO_FEET);
+				newValue = Math.round(currentValue / SQUARE_METERS_TO_FEET);
 			}
 
 			if (newValue !== undefined) {
@@ -456,10 +456,10 @@ window.addEventListener('load', () => {
 
 			if (event.target.checked) {
 				// Add 10% and round up
-				value = Math.ceil(value * 1.1);
+				value = Math.round(value * 1.1);
 			} else {
 				// Remove 10% and round down
-				value = Math.floor(value / 1.1);
+				value = Math.round(value / 1.1);
 			}
 
 			if (value < 1) {
