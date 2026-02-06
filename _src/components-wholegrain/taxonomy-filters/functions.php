@@ -198,12 +198,12 @@ function get_reset_item($args): array
         }
     }
 
+    $title = \_x('All', 'Category filter clear button text', 'granola');
+    $url = strtok(\home_url($_SERVER['REQUEST_URI']), '?');
     $classes = [
         'g-button',
         'taxonomy-filters__item',
     ];
-
-    $url = strtok(\home_url($_SERVER['REQUEST_URI']), '?');
 
     // Check for active term from query parameter if preserve_url is enabled
     $current_term_slug = '';
@@ -213,11 +213,12 @@ function get_reset_item($args): array
 
     // Mark "All" as current if no filter is active
     if (empty($current_term_slug)) {
-        $button_classes_all[] = 'taxonomy-filters__item--current';
+        $title = \_x('Displaying all', 'Category filter clear button text', 'granola');
+        $classes[] = 'taxonomy-filters__item--current';
     }
 
     return [
-        'title' => \_x('All', 'Category filter clear button text', 'granola'),
+        'title' => $title,
         'url' => $url,
         'classes' => $classes,
         'li_classes' => ['taxonomy-filters__item-wrap'],
