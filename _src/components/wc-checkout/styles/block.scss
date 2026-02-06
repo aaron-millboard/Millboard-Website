@@ -58,7 +58,7 @@
                     gap: var(--space--3xs);
                     width: 100%;
 
-                    ::after {
+                    &::after {
                         margin-left: auto;
                     }
                 }
