@@ -12,7 +12,7 @@
 
     <ul class="taxonomy-filters__list flex-list">
         <?php foreach ($args['items'] as $item) { ?>
-            <li class="taxonomy-filters__item-wrap">
+            <li class="taxonomy-filters__item">
                 <?php if (!empty($item['image'])) { ?>
                     <a href="<?= esc_url($item['url']); ?>" class="<?= implode(' ', $item['classes']); ?>">
                         <img src="<?= esc_url($item['image']); ?>" alt="<?= esc_attr($item['image_alt']); ?>" class="taxonomy-filters__image" />
