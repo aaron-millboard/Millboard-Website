@@ -36,6 +36,23 @@ function filter_args(array $args): ?array
         $args['classes'][] = 'taxonomy-filters--' . $args['taxonomy'];
     }
 
+    $args['items'] = get_taxonomy_items($args);
+
+    // ---------------------------------------
+    // Bail early - return null for no output.
+    // ---------------------------------------
+    if (empty($args['items'])) {
+        return null;
+    }
+
+    // -------------------------------------------------------------------------
+    // Return the filtered args.
+    // -------------------------------------------------------------------------
+    return $args;
+}
+
+function get_taxonomy_items($args): array
+{
     $all_link = false;
 
     // Initialize button classes
@@ -115,10 +132,11 @@ function filter_args(array $args): ?array
             $term_args['object_ids'] = $post_ids;
         }
 
-        $items = \get_terms($term_args);
+        $items = [];
+        $terms = \get_terms($term_args);
 
-        if (!empty($items)) {
-            foreach ($items as $key => $item) {
+        if (!empty($terms)) {
+            foreach ($terms as $key => $item) {
                 // Generate URL based on preserve_url setting
                 if ($args['preserve_url']) {
                     $current_url = strtok($_SERVER['REQUEST_URI'], '?');
@@ -127,7 +145,7 @@ function filter_args(array $args): ?array
                     $item_url = \get_term_link($item->slug, $item->taxonomy);
                 }
 
-                $args['items'][$key] = [
+                $items[$key] = [
                     'title' => $item->name,
                     'url' => $item_url,
                     'classes' => $button_classes,
@@ -137,36 +155,26 @@ function filter_args(array $args): ?array
                 if ($args['show_images']) {
                     $term_image = \get_field('image', $item);
                     if ($term_image && !empty($term_image['sizes']['thumbnail'])) {
-                        $args['items'][$key]['image'] = $term_image['sizes']['thumbnail'];
-                        $args['items'][$key]['image_alt'] = $term_image['alt'] ?? $item->name;
+                        $items[$key]['image'] = $term_image['sizes']['thumbnail'];
+                        $items[$key]['image_alt'] = $term_image['alt'] ?? $item->name;
                     }
                 }
 
                 // Check if current based on preserve_url mode
                 if ($args['preserve_url']) {
                     if ($current_term_slug === $item->slug) {
-                        $args['items'][$key]['classes'][] = 'taxonomy-filters__item--current';
+                        $items[$key]['classes'][] = 'taxonomy-filters__item--current';
                     }
                 } else {
                     if ($args['current_item'] === $item->term_id) {
-                        $args['items'][$key]['classes'][] = 'taxonomy-filters__item--current';
+                        $items[$key]['classes'][] = 'taxonomy-filters__item--current';
                     }
                 }
             }
 
-            array_unshift($args['items'], $all);
+            array_unshift($items, $all);
         }
     }
 
-    // ---------------------------------------
-    // Bail early - return null for no output.
-    // ---------------------------------------
-    if (empty($args['items'])) {
-        return null;
-    }
-
-    // -------------------------------------------------------------------------
-    // Return the filtered args.
-    // -------------------------------------------------------------------------
-    return $args;
+    return $items;
 }
