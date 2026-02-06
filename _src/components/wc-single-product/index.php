@@ -1,3 +1,5 @@
+<?php woocommerce_output_all_notices(); ?>
+
 <div <?= \Granola\Helpers::build_attributes($args['attributes']); ?>>
     <div class="product__gallery">
         <?php echo \Granola\Component::get('wc-single-product/gallery'); ?>

@@ -1,4 +1,7 @@
 .product {
+    --block--margin-top: var(--space--l);
+    --block--margin-bottom: var(--space--xl);
+
     $this: &;
 
     display: grid;
@@ -24,18 +27,20 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
             aspect-ratio: 1 / 2;
+            opacity: 0;
+            transition: transition(opacity);
 
-            &::-webkit-scrollbar { 
+            &::-webkit-scrollbar {
                 display: none;
             }
 
-            &__trigger {
-                display: none;
-            }
-
-            &__image {
-                width: 100%;
-                aspect-ratio: 1 / 1;
+            &__wrapper {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+                gap: var(--space--m);
+                list-style: none;
+                padding: 0;
+                margin: 0;
 
                 img {
                     width: 100%;
@@ -44,32 +49,19 @@
                 }
             }
 
-            // First gallery item.
-            .flex-viewport {
-                flex: 0 0 auto;
-            }
+            &__image {
+                width: 100%;
+                aspect-ratio: 1 / 1;
 
-            ol.flex-control-nav {
-                display: grid;
-                grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-                gap: var(--space--m);
-                list-style: none;
-                padding: 0;
-                margin: 0;
+                // Target every 3rd li.
+                &:nth-child(3n + 1) {
+                    grid-column: span 2;
+                }
 
-                li {
-                    margin: 0;
-
-                    img {
-                        width: 100%;
-                        aspect-ratio: 1 / 1;
-                        object-fit: cover;
-                    }
-
-                    // Target every 3rd li.
-                    &:nth-child(3n) {
-                        grid-column: span 2;
-                    }
+                img {
+                    width: 100%;
+                    aspect-ratio: 1 / 1;
+                    object-fit: cover;
                 }
             }
         }

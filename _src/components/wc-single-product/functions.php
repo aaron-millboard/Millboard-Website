@@ -10,7 +10,6 @@ function filter_args(array $args): ?array
         return [];
     }
 
-
     // -------------------------------------------------------------------------
     // Default arguments.
     // -------------------------------------------------------------------------
@@ -30,6 +29,7 @@ function filter_args(array $args): ?array
     // -------------------------------------------------------------------------
     $args['classes'] = array_merge([
         'wp-block',
+        'woocommerce',
     ], \wc_get_product_class('', $product));
 
     $args['id'] = "product-{$product->get_id()}";

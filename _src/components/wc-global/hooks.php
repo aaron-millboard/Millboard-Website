@@ -2,23 +2,26 @@
 
 namespace Granola\Components\WC_Globals;
 
-add_action("init", function () {
-    // Declare WooCommerce support
-    add_theme_support('woocommerce');
-});
+// Declare WooCommerce support.
+\add_theme_support('woocommerce');
 
-// Disable WooCommerce default styles
-add_filter('woocommerce_enqueue_styles', '__return_empty_array');
+// Remove lightbox functionality.
+\remove_theme_support('wc-product-gallery-zoom');
+\remove_theme_support('wc-product-gallery-lightbox');
+\remove_theme_support('wc-product-gallery-slider');
 
-// chgange wc thumbnail size in single product gallery
-add_filter('woocommerce_gallery_thumbnail_size', function ($size) {
+// Disable WooCommerce default styles.
+\add_filter('woocommerce_enqueue_styles', '__return_empty_array');
+
+// Change WC thumbnail size in single product gallery.
+\add_filter('woocommerce_gallery_thumbnail_size', function ($size) {
     return 'large';
 });
 
-// change wc image size in single product gallery
-add_filter('woocommerce_gallery_image_size', function ($size) {
+// Change WC image size in single product gallery.
+\add_filter('woocommerce_gallery_image_size', function ($size) {
     return 'full';
 });
 
-
-remove_action('woocommerce_single_variation', 'woocommerce_single_variation', 10); // removes variation data
+// Remove variation data
+\remove_action('woocommerce_single_variation', 'woocommerce_single_variation', 10);

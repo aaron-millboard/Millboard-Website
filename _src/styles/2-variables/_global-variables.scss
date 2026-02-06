@@ -52,7 +52,7 @@
     // ---------------------------------------------------
     // Grids
     // ---------------------------------------------------
-    --grid--column-gap: var(--space--responsive--m);
+    --grid--column-gap: var(--space--m);
     --grid--row-gap: var(--grid--column-gap);
     --grid--columns: 1;
     --grid--auto-fit--min: #{px-to-rem(300)};
