@@ -169,7 +169,7 @@ function get_taxonomy_items($args): array
                 $items[$key]['url'] = \remove_query_arg($args['taxonomy'], $current_url);
             } else {
                 $items[$key]['url'] = \add_query_arg([
-                    $args['taxonomy'] => $cleaned_arg,
+                    $args['taxonomy'] => str_replace(' ', '+', $cleaned_arg),
                 ], $current_url);
             }
         }
