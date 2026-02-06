@@ -1,7 +1,7 @@
 @mixin button-variables {
     --button--font-size: #{rfs(15, 16)};
 
-    --button--padding-y: var(--space--2xs);
+    --button--padding-y: #{px-to-rem(14)};
     --button--padding-x: var(--space--s);
 
     --button--border-width: var(--border-width--s);

@@ -5,7 +5,6 @@
     align-items: center;
     justify-content: center;
     padding: var(--button--padding-y) var(--button--padding-x);
-    padding-bottom: calc(var(--button--padding-y) - 4px);
     border-width: var(--button--border-width);
     border-radius: 0;
     border-style: solid;
@@ -47,10 +46,8 @@
     --button--background-color--hover: transparent;
 }
 
-
 /* Simulates active/pressed state (same as on interaction) */
 @mixin button--interacted {
-
     border-color: var(--button--border-color--hover);
     background-color: var(--button--background-color--hover);
     color: var(--button--color--hover);
@@ -115,7 +112,6 @@
 }
 
 @mixin button--secondary {
-
     --button--color: var(--color--foreground);
     --button--color--hover: var(--color--foreground);
     --button--background-color: transparent;
