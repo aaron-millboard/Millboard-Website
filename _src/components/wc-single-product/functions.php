@@ -69,10 +69,15 @@ function filter_args(array $args): ?array
         }
 
         // get attribute label
-        $label = wc_attribute_label('pa_' . $protected_variation);
+        $attr_slug = 'pa_' . $protected_variation;
+        $label = wc_attribute_label($attr_slug);
         // Try to repeat with hyphen if slug returned
-        if ($label === $protected_variation) {
-            $label = wc_attribute_label('pa_' . str_replace('_', '-', $protected_variation));
+        if ($label === $attr_slug) {
+            $label = wc_attribute_label(str_replace('_', '-', $attr_slug));
+        }
+        // If still slug just replace underscores with spaces
+        if ($label === $attr_slug) {
+            $label = str_replace('_', ' ', $protected_variation);
         }
 
         $args['selectors'][] = [
