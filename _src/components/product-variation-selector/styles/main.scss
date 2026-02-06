@@ -42,7 +42,8 @@
             }
         }
 
-        &--board_width {
+        &--board_width,
+        &--width {
             background-color: transparent;
             padding: var(--space--2xs) var(--space--s);
             border: 2px solid var(--color--brand-3);
