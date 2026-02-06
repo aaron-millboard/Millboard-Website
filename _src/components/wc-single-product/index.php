@@ -33,8 +33,8 @@
         </div>
 
         <?php
-        if (!empty($args['variations'])) {
-            foreach ($args['variations'] as $variation) {
+        if (!empty($args['selectors'])) {
+            foreach ($args['selectors'] as $variation) {
                 echo \Granola\Component::get('product-variation-selector', $variation);
             }
         }

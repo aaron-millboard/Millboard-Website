@@ -60,7 +60,7 @@ function filter_args(array $args): ?array
     // -------------------------------------------------------------------------
 
     $protected_variations = ['colour', 'board_width', 'width'];
-    $args['variations'] = [];
+    $args['selectors'] = [];
     foreach ($protected_variations as $protected_variation) {
         $repeater_data = $args[$protected_variation . '_variations'];
         // Skip if corresponding repeater is empty
@@ -69,13 +69,13 @@ function filter_args(array $args): ?array
         }
 
         // get attribute label
-        $label = wc_attribute_label($protected_variation);
+        $label = wc_attribute_label('pa_' . $protected_variation);
         // Try to repeat with hyphen if slug returned
         if ($label === $protected_variation) {
-            $label = wc_attribute_label(str_replace('_', '-', $protected_variation));
+            $label = wc_attribute_label('pa_' . str_replace('_', '-', $protected_variation));
         }
 
-        $args['variations'][] = [
+        $args['selectors'][] = [
             'variation' => $protected_variation,
             'heading' => sprintf(__('Select %s:', 'granola'), strtolower($label)),
             'variations' => $repeater_data,
