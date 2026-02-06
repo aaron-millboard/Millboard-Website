@@ -203,6 +203,7 @@ function get_reset_item($args): array
     $classes = [
         'g-button',
         'taxonomy-filters__item',
+        'taxonomy-filters__item--all',
     ];
 
     // Check for active term from query parameter if preserve_url is enabled

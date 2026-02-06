@@ -64,15 +64,18 @@
 
         &--current {
             @include button--interacted;
-            @include mask-icon;
 
-            &::after {
-                --icon-size: #{px-to-rem(18)};
+            &:not(.taxonomy-filters__item--all) {
+                @include mask-icon;
 
-                display: block;
-                width: var(--icon-size);
-                height: var(--icon-size);
-                mask-image: url(#{asset-path('images/icons/cross.svg')});
+                &::after {
+                    --icon-size: #{px-to-rem(18)};
+
+                    display: block;
+                    width: var(--icon-size);
+                    height: var(--icon-size);
+                    mask-image: url(#{asset-path('images/icons/cross.svg')});
+                }
             }
 
             #{$this}__image {
