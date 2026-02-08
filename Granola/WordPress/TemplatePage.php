@@ -470,17 +470,14 @@ class TemplatePage
 
         $template_page_id = \get_term_meta($queried_object->term_id, 'template_page', true);
 
-        // If no template page ID, return.
+        // If we have a template page ID, check if it's valid...
         if (!empty($template_page_id)) {
-            return;
-        }
+            $template_page = \get_post($template_page_id);
 
-        // If we have a template page ID, get the post content.
-        $template_page = \get_post($template_page_id);
-
-        // Bail early - template page set already.
-        if (self::is_valid_template_page($template_page)) {
-            return;
+            // Bail early - valid template page set already.
+            if (self::is_valid_template_page($template_page)) {
+                return;
+            }
         }
 
         $admin_bar->add_menu([
