@@ -15,18 +15,6 @@ class Map {
         // Map container.
         this.mapContainerEl = this.el.querySelector('.map__map-container');
 
-        // Filters.
-        this.filtersButton = this.el.querySelector('[aria-controls="map-filter"');
-        this.filtersExpander = null;
-        this.filtersContainerEl = this.el.querySelector('.map__filters');
-        this.filterFormEl = this.filtersContainerEl.querySelector('form');
-        this.filtergroupEls = this.filterFormEl.querySelectorAll('fieldset[name^="map-filtergroup-"]');
-        this.filterEls = this.filterFormEl.querySelectorAll('input[name^="map-filter-"]');
-        this.filtersTogglerContextAppliedEl = this.filtersContainerEl.querySelector(
-            '.map__map-filters-toggler-context-applied'
-        );
-        this.filtersClearButton = this.el.querySelector('.map__filters__buttons__clear');
-
         // Search.
         this.searchInput = this.el.querySelector('#map--map--search_input');
 
@@ -63,11 +51,6 @@ class Map {
 
     init() {
         this.LMAP_DISTANCE_CENTER = L.latLng(52.3, -1.4);
-
-        this.filtergroupEls.forEach((el) => {
-            const id = el.getAttribute('name').split('map-filtergroup-')[1];
-            this.appliedFilterSlugsByFiltergroup[id] = [];
-        });
 
         this.initLeafletMap();
         this.initLeafletMarkers();

@@ -28,8 +28,6 @@
                 </select>
             </div>
         </div>
-
-        <?= Granola\Component::get('map/filters'); ?>
     </div>
 
     <div class="map__body">
