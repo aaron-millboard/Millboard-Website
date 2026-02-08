@@ -34,6 +34,10 @@
             gap: var(--space--l);
 
             @include mq(medium) {
+                grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            }
+
+            @include mq(large) {
                 grid-template-columns: minmax(0, px-to-rem(400)) minmax(0, 1fr) auto;
             }
         }
@@ -81,9 +85,18 @@
             align-items: center;
             gap: var(--space--2xs);
 
+            @include mq($from: medium, $until: large) {
+                grid-column-end: span 2;
+            }
+
+            @include mq($until: large) {
+                order: -1;
+            }
+
             &::before {
                 --mask-icon--size: 24px;
 
+                flex: 0 0 auto;
                 width: var(--mask-icon--size);
                 height: var(--mask-icon--size);
                 mask-image: url(#{asset-path('images/icons/crosshair.svg')});
@@ -95,7 +108,10 @@
         display: flex;
         gap: var(--space--3xs);
         align-items: center;
-        justify-content: flex-end;
+
+        @include mq(medium) {
+            justify-content: flex-end;
+        }
 
         &__label {
             flex: 0 0 auto;
@@ -103,7 +119,9 @@
         }
 
         &__input {
-            max-width: min-content;
+            @include mq($until: medium) {
+                max-width: min-content;
+            }
         }
     }
 
@@ -113,7 +131,11 @@
         height: px-to-rem(600);
 
         @include mq(medium) {
-            grid-template-columns: px-to-rem(400) 1fr;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        }
+
+        @include mq(large) {
+            grid-template-columns: px-to-rem(400) minmax(0, 1fr);
         }
     }
 
