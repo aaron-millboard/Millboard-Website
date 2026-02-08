@@ -33,13 +33,21 @@
                 </label>
 
                 <select id="map-distance-select" class="map__distance__input">
-                    <option value="10">10 miles</option>
-                    <option value="25">25 miles</option>
-                    <option value="50">50 miles</option>
-                    <option value="100">100 miles</option>
-                    <option value="150">150 miles</option>
-                    <option value="250">250 miles</option>
-                    <option value="500">500 miles</option>
+                    <option value="">
+                        <?= esc_html_x('Any', 'Map distance selector default option text', 'granola'); ?>
+                    </option>
+
+                    <?php foreach ($args['distances'] as $value) { ?>
+                        <option value="<?= esc_attr($value); ?>">
+                            <?= esc_html(
+                                sprintf(
+                                    // translators: Distance amount.
+                                    _x('%d miles', 'Map distance selector option text', 'granola'),
+                                    $value
+                                )
+                            ); ?>
+                        </option>
+                    <?php } ?>
                 </select>
             </div>
         </form>
