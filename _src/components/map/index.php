@@ -3,16 +3,23 @@
 
 <div <?= \Granola\Helpers::build_attributes($args['attributes']); ?>>
     <div class="map__header">
-        <form class="map__search" method="post">
-            <input
-                id="map--map--search_input"
-                type="text"
-                name="map--map--search"
-                form="map-filters-form"
-                placeholder="<?= esc_html_x('Search...', 'Map search input placeholder', 'granola'); ?>"
-            >
+        <form class="map__search-form" method="post">
+            <div class="map__search-wrapper">
+                <label class="map__search-label visually-hidden" for="map-search-input">
+                    <?= esc_html_x('Search', 'Map search input label', 'granola'); ?>
+                </label>
 
-            <?= \Granola\Component::get('button', $args['search_submit']); ?>
+                <input
+                    id="map-search-input"
+                    type="text"
+                    name="map--map--search"
+                    form="map-filters-form"
+                    class="map__search-input"
+                    placeholder="<?= esc_html_x('Search...', 'Map search input placeholder', 'granola'); ?>"
+                >
+
+                <?= \Granola\Component::get('button', $args['search_submit']); ?>
+            </div>
 
             <div class="map__distance">
                 <label class="map__distance__label" for="map-distance-select">

@@ -16,7 +16,7 @@ class Map {
         this.mapContainerEl = this.el.querySelector('.map__map-container');
 
         // Search.
-        this.searchInput = this.el.querySelector('#map--map--search_input');
+        this.searchInput = this.el.querySelector('#map-search-input');
 
         this.mobileMediaQueryRefEl = document.querySelector('.site-header__burger');
 
