@@ -3,7 +3,7 @@
 
 <div <?= \Granola\Helpers::build_attributes($args['attributes']); ?>>
     <div class="map__header">
-        <div class="map__header__search">
+        <form class="map__search" method="post">
             <input
                 id="map--map--search_input"
                 type="text"
@@ -11,6 +11,8 @@
                 form="map-filters-form"
                 placeholder="<?= esc_html_x('Search...', 'Map search input placeholder', 'granola'); ?>"
             >
+
+            <?= \Granola\Component::get('button', $args['search_submit']); ?>
 
             <div class="map__distance">
                 <label class="map__distance__label" for="map-distance-select">
@@ -27,7 +29,7 @@
                     <option value="500">500 miles</option>
                 </select>
             </div>
-        </div>
+        </form>
     </div>
 
     <div class="map__body">
@@ -40,7 +42,9 @@
                         <?= Granola\Component::get('map/listing', $item); ?>
                     <?php } ?>
                 <?php } else { ?>
-                    <strong class="map__sidebar__no-content"><?= esc_html__('No listings found...', 'granola'); ?></strong>
+                    <strong class="map__sidebar__no-content">
+                        <?= esc_html__('No listings found...', 'granola'); ?>
+                    </strong>
                 <?php } ?>
             </div>
         </div>

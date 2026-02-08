@@ -43,6 +43,16 @@ function filter_args(array $args): ?array
         ],
     ];
 
+    $args['search_submit'] = [
+        'type' => 'submit',
+        'content' => \__('Search', 'granola'),
+        'classes' => [
+            'g-button',
+            'g-button--icon',
+            'map__search-submit',
+        ],
+    ];
+
     // -------------------------------------------------------------------------
     // Return the filtered args.
     // -------------------------------------------------------------------------

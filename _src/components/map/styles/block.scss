@@ -26,12 +26,21 @@
         }
     }
 
-    &__header {
-        &__search {
-            display: grid;
-            align-items: center;
-            grid-template-columns: minmax(0, 1fr) auto;
-            gap: var(--space--l);
+    &__search {
+        display: grid;
+        align-items: center;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: var(--space--l);
+    }
+
+    &__search-submit {
+        width: px-to-rem(66);
+        height: px-to-rem(66);
+
+        &::after {
+            --mask-icon--size: 24px;
+
+            mask-image: url(#{asset-path('images/icons/search.svg')});
         }
     }
 
