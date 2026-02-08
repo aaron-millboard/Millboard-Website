@@ -56,7 +56,7 @@
                     <?php } ?>
                 <?php } else { ?>
                     <strong class="map__sidebar__no-content">
-                        <?= esc_html__('No listings found...', 'granola'); ?>
+                        <?= esc_html__('Please try widening your search area.', 'granola'); ?>
                     </strong>
                 <?php } ?>
             </div>
