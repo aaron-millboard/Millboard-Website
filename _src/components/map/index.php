@@ -2,9 +2,9 @@
     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
 
 <div <?= \Granola\Helpers::build_attributes($args['attributes']); ?>>
-    <div class="map__header">
-        <form class="map__search-form" method="post">
-            <div class="map__search-wrapper">
+    <div class="map__search">
+        <form class="map__search__form" method="post">
+            <div class="map__search__input-wrapper">
                 <label class="map__search-label visually-hidden" for="map-search-input">
                     <?= esc_html_x('Search', 'Map search input label', 'granola'); ?>
                 </label>
@@ -14,12 +14,18 @@
                     type="text"
                     name="map--map--search"
                     form="map-filters-form"
-                    class="map__search-input"
+                    class="map__search__input"
                     placeholder="<?= esc_html_x('Search...', 'Map search input placeholder', 'granola'); ?>"
                 >
 
                 <?= \Granola\Component::get('button', $args['search_submit']); ?>
             </div>
+
+            <?php if (!empty($args['search_description'])) { ?>
+                <span class="map__search__description">
+                    <?= esc_html($args['search_description']); ?>
+                </span>
+            <?php } ?>
 
             <div class="map__distance">
                 <label class="map__distance__label" for="map-distance-select">

@@ -27,39 +27,67 @@
         }
     }
 
-    &__search-form {
-        display: grid;
-        align-items: center;
-        grid-template-columns: minmax(0, 1fr) auto;
-        gap: var(--space--l);
-    }
+    &__search {
+        &__form {
+            display: grid;
+            align-items: center;
+            gap: var(--space--l);
 
-    &__search-wrapper {
-        display: grid;
-        max-width: px-to-rem(400);
-        grid-template-columns: minmax(0, 1fr) px-to-rem(66);
-    }
+            @include mq(medium) {
+                grid-template-columns: minmax(0, px-to-rem(400)) minmax(0, 1fr) auto;
+            }
+        }
 
-    &__search-label {
-        margin: 0;
-    }
+        &__input-wrapper {
+            display: grid;
+            max-width: px-to-rem(400);
+            grid-template-columns: minmax(0, 1fr) px-to-rem(66);
 
-    &__search-input {
-        --input--border-color: black;
-        --input--border-color--focus: black;
-        --input--background-color: transparent;
+            + #{$this}__distance {
+                @include mq(medium) {
+                    grid-column-end: span 2;
+                }
+            }
+        }
 
-        border-right: 0;
-    }
+        &__label {
+            margin: 0;
+        }
 
-    &__search-submit {
-        width: px-to-rem(66);
-        height: px-to-rem(66);
+        &__input {
+            --input--border-color: black;
+            --input--border-color--focus: black;
+            --input--background-color: transparent;
 
-        &::after {
-            --mask-icon--size: 24px;
+            border-right: 0;
+        }
 
-            mask-image: url(#{asset-path('images/icons/search.svg')});
+        &__submit {
+            width: px-to-rem(66);
+            height: px-to-rem(66);
+
+            &::after {
+                --mask-icon--size: 24px;
+
+                mask-image: url(#{asset-path('images/icons/search.svg')});
+            }
+        }
+
+        &__description {
+            @include typestyle-h6;
+            @include mask-icon(before);
+
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space--2xs);
+
+            &::before {
+                --mask-icon--size: 24px;
+
+                width: var(--mask-icon--size);
+                height: var(--mask-icon--size);
+                mask-image: url(#{asset-path('images/icons/crosshair.svg')});
+            }
         }
     }
 
@@ -67,10 +95,15 @@
         display: flex;
         gap: var(--space--3xs);
         align-items: center;
+        justify-content: flex-end;
 
         &__label {
             flex: 0 0 auto;
             margin: 0;
+        }
+
+        &__input {
+            max-width: min-content;
         }
     }
 

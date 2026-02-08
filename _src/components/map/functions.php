@@ -26,6 +26,18 @@ function filter_args(array $args): ?array
 
     $args['items'] = get_item_data($args);
 
+    if (!empty($args['content_type'])) {
+        $post_type_object = \get_post_type_object($args['content_type']);
+
+        if (!empty($post_type_object)) {
+            $args['search_description'] = sprintf(
+                // translators: Content type plural, e.g. "installers".
+                \__('Find %s near me', 'granola'),
+                $post_type_object->label
+            );
+        }
+    }
+
     $args['sidebar_heading'] = [
         'el' => 'h3',
         'content' => sprintf(
@@ -49,7 +61,7 @@ function filter_args(array $args): ?array
         'classes' => [
             'g-button',
             'g-button--icon',
-            'map__search-submit',
+            'map__search__submit',
         ],
     ];
 
