@@ -1,6 +1,7 @@
 table {
     width: 100%;
     border-collapse: collapse;
+    border: 1px solid;
 
     caption {
         margin-bottom: calc(var(--space--base) / 2);
