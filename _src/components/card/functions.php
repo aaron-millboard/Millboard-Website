@@ -11,7 +11,8 @@ function filter_args(array $args): ?array
         'attributes' => [],
         'classes' => [],
         'type' => '', // Usually post_type.
-        // 'background' => 'white',
+
+
         // Content.
         'heading' => '',
         'subheading' => '',
@@ -23,8 +24,9 @@ function filter_args(array $args): ?array
         'media' => [],
         'orientation' => 'vertical',
         'hover_effect' => true,
-        'hover_effect_top' => __('View', 'granola'),
-        'hover_effect_bottom' => __('Article', 'granola'),
+        'hover_effect_top' => \__('View', 'granola'),
+        'hover_effect_bottom' => \__('Article', 'granola'),
+
         // Display.
         'config' => [
             'show_read_more' => $args['show_read_more'] ?? false,
