@@ -9,16 +9,17 @@ function filter_args(array $args): ?array
     // -------------------------------------------------------------------------
     $args = array_merge([
         'classes' => [],
+        'product_id' => \get_the_ID(),
         'samples' => [],
     ], $args);
+
+    $args['samples'] = \get_field('samples', $args['product_id']);
+
+    \Granola\Debug::dump($args);
 
     // ---------------------------------------
     // Bail early - return null for no output.
     // ---------------------------------------
-    if (!\is_singular('product')) {
-        return null;
-    }
-
     if (empty($args['samples'])) {
         return null;
     }

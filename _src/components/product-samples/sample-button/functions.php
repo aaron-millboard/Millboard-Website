@@ -83,6 +83,9 @@ function filter_args(array $args): ?array
         ],
     ]);
 
+    // Clean up unnecessary args.
+    unset($args['product']);
+
     // -------------------------------------------------------------------------
     // Return the filtered args.
     // -------------------------------------------------------------------------

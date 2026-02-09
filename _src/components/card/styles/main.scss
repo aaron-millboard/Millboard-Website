@@ -145,4 +145,28 @@
             }
         }
     }
+
+    //---------------------------------------------------
+    // Product card
+    //---------------------------------------------------
+    &[data-type='product'] {
+        .media-object {
+            &__heading {
+                @include typestyle-h6;
+            }
+
+            &__list {
+                margin-top: var(--space--3xs);
+            }
+
+            &__list__item {
+                .product-samples__button > span {
+                    display: inline-flex;
+                    flex-flow: row wrap;
+                    gap: var(--space--3xs);
+                    justify-content: center;
+                }
+            }
+        }
+    }
 }

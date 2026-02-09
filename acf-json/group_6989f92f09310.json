@@ -85,9 +85,9 @@
     "location": [
         [
             {
-                "param": "block",
+                "param": "post_type",
                 "operator": "==",
-                "value": "acf\/wc-single-product"
+                "value": "product"
             }
         ]
     ],
@@ -102,5 +102,5 @@
     "show_in_rest": 0,
     "display_title": "",
     "granola_save_location": 0,
-    "modified": 1770650265
+    "modified": 1770659236
 }
