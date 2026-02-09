@@ -1,5 +1,5 @@
 <div <?= \Granola\Helpers::build_attributes($args['attributes']); ?>>
-    <?php if (!empty($args['heading'])) { ?>
-        <?= \Granola\Component::get('heading', $args['heading']); ?>
+    <?php foreach ($args['samples'] as $sample) { ?>
+        <?= \Granola\Component::get('button', $sample); ?>
     <?php } ?>
 </div>

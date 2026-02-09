@@ -40,7 +40,9 @@
         }
         ?>
 
-        <?= \Granola\Component::get('product-samples'); ?>
+        <?= \Granola\Component::get('product-samples', [
+            'samples' => $args['samples'],
+        ]); ?>
 
         <?php
             /*
