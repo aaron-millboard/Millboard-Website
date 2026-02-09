@@ -44,10 +44,18 @@ function filter_args(array $args): ?array
         $dimensions = $product->get_dimensions(false);
         $price = $product->get_price();
         $product_cart_id = $cart->generate_cart_id($product_id);
+        $product_in_cart = $cart->find_product_in_cart($product_cart_id);
 
         // Generate a "remove from cart" url for small samples that are already in the cart.
-        if ($sample['sample_type'] === 'small' && !empty($product_cart_id)) {
-            $url = \wc_get_cart_remove_url($product_cart_id);
+        if ($sample['sample_type'] === 'small' && !empty($product_in_cart)) {
+            // $url = \wc_get_cart_remove_url($product_cart_id);
+            // Otherwise, just generate a simple "add to cart" url.
+            $url = \wp_nonce_url(
+                \add_query_arg([
+                    'remove_item' => $product_cart_id,
+                ], \get_the_permalink()),
+                'woocommerce-cart'
+            );
         } else {
             // Otherwise, just generate a simple "add to cart" url.
             $url = \add_query_arg([
