@@ -15,6 +15,7 @@
     &__heading {
         @include typestyle-h1;
         line-height: 1.15;
+        letter-spacing: 0.14em;
     }
 
     @include mq($until: medium) {
@@ -43,7 +44,6 @@
         }
 
         &__media {
-            
             aspect-ratio: 1 / 1;
             max-width: 100%;
 
@@ -63,7 +63,6 @@
                 aspect-ratio: 1 / 1;
             }
         }
-        
     }
 
     &:not(.has-background) {
@@ -87,14 +86,13 @@
     }
 
     &.has-background {
-
         --media-object--inner-padding-x: 0;
 
         @include mq($until: medium) {
             --media-object--inner-padding-x: var(--space--m);
         }
 
-        &[data-media-position="after"] {
+        &[data-media-position='after'] {
             #{$media-object}__content {
                 @include mq(medium) {
                     padding-inline-start: var(--media-object--gap);
@@ -102,7 +100,7 @@
             }
         }
 
-        &[data-media-position="before"] {
+        &[data-media-position='before'] {
             #{$media-object}__content {
                 @include mq(medium) {
                     padding-inline-end: var(--media-object--gap);
@@ -111,7 +109,7 @@
         }
     }
 
-    &[data-orientation=horizontal][data-media] {
+    &[data-orientation='horizontal'][data-media] {
         @include mq(medium) {
             --media-object--media--ratio: 1 / 1;
         }
@@ -140,10 +138,9 @@
     }
 
     ul.list {
-
         flex-direction: row;
         flex-wrap: wrap;
-        
+
         li {
             display: flex;
             width: max-content;
