@@ -163,7 +163,7 @@ function get_taxonomy_items($args): array
             $items[$key]['classes'][] = 'taxonomy-filters__item--current';
             $items[$key]['li_classes'][] = 'taxonomy-filters__item-wrap--current';
 
-            $query_arg = \sanitize_text_field($_GET[$args['taxonomy']]);
+            $query_arg = !empty($_GET[$args['taxonomy']]) ? \sanitize_text_field($_GET[$args['taxonomy']]) : '';
             $cleaned_arg = trim(str_replace($item->slug, '', $query_arg));
             if (empty($cleaned_arg)) {
                 $items[$key]['url'] = \remove_query_arg($args['taxonomy'], $current_url);
@@ -206,14 +206,11 @@ function get_reset_item($args): array
         'taxonomy-filters__item--all',
     ];
 
-    // Check for active term from query parameter if preserve_url is enabled
-    $current_term_slug = '';
-    if (isset($_GET[$args['taxonomy']])) {
-        $current_term_slug = \sanitize_text_field($_GET[$args['taxonomy']]);
-    }
+    // Check for active term from query parameter or location.
+    $is_filtered_page = isset($_GET[$args['taxonomy']]) || \Granola\Helpers::is_taxonomy();
 
     // Mark "All" as current if no filter is active
-    if (empty($current_term_slug)) {
+    if (empty($is_filtered_page)) {
         $title = \_x('Displaying all', 'Category filter clear button text', 'granola');
         $classes[] = 'taxonomy-filters__item--current';
     }

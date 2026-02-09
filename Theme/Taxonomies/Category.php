@@ -50,6 +50,7 @@ class Category
      */
     public static function filter_category_link_per_cpt(string $term_link, string $post_type = ''): string
     {
+        $url = '';
 
         if (!$post_type) {
             $post_type = get_post_type();
@@ -77,6 +78,7 @@ class Category
                 $url = str_replace("{$archive_url}/{$archive_url}", $archive_url, $url);
             }
         }
+
         return $url;
     }
 
