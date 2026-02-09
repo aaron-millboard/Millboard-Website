@@ -43,19 +43,19 @@ function filter_args(array $args): ?array
     $product_in_cart = $cart->find_product_in_cart($product_cart_id);
 
     // Generate a "remove from cart" url for small samples that are already in the cart.
-    if ($args['sample_type'] === 'small' && !empty($product_in_cart)) {
-        $args['url'] = \wp_nonce_url(
-            \add_query_arg([
-                'remove_item' => $product_cart_id,
-            ], \get_the_permalink()),
-            'woocommerce-cart'
-        );
-    } else {
+    // if ($args['sample_type'] === 'small' && !empty($product_in_cart)) {
+    //     $args['url'] = \wp_nonce_url(
+    //         \add_query_arg([
+    //             'remove_item' => $product_cart_id,
+    //         ], \get_the_permalink()),
+    //         'woocommerce-cart'
+    //     );
+    // } else {
         // Otherwise, just generate a simple "add to cart" url.
         $args['url'] = \add_query_arg([
             'add-to-cart' => $product_id,
         ], \get_the_permalink());
-    }
+    // }
 
     $args['content'] = \Granola\Component::get('element', [
         'content' => sprintf(
