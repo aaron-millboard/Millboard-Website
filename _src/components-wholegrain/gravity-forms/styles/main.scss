@@ -3,6 +3,7 @@
 
 .gform_wrapper {
     --input--gap: var(--space--l);
+    --grid--column-gap: var(--space--m);
 
     margin-top: var(--space--base);
     margin-bottom: var(--space--base);
@@ -50,6 +51,10 @@
     [type='button'],
     [type='submit'] {
         @include button;
+
+        &:hover {
+            @include button--interacted;
+        }
     }
 
     .gform_ajax_spinner {
@@ -81,7 +86,7 @@
             grid-template-columns: repeat(12, minmax(0, 1fr)); // Fix grid blowout
 
             @media only screen and (max-width: 641px) {
-                input:not([type=radio]):not([type=checkbox]):not([type=image]):not([type=file]) {
+                input:not([type='radio']):not([type='checkbox']):not([type='image']):not([type='file']) {
                     line-height: inherit;
                 }
             }
@@ -92,6 +97,9 @@
 
 .gform_confirmation_message {
     @include typestyle-h4;
+
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
 }
 
 .gform_heading {
@@ -206,7 +214,6 @@
 // Fields
 //
 .gfield--type-fileupload {
-
     .gform_drop_area {
         --input--border-color: var(--color--brand-4);
 
@@ -217,7 +224,7 @@
         justify-content: center;
         align-items: center;
         gap: var(--space--3xs);
-        padding-top: calc(var(--space--l) + 2rem);
+        padding-top: calc(var(--space--l) + 3rem);
 
         .button {
             @include button-reset-hard;
@@ -231,7 +238,7 @@
             height: 40px;
             display: block;
             position: absolute;
-            top: 1rem;
+            top: 2rem;
         }
     }
 
@@ -246,7 +253,6 @@
         margin-top: var(--space--3xs);
         margin-bottom: 0;
     }
-
 }
 
 .gfield--type-fileupload > .gfield_description {
@@ -281,6 +287,12 @@
 
 .ginput_complex {
     @include flex-grid;
+
+    --grid--columns: 1;
+
+    @include mq(medium) {
+        --grid--columns: 2;
+    }
 
     > * {
         @include flex-grid-item;
@@ -340,7 +352,8 @@
         background: var(--color--error);
         color: var(--color--white);
 
-        + * { // This should be the file name
+        + * {
+            // This should be the file name
             overflow: hidden;
             flex: 1 1 auto;
             text-overflow: ellipsis;
@@ -353,16 +366,16 @@
 }
 
 .gfield--type-radio {
-
     .gfield_radio {
         display: flex;
         flex-direction: column;
         gap: var(--space--4xs);
     }
-
 }
 
 .gchoice {
+    display: flex;
+    align-items: center;
 
     .gfield_checkbox &,
     .gfield_radio & {
@@ -378,6 +391,15 @@
 
     .gfield_checkbox & {
         @include checkbox-field;
+
+        label {
+            padding-left: 2rem;
+            margin-bottom: 0;
+
+            &:hover {
+                text-decoration: underline;
+            }
+        }
     }
 
     .gfield_radio & {
@@ -385,6 +407,10 @@
 
         label {
             margin-bottom: 0;
+
+            &:hover {
+                text-decoration: underline;
+            }
         }
 
         // Without this, a <br> tag adds unnecessary spacing if/when the 'other' radio field is used
@@ -399,8 +425,6 @@
         }
     }
 }
-
-
 
 // Uncomment this if you're using 'Below Inputs' for Sub-Label placement on complex fields (e.g. name, address)
 // .field_sublabel_below {
