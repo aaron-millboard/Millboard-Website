@@ -58,6 +58,19 @@
             flex-direction: column;
             gap: var(--mega-menu--widget-gap);
             align-items: flex-start;
+
+            a {
+                img {
+                    transition: opacity 0.2s ease;
+                }
+
+                &:hover,
+                &:focus {
+                    img {
+                        opacity: 0.8;
+                    }
+                }
+            }
         }
     }
 
