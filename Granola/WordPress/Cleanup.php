@@ -48,6 +48,16 @@ class Cleanup
         // Turn off admin email check on development
         // ---------------------------------------
         \add_action('admin_email_check_interval', [__CLASS__, 'turn_off_admin_email_check_development']);
+
+        // ---------------------------------------
+        // Removes the FSE "Design" page under Appearance
+        // ---------------------------------------
+        add_action('admin_menu', [__CLASS__, 'remove_fse_design_admin_page']);
+
+        // ---------------------------------------
+        // Removes the "Custom CSS" option in the Customizer.
+        // ---------------------------------------
+        \add_action('customize_register', [__CLASS__, 'remove_custom_css_option']);
     }
 
     /**
@@ -116,7 +126,7 @@ class Cleanup
     /**
      * Remove customise link from main admin bar.
      */
-    public static function admin_bar_customise_clean_up($wp_admin_bar)
+    public static function admin_bar_customise_clean_up(\WP_Admin_Bar $wp_admin_bar): void
     {
         $wp_admin_bar->remove_menu('customize');
     }
@@ -150,12 +160,34 @@ class Cleanup
         \remove_meta_box('wpseo-dashboard-overview', 'dashboard', 'normal');
     }
 
-    /** Turn off admin email check.
-    */
+    /**
+     * Turn off admin email check.
+     */
     public static function turn_off_admin_email_check_development()
     {
         if (\wp_get_environment_type() === 'development') {
             return '__return_false';
         }
+    }
+
+    /**
+     * Removes the FSE "Design" page under Appearance.
+     *
+     * @return void
+     */
+    public static function remove_fse_design_admin_page(): void
+    {
+        \remove_submenu_page('themes.php', 'site-editor.php');
+    }
+
+    /**
+     * Removes the "Custom CSS" option in the Customizer.
+     *
+     * @param WP_Customize_Manager $wp_customize
+     * @return void
+     */
+    public static function remove_custom_css_option(\WP_Customize_Manager $wp_customize): void
+    {
+        $wp_customize->remove_control('custom_css');
     }
 }
