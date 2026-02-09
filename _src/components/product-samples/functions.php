@@ -30,8 +30,9 @@ function filter_args(array $args): ?array
         'product-samples',
     ], $args['classes']);
 
+    $cart = WC()->cart;
 
-    $args['samples'] = array_map(function ($sample) {
+    $args['samples'] = array_map(function ($sample) use ($cart) {
         $product = $sample['product'] ?? null;
 
         if (empty($product)) {
@@ -39,10 +40,23 @@ function filter_args(array $args): ?array
         }
 
         $product = \wc_get_product($product);
+        $product_id = $product->get_id();
         $dimensions = $product->get_dimensions(false);
         $price = $product->get_price();
+        $product_cart_id = $cart->generate_cart_id($product_id);
+
+        // Generate a "remove from cart" url for small samples that are already in the cart.
+        if ($sample['sample_type'] === 'small' && !empty($product_cart_id)) {
+            $url = \wc_get_cart_remove_url($product_cart_id);
+        } else {
+            // Otherwise, just generate a simple "add to cart" url.
+            $url = \add_query_arg([
+                'add-to-cart' => $product_id,
+            ], \get_the_permalink());
+        }
 
         $button_args = [
+            'url' => $url,
             'content' => \Granola\Component::get('element', [
                 'content' => sprintf(
                     // translators: Sample type.
