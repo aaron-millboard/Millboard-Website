@@ -53,6 +53,11 @@ class Cleanup
         // Removes the FSE "Design" page under Appearance
         // ---------------------------------------
         add_action('admin_menu', [__CLASS__, 'remove_fse_design_admin_page']);
+
+        // ---------------------------------------
+        // Removes the "Custom CSS" option in the Customizer.
+        // ---------------------------------------
+        \add_action('customize_register', [__CLASS__, 'remove_custom_css_option']);
     }
 
     /**
@@ -173,5 +178,16 @@ class Cleanup
     public static function remove_fse_design_admin_page(): void
     {
         \remove_submenu_page('themes.php', 'site-editor.php');
+    }
+
+    /**
+     * Removes the "Custom CSS" option in the Customizer.
+     *
+     * @param WP_Customize_Manager $wp_customize
+     * @return void
+     */
+    public static function remove_custom_css_option(\WP_Customize_Manager $wp_customize): void
+    {
+        $wp_customize->remove_control('custom_css');
     }
 }
