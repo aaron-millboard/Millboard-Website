@@ -3,6 +3,30 @@
     "title": "Product Samples",
     "fields": [
         {
+            "key": "field_698b08a617a7c",
+            "label": "Product Type",
+            "name": "product_type",
+            "aria-label": "",
+            "type": "button_group",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "choices": {
+                "full": "Full",
+                "sample": "Sample"
+            },
+            "default_value": "full",
+            "return_format": "value",
+            "allow_null": 0,
+            "allow_in_bindings": 0,
+            "layout": "horizontal"
+        },
+        {
             "key": "field_6989f92f0cbe4",
             "label": "Samples",
             "name": "samples",
@@ -10,7 +34,15 @@
             "type": "repeater",
             "instructions": "",
             "required": 0,
-            "conditional_logic": 0,
+            "conditional_logic": [
+                [
+                    {
+                        "field": "field_698b08a617a7c",
+                        "operator": "==",
+                        "value": "full"
+                    }
+                ]
+            ],
             "wrapper": {
                 "width": "",
                 "class": "",
@@ -74,12 +106,51 @@
                     "multiple": 0,
                     "allow_null": 0,
                     "allow_in_bindings": 0,
-                    "bidirectional": 0,
+                    "bidirectional": 1,
+                    "bidirectional_target": [
+                        "field_698b08d917a7d"
+                    ],
                     "ui": 1,
-                    "bidirectional_target": [],
                     "parent_repeater": "field_6989f92f0cbe4"
                 }
             ]
+        },
+        {
+            "key": "field_698b08d917a7d",
+            "label": "Main Product",
+            "name": "main_product",
+            "aria-label": "",
+            "type": "post_object",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": [
+                [
+                    {
+                        "field": "field_698b08a617a7c",
+                        "operator": "==",
+                        "value": "sample"
+                    }
+                ]
+            ],
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "post_type": [
+                "product"
+            ],
+            "post_status": [
+                "publish"
+            ],
+            "taxonomy": "",
+            "return_format": "object",
+            "multiple": 0,
+            "allow_null": 0,
+            "allow_in_bindings": 0,
+            "bidirectional": 0,
+            "ui": 1,
+            "bidirectional_target": []
         }
     ],
     "location": [
@@ -102,5 +173,5 @@
     "show_in_rest": 0,
     "display_title": "",
     "granola_save_location": 0,
-    "modified": 1770659236
+    "modified": 1770719687
 }
