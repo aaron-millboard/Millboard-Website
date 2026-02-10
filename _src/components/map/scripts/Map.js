@@ -316,7 +316,7 @@ class Map {
      * Inits the filter event listeners.
      */
     initSearch() {
-        if (!this.searchInput || this.searchSubmit) {
+        if (!this.searchInput || !this.searchSubmit) {
             return;
         }
 
