@@ -4,7 +4,6 @@
 .woocommerce-checkout .page-header,
 .woocommerce-cart .page-header,
 .woocommerce-account .page-header {
-
     // color context
     --input--color--focus: var(--color--foreground);
 
@@ -27,7 +26,6 @@
     }
 
     &__content {
-
         padding-top: var(--space--xl);
         padding-bottom: var(--space--xl);
         text-align: center;
@@ -46,13 +44,10 @@
     &__inner {
         padding-bottom: var(--space--m);
     }
-
 }
-
 
 /* Class .woocommerce also set on <body> in WooCommerce pages so we target only blocks */
 .blocks > .woocommerce {
-
     --block--max-width: var(--width--responsive--l);
 
     max-width: var(--block--max-width);
@@ -78,7 +73,7 @@
         margin-right: auto;
         position: relative;
     }
-    
+
     .woocommerce-notices-wrapper > div,
     .woocommerce-notices-wrapper > ul > li,
     .woocommerce-NoticeGroup li {
@@ -124,7 +119,6 @@
                 mask-repeat: no-repeat;
                 mask-size: #{px-to-rem(16)};
             }
-
         }
 
         // Success notice specific styles
@@ -142,7 +136,6 @@
 
     // Quantity input styles
     .quantity-wrapper {
-
         display: flex;
         flex-direction: column;
         gap: var(--space--2xs);
@@ -155,14 +148,13 @@
         }
 
         .quantity {
-
             display: flex;
             align-items: center;
             border: 1px solid var(--color--black);
             width: fit-content;
             padding: 0;
 
-            input[type="number"] {
+            input[type='number'] {
                 --input--background-color: transparent;
                 --input--color: var(--color--black);
                 --input--color--focus: var(--color--black);
@@ -176,7 +168,6 @@
                 -moz-appearance: textfield;
                 user-select: none;
 
-                
                 &::-webkit-outer-spin-button,
                 &::-webkit-inner-spin-button {
                     -webkit-appearance: none;
@@ -201,7 +192,6 @@
                 justify-content: center;
                 color: var(--color--black);
             }
-
         }
 
         .quantity-wastage {
@@ -213,7 +203,7 @@
                 margin: 0;
                 @include typestyle-small;
 
-                input[type="checkbox"] {
+                input[type='checkbox'] {
                     width: 18px;
                     height: 18px;
                     cursor: pointer;
@@ -229,7 +219,6 @@
 
     // Cart item card (used in cart and checkout review order)
     .cart__item {
-
         $this: &;
 
         display: flex;
@@ -240,7 +229,6 @@
         border-bottom: 1px solid var(--color--brand-5);
 
         &__image {
-
             a {
                 width: #{px-to-rem(112)};
                 aspect-ratio: 1 / 1;
@@ -280,7 +268,6 @@
 
             &__attribute {
                 @include typestyle-small;
-                margin-top: var(--space--xs);
             }
 
             .product-price {
@@ -289,6 +276,10 @@
 
             &__name {
                 font-weight: 400;
+
+                + .cart__item__details__attribute {
+                    margin-top: var(--space--xs);
+                }
             }
 
             &__colour {
@@ -322,7 +313,7 @@
                 flex-direction: row;
                 justify-content: space-between;
                 align-items: center;
-                gap : var(--space--s);
+                gap: var(--space--s);
 
                 &--left {
                     .actual-quantity {
@@ -335,7 +326,6 @@
 
         // Amends for smaller card (checkout review order or perhaps minicart in the future)
         &.small {
-
             padding-bottom: var(--space--s);
             border-bottom: 1px solid var(--color--brand-5);
 
@@ -372,9 +362,6 @@
                     font-weight: 600;
                 }
             }
-
         }
     }
-    
-
 }
