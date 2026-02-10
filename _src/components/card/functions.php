@@ -165,6 +165,15 @@ function handle_wp_object_args(array $args, object $object): array
                     }, $samples);
                 }
             }
+
+            $primary_term = \Theme\Utils\Taxonomies::get_primary_term($object, 'product_cat');
+
+            if (!empty($primary_term)) {
+                $args['heading'] = $primary_term->name;
+
+                $colour = $product->get_attribute('colour');
+                $args['subheading'] = !empty($colour) ? $colour : $product->get_title();
+            }
         }
     } elseif ($object instanceof \WP_Term) {
         // -------------------------------------------------------------------------

@@ -62,7 +62,7 @@ function filter_args(array $args): ?array
         // Otherwise, just generate a simple "add to cart" url.
         $args['url'] = \add_query_arg([
             'add-to-cart' => $product_id,
-        ], \get_the_permalink());
+        ], '');
     // }
 
     $args['content'] = \Granola\Component::get('element', [

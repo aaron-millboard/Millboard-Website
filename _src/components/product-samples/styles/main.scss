@@ -14,11 +14,14 @@
 
         &__dimensions {
             font-weight: var(--type--1--font-weight);
+            letter-spacing: 0;
             text-transform: none;
         }
 
         &__price {
             font-weight: var(--type--3--font-weight);
+            letter-spacing: 0;
+            text-transform: none;
         }
     }
 }

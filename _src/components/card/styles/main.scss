@@ -151,12 +151,25 @@
     //---------------------------------------------------
     &[data-type='product'] {
         .media-object {
+            &__header {
+                gap: 0;
+            }
+
+            &__heading,
+            &__subheading {
+                @include typestyle-large;
+
+                font-weight: var(--type--1--font-weight);
+                text-transform: uppercase;
+            }
+
             &__heading {
-                @include typestyle-h6;
+                font-weight: var(--type--2--font-weight);
             }
 
             &__list {
                 margin-top: var(--space--3xs);
+                gap: var(--space--3xs);
             }
 
             &__list__item {
