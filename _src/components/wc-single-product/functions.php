@@ -23,6 +23,7 @@ function filter_args(array $args): ?array
         'colour_variations' => [],
         'width_variations' => [],
         'board_width_variations' => [],
+        'samples' => [],
     ], $args);
 
     // -------------------------------------------------------------------------

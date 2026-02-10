@@ -1,0 +1,24 @@
+.product-samples {
+    $this: &;
+
+    display: grid;
+    gap: var(--space--2xs);
+
+    &__button {
+        flex-flow: row wrap;
+        gap: var(--space--3xs);
+
+        &__content {
+            flex: 1 1 100%;
+        }
+
+        &__dimensions {
+            font-weight: var(--type--1--font-weight);
+            text-transform: none;
+        }
+
+        &__price {
+            font-weight: var(--type--3--font-weight);
+        }
+    }
+}
