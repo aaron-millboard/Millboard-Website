@@ -36,13 +36,14 @@
             display: flex;
             flex-flow: column;
 
+            @include mq(medium) {
+                @include typestyle-h2;
+            }
+
             @include mq(large) {
                 margin-left: var(--space--xl);
                 margin-right: var(--space--xl);
-            }
-
-            @include mq(medium, $until: large) {
-                @include typestyle-h2;
+                font-size: px-to-rem(56);
             }
         }
 
