@@ -10,7 +10,9 @@ function filter_args(array $args): ?array
         'preheading' => '',
         'heading' => '',
         'description' => '',
+        'form_type' => '',
         'gravity_form_id' => '',
+        'hubspot_script' => '',
     ], $args);
 
     $args['classes'] = array_merge([
@@ -19,7 +21,11 @@ function filter_args(array $args): ?array
         'alignfull',
     ], $args['classes']);
 
-    if (empty($args['gravity_form_id'])) {
+    if ($args['form_type'] === 'gravityforms' && empty($args['gravity_form_id'])) {
+        return null;
+    }
+
+    if ($args['form_type'] === 'hubspot' && empty($args['hubspot_script'])) {
         return null;
     }
 

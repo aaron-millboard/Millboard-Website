@@ -11,7 +11,8 @@ function filter_args(array $args): ?array
         'attributes' => [],
         'classes' => [],
         'type' => '', // Usually post_type.
-        // 'background' => 'white',
+
+
         // Content.
         'heading' => '',
         'subheading' => '',
@@ -23,8 +24,9 @@ function filter_args(array $args): ?array
         'media' => [],
         'orientation' => 'vertical',
         'hover_effect' => true,
-        'hover_effect_top' => __('View', 'granola'),
-        'hover_effect_bottom' => __('Article', 'granola'),
+        'hover_effect_top' => \__('View', 'granola'),
+        'hover_effect_bottom' => \__('Article', 'granola'),
+
         // Display.
         'config' => [
             'show_read_more' => $args['show_read_more'] ?? false,
@@ -135,9 +137,13 @@ function handle_wp_object_args(array $args, object $object): array
             $terms = \get_the_terms($object->ID, 'category');
             if ($terms && !is_wp_error($terms)) {
                 foreach ($terms as $term) {
+                    // Get plain link
+                    $term_link = \get_term_link($term->term_id);
+                    // Filter link
+                    $term_link = \Theme\Taxonomies\Category::filter_category_link_per_cpt($term_link, 'case-study');
                     $args['labels'][] = [
                         'content' => $term->name,
-                        'url' => \get_term_link($term->term_id),
+                        'url' => $term_link,
                     ];
                 }
             }
@@ -147,6 +153,27 @@ function handle_wp_object_args(array $args, object $object): array
 
             // Override hover effect texts
             $args['hover_effect_bottom'] = __('Case Study', 'granola');
+        } elseif ($object->post_type === 'product') {
+            $product = \wc_get_product($object->ID);
+
+            if ($product instanceof \WC_Product_Variable) {
+                $samples = \Granola\Components\ProductSamples\get_product_samples($product);
+
+                if (!empty($samples)) {
+                    $args['buttons'] = array_map(function ($sample) {
+                        return \Granola\Components\ProductSamples\SampleButton\filter_args($sample);
+                    }, $samples);
+                }
+            }
+
+            $primary_term = \Theme\Utils\Taxonomies::get_primary_term($object, 'product_cat');
+
+            if (!empty($primary_term)) {
+                $args['heading'] = $primary_term->name;
+
+                $colour = $product->get_attribute('colour');
+                $args['subheading'] = !empty($colour) ? $colour : $product->get_title();
+            }
         }
     } elseif ($object instanceof \WP_Term) {
         // -------------------------------------------------------------------------

@@ -1,3 +1,5 @@
+<?php woocommerce_output_all_notices(); ?>
+
 <div <?= \Granola\Helpers::build_attributes($args['attributes']); ?>>
     <div class="product__gallery">
         <?php echo \Granola\Component::get('wc-single-product/gallery'); ?>
@@ -30,33 +32,25 @@
             <?php } ?>
         </div>
 
-        <?= \Granola\Component::get('product-variation-selector', [
-            'heading' => __('Select colour:', 'granola'),
-            'variation' => 'colour',
-            'variations' => $args['colour_variations'],
-        ]); ?>
+        <?php
+        if (!empty($args['selectors'])) {
+            foreach ($args['selectors'] as $variation) {
+                echo \Granola\Component::get('product-variation-selector', $variation);
+            }
+        }
+        ?>
 
-        <?= \Granola\Component::get('product-variation-selector', [
-            'heading' => __('Select board width:', 'granola'),
-            'variation' => 'board_width',
-            'variations' => $args['board_width_variations'],
-        ]); ?>
+        <?= \Granola\Component::get('product-samples'); ?>
 
         <?php
-
-            /**
+            /*
              * Hook: woocommerce_single_product_summary.
              *
-             * @hooked woocommerce_template_single_title - 5
-             * @hooked woocommerce_template_single_rating - 10
-             * @hooked woocommerce_template_single_price - 10
-             * @hooked woocommerce_template_single_excerpt - 20
+             * NB: Some hooked functions have been unhooked.
+             *
              * @hooked woocommerce_template_single_add_to_cart - 30
-             * @hooked woocommerce_template_single_meta - 40
-             * @hooked woocommerce_template_single_sharing - 50
              * @hooked WC_Structured_Data::generate_product_data() - 60
              */
-
             do_action('woocommerce_single_product_summary');
         ?>
     </div>

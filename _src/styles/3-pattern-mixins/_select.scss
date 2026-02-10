@@ -25,6 +25,11 @@
             background-color: transparent;
             //background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 9'%3E%3Cpath fill='#{get-named-color-hex('foreground')}' d='M.79 1.85L2.7 3.87l3.06 3.21.7.75c.3.3.84.3 1.13 0L9.51 5.8l3.06-3.22.7-.74c.29-.3.32-.83 0-1.12-.3-.29-.81-.32-1.12 0l-1.91 2.01-3.07 3.22-.7.75h1.12L5.67 4.69 2.61 1.47l-.7-.74a.8.8 0 00-1.12 0c-.3.32-.3.8 0 1.12z'/%3E%3C/svg%3E");
         }
+
+        .has-brand-6-background-color &,
+        .has-brand-5-background-color & {
+            background-image: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 14 9%22%3E%3Cpath fill=%22%23ffffff%22 d=%22M.79 1.85L2.7 3.87l3.06 3.21.7.75c.3.3.84.3 1.13 0L9.51 5.8l3.06-3.22.7-.74c.29-.3.32-.83 0-1.12-.3-.29-.81-.32-1.12 0l-1.91 2.01-3.07 3.22-.7.75h1.12L5.67 4.69 2.61 1.47l-.7-.74a.8.8 0 00-1.12 0c-.3.32-.3.8 0 1.12z%22/%3E%3C/svg%3E');
+        }
     }
 
     // IE specific styling to hide the default arrow

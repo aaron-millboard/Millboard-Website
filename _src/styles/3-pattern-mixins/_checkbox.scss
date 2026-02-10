@@ -25,7 +25,7 @@
             --input--outline-width--focus: 1px;
 
             position: absolute;
-            top: 0;
+            top: 7px;
             bottom: 0;
             left: 0;
             margin-top: 0;
@@ -34,11 +34,10 @@
         }
 
         &::before {
-            width: var(--checkbox--size);
-            height: var(--checkbox--size);
-            border: var(--checkbox--border-width) solid var(--color--foreground);
-            border-radius: --checkbox--border-radius;
-            background: var(--color--white);
+            width: var(--radio--size);
+            height: var(--radio--size);
+            border: var(--radio--border-width) solid var(--color--foreground);
+            background: hsla(var(--color--black--hsl), 0.025);
             cursor: pointer;
             transition: transition(background);
         }
@@ -46,10 +45,7 @@
         &::after {
             width: 0;
             height: 0;
-            border: var(--checkbox--check-stroke) solid transparent;
-            border-top-style: none;
-            border-right-style: none;
-            transform: translate(var(--checkbox--padding), -1px) rotate(-45deg);
+            margin: var(--radio--padding);
         }
     }
 
@@ -78,15 +74,10 @@
             + label {
                 --input--background-color: var(--input--background-color--highlight);
 
-                &::before {
-                    background-color: transparent;
-                }
-
                 &::after {
-                    margin-top: var(--input--padding-y);
-                    width: var(--checkbox--check-size);
-                    height: calc(var(--checkbox--check-size) / 2);
-                    border-color: var(--color--foreground);
+                    width: calc(var(--radio--size) - var(--radio--padding) * 2);
+                    height: calc(var(--radio--size) - var(--radio--padding) * 2);
+                    background-color: var(--color--foreground);
                 }
             }
         }

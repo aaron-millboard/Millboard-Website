@@ -2,6 +2,12 @@
     --block--margin-top: var(--heading--margin-top);
     --block--margin-bottom: var(--heading--margin-bottom);
 
+    letter-spacing: 0;
+
+    &.is-style-typestyle-uppercase {
+        letter-spacing: 0.14em; // 14%
+    }
+
     &:first-child {
         --block--margin-top: 0;
     }

@@ -3,6 +3,48 @@
     "title": "Product Variations",
     "fields": [
         {
+            "key": "field_697bdf1233d",
+            "label": "Width Variations",
+            "name": "width_variations",
+            "type": "repeater",
+            "layout": "table",
+            "button_label": "Add Variation",
+            "sub_fields": [
+                {
+                    "key": "field_697be34fsf3e",
+                    "label": "Width",
+                    "name": "width",
+                    "type": "taxonomy",
+                    "wrapper": {
+                        "width": "50"
+                    },
+                    "taxonomy": "pa_width",
+                    "return_format": "object",
+                    "field_type": "select"
+                },
+                {
+                    "key": "field_6yy5436b3e",
+                    "label": "Product",
+                    "name": "product",
+                    "type": "post_object",
+                    "wrapper": {
+                        "width": "50"
+                    },
+                    "post_type": [
+                        "product"
+                    ],
+                    "post_status": [
+                        "publish"
+                    ],
+                    "taxonomy": [
+                        "product_cat:composite-cladding",
+                        "product_cat:composite-decking"
+                    ],
+                    "return_format": "object"
+                }
+            ]
+        },
+        {
             "key": "field_697bdf1a4cb3d",
             "label": "Board Width Variations",
             "name": "board_width_variations",

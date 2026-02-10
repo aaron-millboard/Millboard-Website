@@ -145,4 +145,41 @@
             }
         }
     }
+
+    //---------------------------------------------------
+    // Product card
+    //---------------------------------------------------
+    &[data-type='product'] {
+        .media-object {
+            &__header {
+                gap: 0;
+            }
+
+            &__heading,
+            &__subheading {
+                @include typestyle-large;
+
+                font-weight: var(--type--1--font-weight);
+                text-transform: uppercase;
+            }
+
+            &__heading {
+                font-weight: var(--type--2--font-weight);
+            }
+
+            &__list {
+                margin-top: var(--space--3xs);
+                gap: var(--space--3xs);
+            }
+
+            &__list__item {
+                .product-samples__button > span {
+                    display: inline-flex;
+                    flex-flow: row wrap;
+                    gap: var(--space--3xs);
+                    justify-content: center;
+                }
+            }
+        }
+    }
 }

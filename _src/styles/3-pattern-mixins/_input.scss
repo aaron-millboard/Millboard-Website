@@ -14,7 +14,7 @@
 
     &:focus,
     &:focus-within {
-        background: var(--input--background-color--focus);
+        background: hsla(var(--color--mist--hsl), 0.2);
         box-shadow: 0 0 0 var(--input--outline-width--focus) var(--input--outline-color--focus);
         color: var(--input--color--focus);
         border: var(--input--border-width--focus) solid var(--input--border-color--focus);

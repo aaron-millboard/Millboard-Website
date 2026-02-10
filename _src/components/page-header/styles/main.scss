@@ -13,6 +13,10 @@
 
     @include no-first-last-margin;
 
+    .single-product & {
+        --block--margin-bottom: 0;
+    }
+
     &__inner {
         max-width: var(--width--responsive--l);
         margin-left: auto;
@@ -227,7 +231,7 @@
     }
 
     .breadcrumbs {
-        padding-top: var(--space--responsive--m);
+        padding-top: var(--space--m);
         margin-left: 0;
     }
 
@@ -236,7 +240,7 @@
             margin-top: 0;
 
             &:where([class*='has-background'].alignfull) {
-                margin-top: calc(var(--space--responsive--xl) * -1);
+                margin-top: calc(var(--space--xl) * -1);
             }
         }
     }

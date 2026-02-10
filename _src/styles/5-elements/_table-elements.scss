@@ -1,6 +1,7 @@
 table {
     width: 100%;
     border-collapse: collapse;
+    border: 1px solid;
 
     caption {
         margin-bottom: calc(var(--space--base) / 2);
@@ -34,7 +35,7 @@ th {
     word-break: break-all;
 
     &:last-child {
-        border-right: 0;
+        // border-right: 0;
     }
 }
 

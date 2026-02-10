@@ -77,7 +77,6 @@ function filter_args(array $args): ?array
         if ($object instanceof \WP_Post) {
             $args['items'][$key] = [
                 'object' => $object,
-                // 'orientation' => isset($args['orientation']) ? $args['orientation'] : null,
             ];
         } else {
             $args['items'][$key] = $object;

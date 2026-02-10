@@ -23,6 +23,13 @@ function filter_args(array $args): ?array
         }
     }
 
+    // Set default taxonomy filter arguments.
+    $arg['taxonomy_filters'] = [
+        'label' => $args['filter_label'],
+        'taxonomy' => $args['taxonomy'],
+        'object' => $args['object'],
+    ];
+
     // Fill items into items component args.
     $args['items_component_args']['items'] = $args['items'];
     $args['items_component_args']['wp_query'] = false;
@@ -32,7 +39,7 @@ function filter_args(array $args): ?array
     if (!empty($args['post_type'])) {
         $post_type = $args['post_type'];
     } else {
-        $post_type = get_post_type();
+        $post_type = \get_post_type();
     }
     $args['items_component_args']['post_type'] = $post_type;
 
@@ -47,7 +54,10 @@ function filter_args(array $args): ?array
     // Set columns to 2 for case studies
     if ($post_type === 'case-study') {
         $args['items_component_args']['columns'] = 2;
-        $args['filter_label'] = __('Explore and filter all case studies', 'granola');
+        $arg['taxonomy_filters']['filter_label'] = \__('Explore and filter all case studies', 'granola');
+    } elseif ($post_type === 'product') {
+        $args['items_component_args']['columns'] = 4;
+        unset($arg['taxonomy_filters']);
     }
 
     // Filterable items output component.

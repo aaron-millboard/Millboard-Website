@@ -4,8 +4,19 @@ if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
 }
 
-while (have_posts()) :
+get_header();
+
+$content = [];
+$object = \Granola\WordPress\PageObject::get();
+
+while (have_posts()) {
     the_post();
-    woocommerce_output_all_notices();
-    wc_get_template_part('content', 'single-product');
-endwhile;
+    $content[] = apply_filters('the_content', get_the_content());
+}
+
+echo \Granola\Component::get('site-main', [
+    'object' => $object,
+    'content' => implode($content),
+]);
+
+get_footer();

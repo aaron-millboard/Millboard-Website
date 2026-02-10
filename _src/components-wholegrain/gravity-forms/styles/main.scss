@@ -3,6 +3,7 @@
 
 .gform_wrapper {
     --input--gap: var(--space--l);
+    --grid--column-gap: var(--space--m);
 
     margin-top: var(--space--base);
     margin-bottom: var(--space--base);
@@ -16,14 +17,14 @@
         --input--color: var(--color--foreground);
         --input--color--focus: var(--color--foreground);
         --input--placeholder-color: var(--color--foreground);
-        --input--border-width--focus: 2px;
+        --input--border-width--focus: 1px;
     }
 
     input[aria-invalid='true'],
     select[aria-invalid='true'],
     textarea[aria-invalid='true'] {
         --input--border-color: var(--color--error);
-        --input--border-width--focus: 2px;
+        --input--border-width--focus: 1px;
         --input--border-width: 2px;
     }
 
@@ -50,6 +51,10 @@
     [type='button'],
     [type='submit'] {
         @include button;
+
+        &:hover {
+            @include button--interacted;
+        }
     }
 
     .gform_ajax_spinner {
@@ -81,7 +86,7 @@
             grid-template-columns: repeat(12, minmax(0, 1fr)); // Fix grid blowout
 
             @media only screen and (max-width: 641px) {
-                input:not([type=radio]):not([type=checkbox]):not([type=image]):not([type=file]) {
+                input:not([type='radio']):not([type='checkbox']):not([type='image']):not([type='file']) {
                     line-height: inherit;
                 }
             }
@@ -92,6 +97,9 @@
 
 .gform_confirmation_message {
     @include typestyle-h4;
+
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
 }
 
 .gform_heading {
@@ -206,9 +214,9 @@
 // Fields
 //
 .gfield--type-fileupload {
-
     .gform_drop_area {
         --input--border-color: var(--color--brand-4);
+        position: relative;
 
         padding: var(--space--l);
         border: var(--border-width--m) dashed var(--input--border-color);
@@ -217,7 +225,7 @@
         justify-content: center;
         align-items: center;
         gap: var(--space--3xs);
-        padding-top: calc(var(--space--l) + 2rem);
+        padding-top: calc(var(--space--l) + 3rem);
 
         .button {
             @include button-reset-hard;
@@ -231,7 +239,12 @@
             height: 40px;
             display: block;
             position: absolute;
-            top: 1rem;
+            top: 2rem;
+
+            .has-brand-6-background-color &,
+            .has-brand-5-background-color & {
+                content: url(#{asset-path('images/icons-custom/download-white.svg')});
+            }
         }
     }
 
@@ -246,7 +259,6 @@
         margin-top: var(--space--3xs);
         margin-bottom: 0;
     }
-
 }
 
 .gfield--type-fileupload > .gfield_description {
@@ -281,6 +293,12 @@
 
 .ginput_complex {
     @include flex-grid;
+
+    --grid--columns: 1;
+
+    @include mq(medium) {
+        --grid--columns: 2;
+    }
 
     > * {
         @include flex-grid-item;
@@ -326,6 +344,26 @@
     }
 }
 
+.gfield--type-date {
+    .ui-datepicker-trigger {
+        display: none;
+    }
+}
+
+.ui-datepicker {
+    background: var(--color--white);
+    padding: 0.5rem;
+
+    .ui-datepicker-month,
+    .ui-datepicker-year {
+        color: var(--color--black);
+    }
+
+    .ui-datepicker-calendar {
+        border: 1px solid var(--color--black);
+    }
+}
+
 .ginput_address_zip {
     max-width: 12rem;
 }
@@ -340,7 +378,8 @@
         background: var(--color--error);
         color: var(--color--white);
 
-        + * { // This should be the file name
+        + * {
+            // This should be the file name
             overflow: hidden;
             flex: 1 1 auto;
             text-overflow: ellipsis;
@@ -353,16 +392,16 @@
 }
 
 .gfield--type-radio {
-
     .gfield_radio {
         display: flex;
         flex-direction: column;
         gap: var(--space--4xs);
     }
-
 }
 
 .gchoice {
+    display: flex;
+    align-items: center;
 
     .gfield_checkbox &,
     .gfield_radio & {
@@ -378,6 +417,15 @@
 
     .gfield_checkbox & {
         @include checkbox-field;
+
+        label {
+            padding-left: 2rem;
+            margin-bottom: 0;
+
+            &:hover {
+                text-decoration: underline;
+            }
+        }
     }
 
     .gfield_radio & {
@@ -385,6 +433,10 @@
 
         label {
             margin-bottom: 0;
+
+            &:hover {
+                text-decoration: underline;
+            }
         }
 
         // Without this, a <br> tag adds unnecessary spacing if/when the 'other' radio field is used
@@ -399,8 +451,6 @@
         }
     }
 }
-
-
 
 // Uncomment this if you're using 'Below Inputs' for Sub-Label placement on complex fields (e.g. name, address)
 // .field_sublabel_below {
@@ -488,3 +538,15 @@
 //         opacity: 0.5;
 //     }
 // }
+
+.gravity-forms {
+    .hs-button {
+        @include button;
+
+        margin-top: px-to-rem(32px);
+
+        &:hover {
+            @include button--interacted;
+        }
+    }
+}

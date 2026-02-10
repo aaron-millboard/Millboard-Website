@@ -24,9 +24,14 @@
             </div>
 
             <div class="gravity-forms__column gravity-forms__column--form">
-                <?php if (!empty($args['gravity_form_id'])) { ?>
+                <?php if ($args['form_type'] === 'gravityforms' && !empty($args['gravity_form_id'])) { ?>
                     <div class="gravity-forms__form">
                         <?= do_shortcode('[gravityform id="' . absint($args['gravity_form_id']) . '" title="false" description="false" ajax="true"]'); ?>
+                    </div>
+                <?php } ?>
+                <?php if ($args['form_type'] === 'hubspot' && !empty($args['hubspot_script'])) { ?>
+                    <div class="gravity-forms__form">
+                        <?= $args['hubspot_script']; ?>
                     </div>
                 <?php } ?>
             </div>

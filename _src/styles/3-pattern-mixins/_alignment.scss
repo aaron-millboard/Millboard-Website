@@ -20,7 +20,7 @@
 
 @mixin align--right {
     max-width: var(--width--responsive--s);
-    margin: var(--space--responsive--m) auto;
+    margin: var(--space--m) auto;
 
     @include mq(medium) {
         max-width: calc(var(--width--s) / 2);
@@ -34,7 +34,7 @@
 
 @mixin align--left {
     max-width: var(--width--responsive--s);
-    margin: var(--space--responsive--m) auto;
+    margin: var(--space--m) auto;
 
     @include mq(medium) {
         max-width: calc(var(--width--s) / 2);

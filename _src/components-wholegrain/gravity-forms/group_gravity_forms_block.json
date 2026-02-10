@@ -21,11 +21,60 @@
             "type": "textarea"
         },
         {
+            "key": "field_gravity_forms_form_type",
+            "label": "Form Type",
+            "name": "form_type",
+            "aria-label": "",
+            "type": "button_group",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "50",
+                "class": "",
+                "id": ""
+            },
+            "choices": {
+                "gravityforms": "Gravity Forms",
+                "hubspot": "Hubspot"
+            },
+            "default_value": "gravityforms",
+            "return_format": "value",
+            "allow_null": 0,
+            "allow_in_bindings": 0,
+            "layout": "horizontal"
+        },
+        {
             "key": "field_gravity_forms_gravity_form_id",
             "label": "Gravity Form",
             "name": "gravity_form_id",
             "type": "select",
-            "choices": []
+            "choices": [],
+            "conditional_logic": [
+                [
+                    {
+                        "field": "field_gravity_forms_form_type",
+                        "operator": "==",
+                        "value": "gravityforms"
+                    }
+                ]
+            ]
+        },
+        {
+            "key": "field_gravity_forms_hubspot_script",
+            "label": "Hubspot Script",
+            "name": "hubspot_script",
+            "type": "textarea",
+            "instructions": "Paste the Hubspot script here",
+            "conditional_logic": [
+                [
+                    {
+                        "field": "field_gravity_forms_form_type",
+                        "operator": "==",
+                        "value": "hubspot"
+                    }
+                ]
+            ]
         }
     ],
     "location": [

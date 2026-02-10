@@ -38,7 +38,23 @@ class Category
      */
     public static function filter_category_link(string $term_link): string
     {
-        $post_type = get_post_type();
+        return self::filter_category_link_per_cpt($term_link);
+    }
+
+    /**
+     * Filter Category links to point to the correct archive URLs based on the current post type context.
+     *
+     * @param string $term_link The original Category URL.
+     * @param string $post_type Optional post type to determine the correct archive URL.
+     * @return string The filtered Category URL.
+     */
+    public static function filter_category_link_per_cpt(string $term_link, string $post_type = ''): string
+    {
+        $url = '';
+
+        if (!$post_type) {
+            $post_type = get_post_type();
+        }
 
         $posts_page = get_option('page_for_posts');
         if ($posts_page) {
@@ -48,7 +64,7 @@ class Category
         }
 
         if ($post_type) {
-            if ($post_type === 'post') {
+            if ($post_type === 'post' || $post_type === 'page') {
                 $url = str_replace('category', "{$post_page_slug}/category", $term_link);
                 $url = str_replace("{$post_page_slug}/{$post_page_slug}", $post_page_slug, $url);
             } else {
@@ -56,12 +72,14 @@ class Category
                 $archive_url = $cpt_object->rewrite['slug'];
 
                 $url = str_replace('category', "{$archive_url}/category", $term_link);
+                // Remove duplicate with post URL
                 $url = str_replace("{$post_page_slug}/{$archive_url}", $archive_url, $url);
+                // remove duplicate with archive URL
+                $url = str_replace("{$archive_url}/{$archive_url}", $archive_url, $url);
             }
-            $term_link = $url;
         }
 
-        return $term_link;
+        return $url;
     }
 
     /**
