@@ -200,22 +200,26 @@ class Map {
             }
 
             const {lat, lng} = response.results[0].geometry.location;
-            this.lmap.setView(new L.LatLng(lat, lng), 8);
+
+            this.LMAP_DISTANCE_CENTER = new L.LatLng(lat, lng);
+            this.lmap.setView(this.LMAP_DISTANCE_CENTER, 8);
             this.filterListingsByDistance();
         });
     }
 
     initDistanceFilter() {
+        this.distanceSelect.addEventListener('change', ({target}) => {
+            this.filterListingsByDistance();
+        });
+    }
+
+    filterListingsByDistance() {
         if (!this.distanceSelect) {
             return;
         }
 
-        this.distanceSelect.addEventListener('change', ({target}) => {
-            this.filterListingsByDistance(parseFloat(target.value) ?? 0);
-        });
-    }
+        const distance = parseFloat(this.distanceSelect.value);
 
-    filterListingsByDistance(distance = 0) {
         // "Any" distance selected - show all.
         if (!distance) {
             this.resetListingDistanceFilter();
