@@ -30,6 +30,11 @@ function filter_args(array $args): ?array
     ], $args['classes']);
 
     $cart = WC()->cart;
+
+    if (empty($cart)) {
+        return null;
+    }
+
     $product = \wc_get_product($args['product']);
 
     if (empty($product)) {
