@@ -13,7 +13,6 @@
                     id="map-search-input"
                     type="text"
                     name="map--map--search"
-                    form="map-filters-form"
                     class="map__search__input"
                     placeholder="<?= esc_html_x('Search...', 'Map search input placeholder', 'granola'); ?>"
                 >

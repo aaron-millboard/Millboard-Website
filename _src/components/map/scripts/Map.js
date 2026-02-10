@@ -105,10 +105,6 @@ class Map {
         });
         this.lmap.addLayer(tileLayer);
 
-        // L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        //     maxZoom: 19,
-        // }).addTo(this.lmap);
-
 
         // Add leaflet zoom controller.
         // https://leafletjs.com/reference.html#control-zoom
@@ -117,10 +113,6 @@ class Map {
         });
 
         lmapZoomControl.addTo(this.lmap);
-
-        // this.lmap.on('pm:drawstart', function (e) {
-        //     console.log('drawstart', e);
-        // });
     }
 
     /**
@@ -134,18 +126,17 @@ class Map {
             const listingData = Map.getDataFromRowElement(el);
 
             // Get data values.
-            const rowLatLng = L.latLng(listingData.lat, listingData.lng);
-            const rowLat = parseFloat(listingData.lat);
-            const rowLng = parseFloat(listingData.lng);
-            const rowTitle = listingData.name;
+            const listingLat = parseFloat(listingData.lat);
+            const listingLng = parseFloat(listingData.lng);
+            const listingTitle = listingData.name;
 
             let markerHtml = `<span class="leaflet-marker-icon__icon-container" aria-hidden="true">`;
             markerHtml += `<span class="leaflet-marker-icon__icon"></span>`;
-            markerHtml += `<span class="screen-reader-text">${rowTitle}</span>`;
+            markerHtml += `<span class="screen-reader-text">${listingTitle}</span>`;
             markerHtml += ' </span>';
 
             // https://leafletjs.com/reference.html#marker
-            const marker = L.marker([rowLat, rowLng], {
+            const marker = L.marker([listingLat, listingLng], {
                 autoPanOnFocus: true,
                 icon: L.divIcon({
                     html: markerHtml,
@@ -168,7 +159,6 @@ class Map {
         });
 
         // Add all markers sub groups to map.
-        // this.lmap.addLayer(this.allMarkersSubGroup);
         this.lmap.addLayer(this.allMarkersGroup);
     }
 
@@ -180,8 +170,10 @@ class Map {
             return;
         }
 
-       this.searchSubmit.addEventListener('click', async (event) => {
+        this.searchSubmit.addEventListener('click', async (event) => {
             event.preventDefault();
+            event.stopPropagation();
+
             const searchQuery = this.searchInput?.value;
 
             // Bail early - invalid query: reset view.
@@ -202,7 +194,6 @@ class Map {
             const {lat, lng} = response.results[0].geometry.location;
 
             this.LMAP_DISTANCE_CENTER = new L.LatLng(lat, lng);
-            this.lmap.setView(this.LMAP_DISTANCE_CENTER, 8);
             this.filterListingsByDistance();
         });
     }
@@ -230,16 +221,23 @@ class Map {
         this.lmap.removeLayer(this.filteredMarkersGroup);
         this.filteredMarkersGroup = new L.FeatureGroup();
 
+        const bounds = L.latLngBounds();
+        bounds.extend(this.LMAP_DISTANCE_CENTER);
+
         this.allMarkersGroup.eachLayer((marker) => {
             const markerDistance = marker.getLatLng().distanceTo(this.LMAP_DISTANCE_CENTER);
             const distanceInMiles = Math.round(this.METERS_TO_MILES_RATIO * markerDistance * 100) / 100; // 2 decimal points.
 
             if (distanceInMiles <= distance) {
                 this.filteredMarkersGroup.addLayer(marker);
+                bounds.extend(marker.getLatLng());
+            } else {
+                marker.options.themeData.listingElement.setAttribute('hidden', '');
             }
-        })
+        });
 
         this.lmap.addLayer(this.filteredMarkersGroup);
+        this.lmap.fitBounds(bounds);
     }
 
     resetListingDistanceFilter() {
@@ -270,42 +268,6 @@ class Map {
         }
 
         distanceEl.textContent = distText;
-    }
-
-    /**
-     * Handles any searches
-     *
-     * @param searchTerm - The searched for term from the search input.value.
-     */
-    handleSearch(searchTerm) {
-        // Clear existing layers.
-        // this.filteredMarkersSubGroup.clearLayers();
-        this.filteredMarkersGroup.clearLayers();
-        const tableResults = [];
-
-        // Loop over markers and check title for name.
-        this.allMarkersGroup.getLayers().forEach((markerLayer) => {
-            // this.allMarkersSubGroup.getLayers().forEach((markerLayer) => {
-            // const titleOfPlant = markerLayer.options.title.trim().toLowerCase();
-            const textContentOfTableRow = markerLayer.options.themeData.listingElement.textContent
-                .trim()
-                .toLowerCase();
-
-            if (textContentOfTableRow.indexOf(searchTerm) !== -1) {
-                // this.filteredMarkersSubGroup.addLayer(markerLayer);
-                this.filteredMarkersGroup.addLayer(markerLayer);
-
-                tableResults.push(markerLayer.options.themeData.listingElement);
-            }
-        });
-
-        // Update map.
-        this.lmap.addLayer(this.filteredMarkersGroup);
-
-        if (this.filteredMarkersGroup.getLayers().length > 0) {
-            const filteredMarkersBounds = this.filteredMarkersGroup.getBounds();
-            this.lmap.fitBounds(filteredMarkersBounds);
-        }
     }
 
     // Helpers
