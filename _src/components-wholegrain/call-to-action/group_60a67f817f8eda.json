@@ -60,26 +60,6 @@
             "append": ""
         },
         {
-            "key": "field_61a0f5f813f13a",
-            "label": "Subheading",
-            "name": "subheading",
-            "aria-label": "",
-            "type": "text",
-            "instructions": "",
-            "required": 0,
-            "conditional_logic": 0,
-            "wrapper": {
-                "width": "",
-                "class": "",
-                "id": ""
-            },
-            "default_value": "",
-            "placeholder": "",
-            "prepend": "",
-            "append": "",
-            "maxlength": ""
-        },
-        {
             "key": "field_60a67f8182d6ea",
             "label": "Content",
             "name": "content",
@@ -100,25 +80,25 @@
             "delay": 0
         },
         {
-            "key":"field_60a67f8182d5ead",
-            "label:":"Buttons",
-            "name":"buttons",
-            "aria-label":"",
-            "type":"repeater",
-            "instructions":"",
-            "required":0,
-            "conditional_logic":0,
-            "wrapper":{
-                "width":"",
-                "class":"",
-                "id":""
+            "key": "field_60a67f8182d5ead",
+            "label:": "Buttons",
+            "name": "buttons",
+            "aria-label": "",
+            "type": "repeater",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
             },
-            "collapsed":"",
-            "min":1,
-            "max":0,
-            "layout":"row",
-            "button_label":"Add Button",
-            "sub_fields":[
+            "collapsed": "",
+            "min": 1,
+            "max": 0,
+            "layout": "row",
+            "button_label": "Add Button",
+            "sub_fields": [
                 {
                     "key": "field_60a681d68f9d2a",
                     "label": "Button",
