@@ -10,7 +10,6 @@ function filter_args(array $args): ?array
     $args = array_merge([
         'classes' => [],
         'product' => null,
-        'sample_type' => 'small',
     ], $args);
 
     // ---------------------------------------
@@ -26,7 +25,6 @@ function filter_args(array $args): ?array
     $args['classes'] = array_merge([
         'g-button',
         'product-samples__button',
-        'product-samples__button--' . $args['sample_type'],
     ], $args['classes']);
 
     $cart = WC()->cart;
@@ -46,6 +44,11 @@ function filter_args(array $args): ?array
     $price = $product->get_price();
     $product_cart_id = $cart->generate_cart_id($product_id);
     $product_in_cart = $cart->find_product_in_cart($product_cart_id);
+    $sample_size = $product->get_attribute('sample-size');
+
+    if (!empty($sample_size)) {
+        $args['classes'][] = 'product-samples__button--' . $sample_size;
+    }
 
     // Generate a "remove from cart" url for small samples that are already in the cart.
     // if ($args['sample_type'] === 'small' && !empty($product_in_cart)) {
@@ -63,11 +66,11 @@ function filter_args(array $args): ?array
     // }
 
     $args['content'] = \Granola\Component::get('element', [
-        'content' => sprintf(
+        'content' => !empty($sample_size) ? sprintf(
             // translators: Sample type.
             \__('Add %s sample', 'granola'),
-            $args['sample_type'],
-        ),
+            $sample_size,
+        ) : \__('Add sample', 'granola'),
         'classes' => [
             'product-samples__button__content',
         ],
