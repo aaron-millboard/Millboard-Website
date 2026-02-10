@@ -17,14 +17,14 @@
         --input--color: var(--color--foreground);
         --input--color--focus: var(--color--foreground);
         --input--placeholder-color: var(--color--foreground);
-        --input--border-width--focus: 2px;
+        --input--border-width--focus: 1px;
     }
 
     input[aria-invalid='true'],
     select[aria-invalid='true'],
     textarea[aria-invalid='true'] {
         --input--border-color: var(--color--error);
-        --input--border-width--focus: 2px;
+        --input--border-width--focus: 1px;
         --input--border-width: 2px;
     }
 
@@ -216,6 +216,7 @@
 .gfield--type-fileupload {
     .gform_drop_area {
         --input--border-color: var(--color--brand-4);
+        position: relative;
 
         padding: var(--space--l);
         border: var(--border-width--m) dashed var(--input--border-color);
@@ -239,6 +240,11 @@
             display: block;
             position: absolute;
             top: 2rem;
+
+            .has-brand-6-background-color &,
+            .has-brand-5-background-color & {
+                content: url(#{asset-path('images/icons-custom/download-white.svg')});
+            }
         }
     }
 
@@ -336,6 +342,17 @@
     .gfield_date_year {
         max-width: 6rem;
     }
+}
+
+.gfield--type-date {
+    .ui-datepicker-trigger {
+        display: none;
+    }
+}
+
+.ui-datepicker {
+    background: var(--color--white);
+    padding: 0.5rem;
 }
 
 .ginput_address_zip {
