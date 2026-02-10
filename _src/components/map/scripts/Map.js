@@ -17,6 +17,7 @@ class Map {
 
         // Search.
         this.searchInput = this.el.querySelector('#map-search-input');
+        this.searchSubmit = this.el.querySelector('.map__search__submit');
 
         this.mobileMediaQueryRefEl = document.querySelector('.site-header__burger');
 
@@ -44,6 +45,8 @@ class Map {
         this.allMarkersFlatGroup = new L.FeatureGroup();
         this.filteredMarkersFlatGroup = new L.FeatureGroup();
 
+        this.googleApiKey = window.params.google_api_key;
+
         if (typeof L === 'object') {
             this.init();
         }
@@ -54,6 +57,27 @@ class Map {
 
         this.initLeafletMap();
         this.initLeafletMarkers();
+
+        this.searchSubmit && this.searchSubmit.addEventListener('click', async (event) => {
+            event.preventDefault();
+            const searchQuery = this.searchInput?.value;
+
+            if (!searchQuery) {
+                console.log(searchQuery);
+                return;
+            }
+
+            const response = await this.newRequest(searchQuery);
+
+            if (response && response.results[0]) {
+                const {lat, lng} = response.results[0].geometry.location;
+                this.lmap.setView(new L.LatLng(lat, lng), 8);
+                return;
+            }
+
+            console.warn('no response');
+        });
+
         // this.initFilters();
         // this.initSearch();
 
@@ -395,6 +419,28 @@ class Map {
             // Do a filter/search.
             this.triggerFormFilter();
         });
+    }
+
+    async newRequest(data) {
+        // Bail early - invalid date or no API key.
+        if (!data || !this.googleApiKey) {
+            return null;
+        }
+
+        // Run the API request because there is no cached result available.
+        const response = fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURI(data)}&key=${this.googleApiKey}`)
+            .then((r) => {
+                if (!r.ok) {
+                    throw Error(r);
+                }
+                return r.json();
+            })
+            .catch((e) => {
+                // Log error responses.
+                console.log(e);
+            });
+
+        return response;
     }
 }
 
