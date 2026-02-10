@@ -57,33 +57,7 @@ class Map {
 
         this.initLeafletMap();
         this.initLeafletMarkers();
-
-        this.searchSubmit && this.searchSubmit.addEventListener('click', async (event) => {
-            event.preventDefault();
-            const searchQuery = this.searchInput?.value;
-
-            if (!searchQuery) {
-                console.log(searchQuery);
-                return;
-            }
-
-            const response = await this.newRequest(searchQuery);
-
-            if (response && response.results[0]) {
-                const {lat, lng} = response.results[0].geometry.location;
-                this.lmap.setView(new L.LatLng(lat, lng), 8);
-                return;
-            }
-
-            console.warn('no response');
-        });
-
-        // this.initFilters();
-        // this.initSearch();
-
-        // Some leaflet related stuff...
-        // L.DomEvent.disableClickPropagation(this.filtersContainerEl);
-        // // L.DomEvent.disableScrollPropagation(this.filtersContainerEl);
+        this.initSearch();
 
         // // Init UI interactivity.
         // this.initFilterClearApplyButtons();
@@ -342,12 +316,39 @@ class Map {
      * Inits the filter event listeners.
      */
     initSearch() {
-        this.searchInput.addEventListener(
-            'input',
-            debounce(() => {
-                this.triggerFormFilter();
-                this.filtersExpander.collapse();
-            }, 300)
+        if (!this.searchInput || this.searchSubmit) {
+            return;
+        }
+
+       this.searchSubmit.addEventListener('click', async (event) => {
+            event.preventDefault();
+            const searchQuery = this.searchInput?.value;
+
+            // Bail early - invalid query: reset view.
+            if (!searchQuery) {
+                this.resetMapView();
+                return;
+            }
+
+            const response = await this.newRequest(searchQuery);
+
+            // Bail early - no valid response found.
+            if (!response || !response.results[0]) {
+                this.resetMapView();
+                console.warn('Invalid response for geocoding query.');
+                return;
+            }
+
+            const {lat, lng} = response.results[0].geometry.location;
+            this.lmap.setView(new L.LatLng(lat, lng), 8);
+        });
+    }
+
+    resetMapView() {
+        this.lmap.setView(new L.LatLng(
+            this.LMAP_INITIAL_CENTER[0],
+            this.LMAP_INITIAL_CENTER[1]),
+            this.LMAP_INITIAL_ZOOM
         );
     }
 
