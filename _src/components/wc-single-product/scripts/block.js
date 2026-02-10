@@ -438,6 +438,10 @@ window.addEventListener('load', () => {
 window.addEventListener('load', () => {
 	const container = document.querySelector('.quantity--with-wastage');
 
+	if (!container) {
+		return;
+	}
+
 	// Look for wastage checkbox in parent wrapper (sibling of .quantity)
 	const wrapper = container.parentElement;
 	const wastageCheckbox = wrapper ? wrapper.querySelector('.quantity-wastage-checkbox') : null;
