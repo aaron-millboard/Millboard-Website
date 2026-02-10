@@ -538,3 +538,15 @@
 //         opacity: 0.5;
 //     }
 // }
+
+.gravity-forms {
+    .hs-button {
+        @include button;
+
+        margin-top: px-to-rem(32px);
+
+        &:hover {
+            @include button--interacted;
+        }
+    }
+}
