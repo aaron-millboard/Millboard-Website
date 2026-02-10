@@ -15,8 +15,6 @@ function filter_args(array $args): ?array
 
     $args['samples'] = \get_field('samples', $args['product_id']);
 
-    \Granola\Debug::dump($args);
-
     // ---------------------------------------
     // Bail early - return null for no output.
     // ---------------------------------------
