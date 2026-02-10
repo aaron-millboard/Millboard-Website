@@ -154,12 +154,16 @@ function handle_wp_object_args(array $args, object $object): array
             // Override hover effect texts
             $args['hover_effect_bottom'] = __('Case Study', 'granola');
         } elseif ($object->post_type === 'product') {
-            $samples = \get_field('samples', $object->ID);
+            $product = \wc_get_product($object->ID);
 
-            if (!empty($samples)) {
-                $args['buttons'] = array_map(function ($sample) {
-                    return \Granola\Components\ProductSamples\SampleButton\filter_args($sample);
-                }, $samples);
+            if ($product instanceof \WC_Product_Variable) {
+                $samples = \Granola\Components\ProductSamples\get_product_samples($product);
+
+                if (!empty($samples)) {
+                    $args['buttons'] = array_map(function ($sample) {
+                        return \Granola\Components\ProductSamples\SampleButton\filter_args($sample);
+                    }, $samples);
+                }
             }
         }
     } elseif ($object instanceof \WP_Term) {

@@ -23,13 +23,7 @@ function filter_args(array $args): ?array
         return null;
     }
 
-    $default_product = get_product_default_variation($product);
-    $default_product_id = $default_product->get_id();
-    $product_variations = $product->get_available_variations('objects');
-
-    $args['samples'] = array_filter($product_variations, function ($variation) use ($default_product_id) {
-        return $variation->get_id() !== $default_product_id;
-    });
+    $args['samples'] = get_product_samples($product);
 
     // ---------------------------------------
     // Bail early - return null for no output.
@@ -45,16 +39,27 @@ function filter_args(array $args): ?array
         'product-samples',
     ], $args['classes']);
 
-    $args['samples'] = array_map(function ($sample) {
-        return [
-            'product' => $sample,
-        ];
-    }, $args['samples']);
-
     // -------------------------------------------------------------------------
     // Return the filtered args.
     // -------------------------------------------------------------------------
     return $args;
+}
+
+function get_product_samples($wc_product)
+{
+    $default_product = get_product_default_variation($wc_product);
+    $default_product_id = $default_product->get_id();
+    $product_variations = $wc_product->get_available_variations('objects');
+
+    $samples = array_filter($product_variations, function ($variation) use ($default_product_id) {
+        return $variation->get_id() !== $default_product_id;
+    });
+
+    return array_map(function ($sample) {
+        return [
+            'product' => $sample,
+        ];
+    }, $samples);
 }
 
 function get_product_default_variation($wc_product)
