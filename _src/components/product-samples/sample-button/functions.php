@@ -47,7 +47,7 @@ function filter_args(array $args): ?array
     $sample_size = $product->get_attribute('sample-size');
 
     if (!empty($sample_size)) {
-        $args['classes'][] = 'product-samples__button--' . $sample_size;
+        $args['classes'][] = 'product-samples__button--' . strtolower($sample_size);
     }
 
     // Generate a "remove from cart" url for small samples that are already in the cart.
@@ -69,7 +69,7 @@ function filter_args(array $args): ?array
         'content' => !empty($sample_size) ? sprintf(
             // translators: Sample type.
             \__('Add %s sample', 'granola'),
-            $sample_size,
+            strtolower($sample_size),
         ) : \__('Add sample', 'granola'),
         'classes' => [
             'product-samples__button__content',
