@@ -48,8 +48,8 @@ class Map {
 
         this.METERS_TO_MILES_RATIO = 0.000621371;
 
-        this.allMarkersFlatGroup = new L.FeatureGroup();
-        this.filteredMarkersFlatGroup = new L.FeatureGroup();
+        this.allMarkersGroup = new L.FeatureGroup();
+        this.filteredMarkersGroup = new L.FeatureGroup();
 
         this.googleApiKey = window.params.google_api_key;
 
@@ -62,6 +62,7 @@ class Map {
         this.initLeafletMap();
         this.initLeafletMarkers();
         this.initSearch();
+        this.initDistanceFilter();
     }
 
     /**
@@ -161,17 +162,14 @@ class Map {
             this.updateMarkerDistanceMeta(marker);
 
             // Add the marker to the leaflet layer.
-            // this.allMarkersSubGroup.addLayer(marker);
-            this.allMarkersFlatGroup.addLayer(marker);
+            this.allMarkersGroup.addLayer(marker);
 
-            // /* eslint-disable-next-line no-underscore-dangle -- We need this. */
-            // el.setAttribute('data-map-leaflet-id', this.allMarkersSubGroup.getLayerId(marker));
-            el.setAttribute('data-map-leaflet-id', this.allMarkersFlatGroup.getLayerId(marker));
+            el.setAttribute('data-map-leaflet-id', this.allMarkersGroup.getLayerId(marker));
         });
 
         // Add all markers sub groups to map.
         // this.lmap.addLayer(this.allMarkersSubGroup);
-        this.lmap.addLayer(this.allMarkersFlatGroup);
+        this.lmap.addLayer(this.allMarkersGroup);
     }
 
     /**
@@ -207,22 +205,46 @@ class Map {
         });
     }
 
-    filterListingsByDistance() {
+    initDistanceFilter() {
         if (!this.distanceSelect) {
             return;
         }
 
+        this.distanceSelect.addEventListener('change', ({target}) => {
+            this.filterListingsByDistance(parseFloat(target.value) ?? 0);
+        });
+    }
+
+    filterListingsByDistance(distance = 0) {
         // "Any" distance selected - show all.
-        if (!this.distanceSelect.value) {
-            [...this.listingEls].forEach((el) => {
-                el.removeAttribute('hidden');
-            });
+        if (!distance) {
+            this.resetListingDistanceFilter();
+            return;
         }
 
-        const distance = 0;
-        if (this.distanceSelect && this.distanceSelect.value) {
-            console.log(this.distanceSelect);
-        }
+        this.lmap.removeLayer(this.allMarkersGroup);
+        this.lmap.removeLayer(this.filteredMarkersGroup);
+        this.filteredMarkersGroup = new L.FeatureGroup();
+
+        this.allMarkersGroup.eachLayer((marker) => {
+            const markerDistance = marker.getLatLng().distanceTo(this.LMAP_DISTANCE_CENTER);
+            const distanceInMiles = Math.round(this.METERS_TO_MILES_RATIO * markerDistance * 100) / 100; // 2 decimal points.
+
+            if (distanceInMiles <= distance) {
+                this.filteredMarkersGroup.addLayer(marker);
+            }
+        })
+
+        this.lmap.addLayer(this.filteredMarkersGroup);
+    }
+
+    resetListingDistanceFilter() {
+        [...this.listingEls].forEach((el) => {
+            el.removeAttribute('hidden');
+        });
+
+        this.lmap.removeLayer(this.filteredMarkersGroup);
+        this.lmap.addLayer(this.allMarkersGroup);
     }
 
     updateMarkerDistanceMeta(marker) {
@@ -235,16 +257,15 @@ class Map {
         const distMiles = Math.round(this.METERS_TO_MILES_RATIO * distMeters * 100) / 100; // 2 decimal points.
         const distText = distMiles + ' miles'; // TODO: translate
 
-        const distanceEl = listingMetaEl.querySelector('.map__listing__distance');
-        if (distanceEl) {
-            distanceEl.textContent = distText
-            return;
+        let distanceEl = listingMetaEl.querySelector('.map__listing__distance');
+        if (!distanceEl) {
+            const newEl = document.createElement('span')
+            newEl.classList.add('map__listing__distance');
+            listingMetaEl.appendChild(newEl);
+            distanceEl = newEl;
         }
 
-        const newEl = document.createElement('span')
-        newEl.classList.add('map__listing__distance');
-        newEl.textContent = distText;
-        listingMetaEl.appendChild(newEl);
+        distanceEl.textContent = distText;
     }
 
     /**
@@ -255,11 +276,11 @@ class Map {
     handleSearch(searchTerm) {
         // Clear existing layers.
         // this.filteredMarkersSubGroup.clearLayers();
-        this.filteredMarkersFlatGroup.clearLayers();
+        this.filteredMarkersGroup.clearLayers();
         const tableResults = [];
 
         // Loop over markers and check title for name.
-        this.allMarkersFlatGroup.getLayers().forEach((markerLayer) => {
+        this.allMarkersGroup.getLayers().forEach((markerLayer) => {
             // this.allMarkersSubGroup.getLayers().forEach((markerLayer) => {
             // const titleOfPlant = markerLayer.options.title.trim().toLowerCase();
             const textContentOfTableRow = markerLayer.options.themeData.listingElement.textContent
@@ -268,17 +289,17 @@ class Map {
 
             if (textContentOfTableRow.indexOf(searchTerm) !== -1) {
                 // this.filteredMarkersSubGroup.addLayer(markerLayer);
-                this.filteredMarkersFlatGroup.addLayer(markerLayer);
+                this.filteredMarkersGroup.addLayer(markerLayer);
 
                 tableResults.push(markerLayer.options.themeData.listingElement);
             }
         });
 
         // Update map.
-        this.lmap.addLayer(this.filteredMarkersFlatGroup);
+        this.lmap.addLayer(this.filteredMarkersGroup);
 
-        if (this.filteredMarkersFlatGroup.getLayers().length > 0) {
-            const filteredMarkersBounds = this.filteredMarkersFlatGroup.getBounds();
+        if (this.filteredMarkersGroup.getLayers().length > 0) {
+            const filteredMarkersBounds = this.filteredMarkersGroup.getBounds();
             this.lmap.fitBounds(filteredMarkersBounds);
         }
     }
