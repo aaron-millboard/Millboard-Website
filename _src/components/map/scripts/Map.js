@@ -19,6 +19,9 @@ class Map {
         this.searchInput = this.el.querySelector('#map-search-input');
         this.searchSubmit = this.el.querySelector('.map__search__submit');
 
+        // Distance.
+        this.distanceSelect = this.el.querySelector('.map__distance__input');
+
         this.mobileMediaQueryRefEl = document.querySelector('.site-header__burger');
 
         this.appliedFilterSlugsByFiltergroup = {};
@@ -42,6 +45,8 @@ class Map {
 
         this.LMAP_MARKER_WIDTH = 31;
         this.LMAP_MARKER_HEIGHT = 40;
+
+        this.METERS_TO_MILES_RATIO = 0.000621371;
 
         this.allMarkersFlatGroup = new L.FeatureGroup();
         this.filteredMarkersFlatGroup = new L.FeatureGroup();
@@ -125,13 +130,13 @@ class Map {
 
         this.listingEls.forEach((el) => {
             // Get data.
-            const rowData = Map.getDataFromRowElement(el);
+            const listingData = Map.getDataFromRowElement(el);
 
             // Get data values.
-            const rowLatLng = L.latLng(rowData.lat, rowData.lng);
-            const rowLat = parseFloat(rowData.lat);
-            const rowLng = parseFloat(rowData.lng);
-            const rowTitle = rowData.name;
+            const rowLatLng = L.latLng(listingData.lat, listingData.lng);
+            const rowLat = parseFloat(listingData.lat);
+            const rowLng = parseFloat(listingData.lng);
+            const rowTitle = listingData.name;
 
             let markerHtml = `<span class="leaflet-marker-icon__icon-container" aria-hidden="true">`;
             markerHtml += `<span class="leaflet-marker-icon__icon"></span>`;
@@ -149,24 +154,11 @@ class Map {
 
                 // Custom object data.
                 themeData: {
-                    tableDataRowElement: el,
+                    listingElement: el,
                 },
             });
 
-            const METERS_TO_MILES_RATIO = 0.000621371;
-            const distMeters = rowLatLng.distanceTo(this.LMAP_DISTANCE_CENTER);
-            const distMiles = Math.round(METERS_TO_MILES_RATIO * distMeters * 100) / 100; // 2 decimal points.
-
-
-
-            const rowMeta = el.querySelector('.map__listing__meta');
-
-            if (rowMeta) {
-                const distEl = document.createElement('span');
-                distEl.classList.add('map__listing__distance');
-                distEl.textContent = distMiles + ' miles'; // TODO: translate
-                rowMeta.appendChild(distEl);
-            }
+            this.updateMarkerDistanceMeta(marker);
 
             // Add the marker to the leaflet layer.
             // this.allMarkersSubGroup.addLayer(marker);
@@ -211,7 +203,48 @@ class Map {
 
             const {lat, lng} = response.results[0].geometry.location;
             this.lmap.setView(new L.LatLng(lat, lng), 8);
+            this.filterListingsByDistance();
         });
+    }
+
+    filterListingsByDistance() {
+        if (!this.distanceSelect) {
+            return;
+        }
+
+        // "Any" distance selected - show all.
+        if (!this.distanceSelect.value) {
+            [...this.listingEls].forEach((el) => {
+                el.removeAttribute('hidden');
+            });
+        }
+
+        const distance = 0;
+        if (this.distanceSelect && this.distanceSelect.value) {
+            console.log(this.distanceSelect);
+        }
+    }
+
+    updateMarkerDistanceMeta(marker) {
+        const listingMetaEl = marker.options.themeData.listingElement.querySelector('.map__listing__meta');
+        if (!listingMetaEl) {
+            return;
+        }
+
+        const distMeters = marker.getLatLng().distanceTo(this.LMAP_DISTANCE_CENTER);
+        const distMiles = Math.round(this.METERS_TO_MILES_RATIO * distMeters * 100) / 100; // 2 decimal points.
+        const distText = distMiles + ' miles'; // TODO: translate
+
+        const distanceEl = listingMetaEl.querySelector('.map__listing__distance');
+        if (distanceEl) {
+            distanceEl.textContent = distText
+            return;
+        }
+
+        const newEl = document.createElement('span')
+        newEl.classList.add('map__listing__distance');
+        newEl.textContent = distText;
+        listingMetaEl.appendChild(newEl);
     }
 
     /**
@@ -229,7 +262,7 @@ class Map {
         this.allMarkersFlatGroup.getLayers().forEach((markerLayer) => {
             // this.allMarkersSubGroup.getLayers().forEach((markerLayer) => {
             // const titleOfPlant = markerLayer.options.title.trim().toLowerCase();
-            const textContentOfTableRow = markerLayer.options.themeData.tableDataRowElement.textContent
+            const textContentOfTableRow = markerLayer.options.themeData.listingElement.textContent
                 .trim()
                 .toLowerCase();
 
@@ -237,7 +270,7 @@ class Map {
                 // this.filteredMarkersSubGroup.addLayer(markerLayer);
                 this.filteredMarkersFlatGroup.addLayer(markerLayer);
 
-                tableResults.push(markerLayer.options.themeData.tableDataRowElement);
+                tableResults.push(markerLayer.options.themeData.listingElement);
             }
         });
 
