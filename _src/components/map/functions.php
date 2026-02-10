@@ -114,3 +114,23 @@ function get_item_data($args): array|null
 
     return $items;
 }
+
+/**
+ * Adds the Google API Key to an AJAX object's properties in granola-scripts via localization.
+ *
+ * @link https://developer.wordpress.org/reference/functions/wp_localize_script/
+ *
+ * @param array $localizations An array of 'localizations' for granola-scripts.
+ * @return array The filtered array of localizations for granola-scripts, with AJAX values conditionally added.
+ */
+function add_google_api_key_localization($localizations): array
+{
+    $api_key = \get_field('google_api_key', 'option');
+
+    // Add Google API Key, if set.
+    if (!empty($api_key)) {
+        $localizations['google_api_key'] = $api_key;
+    }
+
+    return $localizations;
+}
