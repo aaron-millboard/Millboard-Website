@@ -56,6 +56,7 @@ function filter_args(array $args): ?array
         $args['items_component_args']['columns'] = 2;
         $arg['taxonomy_filters']['filter_label'] = \__('Explore and filter all case studies', 'granola');
     } elseif ($post_type === 'product') {
+        $args['items_component_args']['columns'] = 4;
         unset($arg['taxonomy_filters']);
     }
 
