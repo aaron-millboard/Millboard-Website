@@ -83,7 +83,11 @@ function filter_args(array $args): ?array
 
         $args['selectors'][] = [
             'variation' => $protected_variation,
-            'heading' => sprintf(__('Select %s:', 'granola'), strtolower($label)),
+            'heading' => sprintf(
+                // translators: product attribute name, e.g. "Colour".
+                __('Select %s:', 'granola'),
+                strtolower($label)
+            ),
             'variations' => $repeater_data,
         ];
     }

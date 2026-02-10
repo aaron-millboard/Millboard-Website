@@ -41,7 +41,10 @@ function filter_args(array $args): ?array
     }
 
     foreach ($variants as $variant) {
-        $is_current = $variant['product']->ID === \get_the_ID();
+        $is_current = \has_term(
+            $variant[$variation]->term_id,
+            'pa_' . $variation,
+        );
 
         $image = \get_field('image', $variant[$variation]);
 
