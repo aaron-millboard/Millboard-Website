@@ -46,6 +46,7 @@
     "dependencies": {
         "leaflet": "^1.9.4",
         "leaflet-providers": "^2.0.0",
+        "leaflet.fullscreen": "^5.3.0",
         "leaflet.markercluster": "^1.5.3",
         "lodash.debounce": "^4.0.8",
         "lodash.throttle": "^4.1.1",

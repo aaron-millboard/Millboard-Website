@@ -1,5 +1,6 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.fullscreen/dist/Control.FullScreen.css" />
 
 <div <?= \Granola\Helpers::build_attributes($args['attributes']); ?>>
     <div class="map__search alignwide">
@@ -14,7 +15,7 @@
                     type="text"
                     name="map--map--search"
                     class="map__search__input"
-                    placeholder="<?= esc_html_x('Search...', 'Map search input placeholder', 'granola'); ?>"
+                    placeholder="<?= esc_html_x('Enter your postcode, town or city', 'Map search input placeholder', 'granola'); ?>"
                 >
 
                 <?= \Granola\Component::get('button', $args['search_submit']); ?>
@@ -87,11 +88,11 @@
                         <?php foreach ($args['items'] as $item) { ?>
                             <?= Granola\Component::get('map/listing', $item); ?>
                         <?php } ?>
-                    <?php } else { ?>
-                        <strong class="map__sidebar__no-content">
-                            <?= esc_html__('Please try widening your search area.', 'granola'); ?>
-                        </strong>
                     <?php } ?>
+
+                    <strong class="map__sidebar__no-content">
+                        <?= esc_html__('Please try removing filters or widening your search area.', 'granola'); ?>
+                    </strong>
                 </div>
             </div>
 

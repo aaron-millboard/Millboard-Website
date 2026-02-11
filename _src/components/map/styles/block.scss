@@ -108,7 +108,7 @@
 
     &__distance {
         display: flex;
-        gap: var(--space--3xs);
+        gap: px-to-rem(10);
         align-items: center;
 
         @include mq(medium) {
@@ -118,9 +118,12 @@
         &__label {
             flex: 0 0 auto;
             margin: 0;
+            font-size: var(--type--font-size--base);
         }
 
         &__input {
+            --input--background-color: transparent;
+
             @include mq($until: medium) {
                 max-width: min-content;
             }
@@ -205,10 +208,24 @@
         &__heading {
             @include typestyle-h6;
         }
+
+        &__no-content {
+            display: block;
+            padding-top: var(--space--m);
+            border-top: 1px solid var(--color--brand-1);
+            font-weight: var(--type--2--font-weight);
+
+            &:not(:first-child) {
+                display: none;
+            }
+        }
     }
 
     &__items {
-        overflow: scroll;
+        overflow: auto;
+        -ms-overflow-style: none;
+        scrollbar-color: var(--color--brand-4) transparent;
+        scrollbar-width: thin;
     }
 
     &__listing {
@@ -287,4 +304,8 @@
             }
         }
     }
+}
+
+:root {
+    // --fullscreen-icon-enter:
 }
