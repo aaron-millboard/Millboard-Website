@@ -223,6 +223,7 @@
 
     &__items {
         overflow: auto;
+        -ms-overflow-style: none;
         scrollbar-color: var(--color--brand-4) transparent;
         scrollbar-width: thin;
     }
