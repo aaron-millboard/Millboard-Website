@@ -1,0 +1,75 @@
+@import '../../../core';
+@import './variables.scss';
+
+.map {
+    // Labels with icons.
+    &__label-with-icon {
+        display: inline-flex;
+        flex-flow: row nowrap;
+        align-items: center;
+        gap: 0.94ch;
+    }
+
+    // Icons.
+    &__icon {
+        @include map-icon;
+
+        flex-shrink: 0;
+        pointer-events: none;
+
+        &--operational,
+        &--underauthorization,
+        &--underconstruction {
+            &::after {
+                display: block;
+                border-radius: $map-icon-size-m;
+                background: currentColor;
+                content: '';
+                mask-image: none;
+                mask-size: none;
+            }
+
+            .map__icon {
+                display: none;
+            }
+        }
+
+        &--operational {
+            &::after {
+                background: var(--color--#{$map-opstatus-operational-color-name});
+            }
+        }
+
+        &--underauthorization {
+            &::after {
+                background: var(--color--#{$map-opstatus-underauthorization-color-name});
+            }
+        }
+
+        &--underconstruction {
+            &::after {
+                background: var(--color--#{$map-opstatus-underconstruction-color-name});
+            }
+        }
+
+        &--map {
+            @include map-icon--map;
+        }
+
+        &--table {
+            @include map-icon--table;
+        }
+
+        &--funnel {
+            @include map-icon--funnel;
+        }
+
+        &--filter {
+            @include map-icon--filter;
+        }
+
+        &--filter--close {
+            @include map-icon--filter--close;
+        }
+    }
+}

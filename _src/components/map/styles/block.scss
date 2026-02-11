@@ -1,0 +1,290 @@
+@import '../../../core';
+@import './variables.scss';
+@import './map.scss';
+@import './icons.scss';
+
+.map {
+    $this: &;
+
+    display: grid;
+    gap: var(--space--xl);
+
+    &.has-background {
+        padding-right: 0;
+        padding-left: 0;
+    }
+
+    &__map-container,
+    &__table-container {
+        overflow: hidden;
+        border: 0;
+        isolation: isolate;
+
+        // Hide and show the table or the map.
+        &[aria-hidden='true'] {
+            display: none;
+            visibility: hidden;
+        }
+    }
+
+    &__search {
+        width: 100%;
+
+        &__form {
+            display: grid;
+            align-items: center;
+            gap: var(--space--l);
+
+            @include mq(medium) {
+                grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            }
+
+            @include mq(large) {
+                grid-template-columns: minmax(0, px-to-rem(400)) minmax(0, 1fr) auto;
+            }
+        }
+
+        &__input-wrapper {
+            display: grid;
+            max-width: px-to-rem(400);
+            grid-template-columns: minmax(0, 1fr) px-to-rem(66);
+
+            + #{$this}__distance {
+                @include mq(medium) {
+                    grid-column-start: 3;
+                }
+            }
+        }
+
+        &__label {
+            margin: 0;
+        }
+
+        &__input {
+            --input--border-color: black;
+            --input--border-color--focus: black;
+            --input--background-color: transparent;
+
+            border-right: 0;
+        }
+
+        &__submit {
+            width: px-to-rem(66);
+            height: px-to-rem(66);
+
+            &::after {
+                --mask-icon--size: 24px;
+
+                mask-image: url(#{asset-path('images/icons/search.svg')});
+            }
+        }
+
+        &__description {
+            @include typestyle-h6;
+            @include mask-icon(before);
+
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space--2xs);
+
+            @include mq($from: medium, $until: large) {
+                grid-column-end: span 2;
+            }
+
+            @include mq($until: large) {
+                order: -1;
+            }
+
+            &::before {
+                --mask-icon--size: 24px;
+
+                flex: 0 0 auto;
+                width: var(--mask-icon--size);
+                height: var(--mask-icon--size);
+                mask-image: url(#{asset-path('images/icons/crosshair.svg')});
+            }
+        }
+    }
+
+    &__distance {
+        display: flex;
+        gap: var(--space--3xs);
+        align-items: center;
+
+        @include mq(medium) {
+            justify-content: flex-end;
+        }
+
+        &__label {
+            flex: 0 0 auto;
+            margin: 0;
+        }
+
+        &__input {
+            @include mq($until: medium) {
+                max-width: min-content;
+            }
+        }
+    }
+
+    &__tablist {
+        display: grid;
+        width: 100%;
+        background-color: var(--color--brand-1);
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+
+        @include mq(medium) {
+            display: none;
+        }
+    }
+
+    &__tab {
+        @include typestyle-h6;
+
+        padding: var(--space--2xs) var(--space--3xs);
+        background-color: var(--color--brand-1);
+        border-top: 1px solid var(--color--brand-1);
+        border-bottom: 1px solid var(--color--brand-4);
+
+        &--active {
+            border-top-color: var(--color--brand-4);
+            border-bottom-color: transparent;
+            background-color: var(--color--brand-2);
+
+            &:first-child {
+                border-inline-end: 1px solid var(--color--brand-4);
+            }
+
+            &:last-child {
+                border-inline-start: 1px solid var(--color--brand-4);
+            }
+        }
+    }
+    &__tab-panel {
+        &[hidden] {
+            @include mq($until: medium) {
+                display: none;
+            }
+        }
+    }
+
+    &__body {
+        display: grid;
+    }
+
+    &__content {
+        width: 100%;
+        display: grid;
+        gap: var(--space--xl);
+
+        @include mq($until: medium) {
+            padding-top: var(--space--m);
+        }
+
+        @include mq(medium) {
+            height: px-to-rem(600);
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        }
+
+        @include mq(large) {
+            grid-template-columns: px-to-rem(400) minmax(0, 1fr);
+        }
+    }
+
+    &__map-container {
+        @include mq($until: medium) {
+            height: px-to-rem(500);
+        }
+    }
+
+    &__sidebar {
+        display: grid;
+        overflow: hidden;
+        align-content: start;
+
+        &__heading {
+            @include typestyle-h6;
+        }
+    }
+
+    &__items {
+        overflow: scroll;
+    }
+
+    &__listing {
+        display: grid;
+        gap: 0;
+        padding-bottom: var(--space--l);
+        justify-items: start;
+
+        &:not(:last-child) {
+            border-bottom: 1px solid var(--color--brand-1);
+            margin-bottom: var(--space--l);
+        }
+
+        &[hidden] {
+            display: none;
+        }
+
+        &__title {
+            @include typestyle-xlarge;
+
+            margin: 0;
+            font-weight: var(--type--2--font-weight);
+            letter-spacing: 0;
+        }
+
+        &__meta {
+            order: -1;
+            display: flex;
+            flex-flow: row wrap;
+            align-items: center;
+            gap: var(--space--3xs);
+
+            &:not(:empty) {
+                margin-bottom: var(--space--s);
+            }
+
+            .g-tag {
+                border-color: var(--color--brand-4);
+            }
+        }
+
+        &__distance {
+            @include typestyle-small;
+
+            font-weight: var(--type--2--font-weight);
+        }
+
+        &__phone,
+        &__address {
+            @include typestyle-small;
+
+            margin-top: var(--space--3xs);
+        }
+
+        &__link {
+            @include typestyle-h6;
+            @include mask-icon;
+
+            display: inline-flex;
+            gap: var(--space--2xs);
+            align-items: center;
+            text-decoration: none;
+            margin-top: var(--space--s);
+
+            @include interact {
+                text-decoration: none;
+            }
+
+            &::after {
+                display: block;
+                width: #{px-to-rem(24)};
+                height: #{px-to-rem(24)};
+                content: '';
+                mask-image: url(#{asset-path('images/icons/chevron-right.svg')});
+                mask-size: #{px-to-rem(24)};
+            }
+        }
+    }
+}
