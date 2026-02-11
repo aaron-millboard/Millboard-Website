@@ -173,6 +173,22 @@ function process_image(array $row, int $key, array $args, int $pattern_part, boo
         if (empty($row['caption_main'])) {
             $row['caption_main'] = get_the_title($gallery_post_id);
         }
+
+        // Get secondary caption from ACF fields.
+        if (empty($row['caption_secondary'])) {
+            $colour_override = \get_field('colour_override', $gallery_post_id);
+            $colour_taxonomy = \get_field('colour', $gallery_post_id);
+
+            // If colour_taxonomy is a term ID, get the term name
+            if (!empty($colour_taxonomy) && is_numeric($colour_taxonomy)) {
+                $term = \get_term($colour_taxonomy, 'image_category');
+                if ($term && !is_wp_error($term)) {
+                    $colour_taxonomy = $term->name;
+                }
+            }
+
+            $row['caption_secondary'] = !empty($colour_override) ? $colour_override : $colour_taxonomy;
+        }
     }
 
     // Collect images and alt.
