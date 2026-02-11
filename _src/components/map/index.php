@@ -2,7 +2,7 @@
     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
 
 <div <?= \Granola\Helpers::build_attributes($args['attributes']); ?>>
-    <div class="map__search">
+    <div class="map__search alignwide">
         <form class="map__search__form" method="post">
             <div class="map__search__input-wrapper">
                 <label class="map__search-label visually-hidden" for="map-search-input">
@@ -53,24 +53,51 @@
     </div>
 
     <div class="map__body">
-        <div class="map__sidebar">
-            <?= \Granola\Component::get('heading', $args['sidebar_heading']) ?>
+        <div class="map__tablist">
+            <?= \Granola\Component::get('button', [
+                'content' => \_x('List', 'Map mobile tab button label', 'granola'),
+                'classes' => [
+                    'map__tab',
+                    'map__tab--active',
+                    'map__tab--list',
+                ],
+                'attributes' => [
+                    'aria-controls' => 'map-sidebar'
+                ],
+                ]); ?>
 
-            <div class="map__items">
-                <?php if (!empty($args['items'])) { ?>
-                    <?php foreach ($args['items'] as $item) { ?>
-                        <?= Granola\Component::get('map/listing', $item); ?>
-                    <?php } ?>
-                <?php } else { ?>
-                    <strong class="map__sidebar__no-content">
-                        <?= esc_html__('Please try widening your search area.', 'granola'); ?>
-                    </strong>
-                <?php } ?>
-            </div>
+            <?= \Granola\Component::get('button', [
+                'content' => \_x('Map', 'Map mobile tab button label', 'granola'),
+                'classes' => [
+                    'map__tab',
+                    'map__tab--map',
+                ],
+                'attributes' => [
+                    'aria-controls' => 'map-container'
+                ],
+            ]); ?>
         </div>
 
-        <div id="map-map-container" class="map__map-container">
-            <div id="leaflet-map-container"></div>
+        <div class="map__content alignwide">
+            <div id="map-sidebar" class="map__sidebar map__tab-panel">
+                <?= \Granola\Component::get('heading', $args['sidebar_heading']) ?>
+
+                <div class="map__items">
+                    <?php if (!empty($args['items'])) { ?>
+                        <?php foreach ($args['items'] as $item) { ?>
+                            <?= Granola\Component::get('map/listing', $item); ?>
+                        <?php } ?>
+                    <?php } else { ?>
+                        <strong class="map__sidebar__no-content">
+                            <?= esc_html__('Please try widening your search area.', 'granola'); ?>
+                        </strong>
+                    <?php } ?>
+                </div>
+            </div>
+
+            <div id="map-container" class="map__map-container map__tab-panel">
+                <div id="leaflet-map-container"></div>
+            </div>
         </div>
     </div>
 </div>

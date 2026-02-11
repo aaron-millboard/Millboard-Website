@@ -22,6 +22,9 @@ class Map {
         // Distance.
         this.distanceSelect = this.el.querySelector('.map__distance__input');
 
+        // Mobile Tabs.
+        this.tablist = document.querySelector('.map__tablist');
+
         this.mobileMediaQueryRefEl = document.querySelector('.site-header__burger');
 
         this.appliedFilterSlugsByFiltergroup = {};
@@ -63,6 +66,7 @@ class Map {
         this.initLeafletMarkers();
         this.initSearch();
         this.initDistanceFilter();
+        this.initTablist();
     }
 
     /**
@@ -201,6 +205,48 @@ class Map {
     initDistanceFilter() {
         this.distanceSelect.addEventListener('change', ({target}) => {
             this.filterListingsByDistance();
+        });
+    }
+
+    initTablist() {
+        if (!this.tablist) {
+            return;
+        }
+
+        const tabs = this.tablist.querySelectorAll('.map__tab');
+        const panels = this.el.querySelectorAll('.map__tab-panel');
+
+        if (this.isMobileViewport()) {
+            [...panels].forEach((panel, index) => {
+                if (index > 0) {
+                    panel.setAttribute('hidden', '');
+                }
+            });
+        }
+
+        [...tabs].forEach((tab) => {
+            tab.addEventListener('click', ({target}) => {
+                [...tabs].forEach((tab) => {
+                    tab.classList.remove('map__tab--active')
+                });
+
+                target.classList.add('map__tab--active');
+                const panelId = target.getAttribute('aria-controls');
+
+                if (!panelId) {
+                    return;
+                }
+
+                const panel = this.el.querySelector(`#${panelId}`);
+
+                [...panels].forEach((panel) => {
+                    panel.setAttribute('hidden', '');
+                });
+
+                if (panel) {
+                    panel.removeAttribute('hidden');
+                }
+            });
         });
     }
 

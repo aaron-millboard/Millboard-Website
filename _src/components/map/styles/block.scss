@@ -28,6 +28,8 @@
     }
 
     &__search {
+        width: 100%;
+
         &__form {
             display: grid;
             align-items: center;
@@ -125,17 +127,71 @@
         }
     }
 
-    &__body {
+    &__tablist {
         display: grid;
-        gap: var(--space--xl);
-        height: px-to-rem(600);
+        width: 100%;
+        background-color: var(--color--brand-1);
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 
         @include mq(medium) {
+            display: none;
+        }
+    }
+
+    &__tab {
+        @include typestyle-h6;
+
+        padding: var(--space--2xs) var(--space--3xs);
+        background-color: var(--color--brand-1);
+        border-top: 1px solid var(--color--brand-1);
+        border-bottom: 1px solid var(--color--brand-4);
+
+        &--active {
+            border-top-color: var(--color--brand-4);
+            border-bottom-color: transparent;
+            background-color: var(--color--brand-2);
+
+            &:first-child {
+                border-inline-end: 1px solid var(--color--brand-4);
+            }
+
+            &:last-child {
+                border-inline-start: 1px solid var(--color--brand-4);
+            }
+        }
+    }
+    &__tab-panel {
+        &[hidden] {
+            display: none;
+        }
+    }
+
+    &__body {
+        display: grid;
+    }
+
+    &__content {
+        width: 100%;
+        display: grid;
+        gap: var(--space--xl);
+
+        @include mq($until: medium) {
+            padding-top: var(--space--m);
+        }
+
+        @include mq(medium) {
+            height: px-to-rem(600);
             grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
         }
 
         @include mq(large) {
             grid-template-columns: px-to-rem(400) minmax(0, 1fr);
+        }
+    }
+
+    &__map-container {
+        @include mq($until: medium) {
+            height: px-to-rem(500);
         }
     }
 
