@@ -7,14 +7,6 @@
             ]); ?>
         <?php } ?>
 
-        <?php if (!empty($args['subheading'])) { ?>
-            <?= \Granola\Component::get('heading', [
-                'content' => $args['subheading'],
-                'el' => 'h3',
-                'classes' => ['call-to-action__subheading'],
-            ]); ?>
-        <?php } ?>
-
         <?php if (!empty($args['image'])) { ?>
             <div class="call-to-action__image">
                 <?= \Granola\Component::get('image', $args['image']); ?>
