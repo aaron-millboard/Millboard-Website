@@ -128,28 +128,9 @@ function filter_args(array $args): ?array
  */
 function build_image_data(\WP_Post $post): array
 {
-    // Main caption (post title)
-    $caption_main = \get_the_title($post->ID);
-
-    // Get colour from ACF fields
-    $colour_override = \get_field('colour_override', $post->ID);
-    $colour_taxonomy = \get_field('colour', $post->ID);
-
-    // If colour_taxonomy is a term ID, get the term name
-    if (!empty($colour_taxonomy) && is_numeric($colour_taxonomy)) {
-        $term = \get_term($colour_taxonomy, 'image_category');
-        if ($term && !is_wp_error($term)) {
-            $colour_taxonomy = $term->name;
-        }
-    }
-
-    $caption_secondary = !empty($colour_override) ? $colour_override : $colour_taxonomy;
-
     return [
         'type' => 'gallery-image',
         'image' => false,
         'gallery_image' => $post->ID,
-        'caption_main' => $caption_main,
-        'caption_secondary' => $caption_secondary,
     ];
 }

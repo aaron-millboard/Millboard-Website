@@ -92,7 +92,7 @@
 
                 &[data-image-orientation='portrait'] {
                     --gallery--lightbox--main-image--aspect-ratio: 3 / 4;
-                    --gallery--lightbox--main-image--width: min(85vh, 85vw);
+                    --gallery--lightbox--main-image--width: min(65vh, 85vw);
                 }
 
                 &[data-image-orientation='landscape'] {
