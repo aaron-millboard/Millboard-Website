@@ -1,6 +1,5 @@
-import debounce from 'lodash.debounce';
+import throttle from 'lodash.throttle';
 import L from 'leaflet/dist/leaflet.js';
-import LFeatureGroupSubGroup from './Leaflet.FeatureGroup.SubGroup.js';
 import isElementVisible from '../../../scripts/helpers/isElementVisible.js';
 
 // https://leafletjs.com/reference.html
@@ -28,7 +27,7 @@ class Map {
         this.tabs = this.tablist.querySelectorAll('.map__tab');
         this.tabPanels = this.el.querySelectorAll('.map__tab-panel');
 
-        this.mobileMediaQueryRefEl = document.querySelector('.site-header__burger');
+        this.mobileMediaQueryRefEl = this.tablist;
 
         this.appliedFilterSlugsByFiltergroup = {};
         this.markerSubGroupsByFilterableValue = {};
@@ -71,9 +70,17 @@ class Map {
         this.initDistanceFilter();
         this.initTablist();
 
-        window.addEventListener('resize', debounce(() => {
-            this.filterListingsByDistance()
-        }, 500));
+        if (this.tablist) {
+            window.addEventListener('resize', throttle(() => {
+                [...this.tabPanels].forEach((panel, index) => {
+                    if (this.isMobileViewport() && index > 0) {
+                        panel.setAttribute('hidden', '');
+                    } else {
+                        panel.removeAttribute('hidden');
+                    }
+                });
+            }, 100));
+        }
     }
 
     /**

@@ -48,6 +48,7 @@
         "leaflet-providers": "^2.0.0",
         "leaflet.markercluster": "^1.5.3",
         "lodash.debounce": "^4.0.8",
+        "lodash.throttle": "^4.1.1",
         "normalize.css": "^8.0.1"
     }
 }
