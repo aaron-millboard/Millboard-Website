@@ -15,10 +15,7 @@
                     </div>
                     <div class="gallery__lightbox__main-image__caption is-style-typestyle-small is-style-typestyle-meta">
                         <div class="gallery__lightbox__main-image__caption__main"></div>
-
-                        <?php if (!empty($image['caption_secondary'])) { ?>
-                            <div class="gallery__lightbox__main-image__caption__secondary"></div>
-                        <?php } ?>
+                        <div class="gallery__lightbox__main-image__caption__secondary"></div>
                     </div>
                 </figure>
 
