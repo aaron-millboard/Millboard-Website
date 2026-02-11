@@ -122,6 +122,8 @@
         }
 
         &__input {
+            --input--background-color: transparent;
+
             @include mq($until: medium) {
                 max-width: min-content;
             }
