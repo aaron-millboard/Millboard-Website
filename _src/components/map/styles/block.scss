@@ -222,6 +222,10 @@
             margin-bottom: var(--space--l);
         }
 
+        &[hidden] {
+            display: none;
+        }
+
         &__title {
             @include typestyle-xlarge;
 
