@@ -87,11 +87,11 @@
                         <?php foreach ($args['items'] as $item) { ?>
                             <?= Granola\Component::get('map/listing', $item); ?>
                         <?php } ?>
-                    <?php } else { ?>
-                        <strong class="map__sidebar__no-content">
-                            <?= esc_html__('Please try widening your search area.', 'granola'); ?>
-                        </strong>
                     <?php } ?>
+
+                    <strong class="map__sidebar__no-content">
+                        <?= esc_html__('Please try removing filters or widening your search area.', 'granola'); ?>
+                    </strong>
                 </div>
             </div>
 
