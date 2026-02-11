@@ -36,6 +36,7 @@ function filter_args(array $args): ?array
     if (empty($args['image_rows'])) {
          return null;
     }
+
     // -------------------------------------------------------------------------
     // Accessible description.
     // -------------------------------------------------------------------------
@@ -90,7 +91,7 @@ function filter_args(array $args): ?array
     }
 
     // -------------------------------------------------------------------------
-    // Set images.
+    // Process images.
     // -------------------------------------------------------------------------
     $args['images'] = [];
     $image_index = 1;
@@ -100,13 +101,17 @@ function filter_args(array $args): ?array
         // Get the pattern.
         $pattern = $image_row['pattern'] ?? '50:50';
         $pattern_parts = explode(':', $pattern);
+        $image_1 = null;
+        $image_2 = null;
 
         // Process the first image.
         $image_1 = process_image($image_row['image_1'], $image_index, $args, $pattern_parts[0] ?? 100, false);
         $image_index += 1;
 
         // Process the second image.
-        $image_2 = process_image($image_row['image_2'], $image_index, $args, $pattern_parts[1] ?? 100, true);
+        if (isset($image_row['image_2'])) {
+            $image_2 = process_image($image_row['image_2'], $image_index, $args, $pattern_parts[1] ?? 100, true);
+        }
 
         // Bail early if no image 1 is returned.
         if (!$image_1) {
@@ -115,19 +120,21 @@ function filter_args(array $args): ?array
         }
 
         // Set our processed images to the image rows.
-        $args['image_rows'][$key] = [
-            'image_1' => $image_1,
-            'image_2' => $image_2 ?? false,
-        ];
+        $image_row_data = [];
+        $image_row_data['image_1'] = $image_1;
 
         // Append first image to the images array.
         $args['images'][] = $image_1;
 
         // Append second image if it exists to to images array.
         if ($image_2) {
+            $image_row_data['image_2'] = $image_2;
             $image_index += 1;
             $args['images'][] = $image_2;
         }
+
+        // Set our image row data.
+        $args['image_rows'][$key] = $image_row_data;
     }
 
     // Collect total images.
