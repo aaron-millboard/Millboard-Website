@@ -289,6 +289,7 @@ class Map {
 
             if (distanceInMiles <= distance) {
                 this.filteredMarkersGroup.addLayer(marker);
+                marker.options.themeData.listingElement.removeAttribute('hidden', '');
                 bounds.extend(marker.getLatLng());
             } else {
                 marker.options.themeData.listingElement.setAttribute('hidden', '');
@@ -296,14 +297,17 @@ class Map {
         });
 
         this.lmap.addLayer(this.filteredMarkersGroup);
-        const count = 1;
-        if (count === 1) {
-            this.listingsHeading.textContent = `Displaying: ${count} results`
+
+        const markerCount = this.filteredMarkersGroup.getLayers().length;
+        if (markerCount === 1) {
+            this.listingsHeading.textContent = `Displaying: ${markerCount} result`
         } else {
-            this.listingsHeading.textContent = `Displaying: ${count} result`
+            this.listingsHeading.textContent = `Displaying: ${markerCount} results`
         }
-        this.lmap.addLayer(this.filteredMarkersGroup);
-        this.lmap.fitBounds(bounds);
+
+        if (markerCount > 0) {
+            this.lmap.fitBounds(bounds);
+        }
     }
 
     resetListingDistanceFilter() {
