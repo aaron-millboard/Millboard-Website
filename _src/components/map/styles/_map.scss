@@ -9,7 +9,7 @@
     width: 100%;
     height: 80vh;
     max-height: px-to-rem(600);
-    background: var(--color--white);
+    background-color: var(--color--white);
 
     .leaflet-tile-pane {
         filter: hue-rotate(367deg);
@@ -97,38 +97,64 @@
         }
     }
 
-    // Zoom control.
-    .leaflet-control-zoom {
-        --color--background: var(--color--white);
-        --color--foreground: #666;
-        --map--zoom--border-radius: #{px-to-rem(3)};
+    .leaflet-top.leaflet-right {
+        .leaflet-control {
+            --map--zoom--border-radius: #{px-to-rem(3)};
+            --color--background: var(--color--white);
+            --color--foreground: #666;
 
-        display: flex;
-        flex-flow: column nowrap;
-        border: 0;
-        margin-right: #{px-to-rem(40)}; // Assuming the zoom is placed bottom right.
-        margin-bottom: #{px-to-rem(40)}; // Assuming the zoom is placed bottom right.
-        box-shadow: 0px 2px 5px 2px hsla(var(--color--black--hsl), 10%);
-        gap: 0;
+            display: flex;
+            border: 1px solid var(--color--charcoal);
+            border-radius: 0;
+            margin-top: #{px-to-rem(20)}; // Assuming the control is placed top right.
+            margin-right: #{px-to-rem(20)}; // Assuming the control is placed top right.
+            box-shadow: 0px 2px 5px 2px hsla(var(--color--black--hsl), 10%);
+        }
+
+        // Zoom control.
+        .leaflet-control-zoom {
+            margin-top: #{px-to-rem(10)}; // Assuming the control is placed top right.
+            display: flex;
+            flex-flow: column nowrap;
+            gap: 0;
+        }
     }
 
+    .leaflet-control-zoom-fullscreen {
+        --mask-icon--size: #{px-to-rem(28)};
+
+        @include mask-icon;
+
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+
+        &::after {
+            display: block;
+            width: #{px-to-rem(28)};
+            height: #{px-to-rem(28)};
+            background-color: currentColor;
+            mask-image: url(#{asset-path('images/icons/full-screen.svg')});
+        }
+    }
+
+    .leaflet-control-zoom-fullscreen,
     .leaflet-control-zoom-in,
     .leaflet-control-zoom-out {
         overflow: hidden;
         width: $map-zoom-button-size;
         height: $map-zoom-button-size;
-        justify-content: flex-start;
         border: 0;
-        background: var(--color--background);
-        border-bottom-left-radius: var(--map--zoom--border-radius);
-        border-bottom-right-radius: var(--map--zoom--border-radius);
+        border-radius: 0;
+        background-color: var(--color--background);
         cursor: pointer;
 
         &:hover {
-            background: var(--color--foreground);
+            background-color: var(--color--foreground);
+            color: var(--color--background);
 
             > span {
-                color: var(--color--background);
+                color: inherit;
             }
         }
 
@@ -149,19 +175,18 @@
     }
 
     .leaflet-control-zoom-in {
-        border-bottom-left-radius: 0px;
-        border-bottom-right-radius: 0px;
-        border-top-left-radius: var(--map--zoom--border-radius);
-        border-top-right-radius: var(--map--zoom--border-radius);
-
         &::after {
             position: absolute;
             z-index: 1;
             display: block;
             width: 100%;
             height: #{px-to-rem(1)};
-            background: var(--color--foreground);
+            background-color: var(--color--foreground);
             content: '';
         }
     }
+}
+
+:root {
+    --fullscreen-icon-enter: none;
 }

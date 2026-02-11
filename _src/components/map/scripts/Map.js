@@ -1,5 +1,6 @@
 import throttle from 'lodash.throttle';
 import L from 'leaflet/dist/leaflet.js';
+import { FullScreen } from 'leaflet.fullscreen';
 import isElementVisible from '../../../scripts/helpers/isElementVisible.js';
 
 // https://leafletjs.com/reference.html
@@ -112,6 +113,10 @@ class Map {
         });
         this.lmap.addLayer(tileLayer);
 
+        const lmapFullScreenControl = new FullScreen({
+            position: 'topright',
+        })
+        this.lmap.addControl(lmapFullScreenControl);
 
         // Add leaflet zoom controller.
         // https://leafletjs.com/reference.html#control-zoom
