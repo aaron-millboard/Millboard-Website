@@ -11,6 +11,7 @@ class Map {
 
         // Listings.
         this.listingEls = this.el.querySelectorAll('.map__listing');
+        this.listingsHeading = this.el.querySelector('.map__sidebar__heading');
 
         // Map container.
         this.mapContainerEl = this.el.querySelector('.map__map-container');
@@ -24,6 +25,8 @@ class Map {
 
         // Mobile Tabs.
         this.tablist = document.querySelector('.map__tablist');
+        this.tabs = this.tablist.querySelectorAll('.map__tab');
+        this.tabPanels = this.el.querySelectorAll('.map__tab-panel');
 
         this.mobileMediaQueryRefEl = document.querySelector('.site-header__burger');
 
@@ -67,6 +70,10 @@ class Map {
         this.initSearch();
         this.initDistanceFilter();
         this.initTablist();
+
+        this.window.addEventListener('resize', debounce(() => {
+            this.filterListingsByDistance()
+        }, 1500));
     }
 
     /**
@@ -213,20 +220,17 @@ class Map {
             return;
         }
 
-        const tabs = this.tablist.querySelectorAll('.map__tab');
-        const panels = this.el.querySelectorAll('.map__tab-panel');
-
         if (this.isMobileViewport()) {
-            [...panels].forEach((panel, index) => {
+            [...this.tabPanels].forEach((panel, index) => {
                 if (index > 0) {
                     panel.setAttribute('hidden', '');
                 }
             });
         }
 
-        [...tabs].forEach((tab) => {
+        [...this.tabs].forEach((tab) => {
             tab.addEventListener('click', ({target}) => {
-                [...tabs].forEach((tab) => {
+                [...this.tabs].forEach((tab) => {
                     tab.classList.remove('map__tab--active')
                 });
 
@@ -237,13 +241,13 @@ class Map {
                     return;
                 }
 
-                const panel = this.el.querySelector(`#${panelId}`);
-
                 if (this.isMobileViewport()) {
-                    [...panels].forEach((panel) => {
+                    [...this.tabPanels].forEach((panel) => {
                         panel.setAttribute('hidden', '');
                     });
                 }
+
+                const panel = this.el.querySelector(`#${panelId}`);
 
                 if (panel) {
                     panel.removeAttribute('hidden');
