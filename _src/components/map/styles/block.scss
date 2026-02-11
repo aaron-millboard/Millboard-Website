@@ -108,7 +108,7 @@
 
     &__distance {
         display: flex;
-        gap: var(--space--3xs);
+        gap: px-to-rem(10);
         align-items: center;
 
         @include mq(medium) {
