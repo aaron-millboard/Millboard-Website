@@ -728,7 +728,7 @@ export default class Gallery {
 
         const nodes = Array.from(
             document.querySelectorAll(
-                '.site-header, .site-footer, .site-main__content > *, .skip-link, .gallery__card button'
+                '.site-header, .site-footer, .site-main__content > *:not(.gallery-loop), .skip-link, .gallery__card button'
             )
         ).filter((n) => n !== this.element);
 
