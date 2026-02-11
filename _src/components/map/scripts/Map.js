@@ -71,9 +71,9 @@ class Map {
         this.initDistanceFilter();
         this.initTablist();
 
-        this.window.addEventListener('resize', debounce(() => {
+        window.addEventListener('resize', debounce(() => {
             this.filterListingsByDistance()
-        }, 1500));
+        }, 500));
     }
 
     /**
@@ -288,6 +288,13 @@ class Map {
             }
         });
 
+        this.lmap.addLayer(this.filteredMarkersGroup);
+        const count = 1;
+        if (count === 1) {
+            this.listingsHeading.textContent = `Displaying: ${count} results`
+        } else {
+            this.listingsHeading.textContent = `Displaying: ${count} result`
+        }
         this.lmap.addLayer(this.filteredMarkersGroup);
         this.lmap.fitBounds(bounds);
     }
