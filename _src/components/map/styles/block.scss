@@ -162,7 +162,9 @@
     }
     &__tab-panel {
         &[hidden] {
-            display: none;
+            @include mq($until: medium) {
+                display: none;
+            }
         }
     }
 
