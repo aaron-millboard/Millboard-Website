@@ -32,13 +32,6 @@ class Map {
         this.appliedFilterSlugsByFiltergroup = {};
         this.markerSubGroupsByFilterableValue = {};
 
-        // Constants for the Leaflet map.
-        this.LMAP_WORLD_2D_SVG = this.mapContainerEl.dataset.mapWorldSvgUrl;
-        this.LMAP_WORLD_2D_SVG_BOUNDS = [
-            [85, -169.4],
-            [-85, 190.6],
-        ];
-
         // Variables for the Leaflet Map.
         this.LMAP_ZOOM_DELTA = 1.4; // Ws 0.8
         this.LMAP_ZOOM_SNAP = this.LMAP_ZOOM_DELTA;
@@ -92,10 +85,6 @@ class Map {
             center: this.LMAP_INITIAL_CENTER,
             attributionControl: false,
             intertia: false,
-            maxBounds: [
-                [78, -169.4],
-                [-58, 120.6],
-            ],
             maxBoundsViscosity: 1.0,
             zoom: this.LMAP_INITIAL_ZOOM,
             zoomControl: false, // We add this manually later so set a different position.

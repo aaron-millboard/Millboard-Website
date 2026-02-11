@@ -51,7 +51,7 @@
 
             + #{$this}__distance {
                 @include mq(medium) {
-                    grid-column-end: span 2;
+                    grid-column-start: 3;
                 }
             }
         }

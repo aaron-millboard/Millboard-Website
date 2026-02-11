@@ -40,9 +40,12 @@ function filter_args(array $args): ?array
         ];
     }
 
-    if (!empty($args['website'])) {
+    if (!empty($args['url'])) {
         $args['link'] = [
-            'content' => \__('Contact installer', 'granola'),
+            'content' => !empty($args['post']->post_type) ? sprintf(
+                \__('Contact %s', 'granola'),
+                $args['post']->post_type,
+            ) : \_x('Contact', 'Map listing link text', 'granola'),
             'url' => $args['url'],
             'classes' => [
                 'map__listing__link',
