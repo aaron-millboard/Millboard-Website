@@ -239,7 +239,7 @@ class Map {
 
                 const panel = this.el.querySelector(`#${panelId}`);
 
-                if (isMobileViewport()) {
+                if (this.isMobileViewport()) {
                     [...panels].forEach((panel) => {
                         panel.setAttribute('hidden', '');
                     });
