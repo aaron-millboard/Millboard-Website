@@ -222,7 +222,9 @@
     }
 
     &__items {
-        overflow: scroll;
+        overflow: auto;
+        scrollbar-color: var(--color--brand-4) transparent;
+        scrollbar-width: thin;
     }
 
     &__listing {
