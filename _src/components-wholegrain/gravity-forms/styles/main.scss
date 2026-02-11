@@ -584,6 +584,12 @@
                 --input--border-color: var(--color--error);
             }
         }
+
+        .hs_ops_out_marketing {
+            input {
+                margin-right: px-to-rem(8px);
+            }
+        }
     }
 
     .hs-button {
