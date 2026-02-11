@@ -14,7 +14,7 @@
                     type="text"
                     name="map--map--search"
                     class="map__search__input"
-                    placeholder="<?= esc_html_x('Search...', 'Map search input placeholder', 'granola'); ?>"
+                    placeholder="<?= esc_html_x('Enter your postcode, town or city', 'Map search input placeholder', 'granola'); ?>"
                 >
 
                 <?= \Granola\Component::get('button', $args['search_submit']); ?>
