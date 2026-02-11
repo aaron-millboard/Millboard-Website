@@ -540,6 +540,20 @@
 // }
 
 .gravity-forms {
+    .hbspt-form {
+        input,
+        textarea {
+            color: var(--color--black);
+        }
+
+        .hs_opt_out_marketing {
+            ul {
+                list-style: none;
+                padding-left: 0;
+            }
+        }
+    }
+
     .hs-button {
         @include button;
 
