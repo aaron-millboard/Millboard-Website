@@ -543,13 +543,45 @@
     .hbspt-form {
         input,
         textarea {
-            color: var(--color--black);
+            --input--background-color: transparent;
+            --input--border-color: var(--color--foreground);
+            --input--border-color--focus: var(--color--brand-4);
+            --input--color: var(--color--foreground);
+            --input--color--focus: var(--color--foreground);
+            --input--placeholder-color: var(--color--foreground);
+            --input--border-width--focus: 1px;
         }
 
-        .hs_opt_out_marketing {
-            ul {
-                list-style: none;
-                padding-left: 0;
+        ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .hs-error-msgs {
+            @include no-first-last-margin;
+            @include color-context('error');
+
+            max-width: 100%;
+            width: 100%;
+            margin: px-to-rem(8px) 0;
+            padding: px-to-rem(8px) px-to-rem(16px);
+
+            li {
+                @include typestyle-large;
+                text-transform: none;
+                letter-spacing: inherit;
+                font-weight: 600;
+
+                label {
+                    margin: 0;
+                }
+            }
+        }
+
+        input.error,
+        textarea.error {
+            &:not(:focus-within) {
+                --input--border-color: var(--color--error);
             }
         }
     }
