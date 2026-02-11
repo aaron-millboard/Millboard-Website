@@ -89,22 +89,6 @@
                     pointer-events: none;
                     transition: transition(opacity);
                 }
-
-                &[data-image-orientation='portrait'] {
-                    --gallery--lightbox--main-image--aspect-ratio: 3 / 4;
-                    --gallery--lightbox--main-image--width: min(65vh, 85vw);
-                }
-
-                &[data-image-orientation='landscape'] {
-                    --gallery--lightbox--main-image--aspect-ratio: 861 / 644;
-                    --gallery--lightbox--main-image--width: min(#{px-to-rem(861)}, 85vw);
-
-                }
-
-                &[data-image-orientation='square'] {
-                    --gallery--lightbox--main-image--aspect-ratio: 1 / 1;
-                    --gallery--lightbox--main-image--width: min(85vh, 85vw);
-                }
             }
             // ------------------------------
             // Skeleton loading state and hide previous image when new image is loading.
@@ -123,7 +107,31 @@
 
             &__caption {
                 opacity: 0.8;
-                margin-top: var(--space--s);
+                margin: var(--space--s) auto;
+                max-width: var(--gallery--lightbox--main-image--width);
+
+                &__secondary {
+                   font-size: 0.8rem;
+                }
+            }
+
+            // ------------------------------
+            // Sizes of images in lightbox.
+            // ------------------------------
+            &:has([data-image-orientation='portrait']) {
+                --gallery--lightbox--main-image--aspect-ratio: 3 / 4;
+                --gallery--lightbox--main-image--width: min(65vh, 85vw);
+            }
+
+            &:has([data-image-orientation='landscape']) {
+                --gallery--lightbox--main-image--aspect-ratio: 861 / 644;
+                --gallery--lightbox--main-image--width: min(#{px-to-rem(861)}, 85vw);
+
+            }
+
+            &:has([data-image-orientation='square']) {
+                --gallery--lightbox--main-image--aspect-ratio: 1 / 1;
+                --gallery--lightbox--main-image--width: min(85vh, 85vw);
             }
         }
 
