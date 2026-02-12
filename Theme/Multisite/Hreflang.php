@@ -12,16 +12,32 @@ class Hreflang
         \add_filter('granola\wordpress\head\links', [__CLASS__, 'add_hreflang_links']);
     }
 
+    /**
+     * Add hreflang links to the head if there are valid links set on the page object.
+     *
+     * @param array $links The unfiltered list of <link> attribute arrays.
+     * @return array The filtered list of <link> attribute arrays, with hreflangs added as required.
+     */
     public static function add_hreflang_links(array $links): array
     {
         $page_object = \Granola\WordPress\PageObject::get();
 
-        if (!($page_object instanceof \WP_Post)) {
+        // Bail early - invalid objects for adding hreflang links.
+        if (!\Granola\Helpers::is_valid_class($page_object, ['WP_Post', 'WP_Post_Type', 'WP_Taxonomy', 'WP_Term'])) {
             return $links;
+        }
+
+        // Special case - Template Pages.
+        if (!($page_object instanceof \WP_Post)) {
+            $template_page = \Granola\WordPress\TemplatePage::get_template_page($page_object);
+            if (!empty($template_page)) {
+                $page_object = $template_page;
+            }
         }
 
         $hreflang_links = \get_field('hreflang_links', $page_object);
 
+        // Bail early - no links to add.
         if (empty($hreflang_links)) {
             return $links;
         }
