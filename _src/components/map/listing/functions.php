@@ -33,7 +33,7 @@ function filter_args(array $args): ?array
     if (!empty($args['phone'])) {
         $args['phone'] = [
             'content' => $args['phone'],
-            'url' => 'mailto:' . $args['phone'],
+            'url' => 'tel:' . $args['phone'],
             'classes' => [
                 'map__listing__phone',
             ],
