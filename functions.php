@@ -57,6 +57,11 @@ if (file_exists($autoloader = __DIR__ . '/vendor/autoload.php')) {
 \Theme\Shortcodes\Year::init();
 
 // ----------------------------------------------------
+// Multisite features.
+// ----------------------------------------------------
+\Theme\Multisite\Hreflang::init();
+
+// ----------------------------------------------------
 // Custom Post Types.
 // ----------------------------------------------------
 \Theme\PostTypes\AdviceCentre::init();
