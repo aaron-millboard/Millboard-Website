@@ -61,6 +61,9 @@
         // ------------------------------
         &__main-image {
             margin: var(--space--l) 0;
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - (var(--space--l) * 2));
 
             @include mq($until: large) {
                 align-self: flex-start;
@@ -72,7 +75,7 @@
                 width: var(--gallery--lightbox--main-image--width);
                 margin-inline: auto;
 
-                 // Skeleton loading state
+                // Skeleton loading state
                 &::before {
                     position: absolute;
                     z-index: 1;
@@ -108,10 +111,10 @@
             &__caption {
                 opacity: 0.8;
                 margin: var(--space--s) auto;
-                max-width: var(--gallery--lightbox--main-image--width);
+                width: var(--gallery--lightbox--main-image--width);
 
                 &__secondary {
-                   font-size: 0.8rem;
+                    font-size: 0.8rem;
                 }
             }
 
@@ -126,7 +129,6 @@
             &:has([data-image-orientation='landscape']) {
                 --gallery--lightbox--main-image--aspect-ratio: 861 / 644;
                 --gallery--lightbox--main-image--width: min(#{px-to-rem(861)}, 85vw);
-
             }
 
             &:has([data-image-orientation='square']) {
@@ -177,11 +179,9 @@
             gap: var(--space--3xs);
             align-items: center;
 
-
             @include interact {
                 color: var(--gallery--accent-color);
                 text-decoration-color: var(--color--foreground);
-
             }
 
             &__icon {
@@ -228,15 +228,21 @@
                 @include mq($until: large) {
                     flex-flow: row;
                     max-width: calc(
-                        (var(--gallery--lightbox--thumbnails--size) * var(--gallery--lightbox--thumbnails--visible-count))
-                        + (var(--space--4xs) * (var(--gallery--lightbox--thumbnails--visible-count) - 1))
+                        (
+                                var(--gallery--lightbox--thumbnails--size) *
+                                    var(--gallery--lightbox--thumbnails--visible-count)
+                            ) +
+                            (var(--space--4xs) * (var(--gallery--lightbox--thumbnails--visible-count) - 1))
                     );
                 }
 
                 @include mq(large) {
                     max-height: calc(
-                        (var(--gallery--lightbox--thumbnails--size) * var(--gallery--lightbox--thumbnails--visible-count))
-                        + (var(--space--4xs) * (var(--gallery--lightbox--thumbnails--visible-count) - 1))
+                        (
+                                var(--gallery--lightbox--thumbnails--size) *
+                                    var(--gallery--lightbox--thumbnails--visible-count)
+                            ) +
+                            (var(--space--4xs) * (var(--gallery--lightbox--thumbnails--visible-count) - 1))
                     );
                 }
             }
@@ -259,12 +265,11 @@
                 &[aria-current='true'] {
                     border-color: var(--gallery--accent-color);
                 }
-
             }
 
             // Hover state.
             &:has(#{$this}__card__button:hover),
-            &:has(#{$this}__card__button:focus  ) {
+            &:has(#{$this}__card__button:focus) {
                 opacity: 0.5;
             }
         }
