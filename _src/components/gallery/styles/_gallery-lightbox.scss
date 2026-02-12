@@ -13,6 +13,7 @@
         inset: 0;
         place-items: flex-start;
         transition: transition(opacity, transform, visibility, scale);
+        overflow-y: scroll;
 
         // ------------------------------
         // Hidden
