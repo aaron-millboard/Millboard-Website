@@ -1,0 +1,29 @@
+{
+    "$schema": "https://raw.githubusercontent.com/AdvancedCustomFields/schemas/main/json/block.json",
+    "apiVersion": 2,
+    "name": "acf/product-loop",
+    "title": "Product Loop",
+    "category": "granola-blocks",
+    "icon": "block-default",
+    "keywords": [ ],
+    "acf": {
+        "mode": "edit",
+        "renderCallback": "\\Granola\\Component::acf_render_callback",
+        "postTypes": [
+            "granola-template"
+        ]
+    },
+    "supports": {
+        "anchor": true,
+        "color": {
+            "text": false
+        },
+        "mode": false
+    },
+    "attributes": {
+        "align": {
+            "type": "string",
+            "default": "full"
+        }
+    }
+}

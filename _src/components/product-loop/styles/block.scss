@@ -1,0 +1,20 @@
+@import '../../../core';
+
+.product-loop {
+    $this: &;
+
+    &__header {
+        max-width: var(--width--responsive--l);
+        margin: 0 auto var(--space--xl);
+    }
+
+    &__heading {
+        margin: 0;
+    }
+
+    &__subheading {
+        &:not(:first-child) {
+            margin-top: vaR(--space--2xs);
+        }
+    }
+}
