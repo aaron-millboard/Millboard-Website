@@ -4,7 +4,7 @@
     "name": "acf/product-loop",
     "title": "Product Loop",
     "category": "granola-blocks",
-    "icon": "block-default",
+    "icon": "products",
     "keywords": [ ],
     "acf": {
         "mode": "edit",
