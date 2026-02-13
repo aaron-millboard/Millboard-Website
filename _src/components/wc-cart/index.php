@@ -116,6 +116,9 @@ do_action('woocommerce_before_cart'); ?>
                                         return $attribute;
                                     }, $_product->get_attributes());
 
+                                    // Remove sample size.
+                                    unset($attributes['pa_sample-size']);
+
                                     // Sort pa_color attribute to first place.
                                     uksort($attributes, function ($attribute_name_1, $attribute_name_2) {
                                         if ($attribute_name_1 === 'pa_colour') {
