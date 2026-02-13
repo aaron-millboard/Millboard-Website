@@ -96,6 +96,20 @@
         padding-inline: var(--media-object--inner-padding-x);
     }
 
+    &__heading {
+        @include typestyle-h6;
+
+        font-size: 20px;
+
+        a {
+            text-decoration: none;
+
+            @include interact {
+                text-decoration: underline;
+            }
+        }
+    }
+
     &__meta-prefix {
         @include typestyle-h6;
     }
@@ -104,6 +118,53 @@
     &__labels,
     &__meta {
         justify-content: var(--media-object--content--justify-content);
+    }
+
+    &__media--hover-effect {
+        opacity: 0;
+        visibility: visible;
+        transition: opacity 0.3s ease-in-out;
+
+        span {
+            @include typestyle-h6;
+
+            font-size: 18px;
+            font-family: var(--type--1--font-family);
+            color: var(--color--white);
+            transition: all 0.3s ease-in-out;
+        }
+
+        &__top {
+            margin-right: 7rem;
+        }
+
+        &__bottom {
+            margin-left: 7rem;
+        }
+
+        &__media {
+            opacity: 0;
+            visibility: visible;
+            transition: opacity 0.3s ease-in-out;
+        }
+    }
+
+    @include interact {
+        #{$this}__media--hover-effect {
+            opacity: 1;
+
+            &__top {
+                margin-right: 5rem;
+            }
+
+            &__bottom {
+                margin-left: 5rem;
+            }
+
+            &__media {
+                opacity: 1;
+            }
+        }
     }
 
     // -------------------------------------------------------------------------

@@ -1,0 +1,27 @@
+@import '../../../core';
+
+.product-loop {
+    $this: &;
+
+    + .product-loop {
+        #{$this}__header {
+            padding-top: var(--space--m);
+            border-top: 1px solid vaR(--color--brand-4);
+        }
+    }
+
+    &__header {
+        max-width: var(--width--responsive--l);
+        margin: 0 auto var(--space--xl);
+    }
+
+    &__heading {
+        margin: 0;
+    }
+
+    &__subheading {
+        &:not(:first-child) {
+            margin-top: vaR(--space--2xs);
+        }
+    }
+}

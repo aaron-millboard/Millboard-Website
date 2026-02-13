@@ -1,35 +1,29 @@
 {
     "$schema": "https://raw.githubusercontent.com/AdvancedCustomFields/schemas/main/json/block.json",
     "apiVersion": 2,
-    "name": "acf/logo-grid",
-    "title": "Logo Grid",
-    "description": "A logo grid block",
+    "name": "acf/product-loop",
+    "title": "Product Loop",
     "category": "granola-blocks",
-    "icon": "image-flip-horizontal",
+    "icon": "block-default",
     "keywords": [ ],
     "acf": {
         "mode": "edit",
         "renderCallback": "\\Granola\\Component::acf_render_callback",
         "postTypes": [
-            "page",
-            "advice-centre",
-            "post",
-            "granola-template",
-            "distributor",
-            "installer"
+            "granola-template"
         ]
     },
     "supports": {
-        "align": [ "wide", "full" ],
         "anchor": true,
         "color": {
             "text": false
-        }
+        },
+        "mode": false
     },
     "attributes": {
         "align": {
             "type": "string",
-            "default": "wide"
+            "default": "full"
         }
     }
 }

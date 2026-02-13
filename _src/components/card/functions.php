@@ -152,7 +152,7 @@ function handle_wp_object_args(array $args, object $object): array
             $args['size'] = 'large';
 
             // Override hover effect texts
-            $args['hover_effect_bottom'] = __('Case Study', 'granola');
+            $args['hover_effect_bottom'] = \__('Case Study', 'granola');
         } elseif ($object->post_type === 'product') {
             $product = \wc_get_product($object->ID);
 
@@ -163,6 +163,23 @@ function handle_wp_object_args(array $args, object $object): array
                     $args['buttons'] = array_map(function ($sample) {
                         return \Granola\Components\ProductSamples\SampleButton\filter_args($sample);
                     }, $samples);
+
+                    foreach ($samples as $sample) {
+                        $sample_image_id = $sample['product']->get_image_id();
+
+                        if (!empty($sample_image_id) && (int) $sample_image_id !== (int) $product->get_image_id()) {
+                            break;
+                        }
+                    }
+
+                    if (!empty($sample_image_id)) {
+                        // \Granola\Debug::dump($sample_image_id);
+                        $args['hover_effect_media'] = [
+                            'attachment_id' => $sample_image_id,
+                            'size' => 'medium_large',
+                            'classes' => ['media-object__media--hover-effect__media'],
+                        ];
+                    }
                 }
             }
 
@@ -174,6 +191,9 @@ function handle_wp_object_args(array $args, object $object): array
                 $colour = $product->get_attribute('colour');
                 $args['subheading'] = !empty($colour) ? $colour : $product->get_title();
             }
+
+            // Override hover effect texts
+            $args['hover_effect_bottom'] = \__('Product', 'granola');
         }
     } elseif ($object instanceof \WP_Term) {
         // -------------------------------------------------------------------------

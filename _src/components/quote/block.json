@@ -1,11 +1,11 @@
 {
-    "$schema": "https://advancedcustomfields.com/schemas/json/main/block.json",
+    "$schema": "https://raw.githubusercontent.com/AdvancedCustomFields/schemas/main/json/block.json",
     "apiVersion": 2,
     "name": "acf/quote",
     "title": "Quote",
     "category": "granola-blocks",
     "icon": "format-quote",
-    "keywords": [],
+    "keywords": [ ],
     "acf": {
         "mode": "auto",
         "renderCallback": "\\Granola\\Component::acf_render_callback"
