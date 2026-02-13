@@ -25,6 +25,7 @@ function filter_args(array $args): ?array
         'hover_effect' => false,
         'hover_effect_top' => '',
         'hover_effect_bottom' => '',
+        'hover_effect_media' => null,
     ], $args);
 
     // -------------------------------------------------------------------------

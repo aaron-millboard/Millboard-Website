@@ -11,6 +11,7 @@
                             <span class="media-object__media--hover-effect__top">
                                 <?= $args['hover_effect_top']; ?>
                             </span>
+
                             <span class="media-object__media--hover-effect__bottom">
                                 <?= $args['hover_effect_bottom']; ?>
                             </span>
@@ -18,6 +19,10 @@
                     <?php } ?>
 
                     <?= \Granola\Component::get('image', $args['media']); ?>
+
+                    <?php if ($args['hover_effect'] && !empty($args['hover_effect_media'])) { ?>
+                        <?= \Granola\Component::get('image', $args['hover_effect_media']); ?>
+                    <?php } ?>
                 <?php } ?>
             </div>
         <?php } ?>

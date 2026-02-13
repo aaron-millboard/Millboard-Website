@@ -123,7 +123,7 @@
     &__media--hover-effect {
         opacity: 0;
         visibility: visible;
-        transition: all 0.3s ease-in-out;
+        transition: opacity 0.3s ease-in-out;
 
         span {
             @include typestyle-h6;
@@ -141,6 +141,12 @@
         &__bottom {
             margin-left: 7rem;
         }
+
+        &__media {
+            opacity: 0;
+            visibility: visible;
+            transition: opacity 0.3s ease-in-out;
+        }
     }
 
     @include interact {
@@ -153,6 +159,10 @@
 
             &__bottom {
                 margin-left: 5rem;
+            }
+
+            &__media {
+                opacity: 1;
             }
         }
     }
