@@ -1,11 +1,11 @@
 {
-    "$schema": "https://advancedcustomfields.com/schemas/json/main/block.json",
+    "$schema": "https://raw.githubusercontent.com/AdvancedCustomFields/schemas/main/json/block.json",
     "apiVersion": 2,
     "name": "acf/hero-header",
     "title": "Hero Header",
     "category": "granola-blocks",
     "icon": "welcome-widgets-menus",
-    "keywords": [],
+    "keywords": [ ],
     "acf": {
         "mode": "auto",
         "renderCallback": "\\Granola\\Component::acf_render_callback",

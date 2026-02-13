@@ -1,5 +1,5 @@
 {
-    "$schema": "https://advancedcustomfields.com/schemas/json/main/block.json",
+    "$schema": "https://raw.githubusercontent.com/AdvancedCustomFields/schemas/main/json/block.json",
     "apiVersion": 2,
     "name": "acf/accordion-item",
     "parent": [
@@ -9,7 +9,7 @@
     "description": "An accordion item block",
     "category": "granola-blocks",
     "icon": "arrow-down-alt2",
-    "keywords": [],
+    "keywords": [ ],
     "acf": {
         "mode": "auto",
         "renderCallback": "\\Granola\\Component::acf_render_callback"

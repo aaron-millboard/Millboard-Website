@@ -1,5 +1,5 @@
 {
-    "$schema": "https://advancedcustomfields.com/schemas/json/main/block.json",
+    "$schema": "https://raw.githubusercontent.com/AdvancedCustomFields/schemas/main/json/block.json",
     "apiVersion": 2,
     "name": "acf/logo-grid",
     "title": "Logo Grid",
