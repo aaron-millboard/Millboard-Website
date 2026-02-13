@@ -96,6 +96,20 @@
         padding-inline: var(--media-object--inner-padding-x);
     }
 
+    &__heading {
+        @include typestyle-h6;
+
+        font-size: 20px;
+
+        a {
+            text-decoration: none;
+
+            @include interact {
+                text-decoration: underline;
+            }
+        }
+    }
+
     &__meta-prefix {
         @include typestyle-h6;
     }

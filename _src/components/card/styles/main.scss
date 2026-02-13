@@ -11,15 +11,6 @@
     //---------------------------------------------------
     &[data-type='post'] {
         .media-object {
-            &__heading {
-                @include typestyle-h6;
-                font-size: 20px;
-
-                a {
-                    text-decoration: none;
-                }
-            }
-
             &__media--hover-effect {
                 opacity: 0;
                 visibility: visible;
@@ -37,6 +28,7 @@
                 &__top {
                     margin-right: 7rem;
                 }
+
                 &__bottom {
                     margin-left: 7rem;
                 }
@@ -45,17 +37,13 @@
 
         @include interact {
             .media-object {
-                &__heading {
-                    a {
-                        text-decoration: underline;
-                    }
-                }
-
                 &__media--hover-effect {
                     opacity: 1;
+
                     &__top {
                         margin-right: 5rem;
                     }
+
                     &__bottom {
                         margin-left: 5rem;
                     }
@@ -72,15 +60,6 @@
         --media-object--gap: var(--space--s);
 
         .media-object {
-            &__heading {
-                @include typestyle-h6;
-                font-size: 20px;
-
-                a {
-                    text-decoration: none;
-                }
-            }
-
             &__subheading {
                 @include typestyle-small;
             }
@@ -119,6 +98,7 @@
 
                 .list__item {
                     @include typestyle-small;
+
                     padding: var(--space--4xs) var(--space--2xs);
                     border: 1px solid var(--color--brand-1);
                 }
@@ -127,17 +107,13 @@
 
         @include interact {
             .media-object {
-                &__heading {
-                    a {
-                        text-decoration: underline;
-                    }
-                }
-
                 &__media--hover-effect {
                     opacity: 1;
+
                     &__top {
                         margin-right: 5rem;
                     }
+
                     &__bottom {
                         margin-left: 5rem;
                     }
