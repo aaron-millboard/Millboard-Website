@@ -297,6 +297,7 @@ class Map {
         const filteredLayers = this.filteredMarkersGroup.getLayers();
         filteredLayers.sort((a, b) => a.options.themeData.distanceInMiles - b.options.themeData.distanceInMiles);
 
+        // Order listings from closest > furthest away.
         filteredLayers.forEach((layer) => {
             if (layer.options.themeData.listingElement) {
                 this.listingContainer.appendChild(
