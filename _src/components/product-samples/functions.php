@@ -48,6 +48,12 @@ function filter_args(array $args): ?array
 function get_product_samples($wc_product)
 {
     $default_product = get_product_default_variation($wc_product);
+
+    // Bail early - no default set/found. Don't show any samples.
+    if (empty($default_product)) {
+        return [];
+    }
+
     $default_product_id = $default_product->get_id();
     $product_variations = $wc_product->get_available_variations('objects');
 
