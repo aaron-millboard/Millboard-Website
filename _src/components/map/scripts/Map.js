@@ -24,6 +24,9 @@ class Map {
         // Distance.
         this.distanceSelect = this.el.querySelector('.map__distance__input');
 
+        // Geolocate button.
+        this.geolocateButton = this.el.querySelector('.map__search__geolocate');
+
         // Mobile Tabs.
         this.tablist = document.querySelector('.map__tablist');
         this.tabs = this.tablist.querySelectorAll('.map__tab');
@@ -75,6 +78,14 @@ class Map {
                     }
                 });
             }, 100));
+        }
+
+        if (this.geolocateButton) {
+            this.geolocateButton.addEventListener('click', () => {
+                this.lmap.locate({
+                    setView: true,
+                });
+            });
         }
     }
 

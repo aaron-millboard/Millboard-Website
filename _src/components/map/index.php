@@ -21,10 +21,13 @@
                 <?= \Granola\Component::get('button', $args['search_submit']); ?>
             </div>
 
-            <?php if (!empty($args['search_description'])) { ?>
-                <span class="map__search__description">
-                    <?= esc_html($args['search_description']); ?>
-                </span>
+            <?php if (!empty($args['search_geolocate_text'])) { ?>
+                <?= \Granola\Component::get('button', [
+                    'content' => $args['search_geolocate_text'],
+                    'classes' => [
+                        'map__search__geolocate',
+                    ],
+                ]); ?>
             <?php } ?>
 
             <div class="map__distance">

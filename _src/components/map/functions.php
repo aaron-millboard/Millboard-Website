@@ -31,7 +31,7 @@ function filter_args(array $args): ?array
             $post_type_object = \get_post_type_object($args['content_type']);
 
             if (!empty($post_type_object)) {
-                $args['search_description'] = sprintf(
+                $args['search_geolocate_text'] = sprintf(
                     // translators: Content type plural, e.g. "installers".
                     \__('Find %s near me', 'granola'),
                     $post_type_object->label
