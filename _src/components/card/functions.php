@@ -173,11 +173,14 @@ function handle_wp_object_args(array $args, object $object): array
                     }
 
                     if (!empty($sample_image_id)) {
-                        // \Granola\Debug::dump($sample_image_id);
                         $args['hover_effect_media'] = [
+                            ...$args['media'],
+                            'classes' => ['media-object__media--hover-effect__media'],
+                        ];
+
+                        $args['media'] = [
                             'attachment_id' => $sample_image_id,
                             'size' => 'medium_large',
-                            'classes' => ['media-object__media--hover-effect__media'],
                         ];
                     }
                 }
