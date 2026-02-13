@@ -94,8 +94,27 @@ do_action('woocommerce_before_cart'); ?>
                                     </div>
 
                                     <?php
-                                    // check if have pa_colour attribute and display it
-                                    $attributes = $_product->get_attributes();
+                                    // Normalised product attribute array.
+                                    // We have seen different return values for this but unclear why.
+                                    // Normalise to avoid errors.
+                                    $attributes = array_map(function ($attribute) {
+                                        if ($attribute instanceof \WC_Product_Attribute) {
+                                            $attr_options = $attribute->get_options();
+                                            if (empty($attr_options)) {
+                                                return [];
+                                            }
+
+                                            $term_id = $attr_options[0];
+                                            if (empty($term_id)) {
+                                                return [];
+                                            }
+
+                                            $term = get_term_by('term_id', $term_id, $attribute->get_name());
+                                            return $term->slug;
+                                        }
+
+                                        return $attribute;
+                                    }, $_product->get_attributes());
 
                                     // Remove sample size.
                                     unset($attributes['pa_sample-size']);
