@@ -152,7 +152,7 @@ function handle_wp_object_args(array $args, object $object): array
             $args['size'] = 'large';
 
             // Override hover effect texts
-            $args['hover_effect_bottom'] = __('Case Study', 'granola');
+            $args['hover_effect_bottom'] = \__('Case Study', 'granola');
         } elseif ($object->post_type === 'product') {
             $product = \wc_get_product($object->ID);
 
@@ -174,6 +174,9 @@ function handle_wp_object_args(array $args, object $object): array
                 $colour = $product->get_attribute('colour');
                 $args['subheading'] = !empty($colour) ? $colour : $product->get_title();
             }
+
+            // Override hover effect texts
+            $args['hover_effect_bottom'] = \__('Product', 'granola');
         }
     } elseif ($object instanceof \WP_Term) {
         // -------------------------------------------------------------------------

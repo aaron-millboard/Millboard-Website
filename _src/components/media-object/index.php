@@ -1,7 +1,8 @@
 <div <?= \Granola\Helpers::build_attributes($args['attributes']); ?>>
     <div class="media-object__inner">
         <?php if ($args['media_position'] === 'before' && (!empty($args['video']) || !empty($args['media']))) { ?>
-            <div class="media-object__media img-fit <?= $args['animate'] ? 'animate' : null; ?>">
+        <div class="media-object__media img-fit <?= $args['animate'] ? 'animate' : null; ?>">
+
                 <?php if ($args['media_type'] === 'video' && !empty($args['video'])) { ?>
                     <?= \Granola\Component::get('video-item', $args['video']); ?>
                 <?php } else { ?>
@@ -15,7 +16,7 @@
                             </span>
                         </div>
                     <?php } ?>
-                    
+
                     <?= \Granola\Component::get('image', $args['media']); ?>
                 <?php } ?>
             </div>
@@ -83,7 +84,7 @@
 
         <?php if ($args['media_position'] === 'after') { ?>
             <div class="
-                media-object__media 
+                media-object__media
                 <?= $args['animate'] ? 'animate' : null; ?>
                 <?= $args['media_type'] == 'illustration' ? 'img-contain' : 'img-fit'; ?>
                 <?= 'media-object__media--' . $args['media_type']; ?>
