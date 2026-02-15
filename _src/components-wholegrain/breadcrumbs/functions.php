@@ -55,3 +55,47 @@ function set_yoast_wrapper_markup_class(): string
 {
     return 'breadcrumbs__yoast-wrapper';
 }
+
+/**
+ * Custom Yoast breadcrumb filter for variable products.
+ * Displays selected 'pa_colour' and 'pa_board-width' in the breadcrumb.
+ */
+function granola_yoast_breadcrumb_variable_product($link, $index) {
+    if (!is_product()) {
+        return $link;
+    }
+    global $post;
+    if (!$post || $post->post_type !== 'product') {
+        return $link;
+    }
+    $product = wc_get_product($post->ID);
+    if (!$product) {
+        return $link;
+    }
+
+    $title = $product->get_name();
+    // Get the selected attribute values for 'colour' and 'board-width'
+    $colour = $product->get_attribute('colour');
+    $board_width = $product->get_attribute('board-width');
+    if(!empty($colour) && !empty($board_width)) {
+        $divider = ' - ';
+    } else {
+        $divider = '';
+    }
+
+    // get $link content without HTML tags
+    $link_content = strip_tags($link);
+    $link_content = html_entity_decode($link_content, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    
+    // Trim whitespace and remove special characters and unicode characters to ensure accurate comparison
+    $link_content = trim(preg_replace('/[^A-Za-z0-9\s]/', '', $link_content));
+    $title = trim(preg_replace('/[^A-Za-z0-9\s]/', '', $title));
+
+    if ($link_content === $title) {
+
+        $link = "<span class=\"breadcrumb_last\" aria-current=\"page\">{$colour}{$divider}{$board_width}</span>";
+        return $link;
+    }
+    
+    return $link;
+}
