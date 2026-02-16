@@ -150,8 +150,10 @@ class Map {
             const listingData = Map.getDataFromRowElement(el);
 
             // Get data values.
-            const listingLat = parseFloat(listingData.lat);
-            const listingLng = parseFloat(listingData.lng);
+            const listingLatLng = L.latLng(
+                parseFloat(listingData.lat),
+                parseFloat(listingData.lng)
+            );
             const listingTitle = listingData.name;
 
             let markerHtml = `<span class="leaflet-marker-icon__icon-container" aria-hidden="true">`;
@@ -160,7 +162,7 @@ class Map {
             markerHtml += ' </span>';
 
             // https://leafletjs.com/reference.html#marker
-            const marker = L.marker([listingLat, listingLng], {
+            const marker = L.marker(listingLatLng, {
                 autoPanOnFocus: true,
                 icon: L.divIcon({
                     html: markerHtml,
