@@ -173,6 +173,7 @@ class Map {
                 // Custom object data.
                 themeData: {
                     listingElement: el,
+                    distanceInMiles: this.calcLatLngDistanceMilesFromMapCenter(listingLatLng),
                 },
             });
 
@@ -183,6 +184,11 @@ class Map {
 
             el.setAttribute('data-map-leaflet-id', this.allMarkersGroup.getLayerId(marker));
         });
+
+        this.filteredMarkersGroup = this.allMarkersGroup;
+
+        const filteredLayers = this.filteredMarkersGroup.getLayers();
+        this.sortlistingEls(filteredLayers);
 
         // Add all markers sub groups to map.
         this.lmap.addLayer(this.allMarkersGroup);
@@ -284,21 +290,22 @@ class Map {
             return;
         }
 
+        // Clean up map.
         this.lmap.removeLayer(this.allMarkersGroup);
         this.lmap.removeLayer(this.filteredMarkersGroup);
+
+        // Reset filters markers.
         this.filteredMarkersGroup = new L.FeatureGroup();
 
         const bounds = L.latLngBounds();
         bounds.extend(this.LMAP_DISTANCE_CENTER);
 
         this.allMarkersGroup.eachLayer((marker) => {
-            const markerDistance = marker.getLatLng().distanceTo(this.LMAP_DISTANCE_CENTER);
-            const distanceInMiles = Math.round(this.METERS_TO_MILES_RATIO * markerDistance * 100) / 100; // 2 decimal points.
+            const distanceInMiles = this.calcLatLngDistanceMilesFromMapCenter(marker.getLatLng());
 
             if (distanceInMiles <= distance) {
                 this.filteredMarkersGroup.addLayer(marker);
-                marker.options.themeData.listingElement.removeAttribute('hidden', '');
-                marker.options.themeData.distanceInMiles = distanceInMiles;
+                this.saveMarkerDistance(marker);
                 bounds.extend(marker.getLatLng());
             } else {
                 marker.options.themeData.listingElement.setAttribute('hidden', '');
@@ -308,6 +315,35 @@ class Map {
         this.lmap.addLayer(this.filteredMarkersGroup);
 
         const filteredLayers = this.filteredMarkersGroup.getLayers();
+        const markerCount = filteredLayers.length;
+
+        if (markerCount === 1) {
+            this.listingsHeading.textContent = `Displaying: ${markerCount} result`
+        } else {
+            this.listingsHeading.textContent = `Displaying: ${markerCount} results`
+        }
+
+        if (markerCount > 0) {
+            this.lmap.fitBounds(bounds);
+        }
+
+        this.sortlistingEls(filteredLayers);
+    }
+
+    calcLatLngDistanceMilesFromMapCenter(latLng) {
+        const distance = latLng.distanceTo(this.LMAP_DISTANCE_CENTER);
+        const distanceInMiles = Math.round(this.METERS_TO_MILES_RATIO * distance * 100) / 100; // 2 decimal points.
+
+        return distanceInMiles;
+    }
+
+    saveMarkerDistance(marker) {
+        marker.options.themeData.listingElement.removeAttribute('hidden', '');
+        marker.options.themeData.distanceInMiles = distanceInMiles;
+    }
+
+    sortlistingEls(filteredLayers) {
+        // Sort map markers by distance from central point.
         filteredLayers.sort((a, b) => a.options.themeData.distanceInMiles - b.options.themeData.distanceInMiles);
 
         // Order listings from closest > furthest away.
@@ -318,17 +354,6 @@ class Map {
                 );
             }
         });
-
-        const markerCount = filteredLayers.length;
-        if (markerCount === 1) {
-            this.listingsHeading.textContent = `Displaying: ${markerCount} result`
-        } else {
-            this.listingsHeading.textContent = `Displaying: ${markerCount} results`
-        }
-
-        if (markerCount > 0) {
-            this.lmap.fitBounds(bounds);
-        }
     }
 
     resetListingDistanceFilter() {
@@ -346,8 +371,7 @@ class Map {
             return;
         }
 
-        const distMeters = marker.getLatLng().distanceTo(this.LMAP_DISTANCE_CENTER);
-        const distMiles = Math.round(this.METERS_TO_MILES_RATIO * distMeters * 100) / 100; // 2 decimal points.
+        const distMiles = marker.options.themeData.distanceInMiles
         const distText = distMiles + ' miles'; // TODO: translate
 
         let distanceEl = listingMetaEl.querySelector('.map__listing__distance');
