@@ -224,7 +224,7 @@ class Map {
     }
 
     initDistanceFilter() {
-        this.distanceSelect.addEventListener('change', ({target}) => {
+        this.distanceSelect.addEventListener('change', () => {
             this.filterListingsByDistance();
         });
     }
