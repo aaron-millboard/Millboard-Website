@@ -136,13 +136,18 @@
 
     &__player {
         width: 100%;
+        position: relative;
+        aspect-ratio: 16 / 9;
     }
 
     &__video {
         display: grid;
         width: 100%;
+        position: absolute;
+        inset: 0;
         visibility: hidden;
         opacity: 0;
+        pointer-events: none;
         transition:
             opacity 0.2s ease,
             visibility 0.2s ease;
@@ -150,6 +155,7 @@
         &--active {
             visibility: visible;
             opacity: 1;
+            pointer-events: auto;
         }
     }
 
@@ -159,6 +165,7 @@
         cursor: pointer;
         grid-row: 1;
         grid-column: 1;
+        position: relative;
 
         img {
             display: block;
