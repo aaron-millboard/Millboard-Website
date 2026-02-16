@@ -51,6 +51,10 @@
             border: 0;
         }
 
+        th {
+            white-space: nowrap;
+        }
+
         td {
             padding-left: var(--space--xs);
             font-weight: var(--type--2--font-weight);
