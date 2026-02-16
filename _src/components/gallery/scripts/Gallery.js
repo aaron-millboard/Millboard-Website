@@ -368,18 +368,18 @@ export default class Gallery {
      * Update the thumbnails navigation buttons state.
      */
     updateThumbnailsNavigationState() {
-        if (!this.thumbnailsList || !this.thumbnailsPrevious || !this.thumbnailsNext) return;
+        if (!this.thumbnailsPrevious || !this.thumbnailsNext) return;
 
-        if (this.thumbnailsList.scrollLeft === 0) {
+        const prevIndex = this.prevIndex(this.openIndex);
+        const nextIndex = this.nextIndex(this.openIndex);
+
+        if (prevIndex === this.openIndex) {
             this.thumbnailsPrevious.setAttribute('disabled', 'disabled');
         } else {
             this.thumbnailsPrevious.removeAttribute('disabled');
         }
 
-        if (
-            Math.ceil(this.thumbnailsList.scrollLeft + this.thumbnailsList.clientWidth) >=
-            this.thumbnailsList.scrollWidth
-        ) {
+        if (nextIndex === this.openIndex) {
             this.thumbnailsNext.setAttribute('disabled', 'disabled');
         } else {
             this.thumbnailsNext.removeAttribute('disabled');
