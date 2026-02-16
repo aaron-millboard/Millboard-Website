@@ -48,7 +48,6 @@ $site-header--top--background: 'white';
     }
 
     @include mq($until: 'site-header') {
-
         max-width: 100%;
         background-color: var(--color--brand-2);
 
@@ -93,9 +92,11 @@ $site-header--top--background: 'white';
     &__top-navigation {
         display: flex;
         gap: var(--space--s);
+        z-index: 99;
 
         @include mq('site-header') {
-            width: 100%;
+            width: auto;
+            margin-right: auto;
         }
 
         .site-header__navigation--top {
@@ -348,5 +349,6 @@ $site-header--top--background: 'white';
         right: 0;
         left: 0;
         width: 100%;
+        z-index: 98;
     }
 }
