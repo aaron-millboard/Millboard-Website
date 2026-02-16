@@ -90,7 +90,7 @@
                                         <span class="gallery-video__meta__play__icon">
                                             <?= \Granola\SVG::get('icons-custom/play.svg'); ?>
                                         </span>
-                                        <span class="gallery-video__meta__play__text">Play video</span>
+                                        <span class="gallery-video__meta__play__text">Play Video</span>
                                     </button>
                                 </div>
                             <?php } ?>
