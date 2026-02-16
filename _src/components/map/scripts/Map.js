@@ -150,8 +150,10 @@ class Map {
             const listingData = Map.getDataFromRowElement(el);
 
             // Get data values.
-            const listingLat = parseFloat(listingData.lat);
-            const listingLng = parseFloat(listingData.lng);
+            const listingLatLng = L.latLng(
+                parseFloat(listingData.lat),
+                parseFloat(listingData.lng)
+            );
             const listingTitle = listingData.name;
 
             let markerHtml = `<span class="leaflet-marker-icon__icon-container" aria-hidden="true">`;
@@ -160,7 +162,7 @@ class Map {
             markerHtml += ' </span>';
 
             // https://leafletjs.com/reference.html#marker
-            const marker = L.marker([listingLat, listingLng], {
+            const marker = L.marker(listingLatLng, {
                 autoPanOnFocus: true,
                 icon: L.divIcon({
                     html: markerHtml,
@@ -171,10 +173,9 @@ class Map {
                 // Custom object data.
                 themeData: {
                     listingElement: el,
+                    distanceInMiles: this.calcLatLngDistanceMilesFromMapCenter(listingLatLng),
                 },
             });
-
-            this.updateMarkerDistanceMeta(marker);
 
             // Add the marker to the leaflet layer.
             this.allMarkersGroup.addLayer(marker);
@@ -282,16 +283,19 @@ class Map {
             return;
         }
 
+        // Clean up map.
         this.lmap.removeLayer(this.allMarkersGroup);
         this.lmap.removeLayer(this.filteredMarkersGroup);
+
+        // Reset filters markers.
         this.filteredMarkersGroup = new L.FeatureGroup();
 
         const bounds = L.latLngBounds();
         bounds.extend(this.LMAP_DISTANCE_CENTER);
 
         this.allMarkersGroup.eachLayer((marker) => {
-            const markerDistance = marker.getLatLng().distanceTo(this.LMAP_DISTANCE_CENTER);
-            const distanceInMiles = Math.round(this.METERS_TO_MILES_RATIO * markerDistance * 100) / 100; // 2 decimal points.
+            const distanceInMiles = this.calcLatLngDistanceMilesFromMapCenter(marker.getLatLng());
+            marker.options.themeData.distanceInMiles = distanceInMiles;
 
             if (distanceInMiles <= distance) {
                 this.filteredMarkersGroup.addLayer(marker);
@@ -301,11 +305,37 @@ class Map {
             } else {
                 marker.options.themeData.listingElement.setAttribute('hidden', '');
             }
+
+            this.updateMarkerDistanceMeta(marker);
         });
 
         this.lmap.addLayer(this.filteredMarkersGroup);
 
         const filteredLayers = this.filteredMarkersGroup.getLayers();
+        const markerCount = filteredLayers.length;
+
+        if (markerCount === 1) {
+            this.listingsHeading.textContent = `Displaying: ${markerCount} result`
+        } else {
+            this.listingsHeading.textContent = `Displaying: ${markerCount} results`
+        }
+
+        if (markerCount > 0) {
+            this.lmap.fitBounds(bounds);
+        }
+
+        this.sortlistingEls(filteredLayers);
+    }
+
+    calcLatLngDistanceMilesFromMapCenter(latLng) {
+        const distance = latLng.distanceTo(this.LMAP_DISTANCE_CENTER);
+        const distanceInMiles = Math.round(this.METERS_TO_MILES_RATIO * distance * 100) / 100; // 2 decimal points.
+
+        return distanceInMiles;
+    }
+
+    sortlistingEls(filteredLayers) {
+        // Sort map markers by distance from central point.
         filteredLayers.sort((a, b) => a.options.themeData.distanceInMiles - b.options.themeData.distanceInMiles);
 
         // Order listings from closest > furthest away.
@@ -316,17 +346,6 @@ class Map {
                 );
             }
         });
-
-        const markerCount = filteredLayers.length;
-        if (markerCount === 1) {
-            this.listingsHeading.textContent = `Displaying: ${markerCount} result`
-        } else {
-            this.listingsHeading.textContent = `Displaying: ${markerCount} results`
-        }
-
-        if (markerCount > 0) {
-            this.lmap.fitBounds(bounds);
-        }
     }
 
     resetListingDistanceFilter() {
@@ -344,8 +363,7 @@ class Map {
             return;
         }
 
-        const distMeters = marker.getLatLng().distanceTo(this.LMAP_DISTANCE_CENTER);
-        const distMiles = Math.round(this.METERS_TO_MILES_RATIO * distMeters * 100) / 100; // 2 decimal points.
+        const distMiles = marker.options.themeData.distanceInMiles
         const distText = distMiles + ' miles'; // TODO: translate
 
         let distanceEl = listingMetaEl.querySelector('.map__listing__distance');
