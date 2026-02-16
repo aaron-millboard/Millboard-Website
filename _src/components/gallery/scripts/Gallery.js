@@ -86,8 +86,8 @@ export default class Gallery {
         this.closeBtn?.addEventListener('click', () => this.closeLightbox());
 
         // Thumbnail navigation buttons
-        this.thumbnailsPrevious?.addEventListener('click', () => this.scrollThumbs(-1));
-        this.thumbnailsNext?.addEventListener('click', () => this.scrollThumbs(1));
+        this.thumbnailsPrevious?.addEventListener('click', () => this.prev());
+        this.thumbnailsNext?.addEventListener('click', () => this.next());
 
         // Scroll events on thumbnails
         this.thumbnailsList?.addEventListener('scroll', () => this.updateThumbnailsNavigationState());
@@ -370,14 +370,19 @@ export default class Gallery {
     updateThumbnailsNavigationState() {
         if (!this.thumbnailsList || !this.thumbnailsPrevious || !this.thumbnailsNext) return;
 
-        if (this.isMobile) {
-            const { scrollLeft, scrollWidth, clientWidth } = this.thumbnailsList;
-            this.thumbnailsPrevious.disabled = scrollLeft <= 0;
-            this.thumbnailsNext.disabled = scrollLeft + clientWidth >= scrollWidth - 1;
+        if (this.thumbnailsList.scrollLeft === 0) {
+            this.thumbnailsPrevious.setAttribute('disabled', 'disabled');
         } else {
-            const { scrollTop, scrollHeight, clientHeight } = this.thumbnailsList;
-            this.thumbnailsPrevious.disabled = scrollTop <= 0;
-            this.thumbnailsNext.disabled = scrollTop + clientHeight >= scrollHeight - 1;
+            this.thumbnailsPrevious.removeAttribute('disabled');
+        }
+
+        if (
+            Math.ceil(this.thumbnailsList.scrollLeft + this.thumbnailsList.clientWidth) >=
+            this.thumbnailsList.scrollWidth
+        ) {
+            this.thumbnailsNext.setAttribute('disabled', 'disabled');
+        } else {
+            this.thumbnailsNext.removeAttribute('disabled');
         }
     }
 
