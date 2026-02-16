@@ -177,18 +177,11 @@ class Map {
                 },
             });
 
-            this.updateMarkerDistanceMeta(marker);
-
             // Add the marker to the leaflet layer.
             this.allMarkersGroup.addLayer(marker);
 
             el.setAttribute('data-map-leaflet-id', this.allMarkersGroup.getLayerId(marker));
         });
-
-        this.filteredMarkersGroup = this.allMarkersGroup;
-
-        const filteredLayers = this.filteredMarkersGroup.getLayers();
-        this.sortlistingEls(filteredLayers);
 
         // Add all markers sub groups to map.
         this.lmap.addLayer(this.allMarkersGroup);
@@ -302,14 +295,18 @@ class Map {
 
         this.allMarkersGroup.eachLayer((marker) => {
             const distanceInMiles = this.calcLatLngDistanceMilesFromMapCenter(marker.getLatLng());
+            marker.options.themeData.distanceInMiles = distanceInMiles;
 
             if (distanceInMiles <= distance) {
                 this.filteredMarkersGroup.addLayer(marker);
-                this.saveMarkerDistance(marker);
+                marker.options.themeData.listingElement.removeAttribute('hidden', '');
+                marker.options.themeData.distanceInMiles = distanceInMiles;
                 bounds.extend(marker.getLatLng());
             } else {
                 marker.options.themeData.listingElement.setAttribute('hidden', '');
             }
+
+            this.updateMarkerDistanceMeta(marker);
         });
 
         this.lmap.addLayer(this.filteredMarkersGroup);
@@ -335,11 +332,6 @@ class Map {
         const distanceInMiles = Math.round(this.METERS_TO_MILES_RATIO * distance * 100) / 100; // 2 decimal points.
 
         return distanceInMiles;
-    }
-
-    saveMarkerDistance(marker) {
-        marker.options.themeData.listingElement.removeAttribute('hidden', '');
-        marker.options.themeData.distanceInMiles = distanceInMiles;
     }
 
     sortlistingEls(filteredLayers) {
