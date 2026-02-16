@@ -22,8 +22,11 @@
 
     &__details {
         margin: 0;
+        border: 0;
 
         tr {
+            border-bottom: 1px solid var(--color--mist);
+
             &:first-child {
                 th,
                 td {
@@ -32,6 +35,8 @@
             }
 
             &:last-child {
+                border-bottom: 0;
+
                 th,
                 td {
                     padding-bottom: 0;
@@ -43,10 +48,7 @@
         td {
             padding: var(--space--2xs) 0;
             word-break: break-word;
-        }
-
-        th {
-            border-right: 0;
+            border: 0;
         }
 
         td {
