@@ -82,9 +82,12 @@ class Map {
 
         if (this.geolocateButton) {
             this.geolocateButton.addEventListener('click', () => {
-                this.lmap.locate({
-                    setView: true,
-                });
+                this.lmap.locate();
+            });
+
+            this.lmap.addEventListener('locationfound', ({latlng}) => {
+                this.LMAP_DISTANCE_CENTER = latlng;
+                this.filterListingsByDistance();
             });
         }
     }
@@ -224,7 +227,7 @@ class Map {
     }
 
     initDistanceFilter() {
-        this.distanceSelect.addEventListener('change', ({target}) => {
+        this.distanceSelect.addEventListener('change', () => {
             this.filterListingsByDistance();
         });
     }
@@ -290,10 +293,13 @@ class Map {
         // Reset filters markers.
         this.filteredMarkersGroup = new L.FeatureGroup();
 
+        // Start a bounded area.
         const bounds = L.latLngBounds();
         bounds.extend(this.LMAP_DISTANCE_CENTER);
 
+        // Process all markers.
         this.allMarkersGroup.eachLayer((marker) => {
+            // Updating marker distance data.
             const distanceInMiles = this.calcLatLngDistanceMilesFromMapCenter(marker.getLatLng());
             marker.options.themeData.distanceInMiles = distanceInMiles;
 
