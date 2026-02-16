@@ -291,8 +291,6 @@ class Map {
         const bounds = L.latLngBounds();
         bounds.extend(this.LMAP_DISTANCE_CENTER);
 
-        console.log(distance);
-
         // Process all markers.
         this.allMarkersGroup.eachLayer((marker) => {
             // Updating marker distance data.
@@ -316,20 +314,22 @@ class Map {
         const filteredLayers = this.filteredMarkersGroup.getLayers();
         const markerCount = filteredLayers.length;
 
+        // Update listings heading content.
         if (markerCount === 1) {
             this.listingsHeading.textContent = `Displaying: ${markerCount} result`
         } else {
             this.listingsHeading.textContent = `Displaying: ${markerCount} results`
         }
 
+        // Update no content element classes.
         if (markerCount > 0) {
-            this.lmap.fitBounds(bounds);
-            console.log('removing class', this.listingContainer);
             this.listingContainer.classList.remove('no-results');
         } else {
-            console.log('adding class', this.listingContainer);
             this.listingContainer.classList.add('no-results');
         }
+
+        // Always adjust bounds.
+        this.lmap.fitBounds(bounds);
 
         this.sortlistingEls(filteredLayers);
     }
