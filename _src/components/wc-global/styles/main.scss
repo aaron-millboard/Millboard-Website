@@ -128,9 +128,12 @@
 
         &.woocommerce-error {
             border-color: var(--color--brand-3);
-            &::before {
-                background-image: url(#{asset-path('images/icons-custom/union.svg')});
-            }
+        }
+    }
+
+    .woocommerce-notices-wrapper > ul.woocommerce-error > li {
+        &::before {
+            background-image: url(#{asset-path('images/icons-custom/union.svg')}) !important;
         }
     }
 
