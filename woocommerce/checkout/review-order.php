@@ -44,16 +44,38 @@ defined('ABSPATH') || exit;
                                 </div>
 
                                 <?php
-                                // check if have pa_colour attribute and display it
-                                $attributes = $_product->get_attributes();
+                                // Normalised product attribute array.
+                                // We have seen different return values for this but unclear why.
+                                // Normalise to avoid errors.
+                                $attributes = array_map(function ($attribute) {
+                                    if ($attribute instanceof \WC_Product_Attribute) {
+                                        $attr_options = $attribute->get_options();
+                                        if (empty($attr_options)) {
+                                            return [];
+                                        }
+
+                                        $term_id = $attr_options[0];
+                                        if (empty($term_id)) {
+                                            return [];
+                                        }
+
+                                        $term = get_term_by('term_id', $term_id, $attribute->get_name());
+                                        return $term->slug;
+                                    }
+
+                                    return $attribute;
+                                }, $_product->get_attributes());
+
+                                // Remove sample size.
+                                unset($attributes['pa_sample-size']);
 
                                 // Sort pa_color attribute to first place.
-                                usort($attributes, function ($attribute_1, $attribute_2) {
-                                    if ($attribute_1->get_name() === 'pa_colour') {
+                                uksort($attributes, function ($attribute_name_1, $attribute_name_2) {
+                                    if ($attribute_name_1 === 'pa_colour') {
                                         return -1;
                                     }
 
-                                    if ($attribute_2->get_name() === 'pa_colour') {
+                                    if ($attribute_name_2 === 'pa_colour') {
                                         return 1;
                                     }
 
@@ -62,10 +84,12 @@ defined('ABSPATH') || exit;
 
                                 // Show other attributes
                                 foreach ($attributes as $key => $value) { ?>
-                                    <?php $term = get_term_by('id', $value->get_options()[0], $value->get_name()); ?>
-                                    <div class="cart__item__details__attribute cart__item__details__<?= esc_attr(str_replace('pa_', '', $value->get_name())); ?>">
-                                        <?= esc_html($term->name); ?>
-                                    </div>
+                                    <?php $term = get_term_by('slug', $value, $key); ?>
+                                    <?php if (!empty($term)) { ?>
+                                        <div class="cart__item__details__attribute cart__item__details__<?= esc_attr(str_replace('pa_', '', $valu)); ?>">
+                                            <?= esc_html($term->name); ?>
+                                        </div>
+                                    <?php } ?>
                                 <?php } ?>
 
                                 <div class="product-price" data-title="<?php esc_attr_e('Price', 'woocommerce'); ?>">
