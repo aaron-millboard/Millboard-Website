@@ -186,8 +186,10 @@ class Map {
             el.setAttribute('data-map-leaflet-id', this.allMarkersGroup.getLayerId(marker));
         });
 
+        this.filteredMarkersGroup = this.allMarkersGroup;
+
         // Add all markers sub groups to map.
-        this.lmap.addLayer(this.allMarkersGroup);
+        this.lmap.addLayer(this.filteredMarkersGroup);
     }
 
     /**
@@ -278,24 +280,18 @@ class Map {
             return;
         }
 
-        const distance = parseFloat(this.distanceSelect.value);
-
-        // "Any" distance selected - show all.
-        if (!distance) {
-            this.resetListingDistanceFilter();
-            return;
-        }
-
         // Clean up map.
-        this.lmap.removeLayer(this.allMarkersGroup);
         this.lmap.removeLayer(this.filteredMarkersGroup);
 
         // Reset filters markers.
         this.filteredMarkersGroup = new L.FeatureGroup();
 
         // Start a bounded area.
+        const distance = parseFloat(this.distanceSelect.value) || 0;
         const bounds = L.latLngBounds();
         bounds.extend(this.LMAP_DISTANCE_CENTER);
+
+        console.log(distance);
 
         // Process all markers.
         this.allMarkersGroup.eachLayer((marker) => {
@@ -303,7 +299,7 @@ class Map {
             const distanceInMiles = this.calcLatLngDistanceMilesFromMapCenter(marker.getLatLng());
             marker.options.themeData.distanceInMiles = distanceInMiles;
 
-            if (distanceInMiles <= distance) {
+            if (distance === 0 || distanceInMiles <= distance) {
                 this.filteredMarkersGroup.addLayer(marker);
                 marker.options.themeData.listingElement.removeAttribute('hidden', '');
                 marker.options.themeData.distanceInMiles = distanceInMiles;
@@ -328,6 +324,11 @@ class Map {
 
         if (markerCount > 0) {
             this.lmap.fitBounds(bounds);
+            console.log('removing class', this.listingContainer);
+            this.listingContainer.classList.remove('no-results');
+        } else {
+            console.log('adding class', this.listingContainer);
+            this.listingContainer.classList.add('no-results');
         }
 
         this.sortlistingEls(filteredLayers);
@@ -352,15 +353,6 @@ class Map {
                 );
             }
         });
-    }
-
-    resetListingDistanceFilter() {
-        [...this.listingEls].forEach((el) => {
-            el.removeAttribute('hidden');
-        });
-
-        this.lmap.removeLayer(this.filteredMarkersGroup);
-        this.lmap.addLayer(this.allMarkersGroup);
     }
 
     updateMarkerDistanceMeta(marker) {
