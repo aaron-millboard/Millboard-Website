@@ -10,6 +10,7 @@ class Map {
         this.el = element;
 
         // Listings.
+        this.listingContainer = this.el.querySelector('.map__items');
         this.listingEls = this.el.querySelectorAll('.map__listing');
         this.listingsHeading = this.el.querySelector('.map__sidebar__heading');
 
@@ -22,6 +23,9 @@ class Map {
 
         // Distance.
         this.distanceSelect = this.el.querySelector('.map__distance__input');
+
+        // Geolocate button.
+        this.geolocateButton = this.el.querySelector('.map__search__geolocate');
 
         // Mobile Tabs.
         this.tablist = document.querySelector('.map__tablist');
@@ -74,6 +78,14 @@ class Map {
                     }
                 });
             }, 100));
+        }
+
+        if (this.geolocateButton) {
+            this.geolocateButton.addEventListener('click', () => {
+                this.lmap.locate({
+                    setView: true,
+                });
+            });
         }
     }
 
@@ -284,6 +296,7 @@ class Map {
             if (distanceInMiles <= distance) {
                 this.filteredMarkersGroup.addLayer(marker);
                 marker.options.themeData.listingElement.removeAttribute('hidden', '');
+                marker.options.themeData.distanceInMiles = distanceInMiles;
                 bounds.extend(marker.getLatLng());
             } else {
                 marker.options.themeData.listingElement.setAttribute('hidden', '');
@@ -292,7 +305,19 @@ class Map {
 
         this.lmap.addLayer(this.filteredMarkersGroup);
 
-        const markerCount = this.filteredMarkersGroup.getLayers().length;
+        const filteredLayers = this.filteredMarkersGroup.getLayers();
+        filteredLayers.sort((a, b) => a.options.themeData.distanceInMiles - b.options.themeData.distanceInMiles);
+
+        // Order listings from closest > furthest away.
+        filteredLayers.forEach((layer) => {
+            if (layer.options.themeData.listingElement) {
+                this.listingContainer.appendChild(
+                    layer.options.themeData.listingElement
+                );
+            }
+        });
+
+        const markerCount = filteredLayers.length;
         if (markerCount === 1) {
             this.listingsHeading.textContent = `Displaying: ${markerCount} result`
         } else {
