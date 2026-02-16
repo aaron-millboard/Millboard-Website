@@ -18,7 +18,6 @@ class Videos
             // Player parameters: https://help.vimeo.com/hc/en-us/articles/12426260232977-About-Player-Parameters
             return add_query_arg([
                 'autoplay' => 1,
-                'controls' => 0,
                 'transparent' => 0,
             ], 'https://player.vimeo.com/video/' . $vimeo_id);
         }
