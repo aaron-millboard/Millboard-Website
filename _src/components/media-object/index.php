@@ -88,12 +88,12 @@
         </div>
 
         <?php if ($args['media_position'] === 'after') { ?>
-            <div class="
-                media-object__media
-                <?= $args['animate'] ? 'animate' : null; ?>
-                <?= $args['media_type'] == 'illustration' ? 'img-contain' : 'img-fit'; ?>
-                <?= 'media-object__media--' . $args['media_type']; ?>
-            ">
+            <div class="<?= \Granola\Helpers::build_classes([
+                'media-object__media',
+                'media-object__media--' . $args['media_type'],
+                $args['animate'] ? 'animate' : null,
+                $args['media_type'] == 'illustration' ? 'img-contain' : 'img-fit',
+            ]); ?>>
                 <?php if ($args['media_type'] === 'video' && !empty($args['video'])) { ?>
                     <?= \Granola\Component::get('video-item', $args['video']); ?>
                 <?php } elseif ($args['media_type'] === 'illustration' && !empty($args['illustration'])) { ?>

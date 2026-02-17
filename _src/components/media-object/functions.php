@@ -9,7 +9,7 @@ function filter_args(array $args): ?array
     // -------------------------------------------------------------------------
     $args = array_merge([
         'classes' => [],
-        'size' => 's', // size of the media object (might be large for media-content useage)
+        'size' => 'm', // size of the media object (might be large for media-content useage)
         'orientation' => 'vertical', // vertical|horizontal
         'media_position' => 'before', // before|after
         'media_type' => "image", // image|video|illustration
@@ -151,9 +151,11 @@ function filter_args(array $args): ?array
 function get_image_size($size)
 {
     return match ($size) {
-        's' => 'medium',
-        'm' => 'medium_large',
-        'l' => 'super',
+        's' => 'small',
+        'm' => 'medium',
+        'ml' => 'medium_large',
+        'l' => 'large',
+        'su' => 'super',
         default => 'medium_large',
     };
 }
