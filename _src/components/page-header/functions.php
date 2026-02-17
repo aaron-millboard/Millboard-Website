@@ -129,7 +129,10 @@ function filter_args(array $args): ?array
             if ($object->post_type === 'post' || $object->post_type === 'case-study') {
                 $args['type'] = 'post';
 
-                $args['preheading'] = \__('Featured article', 'granola');
+                // Check if post has is_featured field set to true
+                if (\get_post_meta($object->ID, 'is_featured', true)) {
+                    $args['preheading'] = \__('Featured article', 'granola');
+                }
 
                 // Show CTA if this is not current post
                 if (\get_the_ID() !== $object->ID) {

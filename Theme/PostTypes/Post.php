@@ -14,6 +14,7 @@ class Post
     {
         \add_filter('granola/templates/post-types', [__CLASS__, 'filter_granola_templates_post_types']);
         \add_action('init', [__CLASS__, 'add_rewrite_rules'], 50, 0);
+        \add_action('acf/init', [__CLASS__, 'register_acf_fields']);
     }
 
     /**
@@ -38,5 +39,40 @@ class Post
     {
         $post_types[] = self::SLUG;
         return $post_types;
+    }
+
+    /**
+     * Register ACF fields for Post.
+     *
+     * @return void
+     */
+    public static function register_acf_fields(): void
+    {
+        if (!function_exists('acf_add_local_field_group')) {
+            return;
+        }
+
+        \acf_add_local_field_group([
+            'key' => 'group_post_featured',
+            'title' => 'Post',
+            'fields' => [
+                [
+                    'key' => 'field_is_featured',
+                    'name' => 'is_featured',
+                    'label' => 'Is Featured',
+                    'type' => 'true_false',
+                    'ui' => true,
+                ],
+            ],
+            'location' => [
+                [
+                    [
+                        'param' => 'post_type',
+                        'operator' => '==',
+                        'value' => self::SLUG,
+                    ],
+                ],
+            ],
+        ]);
     }
 }
