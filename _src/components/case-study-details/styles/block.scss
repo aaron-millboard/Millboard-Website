@@ -66,3 +66,11 @@
         min-width: 30%; // magic number.
     }
 }
+
+.case-study-tags {
+    &__tags {
+        gap: 0.3rem;
+        display: flex;
+        flex-wrap: wrap;
+    }
+}
