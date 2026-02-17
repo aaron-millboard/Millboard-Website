@@ -13,6 +13,7 @@ class CaseStudy
     public static function init(): void
     {
         \add_action('init', [__CLASS__, 'register_post_type']);
+        \add_action('acf/init', [__CLASS__, 'register_acf_fields']);
         // \add_action('acf/init', [__CLASS__, 'add_settings_page']);
         \add_filter('granola/templates/post-types', [__CLASS__, 'filter_granola_templates_post_types']);
         \add_action('init', [__CLASS__, 'add_rewrite_rules'], 10, 0);
@@ -135,5 +136,40 @@ class CaseStudy
     {
         $post_types[] = self::SLUG;
         return $post_types;
+    }
+
+    /**
+     * Register ACF fields for Case Study.
+     *
+     * @return void
+     */
+    public static function register_acf_fields(): void
+    {
+        if (!function_exists('acf_add_local_field_group')) {
+            return;
+        }
+
+        \acf_add_local_field_group([
+            'key' => 'group_case_study_featured',
+            'title' => 'Case Study',
+            'fields' => [
+                [
+                    'key' => 'field_is_featured',
+                    'name' => 'is_featured',
+                    'label' => 'Is Featured',
+                    'type' => 'true_false',
+                    'ui' => true,
+                ],
+            ],
+            'location' => [
+                [
+                    [
+                        'param' => 'post_type',
+                        'operator' => '==',
+                        'value' => self::SLUG,
+                    ],
+                ],
+            ],
+        ]);
     }
 }
