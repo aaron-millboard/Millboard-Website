@@ -119,12 +119,16 @@ function render_accordion_item_block_schema($graph, $block)
     }
 
     // Calculate FAQ 'position'.
+    $position = 1; // default.
+
     $faqs = array_filter($graph, function ($item) {
         return !empty($item['@type']) && $item['@type'] === 'Question';
     });
 
-    $last_faq = end($faqs);
-    $position = intval($last_faq['position']) + 1;
+    if (!empty($faqs)) {
+        $last_faq = end($faqs);
+        $position = intval($last_faq['position']) + 1;
+    }
 
     // Append new Schema graph Question.
     $graph[] = [
