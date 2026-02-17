@@ -81,3 +81,66 @@ function filter_args(array $args): ?array
     // -------------------------------------------------------------------------
     return $args;
 }
+
+/**
+ * If this fires, we know there's an Accordion Item block on the page, so filter the page type.
+ *
+ * @param array $blocks The blocks of this type on the current page.
+ */
+function prepare_accordion_item_schema($blocks)
+{
+    \add_filter('wpseo_schema_webpage', __NAMESPACE__ . '\\change_schema_page_type');
+}
+
+/**
+ * Changes @type of Webpage Schema data.
+ *
+ * @param array $data Schema.org Webpage data array.
+ *
+ * @return array Schema.org Webpage data array.
+ */
+function change_schema_page_type($data)
+{
+    $data['@type'] = [
+        'WebPage',
+        'FAQPage',
+    ];
+
+    return $data;
+}
+
+function render_accordion_item_block_schema($graph, $block)
+{
+    // TODO: Determine if accordion is set to be an 'FAQ'.
+    $is_faq = !empty($block);
+
+    if ($is_faq === false) {
+        return $graph;
+    }
+
+    // Calculate FAQ 'position'.
+    $faqs = array_filter($graph, function ($item) {
+        return !empty($item['@type']) && $item['@type'] === 'Question';
+    });
+
+    $last_faq = end($faqs);
+    $position = intval($last_faq['position']) + 1;
+
+    // Append new Schema graph Question.
+    $graph[] = [
+        '@type' => 'Question',
+        '@id' => 'https://millboard.test/en-gb/6503-2/#faq-question-1771320117377',
+        'position' => $position,
+        'url' => 'https://millboard.test/en-gb/6503-2/#faq-question-1771320117377',
+        'name' => $block['attrs']['data']['title'],
+        'answerCount' => 1,
+        'acceptedAnswer' => [
+            '@type' => 'Answer',
+            'text' => $block['attrs']['data']['content'],
+            'inLanguage' => \get_bloginfo('language'),
+        ],
+        'inLanguage' => \get_bloginfo('language'),
+    ];
+
+    return $graph;
+}
