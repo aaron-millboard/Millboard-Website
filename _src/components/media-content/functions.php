@@ -46,7 +46,7 @@ function filter_args(array $args): ?array
     // -------------------------------------------------------------------------
     if (!empty($args['image'])) {
         $args['image']['size'] = 'super';
-        $args['image']['sizes'] = '(max-width: 768px) 100vw, 50vw';
+        $args['image']['sizes'] = '(max-width: 1024px) 100vw, 50vw';
         $args['media'] = $args['image'];
     }
 
