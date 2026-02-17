@@ -156,7 +156,7 @@ class CaseStudy
                 [
                     'key' => 'field_is_featured',
                     'name' => 'is_featured',
-                    'label' => 'Is Featured',
+                    'label' => 'Featured post',
                     'type' => 'true_false',
                     'ui' => true,
                 ],
