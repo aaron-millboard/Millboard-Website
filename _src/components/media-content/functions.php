@@ -19,6 +19,7 @@ function filter_args(array $args): ?array
         'image' => [],
         'media' => '',
         // Media Object arguments.
+        'size' => 'ml', // increase media object image size.
         'orientation' => 'horizontal',
     ], $args);
 
@@ -46,7 +47,6 @@ function filter_args(array $args): ?array
     // -------------------------------------------------------------------------
     if (!empty($args['image'])) {
         $args['image']['size'] = 'super';
-        $args['image']['sizes'] = '(max-width: 1024px) 100vw, 50vw';
         $args['media'] = $args['image'];
     }
 
