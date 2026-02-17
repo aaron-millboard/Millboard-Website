@@ -3,15 +3,22 @@
     "title": "Block - Accordion Item",
     "fields": [
         {
-            "key": "block_accordion_item_opened",
-            "label": "Open by default",
-            "name": "is_opened",
-            "type": "true_false",
-            "instructions": "If enabled, the accordion item will be open when the page loads.",
-            "ui": 1,
-            "ui_on_text": "Yes",
-            "ui_off_text": "No",
-            "default_value": 0
+            "key": "field_699484ff4552e",
+            "label": "Content",
+            "name": "",
+            "aria-label": "",
+            "type": "tab",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "placement": "top",
+            "endpoint": 0,
+            "selected": 0
         },
         {
             "key": "block_accordion_item_title",
@@ -36,6 +43,56 @@
             "name": "cta",
             "type": "link",
             "return_format": "array"
+        },
+        {
+            "key": "field_699485054552f",
+            "label": "Options",
+            "name": "",
+            "aria-label": "",
+            "type": "tab",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "placement": "top",
+            "endpoint": 0,
+            "selected": 0
+        },
+        {
+            "key": "block_accordion_item_opened",
+            "label": "Open by default",
+            "name": "is_opened",
+            "type": "true_false",
+            "instructions": "If enabled, the accordion item will be open when the page loads.",
+            "ui": 1,
+            "ui_on_text": "Yes",
+            "ui_off_text": "No",
+            "default_value": 0
+        },
+        {
+            "key": "field_6994851c45530",
+            "label": "FAQ Content",
+            "name": "faq_content",
+            "aria-label": "",
+            "type": "true_false",
+            "instructions": "Does this accordion item contain FAQ content?",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "message": "",
+            "default_value": 0,
+            "allow_in_bindings": 0,
+            "ui_on_text": "",
+            "ui_off_text": "",
+            "ui": 1
         }
     ],
     "location": [

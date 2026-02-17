@@ -111,9 +111,9 @@ function change_schema_page_type($data)
 
 function render_accordion_item_block_schema($graph, $block)
 {
-    // TODO: Determine if accordion is set to be an 'FAQ'.
-    $is_faq = !empty($block);
+    $is_faq = !empty($block['attrs']['data']['faq_content']);
 
+    // Bail early - this accordiuon item block does not contain FAQ data.
     if ($is_faq === false) {
         return $graph;
     }
