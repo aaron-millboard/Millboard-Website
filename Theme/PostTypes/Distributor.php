@@ -59,6 +59,7 @@ class Distributor
                         ]
                     ]
                 ],
+                ['acf/partner-contact-form'],
                 [
                     'core/paragraph',
                     [

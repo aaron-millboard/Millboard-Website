@@ -11,7 +11,7 @@ function filter_args(array $args): ?array
         'details' => [],
     ], $args);
 
-    if (empty($args['hubspot_script'])) {
+    if (empty($args['hubspot_script']) && empty($args['is_preview'])) {
         return null;
     }
 
@@ -78,6 +78,36 @@ function filter_args(array $args): ?array
             'label' => \_x('Address', 'Partner contact form table row heading', 'granola'),
             'value' => $address['address'] ?? '',
         ];
+    }
+
+    // -------------------------------------------------------------------------
+    // Set up default placeholders in preview if none is provided
+    // -------------------------------------------------------------------------
+    if (!empty($args['is_preview'])) {
+        if (empty($args['details'])) {
+            $args['details'] = [
+                [
+                    'label' => \_x('Phone', 'Partner contact form table row heading', 'granola'),
+                    'value' => \__('Enter Phone details', 'granola'),
+                ],
+                [
+                    'label' => \_x('Email', 'Partner contact form table row heading', 'granola'),
+                    'value' => \__('Enter Email details', 'granola'),
+                ],
+                [
+                    'label' => \_x('Website', 'Partner contact form table row heading', 'granola'),
+                    'value' => \__('Enter Website details', 'granola'),
+                ],
+                [
+                    'label' => \_x('Address', 'Partner contact form table row heading', 'granola'),
+                    'value' => \__('Enter Address details', 'granola'),
+                ],
+            ];
+        }
+
+        if (empty($args['hubspot_script'])) {
+            $args['hubspot_script'] = \__('Add hubspot form here', 'granola');
+        }
     }
 
     return $args;
