@@ -43,7 +43,7 @@ function filter_args(array $args): ?array
     $dimensions = $product->get_dimensions(false);
     $price = $product->get_price();
     $sample_size = $product->get_attribute('sample-size');
-    
+
     // Check if product is in cart - works for both simple and variable products
     $product_in_cart = false;
     foreach ($cart->get_cart() as $cart_item_key => $cart_item) {
@@ -57,7 +57,7 @@ function filter_args(array $args): ?array
         $args['classes'][] = 'product-samples__button--' . strtolower($sample_size);
     }
 
-    if(!empty($product_in_cart)) {
+    if (!empty($product_in_cart)) {
         $args['classes'][] = 'product-samples__button--in-cart';
     }
 

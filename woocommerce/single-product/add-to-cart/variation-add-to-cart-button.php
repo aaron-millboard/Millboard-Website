@@ -21,6 +21,13 @@ if (!is_wp_error($categories) && ! empty($categories)) {
     $calculator_cta_heading = $categories[0]->name . ' Calculator';
 }
 
+$stock_quantity = $product->get_stock_quantity();
+
+// Bail early - stock set to 0, don't allow "add to cart" functionality for main product.
+if (empty($stock_quantity) && !is_null($stock_quantity)) {
+    return;
+}
+
 ?>
 <div class="product__toggles variations_button">
     <?php woocommerce_quantity_input([
@@ -128,9 +135,7 @@ if (!is_wp_error($categories) && ! empty($categories)) {
                 <?= esc_html__('This is only a guide board price and does not allow for fixings, subframe accessories or installation.', 'granola'); ?>
             </span>
         </div>
-
     </div>
-
 </div>
 
 <div class="product__add-to-cart-wrapper">

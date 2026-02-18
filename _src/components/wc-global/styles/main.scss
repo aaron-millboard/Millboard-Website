@@ -46,6 +46,10 @@
     }
 }
 
+.woocommerce-notices-wrapper {
+    --block--right-space: 0;
+}
+
 /* Class .woocommerce also set on <body> in WooCommerce pages so we target only blocks */
 .blocks > .woocommerce {
     --block--max-width: var(--width--responsive--l);

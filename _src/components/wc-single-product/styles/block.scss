@@ -98,6 +98,7 @@
 
             #{$this}__heading {
                 @include typestyle-h1;
+
                 margin: 0;
             }
 
@@ -106,6 +107,7 @@
 
                 a {
                     @include typestyle-small;
+
                     font-family: var(--type--2--font-family);
                     text-transform: uppercase;
                     font-weight: 400;
@@ -140,6 +142,7 @@
 
         &__title {
             @include typestyle-h6;
+
             margin: 0;
             text-transform: uppercase;
         }
@@ -269,11 +272,13 @@
 
             &-heading {
                 @include typestyle-h6;
+
                 margin-bottom: var(--space--4xs);
             }
 
             &-description {
                 @include typestyle-small;
+
                 text-decoration: underline;
             }
 
@@ -299,6 +304,7 @@
 
             &--title {
                 @include typestyle-h6;
+
                 margin: 0;
                 text-transform: uppercase;
             }
@@ -348,6 +354,7 @@
 
         &--label {
             @include typestyle-small;
+
             margin-bottom: var(--space--2xs);
         }
 
@@ -359,6 +366,7 @@
 
         &--radio {
             @include radio-field;
+
             --input--color: var(--color--brand-5);
             --input--background-color: transparent;
             --input--background-color--highlight: transparent;
@@ -414,24 +422,28 @@
 
                 #{$this}__calculator-result-label {
                     @include typestyle-h6;
+
                     font-weight: 600;
                     text-transform: uppercase;
                 }
 
                 #{$this}__calculator-result-value {
                     @include typestyle-h5;
+
                     font-weight: 700;
                 }
             }
 
             &-label {
                 @include typestyle-small;
+
                 font-weight: 600;
                 text-transform: uppercase;
             }
 
             &-value {
                 @include typestyle-h6;
+
                 font-weight: 600;
             }
         }
@@ -449,6 +461,7 @@
 
             span {
                 @include typestyle-small;
+
                 margin: 0;
             }
         }
@@ -463,6 +476,7 @@
         gap: var(--space--s);
         justify-content: center;
 
+        .woocommerce-simple,
         .single_variation {
             display: flex;
             flex-direction: row;
@@ -471,14 +485,18 @@
             align-items: center;
         }
 
+        .woocommerce-simple-tax,
         .woocommerce-variation-tax {
             @include typestyle-h6;
+
             font-weight: normal;
             margin: 0;
         }
 
+        .woocommerce-simple-price,
         .woocommerce-variation-price {
             @include typestyle-h4;
+
             font-weight: normal;
             text-align: center;
             letter-spacing: 0;
