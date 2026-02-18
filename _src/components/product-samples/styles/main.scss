@@ -24,4 +24,8 @@
             text-transform: none;
         }
     }
+
+    .product-samples__button--in-cart {
+        @include button--interacted;
+    }
 }

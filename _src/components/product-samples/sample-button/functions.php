@@ -42,12 +42,23 @@ function filter_args(array $args): ?array
     $product_id = $product->get_id();
     $dimensions = $product->get_dimensions(false);
     $price = $product->get_price();
-    $product_cart_id = $cart->generate_cart_id($product_id);
-    $product_in_cart = $cart->find_product_in_cart($product_cart_id);
     $sample_size = $product->get_attribute('sample-size');
+    
+    // Check if product is in cart - works for both simple and variable products
+    $product_in_cart = false;
+    foreach ($cart->get_cart() as $cart_item_key => $cart_item) {
+        if ($cart_item['product_id'] === $product_id || $cart_item['variation_id'] === $product_id) {
+            $product_in_cart = $cart_item_key;
+            break;
+        }
+    }
 
     if (!empty($sample_size)) {
         $args['classes'][] = 'product-samples__button--' . strtolower($sample_size);
+    }
+
+    if(!empty($product_in_cart)) {
+        $args['classes'][] = 'product-samples__button--in-cart';
     }
 
     // Generate a "remove from cart" url for small samples that are already in the cart.
