@@ -1,0 +1,32 @@
+{
+    "$schema": "https://raw.githubusercontent.com/AdvancedCustomFields/schemas/main/json/block.json",
+    "apiVersion": 2,
+    "name": "acf/partner-contact-form",
+    "title": "Partner Contact Form",
+    "description": "Display a Hubspot Form alongside installer/distributor content",
+    "category": "granola-blocks",
+    "icon": "feedback",
+    "keywords": [
+        "form",
+        "installer",
+        "distributor"
+    ],
+    "acf": {
+        "mode": "auto",
+        "renderCallback": "\\Granola\\Component::acf_render_callback",
+        "postTypes": [
+            "installer",
+            "distributor"
+        ]
+    },
+    "supports": {
+        "anchor": true,
+        "align": false,
+        "color": {
+            "background": false,
+            "text": false
+        },
+        "mode": false,
+        "multiple": false
+    }
+}

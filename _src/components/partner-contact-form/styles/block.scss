@@ -1,0 +1,54 @@
+.partner-contact-form {
+    $this: &;
+
+    &__inner {
+        max-width: var(--width--responsive--l);
+        margin-left: auto;
+        margin-right: auto;
+        position: relative;
+        padding: var(--space--xl) 0;
+    }
+
+    &__grid {
+        display: grid;
+        gap: var(--space--l);
+
+        @include mq(medium) {
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space--3xl);
+        }
+    }
+
+    &__column {
+        display: flex;
+        flex-direction: column;
+
+        &--content {
+            gap: var(--space--m);
+
+            @include mq(large) {
+                padding-right: var(--space--3xl);
+            }
+        }
+    }
+
+    &__header {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space--xs);
+    }
+
+    &__heading {
+        margin: 0;
+    }
+
+    &__table {
+        margin-top: var(--space--l);
+    }
+
+    &.has-background {
+        #{$this}__inner {
+            padding: var(--space--2xl) 0;
+        }
+    }
+}

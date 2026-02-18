@@ -1,0 +1,55 @@
+{
+    "key": "group_69960292d2d9e",
+    "title": "Block - Gravity Forms (copy)",
+    "fields": [
+        {
+            "key": "field_69960292d6b34",
+            "label": "Hubspot Script",
+            "name": "hubspot_script",
+            "aria-label": "",
+            "type": "textarea",
+            "instructions": "Paste the Hubspot script here",
+            "required": false,
+            "conditional_logic": [
+                [
+                    {
+                        "field": "field_69960292d6b27",
+                        "operator": "==",
+                        "value": "hubspot"
+                    }
+                ]
+            ],
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "new_lines": "",
+            "maxlength": "",
+            "placeholder": "",
+            "rows": ""
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "block",
+                "operator": "==",
+                "value": "acf\/partner-contact-form"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "",
+    "show_in_rest": 0,
+    "display_title": "",
+    "granola_save_location": 0,
+    "modified": 1771438758
+}
