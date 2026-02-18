@@ -41,9 +41,12 @@ function filter_args(array $args): ?array
     }
 
     foreach ($variants as $variant) {
+        // Convert underscores to hyphens for attribute taxonomy
+        $taxonomy = 'pa_' . str_replace('_', '-', $variation);
+        
         $is_current = \has_term(
             $variant[$variation]->term_id,
-            'pa_' . $variation,
+            $taxonomy,
         );
 
         $image = \get_field('image', $variant[$variation]);
@@ -66,10 +69,6 @@ function filter_args(array $args): ?array
                 'data-text' => $variant[$variation]->name,
             ],
         ];
-
-        if ($variation === 'board_width' && \has_term($variant[$variation]->name, 'product_tag')) {
-            $args['variants'][count($args['variants']) - 1]['classes'][] = 'product-variation-selector__link--current';
-        }
     }
 
     if (!empty($args['heading'])) {
