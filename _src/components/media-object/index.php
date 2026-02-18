@@ -93,7 +93,7 @@
                 'media-object__media--' . $args['media_type'],
                 $args['animate'] ? 'animate' : null,
                 $args['media_type'] == 'illustration' ? 'img-contain' : 'img-fit',
-            ]); ?>>
+            ]); ?>">
                 <?php if ($args['media_type'] === 'video' && !empty($args['video'])) { ?>
                     <?= \Granola\Component::get('video-item', $args['video']); ?>
                 <?php } elseif ($args['media_type'] === 'illustration' && !empty($args['illustration'])) { ?>
