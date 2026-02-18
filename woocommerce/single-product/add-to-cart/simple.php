@@ -47,6 +47,16 @@ if ($product->is_in_stock()) : ?>
         ?>
 
         <div class="product__add-to-cart-wrapper">
+            <div class="woocommerce-simple">
+                <div class="woocommerce-simple-price">
+                    <?= $product->get_price_html(); ?>
+                </div>
+
+                <div class="woocommerce-simple-tax">
+                    <?= esc_html__('Excl VAT', 'granola'); ?>
+                </div>
+            </div>
+
             <button type="submit" name="add-to-cart" value="<?php echo esc_attr($product->get_id()); ?>" class="single_add_to_cart_button button alt<?php echo esc_attr(wc_wp_theme_get_element_class_name('button') ? ' ' . wc_wp_theme_get_element_class_name('button') : ''); ?>"><?php echo esc_html($product->single_add_to_cart_text()); ?></button>
         </div>
 
