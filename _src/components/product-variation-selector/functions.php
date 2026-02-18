@@ -66,8 +66,11 @@ function filter_args(array $args): ?array
                 'data-text' => $variant[$variation]->name,
             ],
         ];
-    }
 
+        if ($variation === 'board_width' && \has_term($variant[$variation]->name, 'product_tag')) {
+            $args['variants'][count($args['variants']) - 1]['classes'][] = 'product-variation-selector__link--current';
+        }
+    }
 
     if (!empty($args['heading'])) {
         $args['heading'] = [
