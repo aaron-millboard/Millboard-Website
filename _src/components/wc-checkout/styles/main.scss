@@ -1,8 +1,6 @@
 .woocommerce {
-
     // all form fields (global scope)
     .form-row {
-        
         //span both columns for full width fields
         &.form-row-wide {
             grid-column: span 2;
@@ -16,7 +14,7 @@
         }
 
         input,
-        input[type="password"],
+        input[type='password'],
         .select2 {
             --input--color: var(--color--foreground);
             --input--color--focus: var(--color--foreground);
@@ -68,7 +66,6 @@
                 fill: var(--color--brand-1);
             }
         }
-
     }
 
     &__actions {
@@ -78,7 +75,7 @@
         gap: var(--space--m);
 
         .wc-submit-order button,
-        button[type="submit"] {
+        button[type='submit'] {
             @include button;
             @include button--interaction;
             @include button--solid;
@@ -105,8 +102,98 @@
                 mask-repeat: no-repeat;
                 mask-size: #{px-to-rem(16)};
             }
-
         }
+    }
 
+    .checkout {
+        // Right column - order summary
+        &__summary {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space--m);
+
+            &__items {
+                display: flex;
+                flex-direction: column;
+                gap: var(--space--m);
+            }
+
+            &__coupon {
+                display: flex;
+                flex-direction: column;
+                gap: var(--space--xs);
+                padding: var(--space--s) 0;
+                border-bottom: 1px solid var(--color--brand-5);
+
+                .form-row,
+                form {
+                    display: flex;
+                    flex-direction: column;
+                    gap: var(--space--xs);
+                }
+
+                button {
+                    @include button;
+                    @include button--interaction;
+                    width: fit-content;
+                }
+
+                a.showcoupon {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    text-decoration: none;
+                }
+
+                .label {
+                    @include typestyle-h6;
+                    @include typestyle-xlarge;
+                }
+
+                .icon {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: #{px-to-rem(32)};
+                    height: #{px-to-rem(32)};
+                    fill: var(--color--foreground);
+                    padding: 4px;
+                    background-color: var(--color--brand-1);
+
+                    svg {
+                        width: 20px;
+                        height: 20px;
+                    }
+                }
+            }
+
+            &__totals {
+                display: flex;
+                flex-direction: column;
+                gap: var(--space--s);
+                padding: var(--space--s) 0;
+
+                &__item {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+
+                    .label {
+                        @include typestyle-h5;
+                        @include typestyle-xlarge;
+                    }
+
+                    .value {
+                        @include typestyle-base;
+                        font-weight: 600;
+                    }
+                }
+
+                .order-total {
+                    padding-top: var(--space--s);
+                    border-top: 1px solid var(--color--brand-5);
+                }
+            }
+        }
     }
 }
