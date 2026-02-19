@@ -1,9 +1,13 @@
 @import '../../cards/styles/cards.scss';
 
 .cards-automatic {
-      max-width: var(--width--responsive--l);
-      margin-left: auto;
-      margin-right: auto;
-      position: relative;
-      margin-top: 0;
+    max-width: var(--width--responsive--l);
+    margin-left: auto;
+    margin-right: auto;
+    position: relative;
+    margin-top: 0;
+
+    .product-samples__button--in-cart {
+        @include button--interacted;
+    }
 }
