@@ -1,0 +1,138 @@
+.partner-contact-form {
+    $this: &;
+
+    &__inner {
+        max-width: var(--width--responsive--l);
+        margin-left: auto;
+        margin-right: auto;
+        position: relative;
+        padding: var(--space--xl) 0;
+    }
+
+    &__grid {
+        display: grid;
+        gap: var(--space--l);
+
+        @include mq(medium) {
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space--3xl);
+        }
+    }
+
+    &__column {
+        display: flex;
+        flex-direction: column;
+
+        &--content {
+            gap: var(--space--m);
+
+            @include mq(large) {
+                padding-right: var(--space--3xl);
+            }
+        }
+    }
+
+    &__header {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space--xs);
+    }
+
+    &__heading {
+        margin: 0;
+    }
+
+    &__table {
+        margin: 0;
+        border: 0;
+
+        tr {
+            border-bottom: 1px solid var(--color--mist);
+        }
+
+        th,
+        td {
+            min-width: 100px; // magic number.
+            padding: var(--space--2xs) 0;
+            word-break: break-word;
+            border: 0;
+            vertical-align: top;
+        }
+
+        th {
+            white-space: nowrap;
+        }
+
+        td {
+            padding-left: var(--space--xs);
+        }
+    }
+
+    &.has-background {
+        #{$this}__inner {
+            padding: var(--space--2xl) 0;
+        }
+    }
+
+    .hbspt-form {
+        input,
+        textarea {
+            --input--background-color: transparent;
+            --input--border-color: var(--color--foreground);
+            --input--border-color--focus: var(--color--brand-4);
+            --input--color: var(--color--foreground);
+            --input--color--focus: var(--color--foreground);
+            --input--placeholder-color: var(--color--foreground);
+            --input--border-width--focus: 1px;
+        }
+
+        ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .hs-error-msgs {
+            @include no-first-last-margin;
+            @include color-context('error');
+
+            max-width: 100%;
+            width: 100%;
+            margin: px-to-rem(8px) 0;
+            padding: px-to-rem(8px) px-to-rem(16px);
+
+            li {
+                @include typestyle-large;
+                text-transform: none;
+                letter-spacing: inherit;
+                font-weight: 600;
+
+                label {
+                    margin: 0;
+                }
+            }
+        }
+
+        input.error,
+        textarea.error {
+            &:not(:focus-within) {
+                --input--border-color: var(--color--error);
+            }
+        }
+
+        .hs_ops_out_marketing {
+            input {
+                margin-right: px-to-rem(8px);
+            }
+        }
+    }
+
+    .hs-button {
+        @include button;
+
+        margin-top: px-to-rem(32px);
+
+        &:hover {
+            @include button--interacted;
+        }
+    }
+}
