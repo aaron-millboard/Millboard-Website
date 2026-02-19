@@ -43,7 +43,29 @@
     }
 
     &__table {
-        margin-top: var(--space--l);
+        margin: 0;
+        border: 0;
+
+        tr {
+            border-bottom: 1px solid var(--color--mist);
+        }
+
+        th,
+        td {
+            min-width: 100px; // magic number.
+            padding: var(--space--2xs) 0;
+            word-break: break-word;
+            border: 0;
+            vertical-align: top;
+        }
+
+        th {
+            white-space: nowrap;
+        }
+
+        td {
+            padding-left: var(--space--xs);
+        }
     }
 
     &.has-background {
