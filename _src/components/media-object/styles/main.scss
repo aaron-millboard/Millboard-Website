@@ -50,7 +50,6 @@
     &__inner {
         display: flex;
         display: grid;
-        height: 100%;
         flex-flow: var(--media-object--flex-flow);
         gap: var(--media-object--gap);
         grid-template-columns: var(--media-object--grid-template-columns);
