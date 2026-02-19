@@ -27,26 +27,42 @@
                 'content_filter' => false,
             ]); ?>
 
-            <button
-                class="site-header__search-toggler g-button"
-                aria-expanded="false"
-                aria-controls="site-header-search-form">
-                <span class="visually-hidden">
-                    <?= esc_html__('Expand the search field', 'granola'); ?>
-                </span>
-            </button>
+            <div class="site-header__buttons">
+                <?= \Granola\Component::get('link', [
+                    'url' => get_site_url(null, '/my-account'),
+                    'classes' => ['site-header__account-link'],
+                    'content' => '<span class="visually-hidden">' . esc_html__('My account', 'granola') . '</span>',
+                    'el' => 'a'
+                ]); ?>
 
-            <?= \Granola\Component::get('burger', [
-                'classes' => [
-                    'site-header__burger',
-                    'js-site-header-toggle',
-                ],
-                'attributes' => [
-                    'aria-label' => __('Main menu button', 'granola'),
-                    'aria-controls' => 'main-menu',
-                    'aria-expanded' => 'false',
-                ],
-            ]); ?>
+                <?= \Granola\Component::get('link', [
+                    'url' => get_site_url(null, '/basket'),
+                    'classes' => ['site-header__basket-link'],
+                    'content' => $args['content']['basket_button_content'],
+                    'el' => 'a'
+                ]); ?>
+
+                <button
+                    class="site-header__search-toggler g-button"
+                    aria-expanded="false"
+                    aria-controls="site-header-search-form">
+                    <span class="visually-hidden">
+                        <?= esc_html__('Expand the search field', 'granola'); ?>
+                    </span>
+                </button>
+
+                <?= \Granola\Component::get('burger', [
+                    'classes' => [
+                        'site-header__burger',
+                        'js-site-header-toggle',
+                    ],
+                    'attributes' => [
+                        'aria-label' => __('Main menu button', 'granola'),
+                        'aria-controls' => 'main-menu',
+                        'aria-expanded' => 'false',
+                    ],
+                ]); ?>
+            </div>
         </div>
 
         <div class="site-header__bottom">

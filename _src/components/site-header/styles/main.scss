@@ -48,7 +48,6 @@ $site-header--top--background: 'white';
     }
 
     @include mq($until: 'site-header') {
-
         max-width: 100%;
         background-color: var(--color--brand-2);
 
@@ -240,6 +239,12 @@ $site-header--top--background: 'white';
         }
     }
 
+    &__buttons {
+        display: flex;
+        gap: var(--space--2xs);
+        margin-left: auto;
+    }
+
     &__burger {
         --burger--color: var(--color--black);
         --burger--background-color: transparent;
@@ -257,6 +262,98 @@ $site-header--top--background: 'white';
         @include mq('site-header') {
             display: none;
         }
+    }
+
+    &__account-link {
+        position: relative;
+
+        display: none;
+        width: var(--site-header--button-size);
+        height: var(--site-header--button-size);
+        flex: 0 0 auto;
+        flex-flow: column nowrap;
+        align-items: center;
+        justify-content: space-around;
+        padding: 0;
+        border-radius: 100%;
+        margin-left: auto;
+
+        @include mq('site-header') {
+            display: flex;
+            position: absolute;
+            top: 0;
+            right: px-to-rem(50);
+        }
+
+        &::before {
+            width: px-to-rem(20);
+            height: px-to-rem(20);
+            background: currentColor;
+            content: '';
+            mask-image: url('./images/icons-custom/account.svg');
+            mask-position: center;
+            mask-repeat: no-repeat;
+            mask-size: contain;
+            transition: all var(--site-header--menu--duration) var(--site-header--menu--ease);
+        }
+
+        &:hover {
+            &::before {
+                background: var(--color--brand-1);
+            }
+        }
+    }
+
+    &__basket-link {
+        position: relative;
+
+        @include mq('site-header') {
+            position: absolute;
+            top: 0;
+            right: px-to-rem(110);
+        }
+
+        display: flex;
+        gap: var(--space--3xs);
+        width: var(--site-header--button-size);
+        height: var(--site-header--button-size);
+        flex: 0 0 auto;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        border-radius: 100%;
+        margin-left: auto;
+        text-decoration: none;
+
+        &::before {
+            width: px-to-rem(20);
+            height: px-to-rem(20);
+            flex-shrink: 0;
+            background: currentColor;
+            content: '';
+            mask-image: url('./images/icons-custom/basket.svg');
+            mask-position: center;
+            mask-repeat: no-repeat;
+            mask-size: contain;
+            transition: all var(--site-header--menu--duration) var(--site-header--menu--ease);
+        }
+
+        &:hover {
+            color: var(--color--brand-1);
+        }
+    }
+
+    &__basket-count {
+        background-color: var(--color--brand-1);
+        color: var(--color--black);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        height: px-to-rem(24);
+        width: px-to-rem(24);
+        border-radius: 100%;
+        font-size: px-to-rem(12);
     }
 
     &__search-toggler {

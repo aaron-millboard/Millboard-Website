@@ -27,6 +27,16 @@ function filter_args(array $args): ?array
         ];
     }
 
+    // ---------------------------------------
+    // Custom.
+    // ---------------------------------------
+
+    if (!empty($basket_count = WC()->cart->get_cart_contents_count())) {
+        $args['content']['basket_button_content'] = '<span class="visually-hidden">' . esc_html__('Basket', 'granola') . '</span><span class="site-header__basket-count">' . esc_html($basket_count) . '</span>';
+    } else {
+        $args['content']['basket_button_content'] = '<span class="visually-hidden">' . esc_html__('Basket', 'granola') . '</span>';
+    }
+
     // -------------------------------------------------------------------------
     // Return the filtered args.
     // -------------------------------------------------------------------------
