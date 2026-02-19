@@ -13,6 +13,8 @@ function filter_args(array $args): ?array
         'heading' => null,
         'link' => [],
         'classes' => [],
+        'control_button' => [],
+        'embed_url' => '',
     ], $args);
 
     // -------------------------------------------------------------------------
