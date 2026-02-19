@@ -12,14 +12,16 @@
 
                 <?= \Granola\Component::get('button', $args['control_button']); ?>
 
-                <iframe
-                    src=""
-                    data-embed-url="<?= esc_attr($args['embed_url']); ?>"
-                    class="hero-header__iframe"
-                    frameborder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowfullscreen
-                ></iframe>
+                <?php if (!empty($args['embed_url'])) { ?>
+                    <iframe
+                        src=""
+                        data-embed-url="<?= esc_attr($args['embed_url']); ?>"
+                        class="hero-header__iframe"
+                        frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen
+                    ></iframe>
+                <?php } ?>
             </div>
         <?php } ?>
 

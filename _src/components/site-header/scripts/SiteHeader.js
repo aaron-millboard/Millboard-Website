@@ -14,9 +14,13 @@ export default class SiteHeader {
         this.mainMenuEl = this.el.querySelector('#main-menu');
         this.burgerEl = this.el.querySelector('.site-header__burger');
         this.headerTogglerEls = this.el.querySelectorAll('.js-site-header-toggle');
-        this.currentPageAnchorEls = this.el.querySelectorAll('.current-menu-item > [href*="#"]');
-        this.subMenuExpandableEls = this.mainMenuEl.querySelectorAll('.js-expandable-element');
         this.searchEl = this.el.querySelector('.header-search');
+        this.currentPageAnchorEls = this.el.querySelectorAll('.current-menu-item > [href*="#"]');
+
+        this.subMenuExpandableEls = {};
+        if (this.mainMenuEl) {
+            this.subMenuExpandableEls = this.mainMenuEl.querySelectorAll('.js-expandable-element');
+        }
 
         // Stores the sub-menu ExpandableElement instances and the parent menu item for hover triggering.
         this.subMenuDropdowns = {};
@@ -96,7 +100,7 @@ export default class SiteHeader {
 
                     dropdown.parent.addEventListener('mouseenter', (e) => this.handleSubMenuParentEvent(e));
                     dropdown.parent.addEventListener('mouseleave', (e) => this.handleSubMenuParentEvent(e));
-                    
+
                     if (linkEl) {
                         linkEl.addEventListener('focusin', (e) => this.handleSubMenuParentEvent(e));
                         linkEl.addEventListener('focusout', (e) => this.handleSubMenuParentEvent(e));
@@ -193,7 +197,7 @@ export default class SiteHeader {
         }
 
         this.el.classList.add('is-open');
-        
+
         // document.documentElement.classList.add('no-scroll');
 
         this.headerTogglerEls.forEach((toggle) => {
@@ -208,10 +212,10 @@ export default class SiteHeader {
     }
 
     closeHeader(initial = false) {
-        
+
         // close the menu
         this.el.classList.remove('is-open');
-        
+
         // document.documentElement.classList.remove('no-scroll');
 
         if (this.isBurgerModeActive()) {
@@ -252,7 +256,7 @@ export default class SiteHeader {
 
         let expandableElTarget;
         let menuItem;
-        
+
         // For focus events, we need to find the expandable element from the focused link's parent
         if (event.type === 'focusin' || event.type === 'focusout') {
             menuItem = event.target.closest('.menu-item');
@@ -279,7 +283,7 @@ export default class SiteHeader {
             setTimeout(() => {
                 const newFocusedElement = document.activeElement;
                 const isMovingToSubmenu = menuItem && menuItem.contains(newFocusedElement);
-                
+
                 if (!isMovingToSubmenu && expandableEl.isExpanded()) {
                     expandableEl.collapse();
                 }
