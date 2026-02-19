@@ -12,7 +12,6 @@ function filter_args(array $args): ?array
         'content' => '',
         'title' => '',
         'panel_id' => wp_unique_id('accordion-panel-'),
-        'button_id' => wp_unique_id('accordion-button-'),
         'is_opened' => false,
     ], $args);
 
@@ -28,7 +27,7 @@ function filter_args(array $args): ?array
     // Assign unique IDs and prepare button & panel attributes
     // ---------------------------------------
     $args['button'] = [
-        'id' => $args['button_id'],
+        'id' => sanitize_title($args['title']),
         'classes' => [
             'accordion__item__trigger',
             'js-accordion-button'
@@ -53,7 +52,7 @@ function filter_args(array $args): ?array
             'accordion__item__panel',
             'js-expandable-element'
         ]),
-        'aria-labelledby' => $args['button_id']
+        'aria-labelledby' => sanitize_title($args['title']),
     ];
 
     if (!$args['is_opened']) {
@@ -130,12 +129,14 @@ function render_accordion_item_block_schema($graph, $block)
         $position = intval($last_faq['position']) + 1;
     }
 
+    $id = sanitize_title(!empty($block['attrs']['data']['title']) ? $block['attrs']['data']['title'] : '');
+
     // Append new Schema graph Question.
     $graph[] = [
         '@type' => 'Question',
-        '@id' => 'https://millboard.test/en-gb/6503-2/#faq-question-1771320117377',
+        '@id' => $graph[0]['url'] . '#' . $id,
         'position' => $position,
-        'url' => 'https://millboard.test/en-gb/6503-2/#faq-question-1771320117377',
+        'url' => $graph[0]['url'] . '#' . $id,
         'name' => $block['attrs']['data']['title'],
         'answerCount' => 1,
         'acceptedAnswer' => [
