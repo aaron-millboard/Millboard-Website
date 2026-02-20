@@ -44,22 +44,16 @@ function filter_args(array $args): ?array
     $price = $product->get_price();
     $sample_size = $product->get_attribute('sample-size');
 
-    // Check if product is in cart - works for both simple and variable products
+    // Check if product is in cart for both simple and variable products.
     $product_in_cart = false;
+    $cart_items = function_exists('WC') && WC()->cart ? WC()->cart->get_cart() : [];
 
-      if (function_exists('WC') && WC()->cart) {
-        if (is_multisite()) {
-            $current_blog_id = get_current_blog_id();
-            switch_to_blog($current_blog_id);
-            $cart = WC()->cart->get_cart();
-            restore_current_blog();
-        } else {
-            $cart = WC()->cart->get_cart();
-        }
-    }
-    foreach ($cart as $cart_item_key => $cart_item) {
-        if ($cart_item['product_id'] === $product_id || $cart_item['variation_id'] === $product_id) {
-            $product_in_cart = $cart_item_key;
+    foreach ($cart_items as $cart_item) {
+        $cart_product_id = isset($cart_item['product_id']) ? (int) $cart_item['product_id'] : 0;
+        $cart_variation_id = isset($cart_item['variation_id']) ? (int) $cart_item['variation_id'] : 0;
+
+        if ($cart_product_id === (int) $product_id || $cart_variation_id === (int) $product_id) {
+            $product_in_cart = true;
             break;
         }
     }
@@ -68,7 +62,7 @@ function filter_args(array $args): ?array
         $args['classes'][] = 'product-samples__button--' . strtolower($sample_size);
     }
 
-    if (!empty($product_in_cart)) {
+    if ($product_in_cart) {
         $args['classes'][] = 'product-samples__button--in-cart';
     }
 
