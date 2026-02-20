@@ -82,12 +82,14 @@
                     'el' => 'a'
                 ]); ?>
 
-                <?= \Granola\Component::get('link', [
-                    'url' => get_site_url(null, '#'),
-                    'classes' => ['site-header__mobile-links__help-center'],
-                    'content' => esc_html__('Help center', 'granola'),
-                    'el' => 'a'
-                ]); ?>
+                <?php if($args['help_center_link']): ?>
+                    <?= \Granola\Component::get('link', [
+                        'url' => $args['help_center_link']['url'],
+                        'classes' => ['site-header__mobile-links__help-center'],
+                        'content' => esc_html__('Help center', 'granola'),
+                        'el' => 'a'
+                    ]); ?>
+                <?php endif; ?>
 
                 <?= \Granola\Component::get('language/switcher'); ?>
             </div>
