@@ -44,40 +44,19 @@ function filter_args(array $args): ?array
     $price = $product->get_price();
     $sample_size = $product->get_attribute('sample-size');
 
-    // Check if product is in cart for both simple and variable products.
-    static $cart_ids_lookup_by_blog = [];
-    $blog_id = function_exists('get_current_blog_id') ? (int) get_current_blog_id() : 0;
-
-    if (!isset($cart_ids_lookup_by_blog[$blog_id])) {
-        $cart_ids_lookup_by_blog[$blog_id] = [];
-        $cart_items = function_exists('WC') && WC()->cart ? WC()->cart->get_cart() : [];
-
-        foreach ($cart_items as $cart_item) {
-            $cart_item_ids = [
-                isset($cart_item['product_id']) ? (int) $cart_item['product_id'] : 0,
-                isset($cart_item['variation_id']) ? (int) $cart_item['variation_id'] : 0,
-            ];
-
-            if (!empty($cart_item['data']) && $cart_item['data'] instanceof \WC_Product) {
-                $cart_item_ids[] = (int) $cart_item['data']->get_id();
-                $cart_item_ids[] = (int) $cart_item['data']->get_parent_id();
-            }
-
-            foreach ($cart_item_ids as $cart_item_id) {
-                if ($cart_item_id > 0) {
-                    $cart_ids_lookup_by_blog[$blog_id][$cart_item_id] = true;
-                }
-            }
+    // Check if product is in cart - works for both simple and variable products
+    $product_in_cart = false;
+    foreach ($cart->get_cart() as $cart_item_key => $cart_item) {
+        if ($cart_item['product_id'] === $product_id || $cart_item['variation_id'] === $product_id) {
+            $product_in_cart = $cart_item_key;
         }
     }
-
-    $product_in_cart = !empty($cart_ids_lookup_by_blog[$blog_id][(int) $product_id]);
 
     if (!empty($sample_size)) {
         $args['classes'][] = 'product-samples__button--' . strtolower($sample_size);
     }
 
-    if ($product_in_cart) {
+    if (!empty($product_in_cart)) {
         $args['classes'][] = 'product-samples__button--in-cart';
     }
 
