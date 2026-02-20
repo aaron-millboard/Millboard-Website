@@ -230,3 +230,35 @@
         }
     }
 }
+
+.product-calculator-cta {
+    display: flex;
+    flex-direction: row;
+    height: fit-content;
+    padding: 10px;
+    border: 1px solid var(--color--brand-1);
+    gap: var(--space--2xs);
+    text-decoration: none;
+
+    &--content {
+        display: flex;
+        flex-direction: column;
+    }
+
+    &-heading {
+        @include typestyle-h6;
+
+        margin-bottom: var(--space--4xs);
+    }
+
+    &-description {
+        @include typestyle-small;
+
+        text-decoration: underline;
+    }
+
+    svg {
+        width: 2.5rem;
+        height: 2.5rem;
+    }
+}
