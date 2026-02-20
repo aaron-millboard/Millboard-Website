@@ -54,6 +54,7 @@ class ACF
             \_x('General', 'ACF options page name', 'granola'),
             \_x('Header', 'ACF options page name', 'granola'),
             \_x('Integrations', 'ACF options page name', 'granola'),
+            \_x('Product Calculator', 'ACF options page name', 'granola'),
         ];
 
         if (empty($options_pages)) {

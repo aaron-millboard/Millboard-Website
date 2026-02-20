@@ -1,0 +1,153 @@
+{
+    "key": "group_69987e6c5b0f3",
+    "title": "Product Calculator",
+    "fields": [
+        {
+            "key": "field_69987e6d5dc3b",
+            "label": "Title",
+            "name": "product_calculator_title",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "allow_in_bindings": 0,
+            "placeholder": "",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_69987e8c5dc3c",
+            "label": "Description",
+            "name": "product_calculator_description",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "allow_in_bindings": 0,
+            "placeholder": "",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_69987e985dc3d",
+            "label": "Message if prices are exclusive of VAT (or other tax)",
+            "name": "product_calculator_price_excl_tax_msg",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "This message will be shown if no tax rate set in the Settings. If tax rate exists - checkbox to toggle price (inc \/ excl tax) will be shown instead.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "allow_in_bindings": 0,
+            "placeholder": "",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_699880495dc3e",
+            "label": "Message if prices are includsive of VAT (or other tax)",
+            "name": "product_calculator_price_incl_tax_msg_copy",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "This message will be shown if no tax rate set in the Settings. If tax rate exists - checkbox to toggle price (inc \/ excl tax) will be shown instead.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "allow_in_bindings": 0,
+            "placeholder": "",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_699880575dc3f",
+            "label": "Message for tax toggle",
+            "name": "product_calculator_toggle_tax_msg",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "This message will be alongside with the toggle to show price with or without tax.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "allow_in_bindings": 0,
+            "placeholder": "",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_6998821bcd790",
+            "label": "Disclaimer text",
+            "name": "product_calculator_disclaimer",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "allow_in_bindings": 0,
+            "placeholder": "",
+            "prepend": "",
+            "append": ""
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "options_page",
+                "operator": "==",
+                "value": "acf-options-product-calculator"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "",
+    "show_in_rest": 0,
+    "display_title": "",
+    "granola_save_location": 0,
+    "modified": 1771602479
+}
