@@ -1,5 +1,5 @@
 {
-    "key": "block_accordion_item",
+    "key": "group_699836a1c28cc",
     "title": "Block - Accordion Item",
     "fields": [
         {
@@ -24,24 +24,56 @@
             "key": "block_accordion_item_title",
             "label": "Title",
             "name": "title",
+            "aria-label": "",
             "type": "text",
-            "instructions": "The title of the accordion item."
+            "instructions": "The title of the accordion item.",
+            "required": false,
+            "conditional_logic": false,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "placeholder": "",
+            "prepend": "",
+            "append": ""
         },
         {
             "key": "block_accordion_item_content",
             "label": "Content",
             "name": "content",
+            "aria-label": "",
             "type": "wysiwyg",
             "instructions": "The content of the accordion item.",
+            "required": false,
+            "conditional_logic": false,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
             "tabs": "all",
             "toolbar": "full",
-            "media_upload": 0
+            "media_upload": 0,
+            "default_value": "",
+            "delay": 0
         },
         {
             "key": "block_accordion_item_cta",
             "label": "Call to Action",
             "name": "cta",
+            "aria-label": "",
             "type": "link",
+            "instructions": "",
+            "required": false,
+            "conditional_logic": false,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
             "return_format": "array"
         },
         {
@@ -66,15 +98,24 @@
             "key": "block_accordion_item_opened",
             "label": "Open by default",
             "name": "is_opened",
+            "aria-label": "",
             "type": "true_false",
             "instructions": "If enabled, the accordion item will be open when the page loads.",
+            "required": false,
+            "conditional_logic": false,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
             "ui": 1,
             "ui_on_text": "Yes",
             "ui_off_text": "No",
-            "default_value": 0
+            "default_value": 0,
+            "message": ""
         },
         {
-            "key": "field_6994851c45530",
+            "key": "field_6998461c30c69",
             "label": "FAQ Content",
             "name": "faq_content",
             "aria-label": "",
@@ -88,7 +129,7 @@
                 "id": ""
             },
             "message": "",
-            "default_value": 0,
+            "default_value": 1,
             "allow_in_bindings": 0,
             "ui_on_text": "",
             "ui_off_text": "",
@@ -103,5 +144,17 @@
                 "value": "acf\/accordion-item"
             }
         ]
-    ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "",
+    "show_in_rest": 0,
+    "display_title": "",
+    "granola_save_location": 0,
+    "modified": 1771587156
 }
