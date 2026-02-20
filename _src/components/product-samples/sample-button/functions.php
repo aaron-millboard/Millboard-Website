@@ -39,32 +39,26 @@ function filter_args(array $args): ?array
         return null;
     }
 
-    $product_id = (int) $product->get_id();
+    $product_id = $product->get_id();
     $dimensions = $product->get_dimensions(false);
     $price = $product->get_price();
     $sample_size = $product->get_attribute('sample-size');
 
-    $cart_contents = $cart->get_cart();
-
-    if (method_exists($cart, 'get_cart_from_session') && empty($cart_contents)) {
-        $cart->get_cart_from_session();
-        $cart_contents = $cart->get_cart();
-    }
-
-    if (empty($cart_contents) && isset(WC()->session)) {
-        $session_cart = WC()->session->get('cart');
-        if (is_array($session_cart)) {
-            $cart_contents = $session_cart;
-        }
-    }
-
     // Check if product is in cart - works for both simple and variable products
     $product_in_cart = false;
-    foreach ($cart_contents as $cart_item_key => $cart_item) {
-        $cart_product_id = isset($cart_item['product_id']) ? (int) $cart_item['product_id'] : 0;
-        $cart_variation_id = isset($cart_item['variation_id']) ? (int) $cart_item['variation_id'] : 0;
 
-        if ($cart_product_id === $product_id || $cart_variation_id === $product_id) {
+      if (function_exists('WC') && WC()->cart) {
+        if (is_multisite()) {
+            $current_blog_id = get_current_blog_id();
+            switch_to_blog($current_blog_id);
+            $cart = WC()->cart->get_cart();
+            restore_current_blog();
+        } else {
+            $cart = WC()->cart->get_cart();
+        }
+    }
+    foreach ($cart as $cart_item_key => $cart_item) {
+        if ($cart_item['product_id'] === $product_id || $cart_item['variation_id'] === $product_id) {
             $product_in_cart = $cart_item_key;
             break;
         }
