@@ -156,6 +156,14 @@ $site-header--top--background: 'white';
                 }
             }
         }
+
+        .language-switcher {
+            display: none;
+
+            @include mq('site-header') {
+                display: block;
+            }
+        }
     }
 
     &__top {
@@ -178,6 +186,7 @@ $site-header--top--background: 'white';
 
     &__bottom {
         display: flex;
+        flex-direction: column;
         width: 100%;
 
         @include mq($until: 'site-header') {
@@ -188,7 +197,7 @@ $site-header--top--background: 'white';
 
             overflow: auto;
             width: 100%;
-            background: transparent;
+            background: var(--color--#{$site-header--bottom--background});
             grid-auto-flow: row;
             grid-template-columns: min(100%, #{px-to-rem(300)});
             opacity: 0;
@@ -245,6 +254,10 @@ $site-header--top--background: 'white';
         display: flex;
         gap: var(--space--2xs);
         margin-left: auto;
+
+        @include mq('site-header') {
+            margin-left: 0;
+        }
     }
 
     &__burger {
@@ -438,6 +451,58 @@ $site-header--top--background: 'white';
             padding-right: 0;
             padding-left: 0;
             margin: 0;
+        }
+    }
+
+    &__mobile-links {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space--s);
+        padding-top: px-to-rem(40);
+
+        @include mq('site-header') {
+            display: none;
+        }
+
+        & > a {
+            display: flex;
+            align-items: center;
+            gap: var(--space--3xs);
+            text-decoration: none;
+
+            &::before {
+                width: px-to-rem(20);
+                height: px-to-rem(20);
+                background: currentColor;
+                content: '';
+                mask-position: center;
+                mask-repeat: no-repeat;
+                mask-size: contain;
+            }
+        }
+
+        &__account {
+            &::before {
+                mask-image: url('./images/icons-custom/account.svg');
+            }
+        }
+
+        &__help-center {
+            &::before {
+                mask-image: url('./images/icons-custom/help-center.svg');
+            }
+        }
+
+        .language-switcher {
+            margin-left: 0;
+            margin-right: auto;
+            padding-left: 0;
+
+            &__items {
+                left: 100%;
+                bottom: 0;
+                top: auto;
+            }
         }
     }
 

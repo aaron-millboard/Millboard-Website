@@ -80,9 +80,6 @@
             @include mq($until: 'site-header') {
                 padding-top: var(--space--3xs);
                 padding-bottom: var(--space--3xs);
-                &:last-child {
-                    border-bottom: none;
-                }
             }
         }
 

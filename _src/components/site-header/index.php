@@ -73,6 +73,24 @@
                     'site-header__navigation',
                 ],
             ]); ?>
+
+            <div class="site-header__mobile-links">
+                <?= \Granola\Component::get('link', [
+                    'url' => get_site_url(null, '/my-account'),
+                    'classes' => ['site-header__mobile-links__account'],
+                    'content' => esc_html__('Your account', 'granola'),
+                    'el' => 'a'
+                ]); ?>
+
+                <?= \Granola\Component::get('link', [
+                    'url' => get_site_url(null, '#'),
+                    'classes' => ['site-header__mobile-links__help-center'],
+                    'content' => esc_html__('Help center', 'granola'),
+                    'el' => 'a'
+                ]); ?>
+
+                <?= \Granola\Component::get('language/switcher'); ?>
+            </div>
         </div>
     </div>
 
