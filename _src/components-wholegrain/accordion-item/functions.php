@@ -12,7 +12,6 @@ function filter_args(array $args): ?array
         'content' => '',
         'title' => '',
         'panel_id' => wp_unique_id('accordion-panel-'),
-        'button_id' => wp_unique_id('accordion-button-'),
         'is_opened' => false,
     ], $args);
 
@@ -28,7 +27,7 @@ function filter_args(array $args): ?array
     // Assign unique IDs and prepare button & panel attributes
     // ---------------------------------------
     $args['button'] = [
-        'id' => $args['button_id'],
+        'id' => sanitize_title($args['title']),
         'classes' => [
             'accordion__item__trigger',
             'js-accordion-button'
@@ -53,7 +52,7 @@ function filter_args(array $args): ?array
             'accordion__item__panel',
             'js-expandable-element'
         ]),
-        'aria-labelledby' => $args['button_id']
+        'aria-labelledby' => sanitize_title($args['title']),
     ];
 
     if (!$args['is_opened']) {
@@ -80,4 +79,73 @@ function filter_args(array $args): ?array
     // Return the filtered args.
     // -------------------------------------------------------------------------
     return $args;
+}
+
+/**
+ * If this fires, we know there's an Accordion Item block on the page, so filter the page type.
+ *
+ * @param array $blocks The blocks of this type on the current page.
+ */
+function prepare_accordion_item_schema($blocks)
+{
+    \add_filter('wpseo_schema_webpage', __NAMESPACE__ . '\\change_schema_page_type');
+}
+
+/**
+ * Changes @type of Webpage Schema data.
+ *
+ * @param array $data Schema.org Webpage data array.
+ *
+ * @return array Schema.org Webpage data array.
+ */
+function change_schema_page_type($data)
+{
+    $data['@type'] = [
+        'WebPage',
+        'FAQPage',
+    ];
+
+    return $data;
+}
+
+function render_accordion_item_block_schema($graph, $block)
+{
+    $is_faq = !empty($block['attrs']['data']['faq_content']);
+
+    // Bail early - this accordiuon item block does not contain FAQ data.
+    if ($is_faq === false) {
+        return $graph;
+    }
+
+    // Calculate FAQ 'position'.
+    $position = 1; // default.
+
+    $faqs = array_filter($graph, function ($item) {
+        return !empty($item['@type']) && $item['@type'] === 'Question';
+    });
+
+    if (!empty($faqs)) {
+        $last_faq = end($faqs);
+        $position = intval($last_faq['position']) + 1;
+    }
+
+    $id = sanitize_title(!empty($block['attrs']['data']['title']) ? $block['attrs']['data']['title'] : '');
+
+    // Append new Schema graph Question.
+    $graph[] = [
+        '@type' => 'Question',
+        '@id' => $graph[0]['url'] . '#' . $id,
+        'position' => $position,
+        'url' => $graph[0]['url'] . '#' . $id,
+        'name' => $block['attrs']['data']['title'],
+        'answerCount' => 1,
+        'acceptedAnswer' => [
+            '@type' => 'Answer',
+            'text' => $block['attrs']['data']['content'],
+            'inLanguage' => \get_bloginfo('language'),
+        ],
+        'inLanguage' => \get_bloginfo('language'),
+    ];
+
+    return $graph;
 }
