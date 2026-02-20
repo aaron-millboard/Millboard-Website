@@ -275,6 +275,9 @@ export default class Calculator {
             const quantityInput = document.querySelector('input.qty');
             if (quantityInput) {
                 quantityInput.value = this.boardsTotal;
+
+                // Trigger change event on quantity input to update any listeners (like WC variation forms)
+                quantityInput.dispatchEvent(new Event('change', { bubbles: true }));
             }
         }
     }
