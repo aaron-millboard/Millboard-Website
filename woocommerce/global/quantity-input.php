@@ -20,6 +20,8 @@
 
 defined('ABSPATH') || exit;
 
+global $product;
+
 $show_extra_info = true;
 if (isset($args['show_extra_info']) && $args['show_extra_info'] === false) {
     $show_extra_info = false;
@@ -27,17 +29,6 @@ if (isset($args['show_extra_info']) && $args['show_extra_info'] === false) {
 
 /* translators: %s: Quantity. */
 $label = ! empty($args['product_name']) ? sprintf(esc_html__('%s quantity', 'woocommerce'), wp_strip_all_tags($args['product_name'])) : esc_html__('Quantity', 'woocommerce');
-
-// Check if product has wastage field enabled
-global $product;
-$show_wastage = false;
-if ($product) {
-    $show_wastage = get_field('add_wastage_option', $product->get_id());
-
-    if (!$show_extra_info) {
-        $show_wastage = false;
-    }
-}
 
 ?>
 <div class="quantity-wrapper">
@@ -49,7 +40,7 @@ if ($product) {
         </span>
     <?php endif; ?>
     
-    <div class="quantity <?php echo $show_wastage ? 'quantity--with-wastage' : ''; ?>">
+    <div class="quantity">
         <?php
 
         /**
@@ -97,14 +88,6 @@ if ($product) {
         do_action('woocommerce_after_quantity_input_field');
         ?>
     </div>
-    
-    <?php if ($show_wastage) : ?>
-        <div class="quantity-wastage">
-            <label class="quantity-wastage-label">
-                <input type="checkbox" class="quantity-wastage-checkbox" />
-                <span><?php esc_html_e('Add 10% for wastage', 'woocommerce'); ?></span>
-            </label>
-        </div>
-    <?php endif; ?>
+
 </div>
 <?php
