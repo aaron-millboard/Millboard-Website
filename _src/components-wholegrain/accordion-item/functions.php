@@ -110,10 +110,10 @@ function change_schema_page_type($data)
 
 function render_accordion_item_block_schema($graph, $block)
 {
-    $is_faq = !empty($block['attrs']['data']['faq_content']);
+    $not_faq = isset($block['attrs']['data']['faq_content']) && empty($block['attrs']['data']['faq_content']);
 
-    // Bail early - this accordiuon item block does not contain FAQ data.
-    if ($is_faq === false) {
+    // Bail early - this accordion item block does not contain FAQ data.
+    if ($not_faq) {
         return $graph;
     }
 
