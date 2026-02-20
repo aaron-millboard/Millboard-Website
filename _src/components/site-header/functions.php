@@ -10,6 +10,7 @@ function filter_args(array $args): ?array
     $args = array_merge([
         'content' => [],
         'classes' => [],
+        'help_center_link' => null,
     ], $args);
 
     // ---------------------------------------
@@ -25,6 +26,10 @@ function filter_args(array $args): ?array
             'g-button',
             'site-header__call-to-action-1',
         ];
+    }
+
+    if ($header_help_center_link = get_field('header_help_center_link', 'option')) {
+        $args['help_center_link'] = $header_help_center_link;
     }
 
     // ---------------------------------------

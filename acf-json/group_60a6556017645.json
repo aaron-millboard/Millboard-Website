@@ -16,6 +16,21 @@
                 "id": ""
             },
             "return_format": "array"
+        },
+        {
+            "key": "field_60a655601e0fe",
+            "label": "Header Help Center Link",
+            "name": "header_help_center_link",
+            "type": "link",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "50",
+                "class": "",
+                "id": ""
+            },
+            "return_format": "array"
         }
     ],
     "location": [
