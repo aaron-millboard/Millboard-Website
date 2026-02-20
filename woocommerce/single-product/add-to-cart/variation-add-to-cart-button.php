@@ -30,9 +30,7 @@ if (empty($stock_quantity) && !is_null($stock_quantity)) {
     ]); ?>
 
     <?php if ($show_calculator) {
-        echo \Granola\Component::get('product-calculator/cta', [
-            'product' => $product,
-        ]);
+        echo \Granola\Component::get('product-calculator/cta', ['product' => $product]);
     } ?>
 </div>
 

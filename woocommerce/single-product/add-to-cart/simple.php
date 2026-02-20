@@ -33,21 +33,25 @@ if (! $product->is_purchasable()) {
 if ($product->is_in_stock()) : ?>
     <form class="cart" action="<?php echo esc_url(apply_filters('woocommerce_add_to_cart_form_action', $product->get_permalink())); ?>" method="post" enctype='multipart/form-data'>
 
-        <?php
-            woocommerce_quantity_input(
-                array(
-                    'min_value'   => $product->get_min_purchase_quantity(),
-                    'max_value'   => $product->get_max_purchase_quantity(),
-                    'input_value' => isset($_POST['quantity']) ? wc_stock_amount(wp_unslash($_POST['quantity'])) : $product->get_min_purchase_quantity(), // WPCS: CSRF ok, input var ok.
-                )
-            );
-        ?>
+        <div class="product__toggles">
+
+            <?php
+                woocommerce_quantity_input(
+                    array(
+                        'min_value'   => $product->get_min_purchase_quantity(),
+                        'max_value'   => $product->get_max_purchase_quantity(),
+                        'input_value' => isset($_POST['quantity']) ? wc_stock_amount(wp_unslash($_POST['quantity'])) : $product->get_min_purchase_quantity(), // WPCS: CSRF ok, input var ok.
+                    )
+                );
+            ?>
+
+            <?php if ($show_calculator) {
+                echo \Granola\Component::get('product-calculator/cta', ['product' => $product]);
+            } ?>
+
+        </div>
 
         <?php if ($show_calculator) {
-            echo \Granola\Component::get('product-calculator/cta', [
-                'product' => $product,
-            ]);
-
             echo \Granola\Component::get('product-calculator');
         } ?>
 
