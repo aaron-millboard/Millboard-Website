@@ -46,7 +46,7 @@ function filter_args(array $args): ?array
         if ($args['product']->is_type('variable')) {
             $default_variation_id = get_default_variation_id($args['product']);
             if ($default_variation_id) {
-                $variation = wc_get_product($default_variation_id);
+                $variation = \wc_get_product($default_variation_id);
                 $price = $variation->get_price();
             } else {
                 $price = $args['product']->get_price();
@@ -56,6 +56,18 @@ function filter_args(array $args): ?array
         }
 
         $args['attributes']['data-price'] = $price;
+
+        // Add dataset for currency symbol
+        $currency_code = \get_woocommerce_currency();
+        if ($currency_code) {
+            $args['attributes']['data-currency-code'] = $currency_code;
+        }
+
+        // Get country intl code
+        $locale = \get_locale();
+        if ($locale) {
+            $args['attributes']['data-locale'] = $locale; // e.g. en_GB
+        }
     }
 
     // Resolve tax global status

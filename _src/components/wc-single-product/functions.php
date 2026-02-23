@@ -93,6 +93,20 @@ function filter_args(array $args): ?array
     }
 
     // -------------------------------------------------------------------------
+    // 4. Locale attribute for price formatting and tax rate for calculator
+    // -------------------------------------------------------------------------
+    $currency_code = \get_woocommerce_currency();
+    if ($currency_code) {
+        $args['attributes']['data-currency-code'] = $currency_code;
+    }
+
+    // Get country intl code
+    $locale = \get_locale();
+    if ($locale) {
+        $args['attributes']['data-locale'] = $locale; // e.g. en_GB
+    }
+
+    // -------------------------------------------------------------------------
     // Return the filtered args.
     // -------------------------------------------------------------------------
     return $args;

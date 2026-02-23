@@ -27,6 +27,9 @@ if (isset($args['show_extra_info']) && $args['show_extra_info'] === false) {
     $show_extra_info = false;
 }
 
+// CTA under description
+$show_calculator = \get_field('enable_calculator', $product->get_id());
+
 /* translators: %s: Quantity. */
 $label = ! empty($args['product_name']) ? sprintf(esc_html__('%s quantity', 'woocommerce'), wp_strip_all_tags($args['product_name'])) : esc_html__('Quantity', 'woocommerce');
 
@@ -34,10 +37,16 @@ $label = ! empty($args['product_name']) ? sprintf(esc_html__('%s quantity', 'woo
 <div class="quantity-wrapper">
 
     <?php if (is_product() && $show_extra_info) : ?>
-        <label class="quantity-label"><?php esc_html_e('Select quantity:', 'granola'); ?></label>
-        <span class="quantity-description">
-            <?php esc_html_e('Sold per m2', 'granola'); ?>
-        </span>
+        <label class="quantity-label">
+            <?php esc_html_e('Select quantity:', 'granola'); ?>
+        </label>
+
+        <?php if ($show_calculator) { ?>
+            <span class="quantity-description">
+                <?php esc_html_e('Sold per board', 'granola'); ?>
+            </span>
+        <?php } ?>
+
     <?php endif; ?>
     
     <div class="quantity">

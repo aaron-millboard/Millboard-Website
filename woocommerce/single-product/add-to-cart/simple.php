@@ -27,6 +27,13 @@ if (! $product->is_purchasable()) {
     return;
 }
 
+// Resolve tax global status
+if (function_exists('wc_prices_include_tax') && wc_prices_include_tax()) {
+    $args['tax_included'] = true;
+} else {
+    $args['tax_included'] = false;
+}
+
 // Don't show 'out of stock' message.
 // echo wc_get_stock_html($product); // WPCS: XSS ok.
 
@@ -62,7 +69,7 @@ if ($product->is_in_stock()) : ?>
                 </div>
 
                 <div class="woocommerce-simple-tax">
-                    <?= esc_html__('Excl VAT', 'granola'); ?>
+                    <?php echo $args['tax_included'] ? esc_html__('Incl VAT', 'granola') : esc_html__('Excl VAT', 'granola'); ?>
                 </div>
             </div>
 
