@@ -42,6 +42,8 @@ function filter_args(array $args): ?array
         if (!empty($args['image'])) {
             $args['image']['size'] = 'hero';
             $args['image']['classes'] = ['hero-header__image'];
+            $args['image']['attributes']['fetchpriority'] = 'high';
+            $args['image']['loading'] = 'eager';
             $args['attributes']['style']['--hero-header--image'] = 'url(' . $args['image']['sizes']['hero'] . ')';
         }
     } elseif (!empty($args['heading'])) {
