@@ -30,6 +30,11 @@ export default class Calculator {
         this.boardArea = this.element.dataset.boardArea ? parseFloat(this.element.dataset.boardArea) : null;
         this.taxIncluded = this.element.dataset.taxIncluded === 'true'; // this is the global state from WC settings, not changeable
         this.taxRate = this.element.dataset.taxRate ? parseFloat(this.element.dataset.taxRate) : null;
+        this.currencyCode = this.element.dataset.currencyCode || 'GBP';
+        this.locale = this.element.dataset.locale || 'en_GB';
+
+        // change underscore to hyphen in locale
+        this.locale = this.locale.replace('_', '-');
 
         this.init();
     }
@@ -231,8 +236,13 @@ export default class Calculator {
         const priceElement = this.element.querySelector('[data-result="price"]');
         const taxIncludedChecked = this.taxIncludedCheckbox ? this.taxIncludedCheckbox.checked : this.taxIncluded;
 
+        let basePrice = this.price;
+
+        // Round to 2 decimals (to follow WC standard and prevent JS floating point issues)
+        basePrice = parseFloat(basePrice.toFixed(2));
+
         // Price - we calculate price based on boards number and price from dataset
-        let price = this.price * this.boardsTotal;
+        let price = basePrice * this.boardsTotal;
 
         // Resolve all scenarios when tax IS included
         if(this.taxIncluded) {
@@ -264,8 +274,14 @@ export default class Calculator {
 
         }
 
+        // Format price with currency symbol and 2 decimals
+        price = new Intl.NumberFormat(this.locale, {
+            style: "currency",
+            currency: this.currencyCode
+        }).format(price);
+
         // Update price result
-        priceElement.textContent = price.toFixed(2);
+        priceElement.textContent = price;
 
     }
 
