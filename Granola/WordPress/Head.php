@@ -15,9 +15,9 @@ class Head
         \add_action('wp_head', [__CLASS__, 'link_elements'], 0);
         \add_action('wp_head', [__CLASS__, 'javascript_detection'], 0);
 
-        \add_filter('granola\wordpress\head\meta', [__CLASS__, 'add_theme_color_meta']);
-        \add_filter('granola\wordpress\head\links', [__CLASS__, 'add_webmanifest_link']);
-        \add_filter('granola\wordpress\head\links', [__CLASS__, 'preload_theme_assets']);
+        \add_filter('granola/wordpress/head/meta', [__CLASS__, 'add_theme_color_meta']);
+        \add_filter('granola/wordpress/head/links', [__CLASS__, 'add_webmanifest_link']);
+        \add_filter('granola/wordpress/head/links', [__CLASS__, 'preload_theme_assets']);
     }
 
     /**
@@ -27,7 +27,7 @@ class Head
      */
     public static function meta_elements(): void
     {
-        $meta_items = \apply_filters('granola\wordpress\head\meta', [
+        $meta_items = \apply_filters('granola/wordpress/head/meta', [
             [
                 'charset' => \get_bloginfo('charset')
             ],
@@ -46,7 +46,7 @@ class Head
     /**
      * Add theme color <meta> tag to the head.
      *
-     * Hooks into the `granola\wordpress\head\meta` filter to add the site manifest theme color value.
+     * Hooks into the `granola/wordpress/head/meta` filter to add the site manifest theme color value.
      *
      * @param array $meta An array of meta attribute arrays.
      * @return array The filtered meta array, with theme color data appended.
@@ -72,7 +72,7 @@ class Head
      */
     public static function link_elements(): void
     {
-        $links = \apply_filters('granola\wordpress\head\links', []);
+        $links = \apply_filters('granola/wordpress/head/links', []);
 
         foreach ($links as $link) {
             if (!empty($link['href'])) {
@@ -85,7 +85,7 @@ class Head
     /**
      * Add webmanifest link to the head for PWA support.
      *
-     * Hooks into the `granola\wordpress\head\links` filter to add webmanifest.
+     * Hooks into the `granola/wordpress/head/links` filter to add webmanifest.
      *
      * @see _src/static/site.webmanifest
      *
@@ -111,7 +111,7 @@ class Head
     /**
      * Add preload <link> tags to the head.
      *
-     * Hooks into the `granola\wordpress\head\links` filter to add preload assets.
+     * Hooks into the `granola/wordpress/head/links` filter to add preload assets.
      * The 'rel' attribute for these assets can still be overriden with another value, e.g. 'prefetch'.
      *
      * @see /config.php

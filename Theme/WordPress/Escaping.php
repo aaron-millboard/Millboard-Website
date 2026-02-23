@@ -32,6 +32,7 @@ class Escaping
 
             $tags['img']['sizes'] = true;
             $tags['img']['srcset'] = true;
+            $tags['img']['fetchpriority'] = true;
 
             $tags['a']['tabindex'] = true;
 

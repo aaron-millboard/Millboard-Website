@@ -1,7 +1,7 @@
 // Define our font-face stacks here.
 @mixin font-variables {
     @font-face {
-        font-display: fallback;
+        font-display: swap;
         font-family: 'F37 Ginger';
         font-style: normal;
         font-weight: 300;
@@ -9,7 +9,7 @@
     }
 
     @font-face {
-        font-display: fallback;
+        font-display: swap;
         font-family: 'F37 Ginger';
         font-style: normal;
         font-weight: 400;
@@ -17,7 +17,7 @@
     }
 
     @font-face {
-        font-display: fallback;
+        font-display: swap;
         font-family: 'F37 Ginger';
         font-style: normal;
         font-weight: 700;
