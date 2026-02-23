@@ -191,6 +191,7 @@ function filter_args(array $args): ?array
 
         // Loading, set to eager
         $args['image']['loading'] = 'eager';
+        $args['image']['attributes']['fetchpriority'] = 'high';
     }
 
     if (!empty($args['heading'])) {
