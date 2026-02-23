@@ -9,7 +9,7 @@ class Hreflang
 {
     public static function init()
     {
-        \add_filter('granola\wordpress\head\links', [__CLASS__, 'add_hreflang_links']);
+        \add_filter('granola/wordpress/head/links', [__CLASS__, 'add_hreflang_links']);
     }
 
     /**
