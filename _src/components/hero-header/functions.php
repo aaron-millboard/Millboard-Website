@@ -43,6 +43,7 @@ function filter_args(array $args): ?array
             $args['image']['size'] = 'hero';
             $args['image']['classes'] = ['hero-header__image'];
             $args['image']['attributes']['fetchpriority'] = 'high';
+            $args['image']['attributes']['data-spai-eager'] = true;
             $args['image']['loading'] = 'eager';
             $args['attributes']['style']['--hero-header--image'] = 'url(' . $args['image']['sizes']['hero'] . ')';
         }
