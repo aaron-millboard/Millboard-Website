@@ -134,3 +134,22 @@ function build_image_data(\WP_Post $post): array
         'gallery_image' => $post->ID,
     ];
 }
+
+/**
+ * Add noindex, follow robots meta tag when gallery filters are applied.
+ *
+ * Prevents Google from indexing filtered gallery pages (e.g., /gallery/?image_category=antique-oak)
+ * while allowing the main gallery page (/gallery) to be indexed.
+ */
+function add_noindex_meta(): void
+{
+    // Only apply to the gallery page (checking if we're on a page that displays the image post type)
+    if (!is_post_type_archive('image') && !is_page()) {
+        return;
+    }
+
+    // Check if image_category filter is present in the URL
+    if (isset($_GET['image_category']) && !empty($_GET['image_category'])) {
+        echo "\t<meta name='robots' content='noindex, follow' />\n";
+    }
+}
