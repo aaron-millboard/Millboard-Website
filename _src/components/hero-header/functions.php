@@ -63,6 +63,7 @@ function filter_args(array $args): ?array
                     'hero-header__cta-image',
                     'hero-header__cta-image--desktop',
                 ];
+                $args['image_desktop']['size'] = 'medium_large';
             }
 
             if (!empty($item['image_mobile'])) {
@@ -70,6 +71,7 @@ function filter_args(array $args): ?array
                     'hero-header__cta-image',
                     'hero-header__cta-image--mobile',
                 ];
+                $args['image_mobile']['size'] = '1536x1536';
             }
 
             if (!empty($item['link'])) {

@@ -169,6 +169,7 @@
 
     &__cta-image {
         width: 100%;
+        object-fit: cover;
 
         &--mobile {
             aspect-ratio: 16 / 9;
