@@ -104,6 +104,7 @@
             z-index: $block-internal-z-index;
             mix-blend-mode: difference;
             pointer-events: none; // required for good ::selection styles.
+            position: relative;
 
             & + & {
                 pointer-events: auto; // required for good ::selection styles.
