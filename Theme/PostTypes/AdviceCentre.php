@@ -45,7 +45,9 @@ class AdviceCentre
                 'author',
                 'custom-fields',
             ],
-            'taxonomies' => [],
+            'taxonomies' => [
+                'advice_category',
+            ],
             'template' => [
                 [
                     'core/paragraph',
@@ -69,6 +71,9 @@ class AdviceCentre
                 ],
                 'author' => [
                     'title' => 'Author',
+                ],
+                'advice_category' => [
+                    'taxonomy' => 'advice_category',
                 ],
                 'updated' => [
                     'title'      => 'Updated',
