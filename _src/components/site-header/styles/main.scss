@@ -136,6 +136,16 @@ $site-header--top--background: 'white';
             font-family: var(--type--1--font-family);
         }
 
+        .menu-item--current {
+            background-color: var(--color--brand-1);
+            border-top: 0 !important;
+            text-decoration: underline;
+
+            &.menu-item--depth-0 > .menu-item__wrap > a {
+                font-weight: 700;
+            }
+        }
+
         .menu-item__wrap {
             min-height: auto;
         }
