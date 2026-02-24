@@ -117,6 +117,16 @@ function render_accordion_item_block_schema($graph, $block)
         return $graph;
     }
 
+    $url_node = array_find($graph, function ($node) {
+        return !empty($node['url']);
+    });
+
+    if (empty($url_node)) {
+        return $graph;
+    }
+
+    $url = $url_node['url'];
+
     // Calculate FAQ 'position'.
     $position = 1; // default.
 
@@ -134,9 +144,9 @@ function render_accordion_item_block_schema($graph, $block)
     // Append new Schema graph Question.
     $graph[] = [
         '@type' => 'Question',
-        '@id' => $graph[0]['url'] . '#' . $id,
+        '@id' => $url . '#' . $id,
         'position' => $position,
-        'url' => $graph[0]['url'] . '#' . $id,
+        'url' => $url . '#' . $id,
         'name' => $block['attrs']['data']['title'],
         'answerCount' => 1,
         'acceptedAnswer' => [
