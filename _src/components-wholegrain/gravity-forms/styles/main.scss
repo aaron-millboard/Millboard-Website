@@ -164,9 +164,13 @@
     margin-bottom: var(--space--l);
 }
 
+.gform_validation_errors {
+    padding: 1rem;
+}
+
 // Heading inside .gform_validation_errors
 .gform_submission_error {
-    @include typestyle-large;
+    @include typestyle-small;
     text-transform: none;
     letter-spacing: inherit;
     font-weight: 600;
