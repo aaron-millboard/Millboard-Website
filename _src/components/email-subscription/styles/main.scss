@@ -117,6 +117,24 @@
             }
         }
 
+        .gfield--type-email {
+            .gfield_validation_message {
+                top: px-to-rem(80);
+
+                &::before {
+                    border-bottom: calc(var(--tooltip--arrow--size)) solid var(--color--background);
+                    border-top: none;
+                    top: px-to-rem(-7);
+                }
+            }
+        }
+        .gfield--type-text {
+            .gfield_validation_message {
+                right: 0;
+                width: px-to-rem(160);
+            }
+        }
+
         .gform-footer {
             margin: 0;
             position: absolute;
