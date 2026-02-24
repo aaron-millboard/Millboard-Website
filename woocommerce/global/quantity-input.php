@@ -27,8 +27,10 @@ if (isset($args['show_extra_info']) && $args['show_extra_info'] === false) {
     $show_extra_info = false;
 }
 
-// CTA under description
-$show_calculator = \get_field('enable_calculator', $product->get_id());
+if (!empty($product)) {
+    // CTA under description
+    $show_calculator = \get_field('enable_calculator', $product->get_id());
+}
 
 /* translators: %s: Quantity. */
 $label = ! empty($args['product_name']) ? sprintf(esc_html__('%s quantity', 'woocommerce'), wp_strip_all_tags($args['product_name'])) : esc_html__('Quantity', 'woocommerce');
@@ -48,7 +50,7 @@ $label = ! empty($args['product_name']) ? sprintf(esc_html__('%s quantity', 'woo
         <?php } ?>
 
     <?php endif; ?>
-    
+
     <div class="quantity">
         <?php
 
@@ -61,7 +63,7 @@ $label = ! empty($args['product_name']) ? sprintf(esc_html__('%s quantity', 'woo
         do_action('woocommerce_before_quantity_input_field');
         ?>
         <button type="button" class="quantity-button quantity-minus" aria-label="<?php esc_attr_e('Decrease quantity', 'woocommerce'); ?>">−</button>
-        
+
         <label class="screen-reader-text" for="<?php echo esc_attr($input_id); ?>"><?php echo esc_attr($label); ?></label>
         <input
             type="<?php echo esc_attr($type); ?>"
@@ -85,9 +87,9 @@ $label = ! empty($args['product_name']) ? sprintf(esc_html__('%s quantity', 'woo
                 autocomplete="<?php echo esc_attr(isset($autocomplete) ? $autocomplete : 'on'); ?>"
             <?php endif; ?>
         />
-        
+
         <button type="button" class="quantity-button quantity-plus" aria-label="<?php esc_attr_e('Increase quantity', 'woocommerce'); ?>">+</button>
-                
+
         <?php
         /**
          * Hook to output something after quantity input field
