@@ -43,7 +43,7 @@ $label = ! empty($args['product_name']) ? sprintf(esc_html__('%s quantity', 'woo
             <?php esc_html_e('Select quantity:', 'granola'); ?>
         </label>
 
-        <?php if ($show_calculator) { ?>
+        <?php if (!empty($show_calculator)) { ?>
             <span class="quantity-description">
                 <?php esc_html_e('Sold per board', 'granola'); ?>
             </span>
