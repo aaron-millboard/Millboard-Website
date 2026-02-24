@@ -39,12 +39,12 @@
                     <div class="product-calculator__radios">
                         <div class="product-calculator--radio">
                             <input id="calculator_unit_meters" type="radio" name="calculator_unit" value="sqm" checked>
-                            <label for="calculator_unit_meters"><?= __('Meters (m2)', 'granola'); ?></label>
+                            <label for="calculator_unit_meters"><?= __('Meters (m²)', 'granola'); ?></label>
                         </div>
 
                         <div class="product-calculator--radio">
                             <input id="calculator_unit_feet" type="radio" name="calculator_unit" value="sqft">
-                            <label for="calculator_unit_feet"><?= __('Feet (ft2)', 'granola'); ?></label>
+                            <label for="calculator_unit_feet"><?= __('Feet (ft²)', 'granola'); ?></label>
                         </div>
                     </div>
                 </div>

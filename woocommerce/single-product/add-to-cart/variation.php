@@ -24,7 +24,7 @@ if (function_exists('wc_prices_include_tax') && wc_prices_include_tax()) {
 <script type="text/template" id="tmpl-variation-template">
     <div class="woocommerce-variation-price">{{{ data.variation.price_html }}}</div>
     <div class="woocommerce-variation-tax">
-        <?php echo $args['tax_included'] ? esc_html__('Incl VAT', 'granola') : esc_html__('Excl VAT', 'granola'); ?>
+        <?php echo $args['tax_included'] ? esc_html__('Inc VAT', 'granola') : esc_html__('Excl VAT', 'granola'); ?>
     </div>
 </script>
 <script type="text/template" id="tmpl-unavailable-variation-template">

@@ -12,7 +12,7 @@ function filter_args(array $args): ?array
         'product' => wc_get_product(),
         'classes' => [],
         'title' => __('Calculator', 'granola'),
-        'description' => __('Use our handy tool to calculate the amount of m2 you need to complete your Millboard project.', 'granola'),
+        'description' => __('Use our handy tool to calculate the amount of m² you need to complete your Millboard project.', 'granola'),
         'incl_tax_label' => __('* Prices inclusive of VAT', 'granola'),
         'excl_tax_label' => __('* Prices exclusive of VAT', 'granola'),
         'tax_toggle_label' => __('Show price inclusive of VAT', 'granola'),
@@ -35,8 +35,8 @@ function filter_args(array $args): ?array
 
         $area = $length * $width / 1000000; // Convert from mm2 to m2.
 
-        // Cap to 2 decimal.
-        $area = round($area, 2);
+        // Cap to 4 decimal.
+        $area = round($area, 4);
 
         // Add dataset for board area
         $args['attributes']['data-board-area'] = $area;
