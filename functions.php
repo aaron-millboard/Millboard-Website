@@ -76,6 +76,7 @@ if (file_exists($autoloader = __DIR__ . '/vendor/autoload.php')) {
 // ----------------------------------------------------
 // Custom Taxonomies.
 // ----------------------------------------------------
+\Theme\Taxonomies\AdviceCategory::init();
 \Theme\Taxonomies\Category::init();
 \Theme\Taxonomies\ImageCategory::init();
 \Theme\Taxonomies\DistributorType::init();
