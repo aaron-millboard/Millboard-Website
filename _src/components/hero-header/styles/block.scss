@@ -1,5 +1,8 @@
 @import '../../../core';
 
+/**
+ * Some styles moved to main.scss to prevent CLS issues.
+ */
 .hero-header {
     $this: &;
 
@@ -10,11 +13,8 @@
     isolation: isolate; // Create local stacking context.
 
     &__inner {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr);
-        max-width: var(--width--responsive--l);
-        margin-left: auto;
-        margin-right: auto;
+        // display: grid;
+        // grid-template-columns: minmax(0, 1fr);
         padding-block: var(--space--xl);
         gap: var(--space--xl);
     }
@@ -32,12 +32,6 @@
     }
 
     &__image {
-        display: block;
-        grid-row: 1;
-        grid-column: 1;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
         opacity: 1;
         visibility: visible;
         transition: transition(opacity, visibility);
@@ -54,8 +48,6 @@
         height: 100%;
         margin: 0;
         padding: 0;
-        opacity: 0;
-        visibility: hidden;
         transition: transition(opacity, visibility);
     }
 
@@ -99,38 +91,18 @@
 
     &__strapline {
         display: block;
-        padding-top: var(--space--4sx);
-        padding-bottom: var(--space--2xs);
         margin: 0;
         color: black;
-        font-weight: var(--type--1--font-weight);
-        font-size: rfs(30, 102);
-        letter-spacing: 0.015em; // magic number.
-        line-height: rfs(30, 80);
-        text-transform: none;
-        text-align: center;
 
         &::selection {
             color: black;
             background-color: white;
         }
 
-        @include mq(medium) {
-            padding-top: var(--space--xl);
-            padding-bottom: calc(var(--space--s) * 2);
-        }
-
         &-wrapper-outer {
-            width: 100%;
-            grid-row: 1;
-            grid-column: 1;
-            align-self: start;
             background-color: black;
             z-index: $block-internal-z-index;
             mix-blend-mode: difference;
-            isolation: isolate;
-            position: sticky;
-            top: 0;
             pointer-events: none; // required for good ::selection styles.
 
             & + & {
