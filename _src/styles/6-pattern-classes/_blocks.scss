@@ -12,11 +12,9 @@
         --block--right-space: 20rem;
 
         @include mq(large) {
-
-            &:not(:where(.alignwide, .alignfull, .alignnone, .woocommerce, .woocommerce > *)) {
+            &:not(:where(.alignwide, .alignfull, .alignnone, .woocommerce, .woocommerce > *, iframe)) {
                 padding-right: var(--block--right-space);
             }
-
         }
 
         &:where(.alignwide) {
