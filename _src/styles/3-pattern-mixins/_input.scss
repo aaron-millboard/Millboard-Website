@@ -14,7 +14,9 @@
 
     &:focus,
     &:focus-within {
-        box-shadow: 0 0 0 var(--input--outline-width--focus) var(--input--outline-color--focus);
+        box-shadow: 0 0 0 1px var(--color--brand-4);
+        border-color: var(--color--brand-4);
+        background-color: hsla(var(--color--brand-1--hsl), 0.2);
     }
 }
 
