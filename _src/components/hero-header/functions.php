@@ -45,7 +45,6 @@ function filter_args(array $args): ?array
             $args['image']['attributes']['fetchpriority'] = 'high';
             $args['image']['attributes']['data-spai-eager'] = true;
             $args['image']['loading'] = 'eager';
-            $args['attributes']['style']['--hero-header--image'] = 'url(' . $args['image']['sizes']['hero'] . ')';
         }
     } elseif (!empty($args['heading'])) {
         // Make heading <h1> if strapline not set.

@@ -3,8 +3,16 @@
         <?php if (!empty($args['image'])) { ?>
             <div class="hero-header__media">
                 <?php if (!empty($args['strapline'])) { ?>
-                    <div class="hero-header__strapline-wrapper">
-                        <?= \Granola\Component::get('heading', $args['strapline']); ?>
+                    <div class="hero-header__strapline-wrapper-outer">
+                        <div class="hero-header__strapline-wrapper-inner">
+                            <?= \Granola\Component::get('heading', $args['strapline']); ?>
+                        </div>
+                    </div>
+
+                    <div class="hero-header__strapline-wrapper-outer" aria-hidden="true">
+                        <div class="hero-header__strapline-wrapper-inner">
+                            <?= \Granola\Component::get('heading', $args['strapline']); ?>
+                        </div>
                     </div>
                 <?php } ?>
 

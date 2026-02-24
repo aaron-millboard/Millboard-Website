@@ -24,7 +24,7 @@
 
     &__media {
         position: relative;
-        overflow: hidden;
+        overflow: clip; // allows position: sticky.
         display: grid;
         aspect-ratio: 16 / 9;
     }
@@ -100,11 +100,7 @@
         padding-top: var(--space--4sx);
         padding-bottom: var(--space--2xs);
         margin: 0;
-        background-image: var(--hero-header--image);
-        background-clip: text;
-        background-size: 100% auto;
-        background-position: top center;
-        color: transparent; // essential for background clipping magic.
+        color: black;
         font-weight: var(--type--1--font-weight);
         font-size: rfs(30, 102);
         letter-spacing: 0.015em; // magic number.
@@ -112,18 +108,38 @@
         text-transform: none;
         text-align: center;
 
+        &::selection {
+            color: black;
+            background-color: white;
+        }
+
         @include mq(medium) {
             padding-top: var(--space--xl);
             padding-bottom: calc(var(--space--s) * 2);
         }
 
-        &-wrapper {
+        &-wrapper-outer {
             width: 100%;
             grid-row: 1;
             grid-column: 1;
             align-self: start;
-            background-color: var(--color--background);
+            background-color: black;
             z-index: $block-internal-z-index;
+            mix-blend-mode: difference;
+            isolation: isolate;
+            position: sticky;
+            top: 0;
+            pointer-events: none; // required for good ::selection styles.
+
+            & + & {
+                pointer-events: auto; // required for good ::selection styles.
+                mix-blend-mode: lighten;
+            }
+        }
+
+        &-wrapper-inner {
+            background-color: var(--color--background);
+            mix-blend-mode: difference;
         }
     }
 
