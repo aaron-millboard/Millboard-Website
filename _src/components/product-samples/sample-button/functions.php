@@ -39,6 +39,10 @@ function filter_args(array $args): ?array
         return null;
     }
 
+    if ($product->get_stock_status() !== 'instock') {
+        return null;
+    }
+
     $product_id = $product->get_id();
     $dimensions = $product->get_dimensions(false);
     $price = $product->get_price();
