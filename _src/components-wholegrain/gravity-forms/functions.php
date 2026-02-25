@@ -54,3 +54,13 @@ function spinner_url(): string
 {
     return  'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 }
+
+/**
+ * Allow unfiltered HTML in ACF blocks. Required for Hubspot code insertion.
+ *
+ * @return bool
+ */
+function allow_unfiltered_html(): bool
+{
+    return true;
+}

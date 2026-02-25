@@ -35,3 +35,5 @@ namespace Granola\Components\GravityForms;
 
 // Override the AJAX spinner URL (which appears next to the submit button on AJAX) submission.
 // \add_filter('gform_ajax_spinner_url', __NAMESPACE__ . '\\spinner_url', 10);
+
+\add_filter('acf/allow_unfiltered_html', __NAMESPACE__ . '\\allow_unfiltered_html', 10);
