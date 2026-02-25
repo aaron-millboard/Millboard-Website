@@ -77,15 +77,23 @@
 
     // Active state when video is playing
     &--playing {
-        #{$this}__iframe {
-            opacity: 1;
-            visibility: visible;
-        }
-
         #{$this}__controls {
             &::after {
                 mask-image: url(#{asset-path('images/icons-custom/pause.svg')});
             }
+        }
+    }
+
+    &--video-ready {
+        #{$this}__iframe {
+            opacity: 1;
+            visibility: visible;
+        }
+    }
+
+    &--autoplaying {
+        #{$this}__strapline-wrapper-outer {
+            z-index: $block-internal-z-index + 2;
         }
     }
 

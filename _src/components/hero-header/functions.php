@@ -86,6 +86,18 @@ function filter_args(array $args): ?array
     if (!empty($args['video_url'])) {
         $args['embed_url'] = \Theme\Utils\Videos::get_video_embed_url($args['video_url']);
 
+        if (!empty($args['embed_url'])) {
+            if (strpos($args['embed_url'], 'youtube.com/embed/') !== false) {
+                $args['embed_url'] = add_query_arg([
+                    'mute' => 1,
+                ], $args['embed_url']);
+            } elseif (strpos($args['embed_url'], 'player.vimeo.com/video/') !== false) {
+                $args['embed_url'] = add_query_arg([
+                    'muted' => 1,
+                ], $args['embed_url']);
+            }
+        }
+
         $args['control_button'] = [
             'content' => \__('Play video', 'granola'),
             'classes' => ['hero-header__controls'],
