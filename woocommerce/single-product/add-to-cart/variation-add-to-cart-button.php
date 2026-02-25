@@ -21,6 +21,9 @@ if (empty($stock_quantity) && !is_null($stock_quantity)) {
     return;
 }
 
+// Get default product
+$default_product_in_stock = \Theme\WooCommerce\Utils::is_default_product_variant_in_stock($product);
+
 ?>
 <div class="product__toggles variations_button">
     <?php woocommerce_quantity_input([
@@ -38,12 +41,14 @@ if (empty($stock_quantity) && !is_null($stock_quantity)) {
     echo \Granola\Component::get('product-calculator');
 } ?>
 
-<div class="product__add-to-cart-wrapper">
-    <?php woocommerce_single_variation(); // render price ?>
+<?php if (!empty($default_product_in_stock)) { ?>
+    <div class="product__add-to-cart-wrapper">
+        <?php woocommerce_single_variation(); // render price ?>
 
-    <button type="submit" class="single_add_to_cart_button button alt<?= esc_attr(wc_wp_theme_get_element_class_name('button') ? ' ' . wc_wp_theme_get_element_class_name('button') : ''); ?>"><?= esc_html($product->single_add_to_cart_text()); ?></button>
+        <button type="submit" class="single_add_to_cart_button button alt<?= esc_attr(wc_wp_theme_get_element_class_name('button') ? ' ' . wc_wp_theme_get_element_class_name('button') : ''); ?>"><?= esc_html($product->single_add_to_cart_text()); ?></button>
 
-    <input type="hidden" name="add-to-cart" value="<?= absint($product->get_id()); ?>" />
-    <input type="hidden" name="product_id" value="<?= absint($product->get_id()); ?>" />
-    <input type="hidden" name="variation_id" class="variation_id" value="0" />
-</div>
+        <input type="hidden" name="add-to-cart" value="<?= absint($product->get_id()); ?>" />
+        <input type="hidden" name="product_id" value="<?= absint($product->get_id()); ?>" />
+        <input type="hidden" name="variation_id" class="variation_id" value="0" />
+    </div>
+<?php } ?>
