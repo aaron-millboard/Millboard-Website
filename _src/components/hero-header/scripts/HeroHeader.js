@@ -13,6 +13,7 @@ export default class HeroHeader {
         this.state = 'paused';
         this.iframe = this.media.querySelector('.hero-header__iframe');
         this.controlButton = this.media.querySelector('.hero-header__controls');
+        this.videoReadyTimeout = null;
 
         this.init();
     }
@@ -21,10 +22,22 @@ export default class HeroHeader {
      * Initialize the component
      */
     init() {
+        const hasInitialVideo = this.iframe && this.iframe.getAttribute('src');
+
+        if (hasInitialVideo) {
+            this.element.classList.add('hero-header--playing');
+            this.element.classList.add('hero-header--autoplaying');
+            this.waitForIframeReady();
+            if (this.controlButton && this.controlButton.firstElementChild) {
+                this.controlButton.firstElementChild.textContent = this.controlButton.getAttribute('data-pause-label');
+            }
+            this.state = 'playing';
+        }
+
         if (this.controlButton) {
             this.controlButton.addEventListener('click', () => {
                 if (this.state === 'paused') {
-                    this.playVideo();
+                    this.playVideo(true);
                 } else {
                     this.pauseVideo();
                 }
@@ -41,7 +54,7 @@ export default class HeroHeader {
     /**
      * Play video
      */
-    playVideo() {
+    playVideo(isManualPlay = false) {
         const embedUrl = this.iframe.getAttribute('data-embed-url');
 
         if (!embedUrl) {
@@ -50,7 +63,11 @@ export default class HeroHeader {
         }
 
 
+        this.waitForIframeReady();
         this.iframe.src = embedUrl;
+        if (isManualPlay) {
+            this.element.classList.remove('hero-header--autoplaying');
+        }
         this.element.classList.add('hero-header--playing');
         this.controlButton.firstElementChild.textContent = this.controlButton.getAttribute('data-pause-label');
         this.state = 'playing';
@@ -64,8 +81,43 @@ export default class HeroHeader {
             this.iframe.src = '';
         }
 
+        if (this.videoReadyTimeout) {
+            clearTimeout(this.videoReadyTimeout);
+            this.videoReadyTimeout = null;
+        }
+
         this.element.classList.remove('hero-header--playing');
+        this.element.classList.remove('hero-header--video-ready');
         this.controlButton.firstElementChild.textContent = this.controlButton.getAttribute('data-play-label');
         this.state = 'paused';
+    }
+
+    /**
+     * Wait for iframe to finish loading before revealing video.
+     */
+    waitForIframeReady() {
+        this.element.classList.remove('hero-header--video-ready');
+
+        if (!this.iframe) {
+            return;
+        }
+
+        this.iframe.addEventListener('load', () => {
+            this.element.classList.add('hero-header--video-ready');
+
+            if (this.videoReadyTimeout) {
+                clearTimeout(this.videoReadyTimeout);
+                this.videoReadyTimeout = null;
+            }
+        }, { once: true });
+
+        if (this.videoReadyTimeout) {
+            clearTimeout(this.videoReadyTimeout);
+        }
+
+        this.videoReadyTimeout = setTimeout(() => {
+            this.element.classList.add('hero-header--video-ready');
+            this.videoReadyTimeout = null;
+        }, 2000);
     }
 }
