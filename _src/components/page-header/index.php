@@ -63,3 +63,7 @@
         </div>
     <?php } ?>
 </header>
+
+<?php if (!\is_woocommerce()) { ?>
+    <?php woocommerce_output_all_notices(); ?>
+<?php } ?>
