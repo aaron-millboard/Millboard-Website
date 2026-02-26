@@ -46,41 +46,18 @@
     }
 }
 
-.woocommerce-notices-wrapper {
+// Style WooCommerce notices
+.woocommerce-notices-wrapper,
+.woocommerce-NoticeGroup {
     --block--right-space: 0;
-}
-
-/* Class .woocommerce also set on <body> in WooCommerce pages so we target only blocks */
-.blocks > .woocommerce {
-    --block--max-width: var(--width--responsive--l);
 
     max-width: var(--block--max-width);
     margin-left: auto;
     margin-right: auto;
     position: relative;
 
-    // Change container to full width on single product pages
-    &:has(.single-product) {
-        max-width: 100%;
-        .wp-block.product {
-            max-width: var(--block--max-width);
-            margin-left: auto;
-            margin-right: auto;
-            position: relative;
-        }
-    }
-
-    // Style WooCommerce notices
-    .woocommerce-notices-wrapper {
-        max-width: var(--block--max-width);
-        margin-left: auto;
-        margin-right: auto;
-        position: relative;
-    }
-
-    .woocommerce-notices-wrapper > div,
-    .woocommerce-notices-wrapper > ul > li,
-    .woocommerce-NoticeGroup li {
+    .woocommerce-message,
+    .woocommerce-error {
         margin-bottom: var(--space--l);
         padding: var(--space--s) var(--space--s);
         display: flex;
@@ -88,7 +65,7 @@
         align-items: center;
         background-color: var(--color--brand-1);
         gap: var(--space--xs);
-        border-top: 3px solid transparent;
+        border-top: 3px solid var(--color--brand-4);
         list-style: none;
 
         &::before {
@@ -105,6 +82,7 @@
 
         a {
             @include typestyle-h6;
+
             font-weight: normal;
             text-transform: uppercase;
             text-decoration: none;
@@ -124,20 +102,36 @@
                 mask-size: #{px-to-rem(16)};
             }
         }
-
-        // Success notice specific styles
-        &.woocommerce-message {
-            border-color: var(--color--brand-4);
-        }
-
-        &.woocommerce-error {
-            border-color: var(--color--brand-3);
-        }
     }
 
-    .woocommerce-notices-wrapper > ul.woocommerce-error > li {
+    // Error notice specific styles
+    .woocommerce-error {
+        border-color: var(--color--brand-3);
+
         &::before {
-            background-image: url(#{asset-path('images/icons-custom/union.svg')}) !important;
+            background-image: url(#{asset-path('images/icons-custom/union.svg')});
+        }
+    }
+}
+
+/* Class .woocommerce also set on <body> in WooCommerce pages so we target only blocks */
+.blocks > .woocommerce {
+    --block--max-width: var(--width--responsive--l);
+
+    max-width: var(--block--max-width);
+    margin-left: auto;
+    margin-right: auto;
+    position: relative;
+
+    // Change container to full width on single product pages
+    &:has(.single-product) {
+        max-width: 100%;
+
+        .wp-block.product {
+            max-width: var(--block--max-width);
+            margin-left: auto;
+            margin-right: auto;
+            position: relative;
         }
     }
 
@@ -369,52 +363,6 @@
                     font-weight: 600;
                 }
             }
-        }
-    }
-}
-
-.single-product .woocommerce-notices-wrapper .woocommerce-message {
-    margin-bottom: var(--space--l);
-    padding: var(--space--2xs) var(--space--s);
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    background-color: var(--color--brand-1);
-    gap: var(--space--xs);
-    border-top: 3px solid var(--color--brand-4);
-    list-style: none;
-
-    &::before {
-        flex-shrink: 0;
-        width: #{px-to-rem(24)};
-        height: #{px-to-rem(24)};
-        content: '';
-        background-image: url(#{asset-path('images/icons-custom/tick.svg')});
-        background-size: contain;
-        background-repeat: no-repeat;
-        background-position: center;
-        background-size: #{px-to-rem(24)} #{px-to-rem(24)};
-    }
-
-    a {
-        @include typestyle-h6;
-        font-weight: normal;
-        text-transform: uppercase;
-        text-decoration: none;
-        display: flex;
-        align-items: center;
-        gap: var(--space--s);
-        margin-left: auto;
-
-        &::after {
-            width: #{px-to-rem(16)};
-            height: #{px-to-rem(16)};
-            background-color: var(--color--foreground);
-            content: '';
-            mask-image: url(#{asset-path('images/icons/chevron-right.svg')});
-            mask-position: center;
-            mask-repeat: no-repeat;
-            mask-size: #{px-to-rem(16)};
         }
     }
 }
