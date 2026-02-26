@@ -116,11 +116,11 @@ function sample_product_add_to_cart_validation(bool $add_to_cart, int $product_i
 }
 
 /**
- * Count the number of "sample" products in the cart.
+ * Count the number of free "sample" products in the cart.
  *
- * A sample product is a variation product that isn't the default variation.
+ * A sample product is a variation product that isn't the default variation and has a price of 0.
  *
- * @return integer The number of "sample" products in the cart.
+ * @return integer The number of free "sample" products in the cart.
  */
 function get_cart_sample_count(): int
 {
@@ -137,6 +137,11 @@ function get_cart_sample_count(): int
 
         // Bail early - this is a default product variation (i.e. not a sample).
         if (\Theme\WooCommerce\Utils::is_default_product($card_product_obj)) {
+            return $samples_quantity;
+        }
+
+        // Bail early - sample isn't free.
+        if (isset($cart_item['line_total']) && $cart_item['line_total'] > 0) {
             return $samples_quantity;
         }
 
