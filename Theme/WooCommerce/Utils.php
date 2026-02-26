@@ -17,10 +17,16 @@ class Utils
             return null;
         }
 
-        if (!$product->is_type('variable')) {
+        // Bail early - product is not the base variable product and not a variation.
+        if (!$product->is_type('variable') && !$product->is_type('variation')) {
             return null;
         }
 
+        if ($product->is_type('variation')) {
+            $product = \wc_get_product($product->get_parent_id());
+        }
+
+        /** @var \WC_Product_Variable $product */
         $product_variations = $product->get_available_variations('objects');
 
         if (empty($product_variations)) {
