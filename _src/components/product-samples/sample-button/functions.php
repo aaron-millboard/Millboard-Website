@@ -72,38 +72,57 @@ function filter_args(array $args): ?array
             ], \get_the_permalink()),
             'woocommerce-cart'
         );
+
+        $args['content'] = \Granola\Component::get('element', [
+            'content' => \__('Added to basket', 'granola'),
+            'classes' => [
+                'product-samples__button__content',
+                'product-samples__button__content--added',
+            ],
+        ]) . \Granola\Component::get('element', [
+            'content' => sprintf(
+                // translators: 1: HTML opening tag. 2: HTML closing tag.
+                \__('Remove %1$s1/3%2$s', 'granola'),
+                '<strong>',
+                '</strong>',
+            ),
+            'classes' => [
+                'product-samples__button__action',
+            ],
+        ]);
     } else {
         // Otherwise, just generate a simple "add to cart" url.
         $args['url'] = \add_query_arg([
             'add-to-cart' => $product_id,
         ], '');
+
+        $args['content'] = \Granola\Component::get('element', [
+            'content' => !empty($sample_size) ? sprintf(
+                // translators: Sample type.
+                \__('Add %s sample', 'granola'),
+                strtolower($sample_size),
+            ) : \__('Add sample', 'granola'),
+            'classes' => [
+                'product-samples__button__content',
+            ],
+        ]) . \Granola\Component::get('element', [
+            'content' => sprintf(
+                // translators: 1: Product length. 2: Product width.
+                \__('%1$smm x %2$smm', 'granola'),
+                $dimensions['length'],
+                $dimensions['width'],
+            ),
+            'classes' => [
+                'product-samples__button__dimensions',
+            ],
+        ]) . \Granola\Component::get('element', [
+            'content' => !empty($price) ? \get_woocommerce_currency_symbol() . $price : \__('Free', 'granola'),
+            'classes' => [
+                'product-samples__button__price',
+            ],
+        ]);
     }
 
-    $args['content'] = \Granola\Component::get('element', [
-        'content' => !empty($sample_size) ? sprintf(
-            // translators: Sample type.
-            \__('Add %s sample', 'granola'),
-            strtolower($sample_size),
-        ) : \__('Add sample', 'granola'),
-        'classes' => [
-            'product-samples__button__content',
-        ],
-    ]) . \Granola\Component::get('element', [
-        'content' => sprintf(
-            // translators: 1: Product length. 2: Product width.
-            \__('%1$smm x %2$smm', 'granola'),
-            $dimensions['length'],
-            $dimensions['width'],
-        ),
-        'classes' => [
-            'product-samples__button__dimensions',
-        ],
-    ]) . \Granola\Component::get('element', [
-        'content' => !empty($price) ? \get_woocommerce_currency_symbol() . $price : \__('Free', 'granola'),
-        'classes' => [
-            'product-samples__button__price',
-        ],
-    ]);
 
     // Clean up unnecessary args.
     unset($args['product']);
