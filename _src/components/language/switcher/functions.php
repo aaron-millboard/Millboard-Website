@@ -10,7 +10,7 @@ function filter_args(array $args): ?array
     $args = array_merge([
         'uid' => \wp_unique_prefixed_id('language-switcher-'),
         'classes' => [],
-        'current_language' => 'EN',
+        'current_language' => 'UK',
         'menu_name' => 'language-switcher',
     ], $args);
 
@@ -68,11 +68,11 @@ function get_language_from_url() {
 
     // First segment should be the language (e.g. de-de)
     if (!empty($segments[0]) && preg_match('/^[a-z]{2}-[a-z]{2}$/i', $segments[0])) {
-        return strtoupper(substr($segments[0], 0, 2));
+        return strtoupper(substr($segments[0], -2));
     }
 
     // Fallback language
-    return 'EN';
+    return 'UK';
 }
 
 // Usage
