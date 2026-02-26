@@ -69,7 +69,7 @@ function get_language_from_url() {
     // First segment should be the language (e.g. de-de)
     if (!empty($segments[0]) && preg_match('/^[a-z]{2}-[a-z]{2}$/i', $segments[0])) {
         $lang_code = strtoupper(substr($segments[0], -2));
-        return $lang_code === 'GB' ? 'UK' : $lang_code;
+        return $lang_code === 'GB' ? 'UK' : ($lang_code === 'IE' ? 'IRE' : $lang_code);
     }
 
     // Fallback language
