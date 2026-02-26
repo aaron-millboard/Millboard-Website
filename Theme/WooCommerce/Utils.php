@@ -60,4 +60,23 @@ class Utils
         // Return bool - if variation exists, is it in stock?
         return $default_product->get_stock_status() === 'instock';
     }
+
+    /**
+     * Determine whether a product is a variation's default variant.
+     *
+     * @param \WC_Product|null $product A product object to check against.
+     * @return boolean|null Whether the gien product is a default variation.
+     */
+    public static function is_default_product(?\WC_Product $product): ?bool
+    {
+        $default_product = self::get_default_product_variant($product);
+
+        // Return null - no product found.
+        if ($default_product === null) {
+            return null;
+        }
+
+        // Return bool - if variation exists, is it the same as the passed product?
+        return $product->get_id() === $default_product->get_id();
+    }
 }
