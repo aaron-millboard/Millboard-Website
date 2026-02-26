@@ -86,7 +86,7 @@ defined('ABSPATH') || exit;
                                 foreach ($attributes as $key => $value) { ?>
                                     <?php $term = get_term_by('slug', $value, $key); ?>
                                     <?php if (!empty($term)) { ?>
-                                        <div class="cart__item__details__attribute cart__item__details__<?= esc_attr(str_replace('pa_', '', $valu)); ?>">
+                                        <div class="cart__item__details__attribute cart__item__details__<?= esc_attr(str_replace('pa_', '', $value)); ?>">
                                             <?= esc_html($term->name); ?>
                                         </div>
                                     <?php } ?>
