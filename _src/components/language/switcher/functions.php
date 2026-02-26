@@ -20,10 +20,7 @@ function filter_args(array $args): ?array
         return null;
     }
 
-    $current_locale = \get_locale();
-    $short_lang = strtoupper(substr($current_locale, 0, 2));
-
-    $args['current_language'] = $short_lang;
+    $args['current_language'] = get_language_from_url();
 
     // -------------------------------------------------------------------------
     // Required classes.
@@ -56,6 +53,30 @@ function filter_args(array $args): ?array
     // -------------------------------------------------------------------------
     return $args;
 }
+
+/**
+ * Get the current language code for the switcher label.
+ *
+ * @return string The current language code (2-letter uppercase).
+ */
+function get_language_from_url() {
+    // Get request URI (e.g. /de-de/some-page/)
+    $request_uri = $_SERVER['REQUEST_URI'];
+
+    // Trim slashes and split path segments
+    $segments = explode('/', trim($request_uri, '/'));
+
+    // First segment should be the language (e.g. de-de)
+    if (!empty($segments[0]) && preg_match('/^[a-z]{2}-[a-z]{2}$/i', $segments[0])) {
+        return strtoupper(substr($segments[0], 0, 2));
+    }
+
+    // Fallback language
+    return 'EN';
+}
+
+// Usage
+$current_language = get_language_from_url();
 
 /**
  * Get the button content.
