@@ -43,7 +43,7 @@ function filter_args(array $args): ?array
     foreach ($variants as $variant) {
         // Convert underscores to hyphens for attribute taxonomy
         $taxonomy = 'pa_' . str_replace('_', '-', $variation);
-        
+
         $is_current = \has_term(
             $variant[$variation]->term_id,
             $taxonomy,
