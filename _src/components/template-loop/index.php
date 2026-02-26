@@ -3,6 +3,8 @@
         <?= \Granola\Component::get('taxonomy-filters', $args['taxonomy_filters']); ?>
     <?php } ?>
 
+    <?php woocommerce_output_all_notices(); ?>
+
     <?= \Granola\Component::get($args['items_component'], $args['items_component_args']); ?>
     <?= \Granola\Component::get('pagination'); ?>
 <?php } else { ?>
