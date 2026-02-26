@@ -10,12 +10,41 @@
 
         &__content {
             flex: 1 1 100%;
+
+            &--added {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: var(--space--3xs);
+
+                &::after {
+                    --icon-size: #{px-to-rem(24)};
+
+                    width: var(--icon-size);
+                    height: var(--icon-size);
+                    background-color: transparent;
+                    content: '';
+                    display: block;
+                    background-image: url(#{asset-path('images/icons-custom/tick.svg')});
+                    background-position: center;
+                    background-repeat: no-repeat;
+                    background-size: var(--mask-icon--size, contain);
+                }
+            }
         }
 
+        &__action,
         &__dimensions {
             font-weight: var(--type--1--font-weight);
             letter-spacing: 0;
             text-transform: none;
+        }
+
+        &__action {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space--3xs);
         }
 
         &__price {

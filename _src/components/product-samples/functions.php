@@ -83,3 +83,64 @@ function get_product_default_variation($wc_product)
 
     return \wc_get_product($default_variation_id);
 }
+
+/**
+ * Determine whether a sample product should be added to the basket.
+ *
+ * @param bool $passed
+ * @param integer $product_id Product ID being validated.
+ * @param integer $quantity Quantity added to the cart.
+ * @return bool True if the item passed validation.
+ */
+function sample_product_add_to_cart_validation(bool $add_to_cart, int $product_id, int $qty): bool
+{
+    $product = \wc_get_product($product_id);
+
+    // Bail early - not a product variation (different to a "variable" product), no samples.
+    if (!$product->is_type('variation')) {
+        return $add_to_cart;
+    }
+
+    // Count the number of samples in the cart.
+    $sample_count = get_cart_sample_count();
+
+    if ($sample_count + $qty > 3) {
+        \wc_add_notice(
+            \__('You can only add a maximum of 3 free samples', 'granola'),
+            'error'
+        );
+        $add_to_cart = false;
+    }
+
+    return $add_to_cart;
+}
+
+/**
+ * Count the number of "sample" products in the cart.
+ *
+ * A sample product is a variation product that isn't the default variation.
+ *
+ * @return integer The number of "sample" products in the cart.
+ */
+function get_cart_sample_count(): int
+{
+    $cart = WC()->cart->get_cart();
+
+    // Count the number of samples in the cart.
+    return array_reduce($cart, function ($samples_quantity, $cart_item) {
+        // Bail early - no product/variation id found.
+        if (empty($cart_item['product_id']) || empty($cart_item['variation_id'])) {
+            return $samples_quantity;
+        }
+
+        $card_product_obj = \wc_get_product($cart_item['variation_id']);
+
+        // Bail early - this is a default product variation (i.e. not a sample).
+        if (\Theme\WooCommerce\Utils::is_default_product($card_product_obj)) {
+            return $samples_quantity;
+        }
+
+        // Carry the quantity of samples.
+        return $samples_quantity + (int) $cart_item['quantity'];
+    }, 0);
+}
