@@ -48,25 +48,34 @@ do_action('woocommerce_before_cart');?>
                 $product_title = $_product->get_title();
 
                 // Set default unit name to item/items.
-                $unit_name_singular = 'item';
-                $unit_name_plural = 'items';
+                $unit_name_singular = __('item', 'granola');
+                $unit_name_plural = __('items', 'granola');
 
                 // get this item attribute sample size
-                $sample_size_attribute = $_product->get_attribute('pa_sample-size');
-                $board_width_attribute = $_product->get_attribute('pa_board-width');
-                $calculator_enabled = get_field('enable_calculator', $_product->get_id());
+                // check calculator if variable
+                if ($_product->is_type('variation')) {
+                    $parent_id = $_product->get_parent_id();
+                    $parent_product = wc_get_product($parent_id);
+                    $sample_size_attribute = $parent_product->get_attribute('pa_sample-size');
+                    $board_width_attribute = $parent_product->get_attribute('pa_board-width');
+                    $calculator_enabled = get_field('enable_calculator', $parent_id);
+                } else {
+                    $sample_size_attribute = $_product->get_attribute('pa_sample-size');
+                    $board_width_attribute = $_product->get_attribute('pa_board-width');
+                    $calculator_enabled = get_field('enable_calculator', $_product->get_id());
+                }
 
                 if ($sample_size_attribute || $board_width_attribute || $calculator_enabled) {
                     // If board, we check by 3 signs: board width attribute, sample size attribute set to full or calculator enabled
                     if ($board_width_attribute || $sample_size_attribute === 'Full' || $calculator_enabled) {
-                        $unit_name_singular = 'board';
-                        $unit_name_plural = 'boards';
+                        $unit_name_singular = __('board', 'granola');
+                        $unit_name_plural = __('boards', 'granola');
                     }
 
                     // override if we have any sign of sample size
                     if ($sample_size_attribute === 'Small' || $sample_size_attribute === 'Large') {
-                        $unit_name_singular = 'sample';
-                        $unit_name_plural = 'samples';
+                        $unit_name_singular = __('sample', 'granola');
+                        $unit_name_plural = __('samples', 'granola');
                     }
                 }
 
