@@ -48,8 +48,8 @@ do_action('woocommerce_before_cart');?>
                 $product_title = $_product->get_title();
 
                 // Set default unit name to item/items.
-                $unit_name_singular = 'item';
-                $unit_name_plural = 'items';
+                $unit_name_singular = __('item', 'granola');
+                $unit_name_plural = __('items', 'granola');
 
                 // get this item attribute sample size
                 $sample_size_attribute = $_product->get_attribute('pa_sample-size');
@@ -59,14 +59,14 @@ do_action('woocommerce_before_cart');?>
                 if ($sample_size_attribute || $board_width_attribute || $calculator_enabled) {
                     // If board, we check by 3 signs: board width attribute, sample size attribute set to full or calculator enabled
                     if ($board_width_attribute || $sample_size_attribute === 'Full' || $calculator_enabled) {
-                        $unit_name_singular = 'board';
-                        $unit_name_plural = 'boards';
+                        $unit_name_singular = __('board', 'granola');
+                        $unit_name_plural = __('boards', 'granola');
                     }
 
                     // override if we have any sign of sample size
                     if ($sample_size_attribute === 'Small' || $sample_size_attribute === 'Large') {
-                        $unit_name_singular = 'sample';
-                        $unit_name_plural = 'samples';
+                        $unit_name_singular = __('sample', 'granola');
+                        $unit_name_plural = __('samples', 'granola');
                     }
                 }
 
