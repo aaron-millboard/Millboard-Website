@@ -38,11 +38,21 @@ function filter_args(array $args): ?array
 
         $area = $length * $width / 1000000; // Convert from mm2 to m2.
 
-        // Cap to 3 decimal.
-        $area = round($area, 3);
+        // Cap to 4 decimal.
+        $area = round($area, 4);
 
         // Add dataset for board area
         $args['attributes']['data-board-area'] = $area;
+
+        // Add dataset for boards per sqm
+        $boards_per_sqm = get_field('boards_per_sqm', $args['product']->get_id());
+        if ($boards_per_sqm) {
+            // Calculate backwards
+            $area_covered = 1 / $boards_per_sqm; // area covered by one board in sqm
+            $area_covered = round($area_covered, 4);
+            // Override board area dataset with the area covered by one board if boards per sqm is set
+            $args['attributes']['data-board-area'] = $area_covered;
+        }
 
         // Add dataset for price, we will use it in the calculator script to calculate the total price based on the area.
         // check if variable
