@@ -97,7 +97,7 @@ function sample_product_add_to_cart_validation(bool $add_to_cart, int $product_i
     $product = \wc_get_product($product_id);
 
     // Bail early - not a product variation (different to a "variable" product), no samples.
-    if (!$product->is_type('variation')) {
+    if (!\Theme\WooCommerce\Utils::is_free_sample($product)) {
         return $add_to_cart;
     }
 
