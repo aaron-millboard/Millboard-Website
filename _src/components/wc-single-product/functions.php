@@ -107,6 +107,23 @@ function filter_args(array $args): ?array
     }
 
     // -------------------------------------------------------------------------
+    // 5. Price attribute for calculator
+    // -------------------------------------------------------------------------
+    if ($product->is_type('variable')) {
+        $default_variation_id = \Theme\Utils\Woocommerce::get_default_variation_id($product);
+        if ($default_variation_id) {
+            $variation = \wc_get_product($default_variation_id);
+            $price = $variation->get_price();
+        } else {
+            $price = $product->get_price();
+        }
+    } else {
+        $price = $product->get_price();
+    }
+
+    $args['attributes']['data-price'] = $price;
+
+    // -------------------------------------------------------------------------
     // Return the filtered args.
     // -------------------------------------------------------------------------
     return $args;
