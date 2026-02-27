@@ -38,8 +38,8 @@ function filter_args(array $args): ?array
 
         $area = $length * $width / 1000000; // Convert from mm2 to m2.
 
-        // Cap to 2 decimal.
-        $area = round($area, 2);
+        // Cap to 3 decimal.
+        $area = round($area, 3);
 
         // Add dataset for board area
         $args['attributes']['data-board-area'] = $area;

@@ -43,7 +43,33 @@ function filter_args(array $args): ?array
     // Preheading - get name of first category
     $categories = \wp_get_post_terms($product->get_id(), 'product_cat');
     if (!is_wp_error($categories) && ! empty($categories)) {
-        $args['preheading'] = $categories[0]->name;
+        // Get primary category if set
+        if (function_exists('yoast_get_primary_term_id')) {
+            $primary_category_id = yoast_get_primary_term_id('product_cat', $product->get_id());
+        } else {
+            $primary_category_id = false;
+        }
+        // If no primary category set or yoast is not active
+        if (!$primary_category_id) {
+            // otherwise fallback to first category
+            $primary_category_id = $categories[0]->term_id;
+        }
+
+        // get parent category if primary is a child in a loop to get top level category
+        $category_for_preheading = \get_term($primary_category_id);
+        do {
+            // Get parent category
+            $parent_category = \get_term($category_for_preheading->parent);
+
+            // If parent category exists and is not an error, set it as primary category for next loop iteration
+            if ($parent_category && !is_wp_error($parent_category)) {
+                $category_for_preheading = $parent_category;
+            } else {
+                break;
+            }
+        } while ($category_for_preheading->parent != 0);
+
+        $args['preheading'] = $category_for_preheading->name;
     }
 
     // Heading - get product title
