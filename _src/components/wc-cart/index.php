@@ -19,7 +19,7 @@
 defined('ABSPATH') || exit;
 
 // Notices here
-do_action('woocommerce_before_cart'); ?>
+do_action('woocommerce_before_cart');?>
 
 <form class="cart woocommerce-cart-form" action="<?php echo esc_url(wc_get_cart_url()); ?>" method="post">
 
@@ -46,6 +46,34 @@ do_action('woocommerce_before_cart'); ?>
                  */
                 $product_name = apply_filters('woocommerce_cart_item_name', $_product->get_name(), $cart_item, $cart_item_key);
                 $product_title = $_product->get_title();
+
+                // Set default unit name to item/items.
+                $unit_name_singular = 'item';
+                $unit_name_plural = 'items';
+
+                // get this item attribute sample size
+                $sample_size_attribute = $_product->get_attribute('pa_sample-size');
+                $board_width_attribute = $_product->get_attribute('pa_board-width');
+                $calculator_enabled = get_field('enable_calculator', $_product->get_id());
+
+                if ($sample_size_attribute || $board_width_attribute || $calculator_enabled) {
+                    // If board, we check by 3 signs: board width attribute, sample size attribute set to full or calculator enabled
+                    if ($board_width_attribute || $sample_size_attribute === 'Full' || $calculator_enabled) {
+                        $unit_name_singular = 'board';
+                        $unit_name_plural = 'boards';
+                    }
+
+                    // override if we have any sign of sample size
+                    if ($sample_size_attribute === 'Small' || $sample_size_attribute === 'Large') {
+                        $unit_name_singular = 'sample';
+                        $unit_name_plural = 'samples';
+                    }
+                }
+
+                // use singular unit name if quantity is 1
+                if ($cart_item['quantity'] === 1) {
+                    $unit_name_plural = $unit_name_singular;
+                }
 
                 if ($_product && $_product->exists() && $cart_item['quantity'] > 0 && apply_filters('woocommerce_cart_item_visible', true, $cart_item, $cart_item_key)) {
                     $product_permalink = apply_filters('woocommerce_cart_item_permalink', $_product->is_visible() ? $_product->get_permalink($cart_item) : '', $cart_item, $cart_item_key);
@@ -145,7 +173,7 @@ do_action('woocommerce_before_cart'); ?>
                                     <?php } ?>
 
                                     <div class="product-price" data-title="<?php esc_attr_e('Price', 'woocommerce'); ?>">
-                                        <?php echo apply_filters('woocommerce_cart_item_price', WC()->cart->get_product_price($_product), $cart_item, $cart_item_key) . ' ' . esc_html__('per pack', 'granola'); ?>
+                                        <?php echo apply_filters('woocommerce_cart_item_price', WC()->cart->get_product_price($_product), $cart_item, $cart_item_key) . ' ' . esc_html__('per ', 'granola') . esc_html($unit_name_singular); ?>
                                     </div>
 
                                 </div>
@@ -162,7 +190,7 @@ do_action('woocommerce_before_cart'); ?>
 
                                     <?php
                                     // show actual quantity
-                                    echo '<div class="actual-quantity">' . esc_html__('Quantity: ', 'granola') . esc_html($cart_item['quantity']) . ' packs</div>';
+                                    echo '<div class="actual-quantity">' . esc_html__('Quantity: ', 'granola') . esc_html($cart_item['quantity']) . ' ' . esc_html($unit_name_plural) . '</div>';
                                     ?>
 
                                     <div class="product-remove">
