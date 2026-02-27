@@ -1,9 +1,13 @@
 <li <?= \Granola\Helpers::build_attributes($args['attributes']); ?>>
-    <a href="<?= esc_url($args['link']['url']); ?>" 
+    <a href="<?= esc_url($args['link']['url']); ?>"
        class="mega-menu-item__card"
-       <?php if (!empty($args['link']['target'])) { ?>target="<?= esc_attr($args['link']['target']); ?>"<?php } ?>
-       <?php if (!empty($args['link']['attributes']['title'])) { ?>title="<?= esc_attr($args['link']['attributes']['title']); ?>"<?php } ?>>
-        
+       <?php if (!empty($args['link']['target'])) {
+            ?>target="<?= esc_attr($args['link']['target']); ?>"<?php
+       } ?>
+       <?php if (!empty($args['link']['attributes']['title'])) {
+            ?>title="<?= esc_attr($args['link']['attributes']['title']); ?>"<?php
+       } ?>>
+
         <?php if (!empty($args['item_image'])) { ?>
             <div class="mega-menu-item__image">
                 <?= wp_get_attachment_image($args['item_image'], 'thumbnail'); ?>
