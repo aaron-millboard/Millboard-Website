@@ -77,7 +77,7 @@
             display: flex;
             flex-direction: column;
             gap: var(--space--s);
-            padding-bottom: var(--space--l);
+            padding-bottom: var(--space--s);
             border-bottom: 1px solid var(--color--brand-1);
 
             &-header {
@@ -208,12 +208,21 @@
                 margin-bottom: 0;
             }
 
+            fieldset {
+                padding-top: var(--space--s);
+            }
+
             fieldset p {
                 margin: 0;
+                margin-top: var(--space--2xs);
                 --input--padding-y: 8px;
                 --input--background-color: transparent;
                 --input--color: var(--color--foreground);
                 --input--background-color--highlight: transparent;
+
+                input {
+                    width: 1em !important;
+                }
             }
 
         }
@@ -225,6 +234,7 @@
             display: flex;
             flex-direction: column;
             gap: var(--space--xs);
+            padding: var(--space--s) 0;
 
             p {
                 @include typestyle-base;

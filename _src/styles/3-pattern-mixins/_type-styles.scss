@@ -27,6 +27,7 @@
     font-weight: var(--type--3--font-weight);
     line-height: 132%; /* 19.8px */
     text-transform: uppercase;
+    font-variant-numeric: lining-nums;
     letter-spacing: calc(var(--type--font-size--base) * 0.1167);
 }
 
