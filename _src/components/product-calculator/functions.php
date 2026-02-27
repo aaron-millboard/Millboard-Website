@@ -33,6 +33,9 @@ function filter_args(array $args): ?array
         $length = $args['product']->get_length() ?: 0;
         $width = $args['product']->get_width() ?: 0;
 
+        // Manually adjust width by 4mm
+        $width = $width + 4;
+
         $area = $length * $width / 1000000; // Convert from mm2 to m2.
 
         // Cap to 4 decimal.
@@ -41,10 +44,20 @@ function filter_args(array $args): ?array
         // Add dataset for board area
         $args['attributes']['data-board-area'] = $area;
 
+        // Add dataset for boards per sqm
+        $boards_per_sqm = get_field('boards_per_sqm', $args['product']->get_id());
+        if ($boards_per_sqm) {
+            // Calculate backwards
+            $area_covered = 1 / $boards_per_sqm; // area covered by one board in sqm
+            $area_covered = round($area_covered, 4);
+            // Override board area dataset with the area covered by one board if boards per sqm is set
+            $args['attributes']['data-board-area'] = $area_covered;
+        }
+
         // Add dataset for price, we will use it in the calculator script to calculate the total price based on the area.
         // check if variable
         if ($args['product']->is_type('variable')) {
-            $default_variation_id = get_default_variation_id($args['product']);
+            $default_variation_id = \Theme\Utils\Woocommerce::get_default_variation_id($args['product']);
             if ($default_variation_id) {
                 $variation = \wc_get_product($default_variation_id);
                 $price = $variation->get_price();
@@ -133,17 +146,4 @@ function filter_args(array $args): ?array
     // Return the filtered args.
     // -------------------------------------------------------------------------
     return $args;
-}
-
-function get_default_variation_id($product)
-{
-    $attributes = $product->get_default_attributes();
-
-    foreach ($attributes as $key => $value) {
-        $attributes[ 'attribute_' . $key ] = $value;
-        unset($attributes[ $key ]);
-    }
-
-    $data_store = \WC_Data_Store::load('product');
-    return $data_store->find_matching_product_variation($product, $attributes);
 }

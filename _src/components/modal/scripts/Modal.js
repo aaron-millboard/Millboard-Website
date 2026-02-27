@@ -10,6 +10,7 @@ export default class Modal {
     constructor(element) {
         this.element = element;
         this.lockScroll = this.element.dataset.lockScroll === 'true';
+        this.cookieSet = false;
         this.init();
     }
 
@@ -19,6 +20,7 @@ export default class Modal {
     init() {
         this.initDismissButton();
         this.initOpenButton();
+        this.initModalLinks();
 
         if(this.element.classList.contains('modal--active')) {
             this.open();
@@ -52,8 +54,47 @@ export default class Modal {
             const { hash } = this.element.dataset;
             const days = this.element.dataset.cookie || 3;
             setCookie(modalId, hash, days);
+            this.cookieSet = true;
         }
     }
+
+    /**
+     * Initialize click handlers for links inside the modal that should create a cookie and close the modal
+     */
+    initModalLinks() {
+        const modalLinks = this.element.querySelectorAll('a[href]');
+        modalLinks.forEach((link) => {
+            link.addEventListener('click', (event) => {
+
+                // Apply custom behavior only if cookie is not set (always if modal is shown)
+                if(!this.cookieSet) {
+
+                    event.preventDefault();
+                    // Close the modal and set cookie if configured
+                    this.close();
+
+                    // get link url without hash
+                    let linkUrl = link.href;
+                    
+                    // get current url
+                    let currentUrl = window.location.href;
+
+                    if(linkUrl && currentUrl) {
+                        linkUrl = linkUrl.split('/?')[0];
+                        currentUrl = currentUrl.split('/?')[0];
+
+                        // Perform click if url is not current
+                        if (linkUrl !== currentUrl) {
+                            // This time (as cookie is set) the default action will be performed without interruption if user clicks the link again
+                            link.click();
+                        }
+                    }
+
+                }
+            });
+        });
+    }
+    /**
 
     /**
      * Initialize dismiss button click handlers

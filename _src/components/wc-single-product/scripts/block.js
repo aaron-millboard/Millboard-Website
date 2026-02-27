@@ -6,6 +6,7 @@ window.addEventListener('load', () => {
 
 	// Function to update total price
 	const updateTotalPrice = () => {
+		
 		if (!quantityInput) {
 			return;
 		}
@@ -26,8 +27,8 @@ window.addEventListener('load', () => {
 
 		// Get unit price if not already stored or if variation changed
 		if (unitPrice === null) {
-			const priceText = priceAmount.textContent;
-			unitPrice = parseFloat(priceText.replace(/[^0-9.]/g, ''));
+			unitPrice = product.dataset.price;
+			unitPrice = parseFloat(unitPrice).toFixed(2);
 		}
 
 		const quantity = parseInt(quantityInput.value) || 1;

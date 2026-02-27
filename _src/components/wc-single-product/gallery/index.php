@@ -4,7 +4,12 @@
             <div class="woocommerce-product-gallery__image">
                 <?= \Granola\Component::get('image', [
                     'attachment_id' => $attachment_id,
-                    'size' => 'full',
+                    'size' => '2048x2048',
+                    'attributes' => $key === 0 ? [
+                        'fetchpriority' => 'high',
+                        'data-spai-eager' => true,
+                    ] : null,
+                    'loading' => $key === 0 ? 'eager' : 'lazy',
                 ]); ?>
             </div>
         <?php } ?>

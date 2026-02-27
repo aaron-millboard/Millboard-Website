@@ -1,0 +1,80 @@
+/**
+ * Minimum styles required to prevent CLS issues.
+ */
+.product {
+    --block--margin-top: var(--space--l);
+    --block--margin-bottom: var(--space--xl);
+
+    $this: &;
+
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    column-gap: var(--space--xl);
+
+    @include mq('large') {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+
+    @include mq('xlarge') {
+        grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    }
+
+    // Column 1. Gallery
+
+    &__gallery {
+        .woocommerce-product-gallery {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space--m);
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+            aspect-ratio: 1 / 2;
+
+            &::-webkit-scrollbar {
+                display: none;
+            }
+
+            @include mq('large') {
+                overflow: auto;
+            }
+
+            &__wrapper {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+                gap: var(--space--m);
+                list-style: none;
+                padding: 0;
+                margin: 0;
+
+                img {
+                    width: 100%;
+                    aspect-ratio: 1 / 1;
+                    object-fit: cover;
+                }
+            }
+
+            &__image {
+                width: 100%;
+                aspect-ratio: 1 / 1;
+
+                // Target every 3rd li.
+                &:nth-child(3n + 1) {
+                    grid-column: span 2;
+                }
+
+                img {
+                    width: 100%;
+                    aspect-ratio: 1 / 1;
+                    object-fit: cover;
+                }
+            }
+        }
+    }
+
+    &__content {
+        padding-top: var(--space--xl);
+        display: flex;
+        flex-direction: column;
+        gap: var(--space--l);
+    }
+}
