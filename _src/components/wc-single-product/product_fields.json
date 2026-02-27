@@ -18,9 +18,25 @@
             "label": "Enable calculator",
             "name": "enable_calculator",
             "type": "true_false",
-            "instructions": "Enable this to show calculator on product page. Important: calculator heavily relies on product dimensions (Product data > Shipping > Dimensions) to work properly. Make sure to fill them in.",
+            "instructions": "Enable this to show calculator on product page. Important: calculator heavily relies on product dimensions (Product data > Shipping > Dimensions) to work properly. Make sure to fill them in. 4mm to the board width will be added automatically. So, if width = 176mm, calculator will use 180mm as the width of the board.",
             "default_value": 0,
             "ui": 1
+        },
+        {
+            "key": "cpt_product_boards_per_sqm",
+            "label": "Boards per sqm",
+            "name": "boards_per_sqm",
+            "type": "number",
+            "step": 0.0001,
+            "instructions": "Optional. Leave empty to use default calculation. By default, calculator will use dimensions of the product to calculate the area.",
+            "ui": 1,
+            "conditional_logic": [
+                {
+                    "field": "cpt_product_enable_calculator",
+                    "operator": "==",
+                    "value": "1"
+                }
+             ]
         }
     ],
     "location": [
