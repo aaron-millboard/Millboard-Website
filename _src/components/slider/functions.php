@@ -68,7 +68,6 @@ function filter_args(array $args): ?array
         $args['slides'][$index]['card']->args['attributes']['class'][] = 'slider__slide';
         $args['slides'][$index]['card']->args['attributes']['id'] = $args['ref'] . '-slide-' . ($index + 1);
         $args['slides'][$index]['card']->args['attributes']['role'] = 'tabpanel';
-        $args['slides'][$index]['card']->args['attributes']['aria-roledescription'] = 'slide';
         $args['slides'][$index]['card']->args['attributes']['aria-label'] = __('Slide', 'granola') . ' ' . ($index + 1) . ' of ' . $args['total_slides'];
     }
 
