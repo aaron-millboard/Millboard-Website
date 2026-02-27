@@ -24,13 +24,19 @@ if (empty($stock_quantity) && !is_null($stock_quantity)) {
 // Get default product
 $default_product_in_stock = \Theme\WooCommerce\Utils::is_default_product_variant_in_stock($product);
 
+if (empty($default_product_in_stock) && empty($show_calculator)) {
+    return;
+}
+
 ?>
 <div class="product__toggles variations_button">
-    <?php woocommerce_quantity_input([
-        'min_value'   => $product->get_min_purchase_quantity(),
-        'max_value'   => $product->get_max_purchase_quantity(),
-        'input_value' => isset($_POST['quantity']) ? wc_stock_amount(wp_unslash($_POST['quantity'])) : $product->get_min_purchase_quantity(), // WPCS: CSRF ok, input var ok.
-    ]); ?>
+    <?php if (!empty($default_product_in_stock)) { ?>
+        <?php woocommerce_quantity_input([
+            'min_value'   => $product->get_min_purchase_quantity(),
+            'max_value'   => $product->get_max_purchase_quantity(),
+            'input_value' => isset($_POST['quantity']) ? wc_stock_amount(wp_unslash($_POST['quantity'])) : $product->get_min_purchase_quantity(), // WPCS: CSRF ok, input var ok.
+        ]); ?>
+    <?php } ?>
 
     <?php if ($show_calculator) {
         echo \Granola\Component::get('product-calculator/cta', ['product' => $product]);
