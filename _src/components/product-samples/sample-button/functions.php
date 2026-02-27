@@ -81,10 +81,9 @@ function filter_args(array $args): ?array
             ],
         ]) . \Granola\Component::get('element', [
             'content' => sprintf(
-                // translators: 1: HTML opening tag. 3: Number of samples in basket. 3: HTML closing tag.
-                \__('Remove %1$s1/%2$s%3$s', 'granola'),
+                // translators: 1: HTML opening tag. 2: HTML closing tag.
+                \__('Remove %1$s1/3%2$s', 'granola'),
                 '<strong>',
-                \Granola\Components\ProductSamples\get_cart_sample_count(),
                 '</strong>',
             ),
             'classes' => [
