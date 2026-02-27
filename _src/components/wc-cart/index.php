@@ -224,7 +224,10 @@ do_action('woocommerce_before_cart');?>
                                 <div class="cart__item__details__bottom--right">
                                     <div class="product-quantity" data-title="<?php esc_attr_e('Quantity', 'woocommerce'); ?>">
                                         <?php
-                                        if ($_product->is_sold_individually()) {
+                                        if (\Theme\Woocommerce\Utils::is_free_sample($_product)) {
+                                            $min_quantity = 0;
+                                            $max_quantity = 1;
+                                        } elseif ($_product->is_sold_individually()) {
                                             $min_quantity = 1;
                                             $max_quantity = 1;
                                         } else {

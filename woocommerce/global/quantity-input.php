@@ -88,7 +88,12 @@ $label = ! empty($args['product_name']) ? sprintf(esc_html__('%s quantity', 'woo
             <?php endif; ?>
         />
 
-        <button type="button" class="quantity-button quantity-plus" aria-label="<?php esc_attr_e('Increase quantity', 'woocommerce'); ?>">+</button>
+        <button
+            type="button"
+            class="quantity-button quantity-plus"
+            aria-label="<?php esc_attr_e('Increase quantity', 'woocommerce'); ?>"
+            <?php \disabled(!empty($max_value) && $input_value >= $max_value); ?>
+        >+</button>
 
         <?php
         /**
