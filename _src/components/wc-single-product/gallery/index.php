@@ -5,6 +5,11 @@
                 <?= \Granola\Component::get('image', [
                     'attachment_id' => $attachment_id,
                     'size' => 'full',
+                    'attributes' => $key === 0 ? [
+                        'fetchpriority' => 'high',
+                        'data-spai-eager' => true,
+                    ] : null,
+                    'loading' => $key === 0 ? 'eager' : 'lazy',
                 ]); ?>
             </div>
         <?php } ?>
