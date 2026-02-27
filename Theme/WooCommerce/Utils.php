@@ -65,7 +65,7 @@ class Utils
      * Determine whether a product is a variation's default variant.
      *
      * @param \WC_Product|null $product A product object to check against.
-     * @return boolean|null Whether the gien product is a default variation.
+     * @return boolean|null Whether the given product is a default variation.
      */
     public static function is_default_product(?\WC_Product $product): ?bool
     {
@@ -78,5 +78,39 @@ class Utils
 
         // Return bool - if variation exists, is it the same as the passed product?
         return $product->get_id() === $default_product->get_id();
+    }
+
+    /**
+     * Determine whether a product is sample product.
+     *
+     * In this case, a sample product is a variation product that isn't the default variant.
+     *
+     * @param \WC_Product|null $product A product object to check against.
+     * @return boolean|null Whether the given product is a sample product.
+     */
+    public static function is_sample(?\WC_Product $product): ?bool
+    {
+        if (empty($product)) {
+            return false;
+        }
+
+        return !self::is_default_product($product);
+    }
+
+    /**
+     * Determine whether a product is a free sample product.
+     *
+     * In this case, a free sample product is a variation product that isn't the default variant AND has a price of 0.
+     *
+     * @param \WC_Product|null $product A product object to check against.
+     * @return boolean|null Whether the given product is a free sample product.
+     */
+    public static function is_free_sample(?\WC_Product $product): ?bool
+    {
+        if (empty($product)) {
+            return false;
+        }
+
+        return self::is_sample($product) && empty($product->get_price());
     }
 }
