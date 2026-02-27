@@ -18,6 +18,7 @@ class Product
         \add_filter('query_vars', [__CLASS__, 'filter_query_vars']);
         \add_action('rest_api_init', [__CLASS__, 'register_endpoints']);
         \add_filter('granola/scripts/localization', [__CLASS__, 'add_rest_endpoint_localization']);
+        \add_action('wp', [__CLASS__, 'preload_thumbnail']);
     }
 
     public static function filter_register_post_type_args($args, $post_type)
@@ -163,5 +164,28 @@ class Product
         }
 
         return \trailingslashit(\get_permalink($product_id) . $colour . '/' . $variation['sku']);
+    }
+
+    public static function preload_thumbnail(): void
+    {
+        // Bail early - not on a product page.
+        if (!\is_singular(self::SLUG)) {
+            return;
+        }
+
+        $thumbnail = \get_the_post_thumbnail_url(\get_post(), '2048x2048');
+
+        if (empty($thumbnail)) {
+            return;
+        }
+
+        \add_filter('granola/wordpress/head/links', function (array $links) use ($thumbnail): array {
+            $links[] = [
+                'rel' => 'preload',
+                'href' => $thumbnail,
+            ];
+
+            return $links;
+        });
     }
 }
