@@ -49,10 +49,19 @@ function filter_args(array $args): ?array
     $sample_size = $product->get_attribute('sample-size');
 
     // Check if product is in cart - works for both simple and variable products
+    $cart_items = $cart->get_cart();
     $product_cart_id = false;
-    foreach ($cart->get_cart() as $cart_item_key => $cart_item) {
-        if ($cart_item['product_id'] === $product_id || $cart_item['variation_id'] === $product_id) {
-            $product_cart_id = $cart_item_key;
+    $sample_count = 1;
+    foreach ($cart_items as $cart_item_key => $cart_item) {
+        $cart_product_obj = \wc_get_product($cart_item['variation_id'] ?? $cart_item['product_id']);
+
+        if (!empty($cart_product_obj) && \Theme\WooCommerce\Utils::is_free_sample($cart_product_obj)) {
+            if ($cart_item['product_id'] === $product_id || $cart_item['variation_id'] === $product_id) {
+                $product_cart_id = $cart_item_key;
+                break;
+            } else {
+                $sample_count++; // count what position this sample is in the basket.
+            }
         }
     }
 
@@ -81,9 +90,10 @@ function filter_args(array $args): ?array
             ],
         ]) . \Granola\Component::get('element', [
             'content' => sprintf(
-                // translators: 1: HTML opening tag. 2: HTML closing tag.
-                \__('Remove %1$s1/3%2$s', 'granola'),
+                // translators: 1: HTML opening tag. 2: Product place in basket. 3: HTML closing tag.
+                \__('Remove %1$s%2$s/3%3$s', 'granola'),
                 '<strong>',
+                $sample_count,
                 '</strong>',
             ),
             'classes' => [
