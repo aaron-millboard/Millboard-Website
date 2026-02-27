@@ -33,10 +33,13 @@ function filter_args(array $args): ?array
         $length = $args['product']->get_length() ?: 0;
         $width = $args['product']->get_width() ?: 0;
 
+        // Manually adjust width by 4mm
+        $width = $width + 4;
+
         $area = $length * $width / 1000000; // Convert from mm2 to m2.
 
-        // Cap to 4 decimal.
-        $area = round($area, 4);
+        // Cap to 2 decimal.
+        $area = round($area, 2);
 
         // Add dataset for board area
         $args['attributes']['data-board-area'] = $area;
@@ -44,7 +47,7 @@ function filter_args(array $args): ?array
         // Add dataset for price, we will use it in the calculator script to calculate the total price based on the area.
         // check if variable
         if ($args['product']->is_type('variable')) {
-            $default_variation_id = get_default_variation_id($args['product']);
+            $default_variation_id = \Theme\Utils\Woocommerce::get_default_variation_id($args['product']);
             if ($default_variation_id) {
                 $variation = \wc_get_product($default_variation_id);
                 $price = $variation->get_price();
@@ -133,17 +136,4 @@ function filter_args(array $args): ?array
     // Return the filtered args.
     // -------------------------------------------------------------------------
     return $args;
-}
-
-function get_default_variation_id($product)
-{
-    $attributes = $product->get_default_attributes();
-
-    foreach ($attributes as $key => $value) {
-        $attributes[ 'attribute_' . $key ] = $value;
-        unset($attributes[ $key ]);
-    }
-
-    $data_store = \WC_Data_Store::load('product');
-    return $data_store->find_matching_product_variation($product, $attributes);
 }
