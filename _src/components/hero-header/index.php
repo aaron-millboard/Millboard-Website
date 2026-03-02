@@ -16,9 +16,11 @@
                     </div>
                 <?php } ?>
 
-                <?= \Granola\Component::get('image', $args['image']); ?>
-
-                <?= \Granola\Component::get('button', $args['control_button']); ?>
+                <?php if (!empty($args['image'])) { ?>
+                    <div class="hero-header__image-wrapper img-fit">
+                        <?= \Granola\Component::get('image', $args['image']); ?>
+                    </div>
+                <?php } ?>
 
                 <?php if (!empty($args['embed_url'])) { ?>
                     <iframe
@@ -30,6 +32,8 @@
                         allowfullscreen
                     ></iframe>
                 <?php } ?>
+
+                <?= \Granola\Component::get('button', $args['control_button']); ?>
             </div>
         <?php } ?>
 
