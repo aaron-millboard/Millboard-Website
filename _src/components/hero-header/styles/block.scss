@@ -13,8 +13,6 @@
     isolation: isolate; // Create local stacking context.
 
     &__inner {
-        // display: grid;
-        // grid-template-columns: minmax(0, 1fr);
         padding-block: var(--space--xl);
         gap: var(--space--xl);
     }
@@ -84,6 +82,24 @@
         }
     }
 
+    &__strapline-wrapper-outer {
+        z-index: $block-internal-z-index + 5;
+        background-color: black;
+        mix-blend-mode: difference;
+        pointer-events: none; // required for good ::selection styles.
+        position: relative;
+
+        & + & {
+            pointer-events: auto; // required for good ::selection styles.
+            mix-blend-mode: lighten;
+        }
+    }
+
+    &__strapline-wrapper-inner {
+        background-color: var(--color--background);
+        mix-blend-mode: difference;
+    }
+
     &__strapline {
         display: block;
         margin: 0;
@@ -92,24 +108,6 @@
         &::selection {
             color: black;
             background-color: white;
-        }
-
-        &-wrapper-outer {
-            background-color: black;
-            z-index: $block-internal-z-index;
-            mix-blend-mode: difference;
-            pointer-events: none; // required for good ::selection styles.
-            position: relative;
-
-            & + & {
-                pointer-events: auto; // required for good ::selection styles.
-                mix-blend-mode: lighten;
-            }
-        }
-
-        &-wrapper-inner {
-            background-color: var(--color--background);
-            mix-blend-mode: difference;
         }
     }
 
