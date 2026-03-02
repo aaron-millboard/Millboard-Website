@@ -96,6 +96,8 @@ function filter_args(array $args): ?array
                     'muted' => 1,
                     'loop' => 1,
                     'vimeo_logo' => 0,
+                    'muted' => 1,
+                    'unmute_button' => 0,
                     'color' => '799513', // Branded: olive green.
                 ], $args['embed_url']);
             }
