@@ -94,6 +94,9 @@ function filter_args(array $args): ?array
             } elseif (strpos($args['embed_url'], 'player.vimeo.com/video/') !== false) {
                 $args['embed_url'] = add_query_arg([
                     'muted' => 1,
+                    'loop' => 1,
+                    'vimeo_logo' => 0,
+                    'color' => '799513', // Branded: olive green.
                 ], $args['embed_url']);
             }
         }
