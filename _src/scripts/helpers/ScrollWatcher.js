@@ -10,9 +10,7 @@ export default class ScrollWatcher {
         this.prevScrollTop = window.pageYOffset || document.documentElement.scrollTop;
         this.prevScrollDirection = '';
 
-        window.addEventListener('scroll', throttle(this.onscroll, 500));
-        window.addEventListener('scrollup', this);
-        window.addEventListener('scrolldown', this);
+        window.addEventListener('scroll', throttle(this.onscroll, 100));
 
         window.ScrollWatcher = this;
 
@@ -33,23 +31,25 @@ export default class ScrollWatcher {
     onscroll() {
         const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
-        if (scrollTop > this.prevScrollTop && this.prevScrollDirection !== 'down') {
-            this.prevScrollDirection = 'down';
+        if (scrollTop > this.prevScrollTop) {
             window.dispatchEvent(ScrollWatcher.events.scrolldown);
-        } else if (scrollTop < this.prevScrollTop && this.prevScrollDirection !== 'up') {
-            this.prevScrollDirection = 'up';
+
+            if (this.prevScrollDirection !== 'down') {
+                window.dispatchEvent(ScrollWatcher.events.scrollchangedown);
+            }
+
+            this.prevScrollDirection = 'down';
+        } else if (scrollTop < this.prevScrollTop) {
             window.dispatchEvent(ScrollWatcher.events.scrollup);
+
+            if (this.prevScrollDirection !== 'up') {
+                window.dispatchEvent(ScrollWatcher.events.scrollchangeup);
+            }
+
+            this.prevScrollDirection = 'up';
         }
 
         this.prevScrollTop = scrollTop <= 0 ? 0 : scrollTop;
-    }
-
-    onscrollup() {
-        window.dispatchEvent(ScrollWatcher.events.scrollchangeup);
-    }
-
-    onscrolldown() {
-        window.dispatchEvent(ScrollWatcher.events.scrollchangedown);
     }
 
     // Custom events for state change listeners.

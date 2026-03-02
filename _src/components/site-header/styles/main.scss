@@ -18,8 +18,21 @@ $site-header--top--background: 'white';
     }
 }
 
+body {
+    @include mq('site-header') {
+        --site-header--height: #{px-to-rem(160)};
+
+        transition: padding-top var(--site-header--menu--duration) var(--site-header--menu--ease);
+
+        &.scrolling-down.scroll-valid {
+            --site-header--height: #{px-to-rem(64)};
+
+            padding-top: calc(160px - 64px);
+        }
+    }
+}
+
 .site-header {
-    --site-header--height: 6.5rem;
     --site-header--logo-width: #{px-to-rem(120)};
 
     --site-header--spacing: var(--space--m);
@@ -37,7 +50,7 @@ $site-header--top--background: 'white';
     width: 100%;
     height: var(--site-header--height);
     background-color: var(--color--#{$site-header--bottom--background});
-    transition: height var(--site-header--menu--duration) var(--site-header--menu--duration);
+    transition: height var(--site-header--menu--duration) var(--site-header--menu--ease);
 
     @include mq('site-header') {
         --site-header--spacing: var(--space--l);
@@ -46,6 +59,11 @@ $site-header--top--background: 'white';
         --site-header--button-size: #{px-to-rem(42)};
 
         background-color: var(--color--white);
+
+        .scrolling-down.scroll-valid & {
+            --site-header--height: #{px-to-rem(64)};
+            --site-header--logo-width: #{px-to-rem(160)};
+        }
     }
 
     @include mq($until: 'site-header') {
@@ -58,7 +76,7 @@ $site-header--top--background: 'white';
 
         &.is-open {
             height: var(--site-header--height);
-            transition: height var(--site-header--menu--duration) 0s;
+            transition: height var(--site-header--menu--duration) 0;
             background-color: #ffffff;
 
             #{$this}__inner {
@@ -96,8 +114,8 @@ $site-header--top--background: 'white';
         z-index: 99;
 
         @include mq('site-header') {
-            width: auto;
-            margin-right: auto;
+            width: 100%;
+            background-color: var(--color--brand-2);
         }
 
         .site-header__navigation--top {
@@ -191,7 +209,7 @@ $site-header--top--background: 'white';
             margin-top: 0;
             padding-right: 0;
             padding-left: 0;
-            background-color: transparent;
+            background-color: var(--color--brand-2);
         }
     }
 
@@ -199,6 +217,7 @@ $site-header--top--background: 'white';
         display: flex;
         flex-direction: column;
         width: 100%;
+        transition: all var(--site-header--menu--duration) var(--site-header--menu--ease);
 
         @include mq($until: 'site-header') {
             --link--color: var(--color--foreground);
@@ -213,7 +232,6 @@ $site-header--top--background: 'white';
             grid-template-columns: min(100%, #{px-to-rem(300)});
             opacity: 0;
             pointer-events: none;
-            transition: all var(--site-header--menu--duration) var(--site-header--menu--ease);
             visibility: hidden;
 
             .site-header.is-open & {
@@ -222,7 +240,7 @@ $site-header--top--background: 'white';
                 transition: all var(--site-header--menu--duration) var(--site-header--menu--ease)
                     var(--site-header--menu--duration);
                 visibility: visible;
-                margin-top: 0;
+                padding-top: 0;
                 position: absolute;
                 top: var(--site-header--height);
                 left: 0;
@@ -247,17 +265,27 @@ $site-header--top--background: 'white';
             }
         }
 
+        .site-header__navigation {
+            transition: all var(--site-header--menu--duration) var(--site-header--menu--ease);
+            z-index: -1;
+        }
+
         @include mq('site-header') {
             @include align-width--l;
 
             justify-content: center;
-            margin-top: var(--space--2xs);
+            padding-top: var(--space--2xs);
             gap: var(--site-header--spacing);
             display: grid;
             grid-auto-rows: min-content;
             grid-template-rows: auto;
             width: auto;
             align-items: center;
+
+            .scrolling-down.scroll-valid & .site-header__navigation {
+                translate: 0 -100%;
+                visibility: hidden;
+            }
         }
     }
 
@@ -436,8 +464,17 @@ $site-header--top--background: 'white';
 
     &__logo {
         display: flex;
-        width: 100%;
-        max-width: var(--site-header--logo-width);
+        width: var(--site-header--logo-width);
+        z-index: 100;
+        transition: all var(--site-header--menu--duration) var(--site-header--menu--ease)
+            calc(var(--site-header--menu--duration) / 2);
+
+        @include mq('site-header') {
+            .scrolling-down.scroll-valid & {
+                translate: 0 -20px;
+                transition-delay: 0s;
+            }
+        }
 
         > * {
             width: 100%;

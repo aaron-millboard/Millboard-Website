@@ -43,8 +43,9 @@ export default class SiteHeader {
             }, 50)
         );
 
-        // Listen to custom scroll event.
+        // Listen to custom scroll events.
         window.addEventListener('scrollchange', this);
+        window.addEventListener('scrolldown', this);
 
         if (this.isBurgerModeActive()) {
             this.closeHeader(true);
@@ -324,6 +325,10 @@ export default class SiteHeader {
      */
     handleEvent(event) {
         this[`on${event.type}`](event);
+    }
+
+    onscrolldown() {
+        this.body.classList.toggle('scroll-valid', document.documentElement.scrollTop > 64);
     }
 
     onscrollchange(event) {
