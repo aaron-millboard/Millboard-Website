@@ -43,6 +43,11 @@ export default class SiteHeader {
             }, 50)
         );
 
+        // Listen to custom scroll event.
+        window.addEventListener('scrollchange', ({detail}) => {
+            console.log(detail.direction);
+        });
+
         if (this.isBurgerModeActive()) {
             this.closeHeader(true);
         }
