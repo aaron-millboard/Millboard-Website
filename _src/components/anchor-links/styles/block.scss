@@ -24,6 +24,12 @@
                 var(--space--4xs) + var(--wp--admin-bar-height) + var(--site-header--height)
             ); // Allow for wp-admin bar.
         }
+
+        + p {
+            @include mq(large) {
+                margin-top: 0;
+            }
+        }
     }
 
     // Hide the element.

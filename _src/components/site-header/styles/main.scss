@@ -19,6 +19,8 @@ $site-header--top--background: 'white';
 }
 
 body {
+    --site-header--height: 6.5rem;
+
     @include mq('site-header') {
         --site-header--height: #{px-to-rem(160)};
 
@@ -33,7 +35,6 @@ body {
 }
 
 .site-header {
-    --site-header--height: 6.5rem;
     --site-header--logo-width: #{px-to-rem(120)};
 
     --site-header--spacing: var(--space--m);
