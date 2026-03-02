@@ -27,6 +27,7 @@ class Product
             return $args;
         }
 
+        // Set default gutenberg template.
         $args['template'] = [
             ['acf/wc-single-product'],
         ];
