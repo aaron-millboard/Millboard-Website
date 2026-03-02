@@ -1,5 +1,5 @@
 <div <?= \Granola\Helpers::build_attributes($args['attributes']); ?>>
-    <div class="hero-header__inner alignwide">
+    <div class="hero-header__inner">
         <?php if (!empty($args['image'])) { ?>
             <div class="hero-header__media">
                 <?php if (!empty($args['strapline'])) { ?>
@@ -34,7 +34,7 @@
         <?php } ?>
 
         <?php if (!empty($args['heading']) || !empty($args['ctas'])) { ?>
-            <div class="hero-header__header">
+            <div class="hero-header__header alignwide">
                 <div class="hero-header__content">
                     <?php if (!empty($args['preheading'])) { ?>
                         <div class="hero-header__preheading is-style-typestyle-h6">
