@@ -16,12 +16,13 @@
         position: sticky;
         z-index: var(--z-index--backdrop);
         top: var(--space--s);
-       
         pointer-events: none;
 
         @include mq(large) {
             height: 0;
-            top: calc(-1px + var(--wp--admin-bar-height) + var(--space--xs)); // Allow for wp-admin bar.
+            top: calc(
+                var(--space--4xs) + var(--wp--admin-bar-height) + var(--site-header--height)
+            ); // Allow for wp-admin bar.
         }
     }
 
@@ -71,6 +72,7 @@
             height: #{px-to-rem(3)};
             background-color: var(--color--brand-4);
             content: '';
+            flex: 0 0 auto;
         }
     }
 
@@ -118,7 +120,7 @@
 
         &[aria-expanded='true'] {
             &::after {
-                transform: scale(-1)
+                transform: scale(-1);
             }
         }
     }
