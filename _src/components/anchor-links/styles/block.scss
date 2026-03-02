@@ -15,14 +15,13 @@
     &__wrapper {
         position: sticky;
         z-index: var(--z-index--backdrop);
-        top: var(--space--s);
+        top: calc(
+            var(--space--xs) + var(--wp--admin-bar-height) + var(--site-header--height)
+        ); // Allow for wp-admin bar.
         pointer-events: none;
 
         @include mq(large) {
             height: 0;
-            top: calc(
-                var(--space--4xs) + var(--wp--admin-bar-height) + var(--site-header--height)
-            ); // Allow for wp-admin bar.
         }
 
         + p {
