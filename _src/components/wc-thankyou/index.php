@@ -69,12 +69,6 @@ $order = $args['order'] ?? null;
                         </div>
                     <?php endif; ?>
                 </div>
-
-                <div class="thankyou__details__actions">
-                    <a href="<?php echo esc_url(wc_get_page_permalink('shop')); ?>" class="back-to-shop">
-                        <?php esc_html_e('Back to website', 'granola'); ?>
-                    </a>
-                </div>
             <?php endif; ?>
         </div>
 
