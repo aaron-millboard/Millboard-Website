@@ -124,3 +124,82 @@ function granola_yoast_breadcrumb_variable_product($link, $index) {
     return $link;
 }
 
+/**
+ * Remove duplicate Yoast breadcrumb links.
+ *
+ * Also removes earlier duplicates when the current page breadcrumb text appears more than once.
+ *
+ * @param array $links The breadcrumb links array.
+ *
+ * @return array
+ */
+function remove_duplicate_yoast_breadcrumb_links(array $links): array
+{
+    $normalized_links = [];
+
+    foreach ($links as $index => $link) {
+        $url = '';
+        if (isset($link['url']) && is_string($link['url'])) {
+            $url = untrailingslashit($link['url']);
+        }
+
+        $text = '';
+        if (isset($link['text']) && is_string($link['text'])) {
+            $text = $link['text'];
+        }
+
+        $normalized_text = html_entity_decode(wp_strip_all_tags($text), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $normalized_text = strtolower(trim($normalized_text));
+
+        $normalized_links[$index] = [
+            'link' => $link,
+            'url' => $url,
+            'text' => $normalized_text,
+            'signature' => $url . '|' . $normalized_text,
+        ];
+    }
+
+    $last_text = '';
+    foreach (array_reverse($normalized_links) as $normalized_link) {
+        if ($normalized_link['text'] !== '') {
+            $last_text = $normalized_link['text'];
+            break;
+        }
+    }
+
+    $last_text_count = 0;
+    $last_text_last_index = -1;
+    if ($last_text !== '') {
+        foreach ($normalized_links as $index => $normalized_link) {
+            if ($normalized_link['text'] === $last_text) {
+                $last_text_count++;
+                $last_text_last_index = $index;
+            }
+        }
+    }
+
+    $filtered_links = [];
+    $previous_signature = null;
+
+    foreach ($normalized_links as $index => $normalized_link) {
+        $signature = $normalized_link['signature'];
+
+        if ($signature === $previous_signature) {
+            continue;
+        }
+
+        if (
+            $last_text_count > 1
+            && $normalized_link['text'] === $last_text
+            && $index !== $last_text_last_index
+        ) {
+            continue;
+        }
+
+        $filtered_links[] = $normalized_link['link'];
+        $previous_signature = $signature;
+    }
+
+    return $filtered_links;
+}
+
