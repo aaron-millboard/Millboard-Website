@@ -61,12 +61,16 @@
         margin-bottom: var(--space--l);
         padding: var(--space--s) var(--space--s);
         display: flex;
-        flex-direction: row;
-        align-items: center;
+        flex-direction: column;
         background-color: var(--color--brand-1);
         gap: var(--space--xs);
         border-top: 3px solid var(--color--brand-4);
         list-style: none;
+
+        @include mq('medium') {
+            flex-direction: row;
+            align-items: center;
+        }
 
         &::before {
             flex-shrink: 0;
@@ -89,7 +93,11 @@
             display: flex;
             align-items: center;
             gap: var(--space--s);
-            margin-left: auto;
+            white-space: nowrap;
+
+            @include mq('medium') {
+                margin-left: auto;
+            }
 
             &::after {
                 width: #{px-to-rem(16)};
