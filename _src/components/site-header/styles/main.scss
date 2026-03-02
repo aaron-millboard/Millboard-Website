@@ -31,7 +31,8 @@ $site-header--top--background: 'white';
 
     $this: &;
 
-    position: relative;
+    position: sticky;
+    top: 0;
     z-index: var(--z-index--site-header);
     width: 100%;
     height: var(--site-header--height);
