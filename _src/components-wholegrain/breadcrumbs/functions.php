@@ -57,6 +57,30 @@ function set_yoast_wrapper_markup_class(): string
 }
 
 /**
+ * Hide Yoast breadcrumb links that point to the home page.
+ *
+ * @param string $link       The breadcrumb link HTML markup.
+ * @param array  $breadcrumb The breadcrumb link array.
+ *
+ * @return string
+ */
+function hide_home_page_breadcrumb_link($link, $breadcrumb): string
+{
+    if (empty($breadcrumb['url']) || !is_string($breadcrumb['url'])) {
+        return $link;
+    }
+
+    $home_url = untrailingslashit((string) home_url('/'));
+    $breadcrumb_url = untrailingslashit($breadcrumb['url']);
+
+    if ($breadcrumb_url === $home_url) {
+        return '';
+    }
+
+    return $link;
+}
+
+/**
  * Custom Yoast breadcrumb filter for variable products.
  * Displays selected 'pa_colour' and 'pa_board-width' in the breadcrumb.
  */
@@ -99,3 +123,4 @@ function granola_yoast_breadcrumb_variable_product($link, $index) {
     
     return $link;
 }
+

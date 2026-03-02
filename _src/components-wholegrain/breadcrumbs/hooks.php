@@ -6,4 +6,6 @@ namespace Granola\Components\Breadcrumbs;
 
 \add_filter('wpseo_breadcrumb_separator', __NAMESPACE__ . '\\alter_yoast_separator_markup');
 \add_filter('wpseo_breadcrumb_output_class', __NAMESPACE__ . '\\set_yoast_wrapper_markup_class');
-add_filter('wpseo_breadcrumb_single_link', __NAMESPACE__ . '\granola_yoast_breadcrumb_variable_product', 10, 2);
+\add_filter('wpseo_breadcrumb_single_link', __NAMESPACE__ . '\\hide_home_page_breadcrumb_link', 9, 2);
+\add_filter('wpseo_breadcrumb_single_link', __NAMESPACE__ . '\granola_yoast_breadcrumb_variable_product', 10, 2);
+
