@@ -1,5 +1,4 @@
 .woocommerce {
-
     display: flex;
     flex-direction: column;
     gap: var(--space--xl);
@@ -15,14 +14,21 @@
     }
 
     .checkout {
-
         display: grid;
         grid-template-columns: 1fr;
-        row-gap: var(--space--l);
+        gap: var(--space--l);
 
-        @include mq('large') {
-            grid-template-columns: 1.75fr 1fr;
-            column-gap: var(--space--4xl);
+        @include mq(large) {
+            grid-template-columns: minmax(0, 1.75fr) minmax(0, 1fr);
+            gap: var(--space--xl);
+        }
+
+        @include mq(xlarge) {
+            gap: var(--space--2xl);
+        }
+
+        @include mq(xxlarge) {
+            gap: var(--space--3xl);
         }
 
         #checkout__notices {
@@ -39,14 +45,12 @@
                 gap: var(--space--s);
 
                 &.woocommerce-error {
-
                     li {
                         border-color: var(--color--brand-3);
                         &::before {
                             background-image: url(#{asset-path('images/icons-custom/union.svg')});
                         }
                     }
-
                 }
             }
 
@@ -94,7 +98,7 @@
 
             &-fields {
                 display: grid;
-                grid-template-columns: 1fr 1fr;
+                grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
                 column-gap: var(--space--s);
                 row-gap: var(--space--m);
             }
@@ -118,16 +122,16 @@
                 align-items: flex-start;
                 gap: var(--space--xs);
 
-                &:has(input[type="radio"]:checked) {
+                &:has(input[type='radio']:checked) {
                     background-color: var(--color--brand-1);
                     border-color: var(--color--brand-4);
 
-                    input[type="radio"] {
+                    input[type='radio'] {
                         background-color: var(--color--brand-1);
                     }
                 }
 
-                input[type="radio"] {
+                input[type='radio'] {
                     flex-shrink: 0;
                     margin: 0;
                     margin-top: 0.125rem;
@@ -197,7 +201,6 @@
 
         // Payment methods
         .wc_payment_method {
-
             .payment_box p {
                 @include typestyle-base;
                 margin: 0;
@@ -224,13 +227,11 @@
                     width: 1em !important;
                 }
             }
-
         }
 
         // Around place order area
         .place-order,
         .woocommerce-terms-and-conditions-wrapper {
-
             display: flex;
             flex-direction: column;
             gap: var(--space--xs);
@@ -245,7 +246,6 @@
                 @include typestyle-base;
                 margin: 0;
             }
-
         }
     }
 }

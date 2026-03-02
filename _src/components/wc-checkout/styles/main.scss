@@ -24,6 +24,8 @@
             --input--border-color--focus: var(--color--foreground);
             --input--border-width--focus: 1px;
             --input--border-width: 1px;
+
+            max-width: 100%;
         }
 
         .select2-selection.select2-selection--single {
