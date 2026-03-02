@@ -49,7 +49,7 @@ body {
     $internal-z-index: 10;
 
     position: sticky;
-    top: var(--wp--admin-bar-height);
+    top: 0;
     z-index: var(--z-index--site-header);
     width: 100%;
     height: var(--site-header--height);
