@@ -43,6 +43,10 @@ export default class SiteHeader {
             }, 50)
         );
 
+        // Listen to custom scroll events.
+        window.addEventListener('scrollchange', this);
+        window.addEventListener('scrolldown', this);
+
         if (this.isBurgerModeActive()) {
             this.closeHeader(true);
         }
@@ -310,5 +314,25 @@ export default class SiteHeader {
 
     isBurgerModeActive() {
         return isElementVisible(this.burgerEl);
+    }
+
+    /**
+     * Handle events with class functions to retain class context.
+     *
+     * @link https://webreflection.medium.com/dom-handleevent-a-cross-platform-standard-since-year-2000-5bf17287fd38
+     *
+     * @param {Event} event An event object.
+     */
+    handleEvent(event) {
+        this[`on${event.type}`](event);
+    }
+
+    onscrolldown() {
+        this.body.classList.toggle('scroll-valid', document.documentElement.scrollTop > 64);
+    }
+
+    onscrollchange(event) {
+        this.body.classList.toggle('scrolling-up', event.detail.direction === 'up');
+        this.body.classList.toggle('scrolling-down', event.detail.direction === 'down');
     }
 }
