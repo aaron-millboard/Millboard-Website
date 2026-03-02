@@ -1,5 +1,4 @@
 .woocommerce {
-
     &__section-header {
         display: flex;
         justify-content: space-between;
@@ -13,7 +12,6 @@
     }
 
     .cart {
-
         display: grid;
         grid-template-columns: 1fr;
         gap: var(--space--xl);
@@ -34,7 +32,7 @@
             gap: var(--space--xl);
         }
 
-        button[type="submit"] {
+        button[type='submit'] {
             display: none;
         }
 
@@ -71,9 +69,7 @@
                     mask-repeat: no-repeat;
                     mask-size: #{px-to-rem(16)};
                 }
-
             }
-
         }
 
         &__totals {
@@ -96,6 +92,7 @@
                 &--label,
                 &--value {
                     @include typestyle-h6;
+
                     text-decoration: uppercase;
                     letter-spacing: 1px;
                     font-weight: 600;
@@ -107,7 +104,5 @@
                 }
             }
         }
-
     }
-
 }

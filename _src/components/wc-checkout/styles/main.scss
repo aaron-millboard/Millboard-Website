@@ -178,13 +178,12 @@
                     justify-content: space-between;
                     align-items: center;
 
-                    .label {
-                        @include typestyle-h5;
-                        @include typestyle-xlarge;
-                    }
-
+                    .label,
                     .value {
-                        @include typestyle-base;
+                        @include typestyle-h6;
+
+                        text-decoration: uppercase;
+                        letter-spacing: 1px;
                         font-weight: 600;
                     }
                 }
