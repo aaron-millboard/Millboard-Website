@@ -103,15 +103,16 @@ function filter_args(array $args): ?array
             }
         }
 
-        $args['control_button'] = [
-            'content' => \__('Play video', 'granola'),
-            'classes' => ['hero-header__controls'],
-            'attributes' => [
-                'data-play-label' => \__('Play video', 'granola'),
-                'data-pause-label' => \__('Pause video', 'granola'),
-            ],
-            'visually_hidden_text' => true,
-        ];
+        // Commented out: video has controls - TBC.
+        // $args['control_button'] = [
+        //     'content' => \__('Play video', 'granola'),
+        //     'classes' => ['hero-header__controls'],
+        //     'attributes' => [
+        //         'data-play-label' => \__('Play video', 'granola'),
+        //         'data-pause-label' => \__('Pause video', 'granola'),
+        //     ],
+        //     'visually_hidden_text' => true,
+        // ];
     }
 
     // -------------------------------------------------------------------------

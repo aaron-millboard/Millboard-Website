@@ -32,8 +32,6 @@
                         allowfullscreen
                     ></iframe>
                 <?php } ?>
-
-                <?= \Granola\Component::get('button', $args['control_button']); ?>
             </div>
         <?php } ?>
 
