@@ -34,6 +34,7 @@
         margin: 0;
         padding: 0;
         transition: transition(opacity, visibility);
+        transition-duration: 500ms;
     }
 
     &__controls {
@@ -53,6 +54,10 @@
         justify-content: center;
         color: var(--color--white);
 
+        @media (hover: hover) {
+            display: none;
+        }
+
         &::after {
             width: var(--icon-size);
             height: var(--icon-size);
@@ -63,22 +68,12 @@
     // Active state when video is playing
     &--playing {
         #{$this}__controls {
-            &::after {
-                mask-image: url(#{asset-path('images/icons-custom/pause.svg')});
-            }
+            display: none;
         }
-    }
 
-    &--video-ready {
         #{$this}__iframe {
             opacity: 1;
             visibility: visible;
-        }
-    }
-
-    &--autoplaying {
-        #{$this}__strapline-wrapper-outer {
-            z-index: $block-internal-z-index + 2;
         }
     }
 

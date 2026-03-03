@@ -93,26 +93,32 @@ function filter_args(array $args): ?array
                 ], $args['embed_url']);
             } elseif (strpos($args['embed_url'], 'player.vimeo.com/video/') !== false) {
                 $args['embed_url'] = \add_query_arg([
-                    'autoplay' => 1,
                     'muted' => 1,
                     'loop' => 1,
                     'vimeo_logo' => 0,
                     'unmute_button' => 0,
+                    'title' => 0,
+                    'byline' => 0,
+                    'airplay' => 0,
+                    'chromecast' => 0,
                     'color' => '799513', // Branded: olive green.
+                ], $args['embed_url']);
+
+                $args['embed_url'] = \remove_query_arg([
+                    'autoplay',
                 ], $args['embed_url']);
             }
         }
 
-        // Commented out: video has controls - TBC.
-        // $args['control_button'] = [
-        //     'content' => \__('Play video', 'granola'),
-        //     'classes' => ['hero-header__controls'],
-        //     'attributes' => [
-        //         'data-play-label' => \__('Play video', 'granola'),
-        //         'data-pause-label' => \__('Pause video', 'granola'),
-        //     ],
-        //     'visually_hidden_text' => true,
-        // ];
+        $args['control_button'] = [
+            'content' => \__('Play video', 'granola'),
+            'classes' => ['hero-header__controls'],
+            'attributes' => [
+                'data-play-label' => \__('Play video', 'granola'),
+                'data-pause-label' => \__('Pause video', 'granola'),
+            ],
+            'visually_hidden_text' => true,
+        ];
     }
 
     // -------------------------------------------------------------------------

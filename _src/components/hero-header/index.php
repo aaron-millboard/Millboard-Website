@@ -24,12 +24,17 @@
 
                 <?php if (!empty($args['embed_url'])) { ?>
                     <iframe
+                        src="<?= esc_attr($args['embed_url']); ?>"
                         data-embed-url="<?= esc_attr($args['embed_url']); ?>"
                         class="hero-header__iframe"
                         frameborder="0"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                         allowfullscreen
                     ></iframe>
+                <?php } ?>
+
+                <?php if (!empty($args['control_button'])) { ?>
+                    <?= \Granola\Component::get('button', $args['control_button']); ?>
                 <?php } ?>
             </div>
         <?php } ?>
