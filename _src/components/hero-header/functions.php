@@ -40,7 +40,7 @@ function filter_args(array $args): ?array
         ];
 
         if (!empty($args['image'])) {
-            $args['image']['size'] = 'hero';
+            $args['image']['size'] = 'full';
             $args['image']['classes'] = ['hero-header__image'];
             $args['image']['attributes']['fetchpriority'] = 'high';
             $args['image']['attributes']['data-spai-eager'] = true;
