@@ -97,6 +97,10 @@ function filter_args(array $args): ?array
                     'loop' => 1,
                     'vimeo_logo' => 0,
                     'unmute_button' => 0,
+                    'title' => 0,
+                    'byline' => 0,
+                    'airplay' => 0,
+                    'chromecast' => 0,
                     'color' => '799513', // Branded: olive green.
                 ], $args['embed_url']);
 
