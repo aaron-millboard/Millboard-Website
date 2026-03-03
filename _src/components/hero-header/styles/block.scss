@@ -54,6 +54,10 @@
         justify-content: center;
         color: var(--color--white);
 
+        @media (hover: hover) {
+            display: none;
+        }
+
         &::after {
             width: var(--icon-size);
             height: var(--icon-size);
@@ -64,9 +68,7 @@
     // Active state when video is playing
     &--playing {
         #{$this}__controls {
-            &::after {
-                mask-image: url(#{asset-path('images/icons-custom/pause.svg')});
-            }
+            display: none;
         }
 
         #{$this}__iframe {

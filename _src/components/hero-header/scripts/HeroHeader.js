@@ -1,4 +1,5 @@
 import Player from '@vimeo/player';
+import isElementVisible from '../../../scripts/helpers/isElementVisible.js';
 
 export default class HeroHeader {
    /**
@@ -13,6 +14,7 @@ export default class HeroHeader {
         }
 
         this.state = 'paused';
+        this.controlButton = this.media.querySelector('.hero-header__controls');
         this.iframe = this.media.querySelector('.hero-header__iframe');
 
         if (Player && this.iframe) {
@@ -35,9 +37,19 @@ export default class HeroHeader {
         });
 
         // Device has a mouse - set up mouse interactions.
-        if (matchMedia('(pointer:fine)').matches) {
+        if (matchMedia('(hover:hover)').matches) {
             this.media.addEventListener('mouseenter', this);
             this.media.addEventListener('mouseleave', this);
+        }
+
+        if (this.controlButton && this.areControlsActive()) {
+            this.controlButton.addEventListener('click', () => {
+                if (this.state === 'paused') {
+                    this.playVideo();
+                } else {
+                    this.pauseVideo();
+                }
+            });
         }
 
         if (this.media.matches(':hover')) {
@@ -52,6 +64,7 @@ export default class HeroHeader {
         if (this.player) {
             this.player.play().then(() => {
                 this.element.classList.add('hero-header--playing');
+                this.controlButton.firstElementChild.textContent = this.controlButton.getAttribute('data-pause-label');
                 this.state = 'playing';
             }) ;
         }
@@ -64,9 +77,14 @@ export default class HeroHeader {
         if (this.player) {
             this.player.pause().then(() => {
                 this.element.classList.remove('hero-header--playing');
+                this.controlButton.firstElementChild.textContent = this.controlButton.getAttribute('data-play-label');
                 this.state = 'paused';
             });
         }
+    }
+
+    areControlsActive() {
+        return isElementVisible(this.controlButton);
     }
 
     /**
