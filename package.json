@@ -44,6 +44,7 @@
         "webpack-remove-empty-scripts": "^1.1.1"
     },
     "dependencies": {
+        "@vimeo/player": "^2.30.2",
         "leaflet": "^1.9.4",
         "leaflet-providers": "^2.0.0",
         "leaflet.fullscreen": "^5.3.0",
