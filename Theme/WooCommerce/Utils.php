@@ -76,8 +76,8 @@ class Utils
             return null;
         }
 
-        // Return bool - if variation exists, is it the same as the passed product?
-        return $product->get_id() === $default_product->get_id();
+        // Return bool - if variation exists, is it the same as the passed product? OR is this the base product?
+        return $product->get_id() === $default_product->get_id() || $product->get_type() === 'product';
     }
 
     /**
