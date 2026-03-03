@@ -56,7 +56,7 @@
             <div class="product-calculator__section__content">
 
                 <div class="product-calculator__input-group">
-                    <input id="calculator_length" class="product-calculator__input" type="number" step="0.1" value="1.00">
+                    <input id="calculator_length" class="product-calculator__input" type="number" step="0.01" value="1.00">
                     <label for="calculator_length" class="product-calculator__label">
                         <?= esc_html__('Length', 'granola'); ?>
                     </label>
@@ -67,7 +67,7 @@
                 </span>
 
                 <div class="product-calculator__input-group">
-                    <input id="calculator_width" class="product-calculator__input" type="number" step="0.1" value="1.00">
+                    <input id="calculator_width" class="product-calculator__input" type="number" step="0.01" value="1.00">
                     <label for="calculator_width" class="product-calculator__label">
                         <?= esc_html__('Width', 'granola'); ?>
                     </label>
@@ -78,7 +78,7 @@
                 </span>
 
                 <div class="product-calculator__input-group">
-                    <input id="calculator_area" class="product-calculator__input" type="number" step="0.1" value="1.00">
+                    <input id="calculator_area" class="product-calculator__input" type="number" step="0.01" value="1.00">
                     <label for="calculator_area" class="product-calculator__label">
                         <?= esc_html__('Area', 'granola'); ?>
                     </label>
