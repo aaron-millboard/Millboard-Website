@@ -105,6 +105,7 @@ function sample_product_add_to_cart_validation(bool $add_to_cart, int $product_i
     $sample_count = get_cart_sample_count();
 
     if ($sample_count + $qty > 3) {
+        wc_clear_notices();
         \wc_add_notice(
             \__('You can only add a maximum of 3 free samples', 'granola'),
             'error'
