@@ -14,7 +14,7 @@
         overflow: clip; // allows position: sticky.
         display: grid;
         grid-template-columns: minmax(0, 1fr);
-        max-width: 100%;
+        width: 100%;
 
         @media (min-aspect-ratio: 16/9) {
             min-height: 150vh; // magic number
@@ -24,7 +24,7 @@
     &__image-wrapper,
     &__iframe {
         position: sticky;
-        top: 0;
+        top: calc(var(--wp--admin-bar-height--sticky) + var(--site-header--height));
         display: block;
         grid-row: 1;
         grid-column: 1;

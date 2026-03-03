@@ -15,11 +15,10 @@
     &__wrapper {
         position: sticky;
         z-index: var(--z-index--backdrop);
-        top: calc(var(--space--xs) + var(--site-header--height));
+        top: calc(var(--space--xs) + var(--wp--admin-bar-height--sticky) + var(--site-header--height));
         pointer-events: none;
 
         @include mq(large) {
-            top: calc(var(--space--xs) + var(--wp--admin-bar-height) + var(--site-header--height));
             height: 0;
         }
 

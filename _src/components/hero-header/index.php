@@ -1,7 +1,7 @@
 <div <?= \Granola\Helpers::build_attributes($args['attributes']); ?>>
     <div class="hero-header__inner">
         <?php if (!empty($args['image'])) { ?>
-            <div class="hero-header__media">
+            <div class="hero-header__media alignwide">
                 <?php if (!empty($args['strapline'])) { ?>
                     <div class="hero-header__strapline-wrapper-outer">
                         <div class="hero-header__strapline-wrapper-inner">
