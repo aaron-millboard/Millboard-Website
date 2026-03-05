@@ -22,6 +22,7 @@ defined('ABSPATH') || exit;
 do_action('woocommerce_before_cart');?>
 
 <form class="cart woocommerce-cart-form" action="<?php echo esc_url(wc_get_cart_url()); ?>" method="post">
+    <?php do_action('woocommerce_before_cart_table'); ?>
 
     <div class="cart__inner">
 
@@ -31,6 +32,7 @@ do_action('woocommerce_before_cart');?>
         </div>
 
         <div class="cart__items shop_table" cellspacing="0">
+            <?php do_action('woocommerce_before_cart_contents'); ?>
 
             <?php
             foreach (WC()->cart->get_cart() as $cart_item_key => $cart_item) {
@@ -397,3 +399,17 @@ do_action('woocommerce_before_cart');?>
     </div>
 
 </form>
+
+<div class="cart-collaterals">
+    <?php
+        /**
+         * Cart collaterals hook.
+         *
+         * @hooked woocommerce_cross_sell_display
+         * @hooked woocommerce_cart_totals - 10
+         */
+        do_action('woocommerce_cart_collaterals');
+    ?>
+</div>
+
+<?php do_action('woocommerce_after_cart'); ?>
