@@ -9,6 +9,7 @@ namespace Theme\Taxonomies;
 class AdviceCategory
 {
     protected const SLUG = 'advice_category';
+    protected const REWRITE_SLUG = 'advice-category';
 
     public static function init(): void
     {
@@ -36,13 +37,16 @@ class AdviceCategory
             ],
             [
                 // Core taxonomy configuration.
+                'public'            => true,
+                'publicly_queryable'=> true,
+                'query_var'         => self::SLUG,
                 'hierarchical'      => true,
                 'show_admin_column' => true,
                 'show_in_rest'      => true,
                 'rewrite' => [
-                    'slug' => 'advice-centre',
+                    'slug' => self::REWRITE_SLUG,
                     'with_front' => false,
-                    'hierarchical' => true, // Allows hierarchical URLs if needed
+                    'hierarchical' => true,
                 ],
 
                 // Extended taxonomy configuration.
@@ -56,7 +60,7 @@ class AdviceCategory
                 // Override the base names used for labels (optional).
                 'singular' => \__('Advice Category', 'granola'),
                 'plural'   => \__('Advice Categories', 'granola'),
-                'slug'     => 'advice-category',
+                'slug'     => self::REWRITE_SLUG,
             ]
         );
     }

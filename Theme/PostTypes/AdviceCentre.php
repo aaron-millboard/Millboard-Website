@@ -9,12 +9,15 @@ namespace Theme\PostTypes;
 class AdviceCentre
 {
     protected const SLUG = 'advice-centre';
+    protected const TAXONOMY = 'advice_category';
 
     public static function init(): void
     {
         \add_action('init', [__CLASS__, 'register_post_type']);
+        \add_action('init', [__CLASS__, 'add_permalink_rewrite_rule']);
         // \add_action('acf/init', [__CLASS__, 'add_settings_page']);
         \add_filter('granola/templates/post-types', [__CLASS__, 'filter_granola_templates_post_types']);
+        \add_filter('post_type_link', [__CLASS__, 'filter_post_type_link'], 10, 2);
     }
 
     /**
@@ -34,6 +37,10 @@ class AdviceCentre
             'has_archive' => true,
             'hierarchical' => true,
             'show_in_rest' => true,
+            'rewrite' => [
+                'slug' => self::SLUG,
+                'with_front' => false,
+            ],
             'menu_position' => 25, // Below comments.
             'menu_icon' => 'dashicons-format-status',
             'supports' => [
@@ -117,5 +124,43 @@ class AdviceCentre
     {
         $post_types[] = self::SLUG;
         return $post_types;
+    }
+
+    /**
+     * Add rewrite rule for Advice Centre posts with taxonomy hierarchy in URL.
+     */
+    public static function add_permalink_rewrite_rule(): void
+    {
+        \add_rewrite_rule(
+            '^' . self::SLUG . '/([^/]+)/([^/]+)/?$',
+            'index.php?post_type=' . self::SLUG . '&name=$matches[2]',
+            'top'
+        );
+    }
+
+    /**
+     * Replace permalink for Advice Centre posts to include advice category hierarchy.
+     *
+     * @param string $post_link The post permalink.
+     * @param \WP_Post $post    The post object.
+     * @return string
+     */
+    public static function filter_post_type_link(string $post_link, \WP_Post $post): string
+    {
+        if ($post->post_type !== self::SLUG) {
+            return $post_link;
+        }
+
+        $term = \Theme\Utils\Taxonomies::get_primary_term($post, self::TAXONOMY);
+
+        if (!$term instanceof \WP_Term) {
+            return $post_link;
+        }
+
+        if ($term->slug === '') {
+            return $post_link;
+        }
+
+        return \home_url(\user_trailingslashit(self::SLUG . '/' . $term->slug . '/' . $post->post_name));
     }
 }
