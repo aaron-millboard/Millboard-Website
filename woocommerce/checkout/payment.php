@@ -51,7 +51,7 @@ if (! wp_doing_ajax()) {
     <div class="woocommerce__actions">
 
         <div class="back-to-cart">
-            <a href="<?php echo esc_url(wc_get_page_permalink('cart')); ?>">
+            <a href="<?= esc_url(wc_get_page_permalink('cart')); ?>">
                 <?php esc_html_e('Return to basket', 'granola'); ?>
             </a>
         </div>
