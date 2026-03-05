@@ -97,6 +97,10 @@ function granola_yoast_breadcrumb_variable_product($link, $index) {
         return $link;
     }
 
+    if (!$product->is_type('variable')) {
+        return $link;
+    }
+
     $title = $product->get_name();
     // Get the selected attribute values for 'colour' and 'board-width'
     $colour = $product->get_attribute('colour');
@@ -105,6 +109,11 @@ function granola_yoast_breadcrumb_variable_product($link, $index) {
         $divider = ' - ';
     } else {
         $divider = '';
+    }
+
+    $replacement = trim("{$colour}{$divider}{$board_width}");
+    if ($replacement === '') {
+        return $link;
     }
 
     // get $link content without HTML tags
@@ -117,7 +126,7 @@ function granola_yoast_breadcrumb_variable_product($link, $index) {
 
     if ($link_content === $title) {
 
-        $link = "<span class=\"breadcrumb_last\" aria-current=\"page\">{$colour}{$divider}{$board_width}</span>";
+        $link = "<span class=\"breadcrumb_last\" aria-current=\"page\">{$replacement}</span>";
         return $link;
     }
     
