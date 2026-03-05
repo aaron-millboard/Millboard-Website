@@ -68,7 +68,7 @@ if (!$checkout->is_registration_enabled() && $checkout->is_registration_required
             <div class="checkout__section">
                 <div class="checkout__section-header">
                     <h2><?php esc_html_e('Billing address', 'granola'); ?></h2>
-                    <div><?php esc_html_e("Enter the address where you want your order delivered.", 'granola'); ?></div>
+                    <div><?php esc_html_e("Enter your billing address details.", 'granola'); ?></div>
                 </div>
 
                 <div class="checkout__section-fields">
