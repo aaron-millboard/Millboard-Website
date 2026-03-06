@@ -182,9 +182,8 @@ defined('ABSPATH') || exit;
             <div class="value">
                 <?php
                 if (WC()->cart->needs_shipping() && WC()->cart->show_shipping()) {
-                    // get shipping total cost
-                    $shipping_total = WC()->cart->get_shipping_total();
-                    echo wc_price($shipping_total);
+                    // Get shipping total cost (incl. tax).
+                    echo WC()->cart->get_cart_shipping_total();
                 } else {
                     esc_html_e('Free shipping', 'woocommerce');
                 }
