@@ -2,6 +2,7 @@
     --website-selector--widget-gap: var(--space--xs);
     --website-selector--overlay-opacity: 20%;
     --website-selector--gradient-color: rgba(0, 0, 0, 0.3);
+
     // Adjust gradient color for brand backgrounds
     &.has-brand-6-background-color {
         --website-selector--gradient-color: rgba(255, 255, 255, 0.15);
@@ -27,6 +28,7 @@
     &__preheading,
     &__heading {
         @include typestyle-h2;
+
         text-transform: uppercase;
         margin: 0;
     }
@@ -57,7 +59,7 @@
         justify-content: end;
 
         &__description {
-            font-size: var(--font-size--base);
+            font-size: rfs(16, 18);
             line-height: var(--line-height--normal);
             color: var(--color--text);
             width: 100%;
