@@ -46,6 +46,14 @@ class Map {
         this.LMAP_INITIAL_CENTER = [55, -5]; // Move center to UK.
         this.LMAP_DISTANCE_CENTER = L.latLng(52.3, -1.4);
 
+        this.urlLocaleLatLng = this.getLatLngFromLocaleCode();
+        this.urlLocationQuery = this.getLocationQueryFromUrl();
+
+        if (this.urlLocaleLatLng) {
+            this.LMAP_INITIAL_CENTER = [this.urlLocaleLatLng.lat, this.urlLocaleLatLng.lng];
+            this.LMAP_DISTANCE_CENTER = this.urlLocaleLatLng;
+        }
+
         this.LMAP_MARKER_WIDTH = 31;
         this.LMAP_MARKER_HEIGHT = 40;
 
@@ -67,6 +75,8 @@ class Map {
         this.initSearch();
         this.initDistanceFilter();
         this.initTablist();
+
+        this.applyLocationFromUrl();
 
         if (this.tablist) {
             window.addEventListener('resize', throttle(() => {
@@ -90,6 +100,143 @@ class Map {
                 this.filterListingsByDistance();
             });
         }
+    }
+
+    getUrlSearchParams() {
+        return new URLSearchParams(window.location.search || '');
+    }
+
+    getUrlParamValue(keys) {
+        const searchParams = this.getUrlSearchParams();
+
+        for (const key of keys) {
+            const value = searchParams.get(key);
+
+            if (value && value.trim()) {
+                return value.trim();
+            }
+        }
+
+        return null;
+    }
+
+    getLocationQueryFromUrl() {
+        return this.getUrlParamValue(['location', 'search', 'q', 'postcode']);
+    }
+
+    getLocaleCodeFromUrl() {
+        const pathnameLocaleCode = this.getLocaleCodeFromPathname();
+
+        if (pathnameLocaleCode) {
+            return pathnameLocaleCode;
+        }
+
+        const explicitParamValue = this.getUrlParamValue([
+            'country',
+            'locale',
+            'lang',
+            'language',
+            'market',
+            'region',
+        ]);
+
+        const localeCodeRegex = /^[a-z]{2}[_-][a-z]{2}$/i;
+
+        if (explicitParamValue && localeCodeRegex.test(explicitParamValue)) {
+            return explicitParamValue;
+        }
+
+        const searchParams = this.getUrlSearchParams();
+
+        for (const [, value] of searchParams.entries()) {
+            if (value && localeCodeRegex.test(value.trim())) {
+                return value.trim();
+            }
+        }
+
+        return null;
+    }
+
+    getLocaleCodeFromPathname() {
+        const path = (window.location.pathname || '').toLowerCase();
+        const segments = path.split('/').filter(Boolean);
+        const localeCodeRegex = /^[a-z]{2}[-_][a-z]{2}$/;
+
+        const localeSegment = segments.find((segment) => localeCodeRegex.test(segment));
+
+        return localeSegment || null;
+    }
+
+    getLatLngFromLocaleCode() {
+        const localeCode = this.getLocaleCodeFromUrl();
+
+        if (!localeCode) {
+            return null;
+        }
+
+        const normalizedCode = localeCode.toLowerCase().replace('-', '_');
+        const countryCode = normalizedCode.split('_')[1];
+        const countryCentersByCode = {
+            at: [47.5162, 14.5501],
+            au: [-25.2744, 133.7751],
+            be: [50.5039, 4.4699],
+            ca: [56.1304, -106.3468],
+            ch: [46.8182, 8.2275],
+            de: [51.1657, 10.4515],
+            dk: [56.2639, 9.5018],
+            es: [40.4637, -3.7492],
+            fi: [61.9241, 25.7482],
+            fr: [46.2276, 2.2137],
+            gb: [55, -5],
+            ie: [53.1424, -7.6921],
+            it: [41.8719, 12.5674],
+            nl: [52.1326, 5.2913],
+            no: [60.472, 8.4689],
+            nz: [-40.9006, 174.886],
+            pl: [51.9194, 19.1451],
+            pt: [39.3999, -8.2245],
+            se: [60.1282, 18.6435],
+            us: [37.0902, -95.7129],
+        };
+
+        const center = countryCentersByCode[countryCode] || null;
+
+        if (!center) {
+            return null;
+        }
+
+        return L.latLng(center[0], center[1]);
+    }
+
+    async applyLocationFromUrl() {
+        if (this.urlLatLng) {
+            this.filterListingsByDistance();
+            return;
+        }
+
+        if (this.urlLocaleLatLng) {
+            this.filterListingsByDistance();
+            return;
+        }
+
+        if (!this.urlLocationQuery) {
+            return;
+        }
+
+        if (this.searchInput && !this.searchInput.value) {
+            this.searchInput.value = this.urlLocationQuery;
+        }
+
+        const response = await this.newRequest(this.urlLocationQuery);
+
+        if (!response || !response.results[0]) {
+            return;
+        }
+
+        const {lat, lng} = response.results[0].geometry.location;
+        this.LMAP_DISTANCE_CENTER = new L.LatLng(lat, lng);
+        this.LMAP_INITIAL_CENTER = [lat, lng];
+        this.filterListingsByDistance();
     }
 
     /**
