@@ -153,6 +153,11 @@ function build_menu_item_classes(array $classes, object $item, array $args): arr
         $classes[] = 'menu-item--home';
     }
 
+    // Root class (similar but different to home).
+    if (!empty($item->url) && \home_url() === rtrim($item->url, '/')) {
+        $classes[] = 'menu-item--root';
+    }
+
     // Current Menu Item class.
     if ($item->is_current_item) {
         $classes[] = 'menu-item--current';
