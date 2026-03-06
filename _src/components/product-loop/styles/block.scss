@@ -10,6 +10,10 @@
         }
     }
 
+    .woocommerce-notices-wrapper + & {
+        --block--margin-top: var(--space--xl);
+    }
+
     &__header {
         max-width: var(--width--responsive--l);
         margin: 0 auto var(--space--xl);
