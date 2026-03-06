@@ -32,10 +32,10 @@
         justify-content: center;
         transition: all 0.2s ease-in-out;
         overflow-y: auto;
-        padding: var(--space--xl) var(--space--m);
+        padding: var(--space--container-padding) var(--space--m);
 
         @include mq(medium) {
-            padding: var(--space--2xl) var(--space--l);
+            padding-inline: var(--space--l);
         }
     }
 
