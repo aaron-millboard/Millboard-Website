@@ -64,6 +64,6 @@
     <?php } ?>
 </header>
 
-<?php if (!\is_product() && !\is_shop()) { ?>
+<?php if (!\is_product()) { ?>
     <?php woocommerce_output_all_notices(); ?>
 <?php } ?>
