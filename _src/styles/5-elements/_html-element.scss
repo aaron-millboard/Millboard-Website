@@ -5,4 +5,5 @@ html {
     overflow-wrap: break-word;
     scroll-behavior: smooth;
     scroll-padding-top: var(--site--scroll-padding-top);
+    hyphens: auto;
 }
