@@ -97,13 +97,15 @@
         // Top level menu items.
         // -------------------------------------------------------------
         &--depth-0 {
-            &.menu-item--current {
-                border-top: var(--border-width--m) solid var(--color--brand-4);
-            }
-
             @include mq('site-header') {
                 display: flex;
                 align-items: stretch;
+            }
+
+            .site-header__bottom & {
+                &.menu-item--current {
+                    border-top: var(--border-width--m) solid var(--color--brand-4);
+                }
             }
 
             > .menu-item__wrap {
