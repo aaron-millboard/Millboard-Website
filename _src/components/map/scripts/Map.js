@@ -46,6 +46,7 @@ class Map {
         this.LMAP_INITIAL_CENTER = [55, -5]; // Move center to UK.
         this.LMAP_DISTANCE_CENTER = L.latLng(52.3, -1.4);
 
+        this.localeCountryCode = this.getCountryCodeFromUrl() || 'gb';
         this.urlLocaleLatLng = this.getLatLngFromLocaleCode();
         this.urlLocationQuery = this.getLocationQueryFromUrl();
 
@@ -168,14 +169,7 @@ class Map {
     }
 
     getLatLngFromLocaleCode() {
-        const localeCode = this.getLocaleCodeFromUrl();
-
-        if (!localeCode) {
-            return null;
-        }
-
-        const normalizedCode = localeCode.toLowerCase().replace('-', '_');
-        const countryCode = normalizedCode.split('_')[1];
+        const countryCode = this.localeCountryCode;
         const countryCentersByCode = {
             at: [47.5162, 14.5501],
             au: [-25.2744, 133.7751],
@@ -208,6 +202,52 @@ class Map {
         return L.latLng(center[0], center[1]);
     }
 
+    getCountryCodeFromUrl() {
+        const localeCode = this.getLocaleCodeFromUrl();
+
+        if (!localeCode) {
+            return null;
+        }
+
+        const normalizedCode = localeCode.toLowerCase().replace('-', '_');
+        const [, countryCode] = normalizedCode.split('_');
+
+        return countryCode || null;
+    }
+
+    getBoundsFromCountryCode() {
+        const countryBoundsByCode = {
+            at: [[46.3723, 9.5307], [49.0206, 17.1608]],
+            au: [[-43.7405, 112.9111], [-10.6845, 153.6393]],
+            be: [[49.497, 2.5417], [51.5055, 6.4081]],
+            ca: [[41.6766, -141.0019], [83.3362, -52.3232]],
+            ch: [[45.8179, 5.9559], [47.8085, 10.4923]],
+            de: [[47.2701, 5.8663], [55.0992, 15.0418]],
+            dk: [[54.5591, 8.0728], [57.7518, 12.690]],
+            es: [[27.4335, -18.3937], [43.9934, 4.5919]],
+            fi: [[59.4542, 20.5569], [70.0923, 31.5867]],
+            fr: [[41.3253, -5.1422], [51.1242, 9.5593]],
+            gb: [[49.8647, -8.6494], [60.8607, 1.7689]],
+            ie: [[51.4194, -10.7506], [55.4359, -5.9941]],
+            it: [[35.4897, 6.6273], [47.092, 18.7845]],
+            nl: [[50.7504, 3.3316], [53.5546, 7.2275]],
+            no: [[57.9596, 4.0875], [71.3849, 31.2934]],
+            nz: [[-52.6107, 165.8700], [-29.2228, 178.5597]],
+            pl: [[49.002, 14.1229], [54.8358, 24.1458]],
+            pt: [[36.8383, -31.2689], [42.1543, -6.1892]],
+            se: [[55.337, 10.5931], [69.059, 24.1777]],
+            us: [[24.3963, -124.8489], [49.3843, -66.8854]],
+        };
+
+        const bounds = countryBoundsByCode[this.localeCountryCode] || null;
+
+        if (!bounds) {
+            return null;
+        }
+
+        return L.latLngBounds(bounds);
+    }
+
     async applyLocationFromUrl() {
         if (this.urlLatLng) {
             this.filterListingsByDistance();
@@ -215,7 +255,7 @@ class Map {
         }
 
         if (this.urlLocaleLatLng) {
-            this.filterListingsByDistance();
+            this.filterListingsByDistance(false);
             return;
         }
 
@@ -258,6 +298,12 @@ class Map {
             // markerZoomAnimation: false,
             // worldCopyJump: true,
         });
+
+        const countryBounds = this.getBoundsFromCountryCode();
+
+        if (countryBounds) {
+            this.lmap.fitBounds(countryBounds);
+        }
 
         // Debuggers to help find zoom level and center position.
         // this.lmap.on('zoomend', function (event) {
@@ -422,7 +468,7 @@ class Map {
         });
     }
 
-    filterListingsByDistance() {
+    filterListingsByDistance(shouldAdjustMapBounds = true) {
         if (!this.distanceSelect) {
             return;
         }
@@ -475,8 +521,9 @@ class Map {
             this.listingContainer.classList.add('no-results');
         }
 
-        // Always adjust bounds.
-        this.lmap.fitBounds(bounds);
+        if (shouldAdjustMapBounds) {
+            this.lmap.fitBounds(bounds);
+        }
 
         this.sortlistingEls(filteredLayers);
     }
