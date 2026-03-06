@@ -256,6 +256,12 @@ body {
                 position: absolute;
                 top: var(--site-header--height);
                 left: 0;
+                height: auto;
+                max-height: calc(100vh - var(--wp--admin-bar-height--sticky) - var(--site-header--height));
+                max-height: calc(100dvh - var(--wp--admin-bar-height--sticky) - var(--site-header--height));
+                overflow-x: hidden;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
 
                 #{$this}__navigation {
                     background-color: var(--color--#{$site-header--bottom--background});
