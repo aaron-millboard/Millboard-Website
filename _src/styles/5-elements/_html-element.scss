@@ -6,6 +6,7 @@ html {
     scroll-behavior: smooth;
     scroll-padding-top: var(--site--scroll-padding-top);
 
+    &[lang='de'],
     &[lang='de-DE'] {
         hyphens: auto;
     }
