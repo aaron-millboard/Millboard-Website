@@ -177,20 +177,20 @@ defined('ABSPATH') || exit;
         <?php endforeach; ?>
 
 
-        <div class="checkout__summary__totals__item">
-            <div class="label"><?php esc_html_e('Shipping', 'woocommerce'); ?></div>
-            <div class="value">
-                <?php
-                if (WC()->cart->needs_shipping() && WC()->cart->show_shipping()) {
-                    // get shipping total cost
-                    $shipping_total = WC()->cart->get_shipping_total();
-                    echo wc_price($shipping_total);
-                } else {
-                    esc_html_e('Free shipping', 'woocommerce');
-                }
-                ?>
+        <?php if (WC()->cart->needs_shipping()) { ?>
+            <div class="checkout__summary__totals__item">
+                <div class="label"><?php esc_html_e('Shipping', 'woocommerce'); ?></div>
+                <div class="value">
+                    <?php if (WC()->cart->show_shipping() && WC()->cart->has_calculated_shipping()) {
+                        // Get shipping total cost (incl. tax).
+                        echo WC()->cart->get_cart_shipping_total();
+                    } else {
+                        esc_html_e('Taxes will be calculated after you enter your address', 'granola');
+                    }
+                    ?>
+                </div>
             </div>
-        </div>
+        <?php } ?>
 
         <?php foreach (WC()->cart->get_fees() as $fee) : ?>
             <div class="checkout__summary__totals__item">

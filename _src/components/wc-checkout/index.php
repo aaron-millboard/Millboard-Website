@@ -111,23 +111,13 @@ if (!$checkout->is_registration_enabled() && $checkout->is_registration_required
                 </div>
             <?php endif; ?>
 
-            <?php if (WC()->cart->needs_shipping() && WC()->cart->show_shipping()) : ?>
-                <div class="checkout__section">
-                    <div class="checkout__section-header">
-                        <h2><?php esc_html_e('Shipping method', 'granola'); ?></h2>
-                    </div>
-
-                    <div class="checkout__section-shipping">
-                        <?php if (WC()->cart->needs_shipping() && WC()->cart->show_shipping()) : ?>
-                            <?php do_action('woocommerce_review_order_before_shipping'); ?>
-
-                            <?php wc_cart_totals_shipping_html(); ?>
-
-                            <?php do_action('woocommerce_review_order_after_shipping'); ?>
-                        <?php endif; ?>
-                    </div>
+            <div class="checkout__section">
+                <div class="checkout__section-header">
+                    <h2><?php esc_html_e('Shipping method', 'granola'); ?></h2>
                 </div>
-            <?php endif; ?>
+
+                <?= \Granola\Component::get('wc-checkout/shipping'); ?>
+            </div>
         </div>
 
         <?php // do_action('woocommerce_checkout_after_customer_details'); ?>
@@ -142,9 +132,7 @@ if (!$checkout->is_registration_enabled() && $checkout->is_registration_required
 
         <?php do_action('woocommerce_checkout_before_order_review'); ?>
 
-        <div id="order_review" class="woocommerce-checkout-review-order">
-            <?php woocommerce_order_review(); ?>
-        </div>
+        <?php woocommerce_order_review(); ?>
 
         <?php do_action('woocommerce_checkout_after_order_review'); ?>
     </div>
