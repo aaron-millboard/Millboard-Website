@@ -41,7 +41,7 @@
 
         @include mq(large) {
             gap: var(--space--xl);
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
         }
     }
 
@@ -143,12 +143,12 @@
 
             @include mq(medium) {
                 display: grid;
-                grid-template-columns: 1fr 1fr;
+                grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
                 gap: var(--space--l);
             }
 
             @include mq(large) {
-                grid-template-columns: 1fr 0.5fr 1fr;
+                grid-template-columns: minmax(0, 1fr) minmax(0, 0.5fr) minmax(0, 1fr);
                 gap: 0;
             }
         }
