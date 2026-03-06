@@ -3,12 +3,12 @@
     <div class="<?= \Granola\Helpers::build_classes($args['overlay_classes']); ?>" aria-hidden="true"></div>
 
     <div class="modal__inner">
-        <div class="modal__content has-background has-brand-5-background-color">
+        <div class="modal__content has-white-color">
 
             <?= $args['content']; ?>
 
             <button class="modal__dismiss">
-                Close
+                <?= esc_html__('Close', 'granola'); ?>
                 <?= \Granola\SVG::get('icons/cross.svg'); ?>
             </button>
         </div>
