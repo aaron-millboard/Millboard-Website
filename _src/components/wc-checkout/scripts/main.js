@@ -4,7 +4,7 @@ jQuery(document.body).on('checkout_error', function() {
 });
 
 // Potential fix for Avalara x Address validaiton issues...
-jQuery(document.body).on('update_checkout', function(){
+jQuery(document.body).one('update_checkout', function(){
    setTimeout(function(){
       jQuery(document.body).trigger('update_checkout');
    }, 500);
