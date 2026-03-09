@@ -90,6 +90,7 @@ body {
             height: var(--site-header--height);
             transition: height var(--site-header--menu--duration) 0;
             background-color: #ffffff;
+            position: fixed;
 
             #{$this}__inner {
                 height: max-content;
