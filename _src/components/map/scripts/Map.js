@@ -597,7 +597,8 @@ class Map {
         }
 
         // Run the API request because there is no cached result available.
-        const response = fetch(`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURI(data)}&key=${this.googleApiKey}`)
+        const countryCode = (this.localeCountryCode || 'gb').toUpperCase();
+        const response = fetch(`https://maps.googleapis.com/maps/api/geocode/json?components=country:${countryCode}&address=${encodeURI(data)}&key=${this.googleApiKey}`)
             .then((r) => {
                 if (!r.ok) {
                     throw Error(r);
