@@ -88,6 +88,18 @@
                 aspect-ratio: 1 / 1;
             }
 
+            @media screen and (height <= 900px) {
+                aspect-ratio: 1 / 1;
+            }
+
+            @media screen and (height <= 800px) {
+                aspect-ratio: 3 / 2;
+            }
+
+            @media screen and (height <= 700px) {
+                aspect-ratio: 2 / 1;
+            }
+
             img {
                 display: block;
                 width: 100%;
