@@ -22,7 +22,7 @@ export default class Modal {
         this.initOpenButton();
         this.initModalLinks();
 
-        if(this.element.classList.contains('modal--active')) {
+        if (this.element.classList.contains('modal--active')) {
             this.open();
         }
     }
@@ -32,7 +32,7 @@ export default class Modal {
      */
     open() {
         this.element.classList.add('modal--active');
-        
+
         if (this.lockScroll) {
             document.body.style.overflow = 'hidden';
         }
@@ -43,7 +43,7 @@ export default class Modal {
      */
     close() {
         this.element.classList.remove('modal--active');
-        
+
         if (this.lockScroll) {
             document.body.style.overflow = '';
         }
@@ -62,34 +62,36 @@ export default class Modal {
      * Initialize click handlers for links inside the modal that should create a cookie and close the modal
      */
     initModalLinks() {
+        // Bail early - this behavior only applies if cookie is not set.
+        if (this.cookieSet) {
+            return;
+        }
+
         const modalLinks = this.element.querySelectorAll('a[href]');
+
         modalLinks.forEach((link) => {
             link.addEventListener('click', (event) => {
+                // Prevent the initial link click.
+                event.preventDefault();
 
-                // Apply custom behavior only if cookie is not set (always if modal is shown)
-                if(!this.cookieSet) {
+                // Close the modal and set cookie if configured
+                this.close();
 
-                    event.preventDefault();
-                    // Close the modal and set cookie if configured
-                    this.close();
+                // get link url without hash
+                let linkUrl = link.href;
 
-                    // get link url without hash
-                    let linkUrl = link.href;
-                    
-                    // get current url
-                    let currentUrl = window.location.href;
+                // get current url
+                let currentUrl = window.location.href;
 
-                    if(linkUrl && currentUrl) {
-                        linkUrl = linkUrl.split('/?')[0];
-                        currentUrl = currentUrl.split('/?')[0];
+                if (linkUrl && currentUrl) {
+                    linkUrl = linkUrl.split('/?')[0];
+                    currentUrl = currentUrl.split('/?')[0];
 
-                        // Perform click if url is not current
-                        if (linkUrl !== currentUrl) {
-                            // This time (as cookie is set) the default action will be performed without interruption if user clicks the link again
-                            link.click();
-                        }
+                    // Perform click if url is not current
+                    if (linkUrl !== currentUrl) {
+                        // This time (as cookie is set) the default action will be performed without interruption if user clicks the link again
+                        link.click();
                     }
-
                 }
             });
         });

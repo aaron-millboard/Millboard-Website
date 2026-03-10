@@ -14,6 +14,7 @@
 
     &__heading {
         @include typestyle-h1;
+
         line-height: 1.15;
         letter-spacing: 0.14em;
     }
@@ -67,7 +68,9 @@
 
     &:not(.has-background) {
         &.alignfull #{$media-object}__content {
-            padding-inline: var(--space--container-padding);
+            @include mq(medium) {
+                padding-inline: var(--space--container-padding);
+            }
         }
 
         &.aligncenter {
@@ -78,6 +81,7 @@
     // Make it containerised on full align
     &.alignfull #{$media-object}__inner {
         @include align-width--l;
+
         padding: var(--space--2xl) 0;
 
         @include mq($until: large) {

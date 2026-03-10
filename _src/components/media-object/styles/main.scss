@@ -4,8 +4,8 @@
     --media-object--content--gap: var(--space--4xs);
     --media-object--media--ratio: initial;
     --media-object--flex-flow: column;
-    --media-object--grid-template-columns: 1fr;
-    --media-object--grid-template-rows: 1fr;
+    --media-object--grid-template-columns: minmax(0, 1fr);
+    --media-object--grid-template-rows: minmax(0, 1fr);
     --media-object--content--justify-content: flex-start;
     --media-object--text-align: left;
 
