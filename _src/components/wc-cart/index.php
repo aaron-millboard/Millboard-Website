@@ -62,8 +62,11 @@ do_action('woocommerce_before_cart');?>
                     $calculator_enabled = get_field('enable_calculator', $_product->get_id());
                 }
 
-                $sample_size_attribute = $_product->get_attribute('pa_sample-size');
-                $board_width_attribute = $_product->get_attribute('pa_board-width');
+                $sample_size_attribute_name = \get_field('sample_size_taxonomy', 'options');
+                $board_width_attribute_name = \get_field('board_width_taxonomy', 'options');
+
+                $sample_size_attribute = $_product->get_attribute($sample_size_attribute_name ?? 'pa_sample-size');
+                $board_width_attribute = $_product->get_attribute($board_width_attribute_name ?? 'pa_board-width');
 
                 if ($sample_size_attribute || $board_width_attribute || $calculator_enabled) {
                     // If board, we check by 3 signs: board width attribute, sample size attribute set to full or calculator enabled
