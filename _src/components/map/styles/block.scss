@@ -240,6 +240,11 @@
         padding-bottom: var(--space--l);
         justify-items: start;
 
+        &.selected {
+            border-inline-start: 4px solid var(--color--brand-4);
+            padding-inline-start: var(--space--2xs);
+        }
+
         &:not(:last-child) {
             border-bottom: 1px solid var(--color--brand-1);
             margin-bottom: var(--space--l);
