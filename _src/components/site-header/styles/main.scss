@@ -73,7 +73,6 @@ body {
             --site-header--height: #{px-to-rem(64)};
             --site-header--logo-width: #{px-to-rem(160)};
 
-            overflow: hidden;
             box-shadow: var(--box-shadow--1);
         }
     }
