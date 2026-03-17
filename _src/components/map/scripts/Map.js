@@ -779,7 +779,15 @@ class Map {
         }
 
         // Run the API request because there is no cached result available.
-        const countryCode = (this.localeCountryCode || 'gb').toUpperCase();
+        let countryCode = (this.localeCountryCode || 'gb').toUpperCase();
+
+        // Guernsey (GG) and Jersey (JE) are Crown Dependencies, not part of
+        // Great Britain (GB). Override the country component so Google geocodes
+        // them correctly instead of resolving to a GB location.
+        if (countryCode === 'GB') {
+            countryCode = this.getChannelIslandCountryCode(normalizedData) || countryCode;
+        }
+
         const response = fetch(`https://maps.googleapis.com/maps/api/geocode/json?components=country:${countryCode}&address=${encodeURI(normalizedData)}&key=${this.googleApiKey}`)
             .then((r) => {
                 if (!r.ok) {
@@ -793,6 +801,19 @@ class Map {
             });
 
         return response;
+    }
+
+    /**
+     * Returns the ISO country code for Channel Island / Isle of Man queries
+     * when the base locale is GB, or null if the query is not for these territories.
+     * Google treats GG (Guernsey), JE (Jersey) and IM (Isle of Man) as separate
+     * country codes from GB, so a country:GB restriction causes misresolution.
+     */
+    getChannelIslandCountryCode(query) {
+        if (/^GY\d/i.test(query) || /\bguernsey\b/i.test(query)) return 'GG';
+        if (/^JE\d/i.test(query) || /\bjersey\b/i.test(query)) return 'JE';
+        if (/^IM\d/i.test(query) || /\bisle\s+of\s+man\b/i.test(query)) return 'IM';
+        return null;
     }
 }
 
