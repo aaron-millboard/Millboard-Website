@@ -481,28 +481,40 @@ class Map {
                     return;
                 }
 
-                [...this.tabs].forEach((tab) => {
-                    tab.classList.remove('map__tab--active')
-                });
-
-                clickedTab.classList.add('map__tab--active');
                 const panelId = clickedTab.getAttribute('aria-controls');
 
                 if (!panelId) {
                     return;
                 }
 
-                const panel = this.el.querySelector(`#${panelId}`);
-
-                if (panel) {
-                    this.updateTabPanelVisibility(panelId);
-
-                    if (panel.contains(this.mapContainerEl)) {
-                        this.syncMapViewport();
-                    }
-                }
+                this.activateTabByPanelId(panelId);
             });
         });
+    }
+
+    activateTabByPanelId(panelId) {
+        if (!panelId || !this.tablist) {
+            return;
+        }
+
+        const targetTab = this.tablist.querySelector(`.map__tab[aria-controls="${panelId}"]`);
+
+        if (!targetTab) {
+            return;
+        }
+
+        [...this.tabs].forEach((tab) => {
+            tab.classList.remove('map__tab--active');
+        });
+
+        targetTab.classList.add('map__tab--active');
+        this.updateTabPanelVisibility(panelId);
+
+        const panel = this.el.querySelector(`#${panelId}`);
+
+        if (panel && panel.contains(this.mapContainerEl)) {
+            this.syncMapViewport();
+        }
     }
 
     updateTabPanelVisibility(forcedPanelId = null) {
@@ -665,8 +677,18 @@ class Map {
 
         selectedListingEl.classList.add('selected');
 
+        if (this.isMobileViewport()) {
+            const listPanel = selectedListingEl.closest('.map__tab-panel');
+
+            if (listPanel?.id) {
+                this.activateTabByPanelId(listPanel.id);
+            }
+        }
+
         if (shouldScrollIntoView) {
-            selectedListingEl.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+            requestAnimationFrame(() => {
+                selectedListingEl.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+            });
         }
 
         this.highlightMarker(marker);
