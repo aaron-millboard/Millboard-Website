@@ -83,13 +83,7 @@ class Map {
 
         if (this.tablist) {
             window.addEventListener('resize', throttle(() => {
-                [...this.tabPanels].forEach((panel, index) => {
-                    if (this.isMobileViewport() && index > 0) {
-                        panel.setAttribute('hidden', '');
-                    } else {
-                        panel.removeAttribute('hidden');
-                    }
-                });
+                this.updateTabPanelVisibility();
 
                 this.syncMapViewport();
             }, 100));
@@ -477,13 +471,7 @@ class Map {
             return;
         }
 
-        if (this.isMobileViewport()) {
-            [...this.tabPanels].forEach((panel, index) => {
-                if (index > 0) {
-                    panel.setAttribute('hidden', '');
-                }
-            });
-        }
+        this.updateTabPanelVisibility();
 
         [...this.tabs].forEach((tab) => {
             tab.addEventListener('click', ({currentTarget}) => {
@@ -504,22 +492,41 @@ class Map {
                     return;
                 }
 
-                if (this.isMobileViewport()) {
-                    [...this.tabPanels].forEach((panel) => {
-                        panel.setAttribute('hidden', '');
-                    });
-                }
-
                 const panel = this.el.querySelector(`#${panelId}`);
 
                 if (panel) {
-                    panel.removeAttribute('hidden');
+                    this.updateTabPanelVisibility(panelId);
 
                     if (panel.contains(this.mapContainerEl)) {
                         this.syncMapViewport();
                     }
                 }
             });
+        });
+    }
+
+    updateTabPanelVisibility(forcedPanelId = null) {
+        if (!this.tablist || !this.tabPanels || this.tabPanels.length === 0) {
+            return;
+        }
+
+        if (!this.isMobileViewport()) {
+            [...this.tabPanels].forEach((panel) => {
+                panel.removeAttribute('hidden');
+            });
+            return;
+        }
+
+        const activeTab = this.tablist.querySelector('.map__tab--active');
+        const activePanelId = forcedPanelId || activeTab?.getAttribute('aria-controls') || this.tabPanels[0].id;
+
+        [...this.tabPanels].forEach((panel) => {
+            if (panel.id === activePanelId) {
+                panel.removeAttribute('hidden');
+                return;
+            }
+
+            panel.setAttribute('hidden', '');
         });
     }
 
