@@ -17,6 +17,10 @@
 
     &.leaflet-container {
         @include typestyle-base;
+
+        @include mq($until: medium) {
+            touch-action: pan-y;
+        }
     }
 
     // Marker icon.
@@ -30,6 +34,11 @@
         background-color: var(--color--midgreen);
         box-shadow: 0 0 0px 7px hsla(var(--color--midgreen--hsl), 0.4);
         color: var(--color--brand-4);
+
+        &.leaflet-marker-icon--selected {
+            box-shadow: 0 0 0px 9px hsla(var(--color--midgreen--hsl), 0.65);
+            transform: scale(1.08);
+        }
 
         &__icon-container {
             display: flex;

@@ -16,6 +16,7 @@ class Map {
 
         // Map container.
         this.mapContainerEl = this.el.querySelector('.map__map-container');
+        this.mapPanelEl = this.mapContainerEl ? this.mapContainerEl.closest('.map__tab-panel') : null;
 
         // Search.
         this.searchInput = this.el.querySelector('#map-search-input');
@@ -28,8 +29,8 @@ class Map {
         this.geolocateButton = this.el.querySelector('.map__search__geolocate');
 
         // Mobile Tabs.
-        this.tablist = document.querySelector('.map__tablist');
-        this.tabs = this.tablist.querySelectorAll('.map__tab');
+        this.tablist = this.el.querySelector('.map__tablist');
+        this.tabs = this.tablist ? this.tablist.querySelectorAll('.map__tab') : [];
         this.tabPanels = this.el.querySelectorAll('.map__tab-panel');
 
         this.mobileMediaQueryRefEl = this.tablist;
@@ -73,6 +74,7 @@ class Map {
     init() {
         this.initLeafletMap();
         this.initLeafletMarkers();
+        this.initListingSelectionSync();
         this.initSearch();
         this.initDistanceFilter();
         this.initTablist();
@@ -81,15 +83,13 @@ class Map {
 
         if (this.tablist) {
             window.addEventListener('resize', throttle(() => {
-                [...this.tabPanels].forEach((panel, index) => {
-                    if (this.isMobileViewport() && index > 0) {
-                        panel.setAttribute('hidden', '');
-                    } else {
-                        panel.removeAttribute('hidden');
-                    }
-                });
+                this.updateTabPanelVisibility();
+
+                this.syncMapViewport();
             }, 100));
         }
+
+        this.syncMapViewport();
 
         if (this.geolocateButton) {
             this.geolocateButton.addEventListener('click', () => {
@@ -132,6 +132,12 @@ class Map {
             return pathnameLocaleCode;
         }
 
+        const documentLangLocaleCode = this.getLocaleCodeFromDocumentLang();
+
+        if (documentLangLocaleCode) {
+            return documentLangLocaleCode;
+        }
+
         const explicitParamValue = this.getUrlParamValue([
             'country',
             'locale',
@@ -147,14 +153,6 @@ class Map {
             return explicitParamValue;
         }
 
-        const searchParams = this.getUrlSearchParams();
-
-        for (const [, value] of searchParams.entries()) {
-            if (value && localeCodeRegex.test(value.trim())) {
-                return value.trim();
-            }
-        }
-
         return null;
     }
 
@@ -166,6 +164,17 @@ class Map {
         const localeSegment = segments.find((segment) => localeCodeRegex.test(segment));
 
         return localeSegment || null;
+    }
+
+    getLocaleCodeFromDocumentLang() {
+        const htmlLang = (document.documentElement.lang || '').trim();
+        const localeCodeRegex = /^[a-z]{2}[-_][a-z]{2}$/i;
+
+        if (!htmlLang || !localeCodeRegex.test(htmlLang)) {
+            return null;
+        }
+
+        return htmlLang;
     }
 
     getLatLngFromLocaleCode() {
@@ -283,8 +292,14 @@ class Map {
      * Leaflet Map Init.
      */
     initLeafletMap() {
+        const mapContainerNode = this.mapContainerEl ? this.mapContainerEl.querySelector('#leaflet-map-container') : null;
+
+        if (!mapContainerNode) {
+            return;
+        }
+
         // https://leafletjs.com/reference.html#map-option
-        this.lmap = L.map('leaflet-map-container', {
+        this.lmap = L.map(mapContainerNode, {
             center: this.LMAP_INITIAL_CENTER,
             attributionControl: false,
             intertia: false,
@@ -339,6 +354,10 @@ class Map {
      * Leaflet Markers setup.
      */
     initLeafletMarkers() {
+        if (!this.lmap) {
+            return;
+        }
+
         const markerHoizontalMiddle = this.LMAP_MARKER_WIDTH / 2; // Icon width / 2 to center it.
 
         this.listingEls.forEach((el) => {
@@ -373,6 +392,10 @@ class Map {
                 },
             });
 
+            marker.addEventListener('click', () => {
+                this.selectListingByMarker(marker);
+            });
+
             // Add the marker to the leaflet layer.
             this.allMarkersGroup.addLayer(marker);
 
@@ -383,6 +406,18 @@ class Map {
 
         // Add all markers sub groups to map.
         this.lmap.addLayer(this.filteredMarkersGroup);
+    }
+
+    initListingSelectionSync() {
+        if (!this.listingEls || this.listingEls.length === 0) {
+            return;
+        }
+
+        this.listingEls.forEach((listingEl) => {
+            listingEl.addEventListener('click', () => {
+                this.selectMarkerByListing(listingEl);
+            });
+        });
     }
 
     /**
@@ -422,6 +457,10 @@ class Map {
     }
 
     initDistanceFilter() {
+        if (!this.distanceSelect) {
+            return;
+        }
+
         this.distanceSelect.addEventListener('change', () => {
             this.filterListingsByDistance();
         });
@@ -432,39 +471,89 @@ class Map {
             return;
         }
 
-        if (this.isMobileViewport()) {
-            [...this.tabPanels].forEach((panel, index) => {
-                if (index > 0) {
-                    panel.setAttribute('hidden', '');
-                }
-            });
-        }
+        this.updateTabPanelVisibility();
 
         [...this.tabs].forEach((tab) => {
-            tab.addEventListener('click', ({target}) => {
-                [...this.tabs].forEach((tab) => {
-                    tab.classList.remove('map__tab--active')
-                });
+            tab.addEventListener('click', ({currentTarget}) => {
+                const clickedTab = currentTarget;
 
-                target.classList.add('map__tab--active');
-                const panelId = target.getAttribute('aria-controls');
+                if (!clickedTab) {
+                    return;
+                }
+
+                const panelId = clickedTab.getAttribute('aria-controls');
 
                 if (!panelId) {
                     return;
                 }
 
-                if (this.isMobileViewport()) {
-                    [...this.tabPanels].forEach((panel) => {
-                        panel.setAttribute('hidden', '');
-                    });
-                }
-
-                const panel = this.el.querySelector(`#${panelId}`);
-
-                if (panel) {
-                    panel.removeAttribute('hidden');
-                }
+                this.activateTabByPanelId(panelId);
             });
+        });
+    }
+
+    activateTabByPanelId(panelId) {
+        if (!panelId || !this.tablist) {
+            return;
+        }
+
+        const targetTab = this.tablist.querySelector(`.map__tab[aria-controls="${panelId}"]`);
+
+        if (!targetTab) {
+            return;
+        }
+
+        [...this.tabs].forEach((tab) => {
+            tab.classList.remove('map__tab--active');
+        });
+
+        targetTab.classList.add('map__tab--active');
+        this.updateTabPanelVisibility(panelId);
+
+        const panel = this.el.querySelector(`#${panelId}`);
+
+        if (panel && panel.contains(this.mapContainerEl)) {
+            this.syncMapViewport();
+        }
+    }
+
+    updateTabPanelVisibility(forcedPanelId = null) {
+        if (!this.tablist || !this.tabPanels || this.tabPanels.length === 0) {
+            return;
+        }
+
+        if (!this.isMobileViewport()) {
+            [...this.tabPanels].forEach((panel) => {
+                panel.removeAttribute('hidden');
+            });
+            return;
+        }
+
+        const activeTab = this.tablist.querySelector('.map__tab--active');
+        const activePanelId = forcedPanelId || activeTab?.getAttribute('aria-controls') || this.tabPanels[0].id;
+
+        [...this.tabPanels].forEach((panel) => {
+            if (panel.id === activePanelId) {
+                panel.removeAttribute('hidden');
+                return;
+            }
+
+            panel.setAttribute('hidden', '');
+        });
+    }
+
+    syncMapViewport() {
+        if (!this.lmap) {
+            return;
+        }
+
+        if (this.mapPanelEl && this.mapPanelEl.hasAttribute('hidden')) {
+            return;
+        }
+
+        // Leaflet needs a visible container to compute the correct map center on mobile/tab layouts.
+        requestAnimationFrame(() => {
+            this.lmap.invalidateSize(false);
         });
     }
 
@@ -569,6 +658,89 @@ class Map {
         distanceEl.textContent = distText;
     }
 
+    selectListingByMarker(marker, shouldScrollIntoView = true) {
+        if (!this.listingContainer) {
+            return;
+        }
+
+        const markerId = this.allMarkersGroup.getLayerId(marker);
+
+        [...this.listingEls].forEach((listingEl) => {
+            listingEl.classList.remove('selected');
+        });
+
+        const selectedListingEl = this.listingContainer.querySelector(`[data-map-leaflet-id="${markerId}"]`);
+
+        if (!selectedListingEl) {
+            return;
+        }
+
+        selectedListingEl.classList.add('selected');
+
+        if (this.isMobileViewport()) {
+            const listPanel = selectedListingEl.closest('.map__tab-panel');
+
+            if (listPanel?.id) {
+                this.activateTabByPanelId(listPanel.id);
+            }
+        }
+
+        if (shouldScrollIntoView) {
+            requestAnimationFrame(() => {
+                selectedListingEl.scrollIntoView({behavior: 'smooth', block: 'nearest'});
+            });
+        }
+
+        this.highlightMarker(marker);
+    }
+
+    selectMarkerByListing(listingEl) {
+        if (!this.lmap || !listingEl) {
+            return;
+        }
+
+        const markerId = parseInt(listingEl.getAttribute('data-map-leaflet-id'), 10);
+
+        if (Number.isNaN(markerId)) {
+            return;
+        }
+
+        const marker = this.allMarkersGroup.getLayer(markerId);
+
+        if (!marker) {
+            return;
+        }
+
+        this.selectListingByMarker(marker, false);
+
+        const minimumFocusZoom = 11;
+        const targetZoom = Math.max(this.lmap.getZoom(), minimumFocusZoom);
+
+        this.lmap.flyTo(marker.getLatLng(), targetZoom);
+    }
+
+    highlightMarker(activeMarker) {
+        this.allMarkersGroup.eachLayer((marker) => {
+            const markerEl = marker.getElement();
+
+            if (!markerEl) {
+                return;
+            }
+
+            markerEl.classList.remove('leaflet-marker-icon--selected');
+        });
+
+        if (!activeMarker) {
+            return;
+        }
+
+        const activeMarkerEl = activeMarker.getElement();
+
+        if (activeMarkerEl) {
+            activeMarkerEl.classList.add('leaflet-marker-icon--selected');
+        }
+    }
+
     // Helpers
     static getDataFromRowElement(element) {
         return {
@@ -583,6 +755,10 @@ class Map {
     }
 
     resetMapView() {
+        if (!this.lmap) {
+            return;
+        }
+
         this.lmap.setView(new L.LatLng(
             this.LMAP_INITIAL_CENTER[0],
             this.LMAP_INITIAL_CENTER[1]),
@@ -596,9 +772,23 @@ class Map {
             return null;
         }
 
+        const normalizedData = data.trim();
+
+        if (!normalizedData) {
+            return null;
+        }
+
         // Run the API request because there is no cached result available.
-        const countryCode = (this.localeCountryCode || 'gb').toUpperCase();
-        const response = fetch(`https://maps.googleapis.com/maps/api/geocode/json?components=country:${countryCode}&address=${encodeURI(data)}&key=${this.googleApiKey}`)
+        let countryCode = (this.localeCountryCode || 'gb').toUpperCase();
+
+        // Guernsey (GG) and Jersey (JE) are Crown Dependencies, not part of
+        // Great Britain (GB). Override the country component so Google geocodes
+        // them correctly instead of resolving to a GB location.
+        if (countryCode === 'GB') {
+            countryCode = this.getChannelIslandCountryCode(normalizedData) || countryCode;
+        }
+
+        const response = fetch(`https://maps.googleapis.com/maps/api/geocode/json?components=country:${countryCode}&address=${encodeURI(normalizedData)}&key=${this.googleApiKey}`)
             .then((r) => {
                 if (!r.ok) {
                     throw Error(r);
@@ -611,6 +801,19 @@ class Map {
             });
 
         return response;
+    }
+
+    /**
+     * Returns the ISO country code for Channel Island / Isle of Man queries
+     * when the base locale is GB, or null if the query is not for these territories.
+     * Google treats GG (Guernsey), JE (Jersey) and IM (Isle of Man) as separate
+     * country codes from GB, so a country:GB restriction causes misresolution.
+     */
+    getChannelIslandCountryCode(query) {
+        if (/^GY\d/i.test(query) || /\bguernsey\b/i.test(query)) return 'GG';
+        if (/^JE\d/i.test(query) || /\bjersey\b/i.test(query)) return 'JE';
+        if (/^IM\d/i.test(query) || /\bisle\s+of\s+man\b/i.test(query)) return 'IM';
+        return null;
     }
 }
 
