@@ -21,6 +21,9 @@ class Attribution
      */
     public static function millboard_hubspot_attribution($order_id): void
     {
+        $logger = \wc_get_logger();
+        $logger->info('HubSpot attribution hook fired for order: ' . $order_id, ['source' => 'hubspot-attribution']);
+
         if (empty($order_id)) {
             return;
         }
