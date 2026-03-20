@@ -116,7 +116,7 @@ $order = $args['order'] ?? null;
                     }
 
                     // use singular unit name if quantity is 1
-                    if ($cart_item['quantity'] === 1) {
+                    if ($item['quantity'] === 1) {
                         $unit_name_plural = $unit_name_singular;
                     }
                     ?>
