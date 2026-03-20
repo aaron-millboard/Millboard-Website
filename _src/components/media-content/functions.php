@@ -53,7 +53,7 @@ function filter_args(array $args): ?array
     // -------------------------------------------------------------------------
     // Smaller sizes.
     // -------------------------------------------------------------------------
-    if ($args['align'] === 'center') {
+    if (!empty($args['align']) && $args['align'] === 'center') {
         $args['heading_class'] = 'is-style-typestyle-h4';
     }
 

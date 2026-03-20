@@ -79,13 +79,9 @@
     }
 
     // Make it containerised on full align
-    &.alignfull #{$media-object}__inner {
-        @include align-width--l;
-
-        padding: var(--space--2xl) 0;
-
-        @include mq($until: large) {
-            padding: var(--space--xl) 0;
+    &.alignfull {
+        #{$media-object}__inner {
+            @include align-width--l;
         }
     }
 
@@ -94,6 +90,14 @@
 
         @include mq($until: medium) {
             --media-object--inner-padding-x: var(--space--m);
+        }
+
+        #{$media-object}__inner {
+            padding: var(--space--2xl) 0;
+
+            @include mq($until: large) {
+                padding: var(--space--xl) 0;
+            }
         }
 
         &[data-media-position='after'] {
