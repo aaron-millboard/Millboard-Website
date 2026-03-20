@@ -102,14 +102,14 @@ $order = $args['order'] ?? null;
                     $board_width_attribute = $_product->get_attribute($board_width_attribute_name ?? 'pa_board-width');
 
                     if ($sample_size_attribute || $board_width_attribute || $calculator_enabled) {
-                        // If board, we check by 3 signs: board width attribute, sample size attribute set to full or calculator enabled
-                        if ($board_width_attribute || $sample_size_attribute === 'Full' || $calculator_enabled) {
+                        // If board, we check by 3 signs: board width attribute, calculator enabled, or not a sample product.
+                        if ($board_width_attribute || $calculator_enabled || !\Theme\WooCommerce\Utils::is_sample($_product)) {
                             $unit_name_singular = __('board', 'granola');
                             $unit_name_plural = __('boards', 'granola');
                         }
 
-                        // override if we have any sign of sample size
-                        if ($sample_size_attribute === 'Small' || $sample_size_attribute === 'Large') {
+                        // Override if we have any sign of sample size.
+                        if (\Theme\WooCommerce\Utils::is_sample($_product)) {
                             $unit_name_singular = __('sample', 'granola');
                             $unit_name_plural = __('samples', 'granola');
                         }
