@@ -80,7 +80,9 @@ function filter_args(array $args): ?array
 
     // CTA under description
     $args['header_cta'] = \get_field('header_cta', $product->get_id());
-    $args['header_cta']['content'] = \Granola\SVG::get('icons-custom/pencil.svg') . $args['header_cta']['title'];
+    if (!empty($args['header_cta']['title'])) {
+        $args['header_cta']['content'] = \Granola\SVG::get('icons-custom/pencil.svg') . $args['header_cta']['title'];
+    }
 
     // -------------------------------------------------------------------------
     // 3. Variations (to be used in the variation selector component)
