@@ -103,9 +103,15 @@ function granola_yoast_breadcrumb_variable_product($link, $index)
     }
 
     $title = $product->get_name();
-    // Get the selected attribute values for 'colour' and 'board-width'
-    $colour = $product->get_attribute('colour');
-    $board_width = $product->get_attribute('board-width');
+
+    // Get the selected attribute values for 'colour'...
+    $colour_attribute_name = \get_field('product_colour_taxonomy', 'options');
+    $colour = $product->get_attribute($colour_attribute_name ?? 'pa_colour');
+
+    // ...and 'board-width'
+    $board_width_attribute_name = \get_field('product_board_width_taxonomy', 'options');
+    $board_width = $product->get_attribute($board_width_attribute_name ?? 'pa_board-width');
+
     if (!empty($colour) && !empty($board_width)) {
         $divider = ' - ';
     } else {

@@ -49,14 +49,22 @@ class Product
      */
     public static function add_rewrite_rules()
     {
-        \add_rewrite_rule('product/([^/]+)/([^/]+)/?$', 'index.php?product=$matches[1]&attribute_pa_colour=$matches[2]', 'top');
-        \add_rewrite_rule('product/([^/]+)/([^/]+)/([^/]+)?$', 'index.php?product=$matches[1]&attribute_pa_colour=$matches[2]&sku=$matches[3]', 'top');
+        $colour_attribute_name = \get_field('product_colour_taxonomy', 'options');
+        if (!empty($colour_attribute_name)) {
+            \add_rewrite_rule('product/([^/]+)/([^/]+)/?$', 'index.php?product=$matches[1]&attribute_' . $colour_attribute_name . '=$matches[2]', 'top');
+            \add_rewrite_rule('product/([^/]+)/([^/]+)/([^/]+)?$', 'index.php?product=$matches[1]&attribute_' . $colour_attribute_name . '=$matches[2]&sku=$matches[3]', 'top');
+        }
     }
 
     public static function filter_query_vars($query_vars)
     {
         $query_vars[] = 'sku';
-        $query_vars[] = 'attribute_pa_colour';
+
+        $colour_attribute_name = \get_field('product_colour_taxonomy', 'options');
+        if (!empty($colour_attribute_name)) {
+            $query_vars[] = 'attribute_' . $colour_attribute_name;
+        }
+
         return $query_vars;
     }
 
