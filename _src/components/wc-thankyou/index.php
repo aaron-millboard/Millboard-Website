@@ -3,6 +3,8 @@ $order = $args['order'] ?? null;
 ?>
 <div class="thankyou">
     <?php if ($order) : ?>
+        <?php do_action('woocommerce_before_thankyou', $order->get_id()); ?>
+
         <div class="thankyou__details">
             <?php if ($order->has_status('failed')) : ?>
                 <p class="woocommerce-notice woocommerce-notice--error woocommerce-thankyou-order-failed">
@@ -257,5 +259,10 @@ $order = $args['order'] ?? null;
                 </div>
             </div>
         </div>
+
+        <?php do_action('woocommerce_thankyou_' . $order->get_payment_method(), $order->get_id()); ?>
+        <?php do_action('woocommerce_thankyou', $order->get_id()); ?>
+    <?php else : ?>
+        <?php // wc_get_template('checkout/order-received.php', ['order' => false]); ?>
     <?php endif; ?>
 </div>
