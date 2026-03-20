@@ -4,8 +4,8 @@
     "fields": [
         {
             "key": "field_69b4333892309",
-            "label": "Board Width Taxonomy",
-            "name": "board_width_taxonomy",
+            "label": "Product Board Width Taxonomy",
+            "name": "product_board_width_taxonomy",
             "aria-label": "",
             "type": "taxonomy_selector",
             "instructions": "",
@@ -31,8 +31,8 @@
         },
         {
             "key": "field_69b43b85a0821",
-            "label": "Product Color Taxonomy",
-            "name": "product_color_taxonomy",
+            "label": "Product Colour Taxonomy",
+            "name": "product_colour_taxonomy",
             "aria-label": "",
             "type": "taxonomy_selector",
             "instructions": "",
@@ -58,8 +58,8 @@
         },
         {
             "key": "field_69b43b9fa0822",
-            "label": "Sample Size Taxonomy",
-            "name": "sample_size_taxonomy",
+            "label": "Product Sample Size Taxonomy",
+            "name": "product_sample_size_taxonomy",
             "aria-label": "",
             "type": "taxonomy_selector",
             "instructions": "",
@@ -104,5 +104,5 @@
     "show_in_rest": 0,
     "display_title": "",
     "granola_save_location": 0,
-    "modified": 1773419434
+    "modified": 1774005087
 }

@@ -61,7 +61,7 @@ function filter_args(array $args): ?array
             $product = \Theme\PostTypes\Product::get_product_by_sku(\get_query_var('sku'));
 
             if (!empty($product)) {
-                $board_width_attribute_name = \get_field('board_width_taxonomy', 'options');
+                $board_width_attribute_name = \get_field('product_board_width_taxonomy', 'options');
                 $board_width = $product->get_attribute($board_width_attribute_name ?? 'pa_board-width');
 
                 if (!empty($board_width)) {
