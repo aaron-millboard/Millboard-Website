@@ -6,7 +6,7 @@ class Attribution
 {
     public static function init(): void
     {
-        \add_action('woocommerce_thankyou', 'millboard_hubspot_attribution', 10, 1);
+        \add_action('woocommerce_thankyou', [__CLASS__, 'millboard_hubspot_attribution'], 10, 1);
     }
 
     /**
