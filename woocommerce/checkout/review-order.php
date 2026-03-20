@@ -81,54 +81,14 @@ defined('ABSPATH') || exit;
                                     <?php echo $_product->get_title(); ?>
                                 </div>
 
-                                <?php
-                                // Normalised product attribute array.
-                                // We have seen different return values for this but unclear why.
-                                // Normalise to avoid errors.
-                                $attributes = array_map(function ($attribute) {
-                                    if ($attribute instanceof \WC_Product_Attribute) {
-                                        $attr_options = $attribute->get_options();
-                                        if (empty($attr_options)) {
-                                            return [];
-                                        }
-
-                                        $term_id = $attr_options[0];
-                                        if (empty($term_id)) {
-                                            return [];
-                                        }
-
-                                        $term = get_term_by('term_id', $term_id, $attribute->get_name());
-                                        return $term->slug;
-                                    }
-
-                                    return $attribute;
-                                }, $_product->get_attributes());
-
-                                // Remove sample size.
-                                unset($attributes['pa_sample-size']);
-
-                                // Sort pa_color attribute to first place.
-                                uksort($attributes, function ($attribute_name_1, $attribute_name_2) {
-                                    if ($attribute_name_1 === 'pa_colour') {
-                                        return -1;
-                                    }
-
-                                    if ($attribute_name_2 === 'pa_colour') {
-                                        return 1;
-                                    }
-
-                                    return 0;
-                                });
-
-                                // Show other attributes
-                                foreach ($attributes as $key => $value) { ?>
-                                    <?php $term = get_term_by('slug', $value, $key); ?>
-                                    <?php if (!empty($term)) { ?>
-                                        <div class="cart__item__details__attribute cart__item__details__<?= esc_attr(str_replace('pa_', '', $value)); ?>">
-                                            <?= esc_html($term->name); ?>
-                                        </div>
+                                <?php $attributes = \Theme\WooCommerce\Utils::get_product_display_attributes($_product); ?>
+                                    <?php foreach ($attributes as $key => $attribute) { ?>
+                                        <?php if (!empty($attribute)) { ?>
+                                            <div class="cart__item__details__attribute cart__item__details__<?= esc_attr($attribute['name']); ?>">
+                                                <?= esc_html($attribute['value']); ?>
+                                            </div>
+                                        <?php } ?>
                                     <?php } ?>
-                                <?php } ?>
 
                                 <div class="product-price" data-title="<?php esc_attr_e('Price', 'woocommerce'); ?>">
                                     <?php echo apply_filters('woocommerce_cart_item_price', WC()->cart->get_product_price($_product), $cart_item, $cart_item_key) . ' ' . esc_html__('per ', 'granola') . esc_html($unit_name_singular); ?>
