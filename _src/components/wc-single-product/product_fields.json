@@ -36,7 +36,27 @@
                     "operator": "==",
                     "value": "1"
                 }
-             ]
+            ]
+        },
+        {
+            "key": "cpt_product_hide_pricing_description",
+            "label": "Hide product pricing description",
+            "name": "hide_pricing_description",
+            "type": "button_group",
+            "instructions": "Enable this to hide the product pricing description.",
+            "choices": {
+                "1": "Yes",
+                "0": "No"
+            },
+            "default_value": "0",
+            "ui": 1
+        },
+        {
+            "key": "cpt_product_pricing_description_override",
+            "label": "Product pricing description override",
+            "name": "pricing_description_override",
+            "type": "wysiwyg",
+            "instructions": "Provide a description for the product pricing."
         }
     ],
     "location": [

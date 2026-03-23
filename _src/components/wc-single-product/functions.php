@@ -2,6 +2,34 @@
 
 namespace Granola\Components\WC_SingleProduct;
 
+function get_pricing_description(?\WC_Product $product = null): string
+{
+    if (empty($product) || ! $product instanceof \WC_Product) {
+        return '';
+    }
+
+    $hide_pricing_description = \get_field('hide_pricing_description', $product->get_id());
+    if ((string) $hide_pricing_description === '1') {
+        return '';
+    }
+
+    $pricing_description_override = \get_field('pricing_description_override', $product->get_id());
+    if (!empty($pricing_description_override)) {
+        return (string) $pricing_description_override;
+    }
+
+    $pricing_description = \get_field('cpt_product_pricing_description', 'options');
+    if (!empty($pricing_description)) {
+        return (string) $pricing_description;
+    }
+
+    if (function_exists('wc_prices_include_tax') && wc_prices_include_tax()) {
+        return __('Incl VAT', 'granola');
+    }
+
+    return __('Excl VAT', 'granola');
+}
+
 function filter_args(array $args): ?array
 {
     global $product;
