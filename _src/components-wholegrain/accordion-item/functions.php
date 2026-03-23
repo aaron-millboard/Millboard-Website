@@ -147,11 +147,11 @@ function render_accordion_item_block_schema($graph, $block)
         '@id' => $url . '#' . $id,
         'position' => $position,
         'url' => $url . '#' . $id,
-        'name' => $block['attrs']['data']['title'],
+        'name' => $block['attrs']['data']['title'] ?? '',
         'answerCount' => 1,
         'acceptedAnswer' => [
             '@type' => 'Answer',
-            'text' => $block['attrs']['data']['content'],
+            'text' => $block['attrs']['data']['content'] ?? '',
             'inLanguage' => \get_bloginfo('language'),
         ],
         'inLanguage' => \get_bloginfo('language'),
