@@ -46,7 +46,9 @@ function filter_args(array $args): ?array
     $product_id = $product->get_id();
     $dimensions = $product->get_dimensions(false);
     $price = $product->get_price();
-    $sample_size = $product->get_attribute('sample-size');
+
+    $sample_size_attribute_name = \get_field('product_sample_size_taxonomy', 'options');
+    $sample_size = $product->get_attribute($sample_size_attribute_name ?? 'pa_sample-size');
 
     // Check if product is in cart - works for both simple and variable products
     $cart_items = $cart->get_cart();
