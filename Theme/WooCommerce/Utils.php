@@ -131,26 +131,30 @@ class Utils
 
         // Retrieve prodiuct color data first.
         $colour_taxonomy_name = \get_field('product_colour_taxonomy', 'options');
-        $colour_attribute_name = ltrim($colour_taxonomy_name, 'pa_');
-        $colour_attribute_value = $product->get_attribute($colour_taxonomy_name ?? 'pa_colour');
+        if (!empty($colour_taxonomy_name)) {
+            $colour_attribute_name = ltrim($colour_taxonomy_name, 'pa_');
+            $colour_attribute_value = $product->get_attribute($colour_taxonomy_name ?? 'pa_colour');
 
-        if (!empty($colour_attribute_value)) {
-            $attributes[$colour_taxonomy_name] = [
-                'name' => $colour_attribute_name,
-                'value' => $colour_attribute_value,
-            ];
+            if (!empty($colour_attribute_value)) {
+                $attributes[$colour_taxonomy_name] = [
+                    'name' => $colour_attribute_name,
+                    'value' => $colour_attribute_value,
+                ];
+            }
         }
 
         // Retrieve board width data.
         $board_width_taxonomy_name = \get_field('product_board_width_taxonomy', 'options');
-        $board_width_attribute_name = ltrim($board_width_taxonomy_name, 'pa_');
-        $board_width_attribute_value = $product->get_attribute($board_width_taxonomy_name ?? 'pa_board-width');
+        if (!empty($board_width_taxonomy_name)) {
+            $board_width_attribute_name = ltrim($board_width_taxonomy_name, 'pa_');
+            $board_width_attribute_value = $product->get_attribute($board_width_taxonomy_name ?? 'pa_board-width');
 
-        if (!empty($board_width_attribute_value)) {
-            $attributes[$board_width_taxonomy_name] = [
-                'name' => $board_width_attribute_name,
-                'value' => $board_width_attribute_value,
-            ];
+            if (!empty($board_width_attribute_value)) {
+                $attributes[$board_width_taxonomy_name] = [
+                    'name' => $board_width_attribute_name,
+                    'value' => $board_width_attribute_value,
+                ];
+            }
         }
 
         return $attributes;
