@@ -46,6 +46,9 @@ class ACF
         \add_filter('acf/location/rule_types', [__CLASS__, 'acf_location_rules_types']);
         \add_filter('acf/location/rule_values/menu_level', [__CLASS__, 'acf_location_rule_values_level']);
         \add_filter('acf/location/rule_match/menu_level', [__CLASS__, 'acf_location_rule_match_level'], 10, 4);
+
+        // Add custom field types.
+        \add_action('acf/include_field_types', [ __CLASS__, 'register_custom_field_types' ]);
     }
 
     public static function option_pages(): void
@@ -382,5 +385,19 @@ class ACF
         }
 
         return $match;
+    }
+
+    /**
+     * Register custom taxonomy selector field.
+     *
+     * @return void
+     */
+    public static function register_custom_field_types(): void
+    {
+        new ACF\AcfFieldTaxonomySelector([
+            'version' => '1.0.0',
+            'url' => \get_theme_file_uri(__FILE__),
+            'path' => \get_theme_file_path(__FILE__)
+        ]);
     }
 }

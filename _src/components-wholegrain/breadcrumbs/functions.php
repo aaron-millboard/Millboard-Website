@@ -84,7 +84,8 @@ function hide_home_page_breadcrumb_link($link, $breadcrumb): string
  * Custom Yoast breadcrumb filter for variable products.
  * Displays selected 'pa_colour' and 'pa_board-width' in the breadcrumb.
  */
-function granola_yoast_breadcrumb_variable_product($link, $index) {
+function granola_yoast_breadcrumb_variable_product($link, $index)
+{
     if (!is_product()) {
         return $link;
     }
@@ -102,10 +103,16 @@ function granola_yoast_breadcrumb_variable_product($link, $index) {
     }
 
     $title = $product->get_name();
-    // Get the selected attribute values for 'colour' and 'board-width'
-    $colour = $product->get_attribute('colour');
-    $board_width = $product->get_attribute('board-width');
-    if(!empty($colour) && !empty($board_width)) {
+
+    // Get the selected attribute values for 'colour'...
+    $colour_attribute_name = \get_field('product_colour_taxonomy', 'options');
+    $colour = $product->get_attribute($colour_attribute_name ?? 'pa_colour');
+
+    // ...and 'board-width'
+    $board_width_attribute_name = \get_field('product_board_width_taxonomy', 'options');
+    $board_width = $product->get_attribute($board_width_attribute_name ?? 'pa_board-width');
+
+    if (!empty($colour) && !empty($board_width)) {
         $divider = ' - ';
     } else {
         $divider = '';
@@ -119,17 +126,16 @@ function granola_yoast_breadcrumb_variable_product($link, $index) {
     // get $link content without HTML tags
     $link_content = strip_tags($link);
     $link_content = html_entity_decode($link_content, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-    
+
     // Trim whitespace and remove special characters and unicode characters to ensure accurate comparison
     $link_content = trim(preg_replace('/[^A-Za-z0-9\s]/', '', $link_content));
     $title = trim(preg_replace('/[^A-Za-z0-9\s]/', '', $title));
 
     if ($link_content === $title) {
-
         $link = "<span class=\"breadcrumb_last\" aria-current=\"page\">{$replacement}</span>";
         return $link;
     }
-    
+
     return $link;
 }
 
@@ -211,4 +217,3 @@ function remove_duplicate_yoast_breadcrumb_links(array $links): array
 
     return $filtered_links;
 }
-

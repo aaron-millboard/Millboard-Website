@@ -303,13 +303,4 @@
     & + .woocommerce {
         margin-top: calc(var(--block--margin-top) * -0.5);
     }
-
-    // Create margin offset for notice spacing.
-    & + .woocommerce-notices-wrapper {
-        margin-top: calc(var(--space--2xl) * -1);
-
-        > :first-child {
-            margin-top: calc(var(--space--2xl) * 2);
-        }
-    }
 }

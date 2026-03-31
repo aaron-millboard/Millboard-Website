@@ -6,29 +6,61 @@
             "key": "field_697bdf1233d",
             "label": "Width Variations",
             "name": "width_variations",
+            "aria-label": "",
             "type": "repeater",
+            "instructions": "",
+            "required": false,
+            "conditional_logic": false,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
             "layout": "table",
             "button_label": "Add Variation",
+            "min": 0,
+            "max": 0,
+            "rows_per_page": 20,
+            "collapsed": "",
             "sub_fields": [
                 {
                     "key": "field_697be34fsf3e",
                     "label": "Width",
                     "name": "width",
+                    "aria-label": "",
                     "type": "taxonomy",
+                    "instructions": "",
+                    "required": false,
+                    "conditional_logic": false,
                     "wrapper": {
-                        "width": "50"
+                        "width": "50",
+                        "class": "",
+                        "id": ""
                     },
                     "taxonomy": "pa_width",
                     "return_format": "object",
-                    "field_type": "select"
+                    "field_type": "select",
+                    "multiple": 0,
+                    "allow_null": 0,
+                    "add_term": 1,
+                    "load_terms": 0,
+                    "save_terms": 0,
+                    "bidirectional_target": [],
+                    "parent_repeater": "field_697bdf1233d"
                 },
                 {
                     "key": "field_6yy5436b3e",
                     "label": "Product",
                     "name": "product",
+                    "aria-label": "",
                     "type": "post_object",
+                    "instructions": "",
+                    "required": 0,
+                    "conditional_logic": 0,
                     "wrapper": {
-                        "width": "50"
+                        "width": "50",
+                        "class": "",
+                        "id": ""
                     },
                     "post_type": [
                         "product"
@@ -36,11 +68,15 @@
                     "post_status": [
                         "publish"
                     ],
-                    "taxonomy": [
-                        "product_cat:composite-cladding",
-                        "product_cat:composite-decking"
-                    ],
-                    "return_format": "object"
+                    "taxonomy": "",
+                    "return_format": "object",
+                    "multiple": 0,
+                    "allow_null": 0,
+                    "allow_in_bindings": 1,
+                    "bidirectional": 0,
+                    "ui": 1,
+                    "bidirectional_target": [],
+                    "parent_repeater": "field_697bdf1233d"
                 }
             ]
         },
@@ -113,10 +149,7 @@
                     "post_status": [
                         "publish"
                     ],
-                    "taxonomy": [
-                        "product_cat:composite-cladding",
-                        "product_cat:composite-decking"
-                    ],
+                    "taxonomy": "",
                     "return_format": "object",
                     "multiple": 0,
                     "allow_null": 0,
@@ -197,10 +230,7 @@
                     "post_status": [
                         "publish"
                     ],
-                    "taxonomy": [
-                        "product_cat:composite-cladding",
-                        "product_cat:composite-decking"
-                    ],
+                    "taxonomy": "",
                     "return_format": "object",
                     "multiple": 0,
                     "allow_null": 0,
@@ -233,5 +263,5 @@
     "show_in_rest": 0,
     "display_title": "",
     "granola_save_location": 0,
-    "modified": 1770218044
+    "modified": 1774537378
 }

@@ -90,6 +90,11 @@ if (file_exists($autoloader = __DIR__ . '/vendor/autoload.php')) {
 \Theme\Plugins\YoastSEO::init();
 
 // ----------------------------------------------------
+// WooCommerce functionality.
+// ----------------------------------------------------
+\Theme\WooCommerce\Settings::init();
+
+// ----------------------------------------------------
 // Other custom functionality.
 // ----------------------------------------------------
 \Theme\Hubspot\Attribution::init();
