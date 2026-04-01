@@ -213,6 +213,18 @@
             margin: 0;
         }
 
+        .product__pricing-description {
+            text-align: center;
+
+            > *:first-child {
+                margin-top: 0;
+            }
+
+            > *:last-child {
+                margin-bottom: 0;
+            }
+        }
+
         .woocommerce-simple-price,
         .woocommerce-variation-price {
             @include typestyle-h4;

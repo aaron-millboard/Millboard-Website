@@ -36,7 +36,58 @@
                     "operator": "==",
                     "value": "1"
                 }
-             ]
+            ]
+        },
+        {
+            "key": "cpt_product_tab_product_description",
+            "label": "Product Description",
+            "type": "tab"
+        },
+        {
+            "key": "cpt_product_hide_pricing_description",
+            "label": "Hide product pricing description",
+            "name": "hide_pricing_description",
+            "type": "button_group",
+            "instructions": "Enable this to ensure the product pricing description is not displayed.",
+            "choices": {
+                "1": "Yes",
+                "0": "No"
+            },
+            "default_value": "0",
+            "ui": 1,
+            "wrapper": {
+                "width": "50%"
+            }
+        },
+        {
+            "key": "cpt_product_override_pricing_description",
+            "label": "Override product pricing description",
+            "name": "override_pricing_description",
+            "type": "button_group",
+            "instructions": "Enable this to override the product pricing description and display something specific to thsi product.",
+            "choices": {
+                "1": "Yes",
+                "0": "No"
+            },
+            "default_value": "0",
+            "ui": 1,
+            "wrapper": {
+                "width": "50%"
+            }
+        },
+        {
+            "key": "cpt_product_pricing_description_override",
+            "label": "Product pricing description override",
+            "name": "pricing_description_override",
+            "type": "wysiwyg",
+            "instructions": "Provide a description for the product pricing.",
+            "conditional_logic": [
+                {
+                    "field": "cpt_product_override_pricing_description",
+                    "operator": "==",
+                    "value": "1"
+                }
+            ]
         }
     ],
     "location": [

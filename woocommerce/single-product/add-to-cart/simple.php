@@ -22,16 +22,10 @@ global $product;
 
 // CTA under description
 $show_calculator = \get_field('enable_calculator', $product->get_id());
+$pricing_description = \Granola\Components\WC_SingleProduct\get_pricing_description($product);
 
 if (! $product->is_purchasable()) {
     return;
-}
-
-// Resolve tax global status
-if (function_exists('wc_prices_include_tax') && wc_prices_include_tax()) {
-    $args['tax_included'] = true;
-} else {
-    $args['tax_included'] = false;
 }
 
 // Don't show 'out of stock' message.
@@ -67,11 +61,13 @@ if ($product->is_in_stock()) : ?>
                 <div class="woocommerce-simple-price">
                     <?= $product->get_price_html(); ?>
                 </div>
-
-                <div class="woocommerce-simple-tax">
-                    <?php echo $args['tax_included'] ? esc_html__('Incl VAT', 'granola') : esc_html__('Excl VAT', 'granola'); ?>
-                </div>
             </div>
+
+            <?php if (!empty($pricing_description)) { ?>
+                <div class="product__pricing-description">
+                    <?= wp_kses_post($pricing_description); ?>
+                </div>
+            <?php } ?>
 
             <button type="submit" name="add-to-cart" value="<?php echo esc_attr($product->get_id()); ?>" class="single_add_to_cart_button button alt<?php echo esc_attr(wc_wp_theme_get_element_class_name('button') ? ' ' . wc_wp_theme_get_element_class_name('button') : ''); ?>"><?php echo esc_html($product->single_add_to_cart_text()); ?></button>
         </div>
