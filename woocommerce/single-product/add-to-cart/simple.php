@@ -64,7 +64,7 @@ if ($product->is_in_stock()) : ?>
             </div>
 
             <?php if (!empty($pricing_description)) { ?>
-                <div class="product__pricing-description woocommerce-simple-tax">
+                <div class="product__pricing-description">
                     <?= wp_kses_post($pricing_description); ?>
                 </div>
             <?php } ?>

@@ -53,7 +53,7 @@ if (empty($default_product_in_stock) && empty($show_calculator)) {
         <?php woocommerce_single_variation(); // render price ?>
 
         <?php if (!empty($pricing_description)) { ?>
-            <div class="product__pricing-description woocommerce-simple-tax">
+            <div class="product__pricing-description">
                 <?= wp_kses_post($pricing_description); ?>
             </div>
         <?php } ?>
