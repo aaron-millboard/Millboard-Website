@@ -46,6 +46,10 @@ function filter_args(array $args): ?array
         ],
     ];
 
+    if ($item->url === '#') {
+        $args['link']['attributes']['role'] = 'button';
+    }
+
     if (!empty($item->xfn)) {
         $args['link']['attributes']['rel'][] = $item->xfn;
     }
