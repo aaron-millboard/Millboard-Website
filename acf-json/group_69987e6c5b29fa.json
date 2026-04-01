@@ -1,0 +1,33 @@
+{
+    "key": "group_69987e6c5b29fa",
+    "title": "Products",
+    "fields": [
+        {
+            "key": "product_pricing_description_key",
+            "label": " Product pricing description",
+            "name": "cpt_product_pricing_description",
+            "type": "wysiwyg"
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "options_page",
+                "operator": "==",
+                "value": "acf-options-products"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "",
+    "show_in_rest": 0,
+    "display_title": "",
+    "granola_save_location": 0,
+    "modified": 1771602479
+}

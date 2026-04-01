@@ -13,19 +13,9 @@
 
 defined('ABSPATH') || exit;
 
-// Resolve tax global status
-if (function_exists('wc_prices_include_tax') && wc_prices_include_tax()) {
-    $args['tax_included'] = true;
-} else {
-    $args['tax_included'] = false;
-}
-
 ?>
 <script type="text/template" id="tmpl-variation-template">
     <div class="woocommerce-variation-price">{{{ data.variation.price_html }}}</div>
-    <div class="woocommerce-variation-tax">
-        <?php echo $args['tax_included'] ? esc_html__('Inc VAT', 'granola') : esc_html__('Excl VAT', 'granola'); ?>
-    </div>
 </script>
 <script type="text/template" id="tmpl-unavailable-variation-template">
     <p role="alert"><?php esc_html_e('Sorry, this product is unavailable. Please choose a different combination.', 'granola'); ?></p>
