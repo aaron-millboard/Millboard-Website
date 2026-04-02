@@ -26,7 +26,7 @@
                                 <div 
                                     class="gallery-video__thumbnail<?= $index === 0 ? ' gallery-video__thumbnail--active' : ''; ?>"
                                     data-video-index="<?= esc_attr($index); ?>"
-                                    aria-label="Play video <?= esc_attr($index + 1); ?>"
+                                    aria-label="<?= esc_attr(sprintf(__('Play video %d', 'granola'), $index + 1)); ?>"
                                 >
                                     <?php if (!empty($item['thumbnail_data'])) { ?>
                                         <?= \Granola\Component::get('image', $item['thumbnail_data']); ?>
@@ -90,7 +90,7 @@
                                         <span class="gallery-video__meta__play__icon">
                                             <?= \Granola\SVG::get('icons-custom/play.svg'); ?>
                                         </span>
-                                        <span class="gallery-video__meta__play__text">Play Video</span>
+                                        <span class="gallery-video__meta__play__text"><?= esc_html__('Play video', 'granola'); ?></span>
                                     </button>
                                 </div>
                             <?php } ?>
