@@ -38,52 +38,19 @@
                 <?php } ?>
 
                 <div class="gallery-video__player">
-                    <?php foreach ($args['items'] as $index => $item) { ?>
-                        <div 
-                            class="gallery-video__video<?= $index === 0 ? ' gallery-video__video--active' : ''; ?>" 
-                            data-video-index="<?= esc_attr($index); ?>"
-                        >
-                            <div class="gallery-video__cover">
-                                <?php if (!empty($item['cover_image_data'])) { ?>
-                                    <?= \Granola\Component::get('image', $item['cover_image_data']); ?>
-                                <?php } ?>
-                                
-                                <button 
-                                    class="gallery-video__play-button" 
-                                    data-embed-url="<?= esc_attr($item['embed_url']); ?>"
-                                    aria-label="<?= esc_attr(__('Play video', 'granola')); ?>"
-                                >
-                                    <?= \Granola\SVG::get('icons-custom/play.svg'); ?>
-                                </button>
-                            </div>
-
-                            <div class="gallery-video__iframe">
-                                <iframe 
-                                    src="" 
-                                    frameborder="0" 
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                                    allowfullscreen
-                                ></iframe>
-                            </div>
-
-                            <?php if (!empty($item['caption']) || !empty($item['subcaption'])) { ?>
-                                <div class="gallery-video__meta">
-                                    <div class="gallery-video__captions nflm is-style-typestyle-small is-style-typestyle-meta">
-                                        <?php if (!empty($item['caption'])) { ?>
-                                            <div class="gallery-video__caption">
-                                                <?= wp_kses_post($item['caption']); ?>
-                                            </div>
-                                        <?php } ?>
-                                        
-                                        <?php if (!empty($item['subcaption'])) { ?>
-                                            <div class="gallery-video__subcaption">
-                                                <?= wp_kses_post($item['subcaption']); ?>
-                                            </div>
-                                        <?php } ?>
-                                    </div>
+                    <div class="gallery-video__stage">
+                        <?php foreach ($args['items'] as $index => $item) { ?>
+                            <div 
+                                class="gallery-video__video<?= $index === 0 ? ' gallery-video__video--active' : ''; ?>" 
+                                data-video-index="<?= esc_attr($index); ?>"
+                            >
+                                <div class="gallery-video__cover">
+                                    <?php if (!empty($item['cover_image_data'])) { ?>
+                                        <?= \Granola\Component::get('image', $item['cover_image_data']); ?>
+                                    <?php } ?>
                                     
                                     <button 
-                                        class="gallery-video__meta__play" 
+                                        class="gallery-video__play-button" 
                                         data-embed-url="<?= esc_attr($item['embed_url']); ?>"
                                         aria-label="<?= esc_attr(__('Play video', 'granola')); ?>"
                                     >
