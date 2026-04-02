@@ -9,6 +9,7 @@ export default class GalleryVideo {
         this.element = element;
         this.videos = Array.from(this.element.querySelectorAll('.gallery-video__video'));
         this.thumbnails = Array.from(this.element.querySelectorAll('.gallery-video__thumbnail'));
+        this.metaPanels = Array.from(this.element.querySelectorAll('.gallery-video__meta--panel'));
         this.activeVideoIndex = 0;
 
         if (!this.videos.length) return;
@@ -104,6 +105,16 @@ export default class GalleryVideo {
                 thumbnail.classList.add('gallery-video__thumbnail--active');
             } else {
                 thumbnail.classList.remove('gallery-video__thumbnail--active');
+            }
+        });
+
+        this.metaPanels.forEach((panel) => {
+            const panelIndex = Number.parseInt(panel.dataset.videoIndex, 10);
+
+            if (panelIndex === index) {
+                panel.classList.add('gallery-video__meta--active');
+            } else {
+                panel.classList.remove('gallery-video__meta--active');
             }
         });
 
