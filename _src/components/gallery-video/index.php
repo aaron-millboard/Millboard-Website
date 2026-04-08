@@ -93,8 +93,48 @@
                                         <span class="gallery-video__meta__play__text"><?= esc_html__('Play video', 'granola'); ?></span>
                                     </button>
                                 </div>
-                            <?php } ?>
-                        </div>
+
+                                <div class="gallery-video__iframe">
+                                    <iframe 
+                                        src="" 
+                                        frameborder="0" 
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                        allowfullscreen
+                                    ></iframe>
+                                </div>
+                            </div>
+                        <?php } ?>
+                    </div>
+
+                    <?php foreach ($args['items'] as $index => $item) { ?>
+                        <?php if (!empty($item['caption']) || !empty($item['subcaption'])) { ?>
+                            <div class="gallery-video__meta gallery-video__meta--panel<?= $index === 0 ? ' gallery-video__meta--active' : ''; ?>" data-video-index="<?= esc_attr($index); ?>">
+                                <div class="gallery-video__captions nflm is-style-typestyle-small is-style-typestyle-meta">
+                                    <?php if (!empty($item['caption'])) { ?>
+                                        <div class="gallery-video__caption">
+                                            <?= wp_kses_post($item['caption']); ?>
+                                        </div>
+                                    <?php } ?>
+                                    
+                                    <?php if (!empty($item['subcaption'])) { ?>
+                                        <div class="gallery-video__subcaption">
+                                            <?= wp_kses_post($item['subcaption']); ?>
+                                        </div>
+                                    <?php } ?>
+                                </div>
+                                
+                                <button 
+                                    class="gallery-video__meta__play" 
+                                    data-embed-url="<?= esc_attr($item['embed_url']); ?>"
+                                    aria-label="<?= esc_attr(__('Play video', 'granola')); ?>"
+                                >
+                                    <span class="gallery-video__meta__play__icon">
+                                        <?= \Granola\SVG::get('icons-custom/play.svg'); ?>
+                                    </span>
+                                    <span class="gallery-video__meta__play__text"><?= sprintf(__('Play video', 'granola')); ?></span>
+                                </button>
+                            </div>
+                        <?php } ?>
                     <?php } ?>
                 </div>
             </div>
