@@ -15,6 +15,7 @@ class Image
         \add_action('init', [__CLASS__, 'register_post_type']);
         \add_filter('granola/templates/post-types', [__CLASS__, 'filter_granola_templates_post_types']);
         \add_action('template_redirect', [__CLASS__, 'redirect_single_cpt']);
+        \add_filter('wp_robots', [__CLASS__, 'filter_gallery_robots_link']);
     }
 
 
@@ -122,5 +123,26 @@ class Image
     {
         $post_types[] = self::SLUG;
         return $post_types;
+    }
+
+    /**
+     * Filter the robots meta tag to add a noindex to UI filtered pages.
+     *
+     * @param array $robots Associative array of robots <meta> content directives.
+     * @return array The filtered array of robots <meta> content directives.
+     */
+    public static function filter_gallery_robots_link(array $robots): array
+    {
+        if (!\is_post_type_archive(self::SLUG)) {
+            return $robots;
+        }
+
+        $image_category = \get_query_var('image_category');
+
+        if (!empty($image_category)) {
+            $robots['noindex'] = true;
+        }
+
+        return $robots;
     }
 }
