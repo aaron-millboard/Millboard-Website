@@ -54,9 +54,7 @@
                                         data-embed-url="<?= esc_attr($item['embed_url']); ?>"
                                         aria-label="<?= esc_attr(__('Play video', 'granola')); ?>"
                                     >
-                                        <span class="gallery-video__meta__play__icon">
-                                            <?= \Granola\SVG::get('icons-custom/play.svg'); ?>
-                                        </span>
+                                        <?= \Granola\SVG::get('icons-custom/play.svg'); ?>
                                     </button>
                                 </div>
 
