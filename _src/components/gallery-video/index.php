@@ -57,7 +57,6 @@
                                         <span class="gallery-video__meta__play__icon">
                                             <?= \Granola\SVG::get('icons-custom/play.svg'); ?>
                                         </span>
-                                        <span class="gallery-video__meta__play__text"><?= esc_html__('Play video', 'granola'); ?></span>
                                     </button>
                                 </div>
 
