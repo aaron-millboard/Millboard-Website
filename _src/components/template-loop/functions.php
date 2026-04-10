@@ -11,6 +11,7 @@ function filter_args(array $args): ?array
         'items' => [],
         'object' => \Granola\WordPress\PageObject::get(),
         'items_component_args' => [],
+        'taxonomy_filters_args' => [],
         'taxonomy' => 'category',
         'filter_label' => \__('Explore and filter all articles', 'granola'),
         'post_type' => null,
@@ -24,7 +25,7 @@ function filter_args(array $args): ?array
     }
 
     // Set default taxonomy filter arguments.
-    $args['taxonomy_filters'] = [
+    $args['taxonomy_filters_args'] = [
         'label' => $args['filter_label'],
         'taxonomy' => $args['taxonomy'],
         'object' => $args['object'],
@@ -54,10 +55,10 @@ function filter_args(array $args): ?array
     // Set columns to 2 for case studies
     if ($post_type === 'case-study') {
         $args['items_component_args']['columns'] = 2;
-        $args['taxonomy_filters']['label'] = \__('Explore and filter all case studies', 'granola');
+        $args['taxonomy_filters_args']['label'] = \__('Explore and filter all case studies', 'granola');
     } elseif ($post_type === 'product') {
         $args['items_component_args']['columns'] = 4;
-        unset($args['taxonomy_filters']);
+        $args['taxonomy_filters_args'] = [];
     }
 
     // Filterable items output component.

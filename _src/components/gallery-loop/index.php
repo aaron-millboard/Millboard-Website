@@ -1,5 +1,7 @@
 <section <?= \Granola\Helpers::build_attributes($args['attributes']); ?>>
-    <?= \Granola\Component::get('taxonomy-filters', $args['taxonomy_filters_args']); ?>
+    <?php if (!empty($args['taxonomy_filters_args'])) { ?>
+        <?= \Granola\Component::get('taxonomy-filters', $args['taxonomy_filters_args']); ?>
+    <?php } ?>
 
     <?php if (!empty($args['rows'])) { ?>
         <?= \Granola\Component::get('gallery', [
