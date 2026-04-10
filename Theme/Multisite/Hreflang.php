@@ -10,6 +10,24 @@ class Hreflang
     public static function init()
     {
         \add_filter('granola/wordpress/head/links', [__CLASS__, 'add_hreflang_links']);
+        \add_action('wp_head', [__CLASS__, 'output_bulk_href_html'], 0);
+    }
+
+    /**
+     * Outputs any bulk hreflang HTML into the <head>.
+     *
+     * TODO: This should be reviewed and replaced in future as it is a potential security risk.
+     *
+     * @return void
+     */
+    public static function output_bulk_href_html()
+    {
+        $bulk_href_html = \get_field('hreflang_bulk_upload');
+        if (empty($bulk_href_html)) {
+            return;
+        }
+
+        echo $bulk_href_html;
     }
 
     /**
