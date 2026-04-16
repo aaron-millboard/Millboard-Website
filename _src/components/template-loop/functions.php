@@ -11,6 +11,7 @@ function filter_args(array $args): ?array
         'items' => [],
         'object' => \Granola\WordPress\PageObject::get(),
         'items_component_args' => [],
+        'taxonomy_filters_args' => [],
         'taxonomy' => 'category',
         'filter_label' => \__('Explore and filter all articles', 'granola'),
         'post_type' => null,

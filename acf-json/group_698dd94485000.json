@@ -533,6 +533,27 @@
                     "parent_repeater": "field_698dd94556d25"
                 }
             ]
+        },
+        {
+            "key": "field_69d683e4e2f52",
+            "label": "Hreflang bulk upload",
+            "name": "hreflang_bulk_upload",
+            "aria-label": "",
+            "type": "textarea",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "allow_in_bindings": 0,
+            "rows": "",
+            "placeholder": "",
+            "new_lines": ""
         }
     ],
     "location": [
@@ -604,5 +625,5 @@
     "show_in_rest": 0,
     "display_title": "",
     "granola_save_location": 0,
-    "modified": 1770904520
+    "modified": 1775666182
 }
