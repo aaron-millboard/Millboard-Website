@@ -13,6 +13,7 @@ function filter_args(array $args): ?array
         'depth' => 0,
         'max_depth' => null,
         'display_submenu' => false,
+        'parent_list_id' => null,
     ], $args);
 
     // ---------------------------------------
@@ -35,7 +36,13 @@ function filter_args(array $args): ?array
         'menu-item',
     ], $args['classes'], $item->classes);
 
-    $args['attributes']['id'] = 'menu-item-' . $item->ID;
+    $item_id = 'menu-item-' . $item->ID;
+
+    if (!empty($args['parent_list_id'])) {
+        $item_id = $args['parent_list_id'] . '-' . $item_id;
+    }
+
+    $args['attributes']['id'] = $item_id;
 
     $args['link'] = [
         'url' => $item->url,
@@ -85,8 +92,10 @@ function filter_args(array $args): ?array
             }
         }
 
+        $sub_menu_id = (!empty($args['parent_list_id']) ? $args['parent_list_id'] . '-' : '') . 'sub-menu-' . $item->ID;
+
         $args['sub-menu-attributes'] = [
-            'id' => 'sub-menu-' . $item->ID,
+            'id' => $sub_menu_id,
             'class' => \Granola\Helpers::build_classes($sub_menu_classes),
 
             // Initially hide sub-menus.
@@ -100,8 +109,8 @@ function filter_args(array $args): ?array
             'classes' => ['sub-menu-toggler'],
             'attributes' => [
                 'aria-expanded' => 'false',
-                'aria-controls' => 'sub-menu-' . $item->ID,
-                'id' => 'sub-menu-' . $item->ID . '-toggler',
+                'aria-controls' => $sub_menu_id,
+                'id' => $sub_menu_id . '-toggler',
             ],
         ];
     }
