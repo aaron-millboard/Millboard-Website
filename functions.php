@@ -92,6 +92,8 @@ if (file_exists($autoloader = __DIR__ . '/vendor/autoload.php')) {
 // ----------------------------------------------------
 // WooCommerce functionality.
 // ----------------------------------------------------
+
+\Theme\WooCommerce\CountryRestrictions::init();
 \Theme\WooCommerce\Settings::init();
 
 // ----------------------------------------------------
