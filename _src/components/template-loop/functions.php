@@ -29,42 +29,52 @@ function filter_args(array $args): ?array
     $paged = (\get_query_var('paged')) ? \get_query_var('paged') : 1;
     $taxonomy = $args['taxonomy'];
     
-    $query_args = [
-        'post_type' => $post_type,
-        'posts_per_page' => 12,
-        'post_status' => 'publish',
-        'paged' => $paged,
-    ];
+    // On search pages, use the real main query instead of creating a new one.
+    if (\is_search() && empty($args['items'])) {
+        $query = \Granola\WordPress\PageObject::get();
 
-    // Filter by taxonomy if provided in URL
-    if (isset($_GET[$taxonomy]) && !empty($_GET[$taxonomy])) {
-        $terms = explode(' ', \sanitize_text_field($_GET[$taxonomy]));
-
-        foreach ($terms as $term) {
-            $query_args['tax_query'][] = [
-                [
-                    'taxonomy' => $taxonomy,
-                    'field' => 'slug',
-                    'terms' => $term,
-                ],
-            ];
-        }
-
-        if (count($terms) > 1) {
-            $query_args['tax_query'][]['relation'] = 'AND';
-        }
-    }
-
-    // Run our query only if not already populated
-    if (empty($args['items'])) {
-        $query = new \WP_Query($query_args);
         $args['items'] = [];
         foreach ($query->posts as $post) {
             $args['items'][]['object'] = $post;
         }
+
         $max_num_pages = $query->max_num_pages;
     } else {
-        $max_num_pages = 1;
+        $query_args = [
+            'post_type' => $post_type,
+            'posts_per_page' => 12,
+            'post_status' => 'publish',
+            'paged' => $paged,
+        ];
+
+        if (isset($_GET[$taxonomy]) && !empty($_GET[$taxonomy])) {
+            $terms = explode(' ', \sanitize_text_field($_GET[$taxonomy]));
+
+            $query_args['tax_query'] = [
+                'relation' => 'AND',
+            ];
+
+            foreach ($terms as $term) {
+                $query_args['tax_query'][] = [
+                    'taxonomy' => $taxonomy,
+                    'field' => 'slug',
+                    'terms' => $term,
+                ];
+            }
+        }
+
+        if (empty($args['items'])) {
+            $query = new \WP_Query($query_args);
+            $args['items'] = [];
+
+            foreach ($query->posts as $post) {
+                $args['items'][]['object'] = $post;
+            }
+
+            $max_num_pages = $query->max_num_pages;
+        } else {
+            $max_num_pages = 1;
+        }
     }
 
     // Set default taxonomy filter arguments.
