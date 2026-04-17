@@ -136,8 +136,8 @@ class Image
         if (!\is_post_type_archive(self::SLUG)) {
             return $robots;
         }
-
-        $image_category = \get_query_var('image_category');
+        
+        $image_category = isset($_GET['image_category']) ? sanitize_text_field($_GET['image_category']) : '';
 
         if (!empty($image_category)) {
             $robots['noindex'] = true;
