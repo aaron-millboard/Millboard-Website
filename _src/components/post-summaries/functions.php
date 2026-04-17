@@ -77,71 +77,69 @@ function filter_args(array $args): ?array
 function get_search_query_post_type_tags(\WP_Query $query): array
 {
     $tags = [];
-
-    $all_results_query = new \WP_Query([
-        's' => $query->get('s'),
+    $sidebar_query = new \WP_Query([
+        'posts_per_page' => 500, // arbitrary large number.
+        's' => $query->query['s'],
         'post_status' => 'publish',
         'perm' => 'readable',
-        'posts_per_page' => -1,
-        'fields' => 'ids',
+
+        // Query optimisation.
         'no_found_rows' => true,
         'update_post_meta_cache' => false,
         'update_post_term_cache' => false,
     ]);
 
-    $post_type_counts = [];
+    foreach ($sidebar_query->posts as $query_post) {
+        $pt = $query_post->post_type;
 
-    foreach ($all_results_query->posts as $post_id) {
-        $pt = get_post_type($post_id);
-
-        if (!$pt) {
-            continue;
+        if (empty($tags[$pt]['count'])) {
+            $tags[$pt]['count'] = 1;
+        } else {
+            $tags[$pt]['count']++;
         }
-
-        $post_type_counts[$pt] = ($post_type_counts[$pt] ?? 0) + 1;
     }
 
-    foreach ($post_type_counts as $pt_name => $count) {
-        $pt_object = get_post_type_object($pt_name);
-
-        if (!$pt_object) {
-            continue;
-        }
-
-        $tags[] = [
-            'content' => sprintf(
-                _n(
-                    '%1$s (%3$s)',
-                    '%2$s (%3$s)',
-                    $count,
-                    'granola'
-                ),
-                $pt_object->labels->singular_name,
-                $pt_object->labels->name,
-                number_format_i18n($count)
+    $tags = array_map(function ($tag, $pt_name) use ($query) {
+        $pt_object = \get_post_type_object($pt_name);
+        $tag['content'] = sprintf(
+            _n(
+                // translators: 1: Singular post type label. 2: Plural post type label. 3: Post count.
+                '%1$s (%3$s)',
+                '%2$s (%3$s)',
+                $tag['count'],
+                'granola',
             ),
-            'url' => add_query_arg([
-                's' => $query->get('s'),
-                'post_type' => $pt_name,
-            ], home_url('/')),
-            'classes' => [
-                'g-tag',
-                'is-interactive',
-            ],
+            $pt_object->labels->singular_name,
+            $pt_object->labels->name,
+            $tag['count']
+        );
+
+        $tag['url'] = \add_query_arg([
+            's' => $query->query['s'],
+            'post_type' => $pt_name,
+        ], \home_url());
+
+        $tag['classes'] = [
+            'g-tag',
+            'is-interactive',
         ];
-    }
 
-    $total = array_sum($post_type_counts);
+        // Remove unnecessary data.
+        unset($tag['count']);
 
-    if ($total > 0) {
+        return $tag;
+    }, $tags, array_keys($tags));
+
+    if (!empty($tags)) {
         array_unshift($tags, [
             'content' => sprintf(
+                // translators: The number of search results.
                 _x('All (%s)', 'Search sidebar all items label', 'granola'),
-                number_format_i18n($total)
+                $query->found_posts
             ),
-            'url' => add_query_arg([
-                's' => $query->get('s'),
-            ], home_url('/')),
+            'url' => \add_query_arg([
+                's' => $query->query['s'],
+            ], \home_url()),
             'classes' => [
                 'g-tag',
                 'is-interactive',
