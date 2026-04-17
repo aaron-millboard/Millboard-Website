@@ -4,9 +4,6 @@ namespace Granola\Components\TemplateLoop;
 
 function filter_args(array $args): ?array
 {
-    // ---------------------------------------
-    // Default arguments.
-    // ---------------------------------------
     $args = array_merge([
         'items' => [],
         'object' => \Granola\WordPress\PageObject::get(),
@@ -17,39 +14,48 @@ function filter_args(array $args): ?array
         'post_type' => null,
     ], $args);
 
-    // Pass post type
-    // Use provided post_type or detect automatically
-    if (!empty($args['post_type'])) {
+    // Determine post type.
+    // On search pages:
+    // - if a filter is selected, use it
+    // - otherwise show all matching post types
+    if (\is_search()) {
+        if (isset($_GET['post_type']) && $_GET['post_type'] !== '') {
+            $post_type = \sanitize_key(\wp_unslash($_GET['post_type']));
+        } else {
+            $post_type = 'any';
+        }
+    } elseif (!empty($args['post_type'])) {
         $post_type = $args['post_type'];
     } else {
         $post_type = \get_post_type();
     }
 
-    // Handle URL-based filtering
-    $paged = (\get_query_var('paged')) ? \get_query_var('paged') : 1;
+    $paged = \get_query_var('paged') ? \get_query_var('paged') : 1;
     $taxonomy = $args['taxonomy'];
-    
-    // On search pages, use the real main query instead of creating a new one.
-    if (\is_search() && empty($args['items'])) {
-        $query = \Granola\WordPress\PageObject::get();
 
-        $args['items'] = [];
-        foreach ($query->posts as $post) {
-            $args['items'][]['object'] = $post;
+    $query_args = [
+        'post_type' => $post_type,
+        'posts_per_page' => 12,
+        'post_status' => 'publish',
+        'paged' => $paged,
+    ];
+
+    // Preserve search term on search pages.
+    if (\is_search()) {
+        $search_term = \get_search_query();
+
+        if ($search_term !== '') {
+            $query_args['s'] = $search_term;
         }
+    }
 
-        $max_num_pages = $query->max_num_pages;
-    } else {
-        $query_args = [
-            'post_type' => $post_type,
-            'posts_per_page' => 12,
-            'post_status' => 'publish',
-            'paged' => $paged,
-        ];
+    // Filter by taxonomy if provided in URL.
+    if (isset($_GET[$taxonomy]) && !empty($_GET[$taxonomy])) {
+        $terms = array_filter(
+            explode(' ', \sanitize_text_field(\wp_unslash($_GET[$taxonomy])))
+        );
 
-        if (isset($_GET[$taxonomy]) && !empty($_GET[$taxonomy])) {
-            $terms = explode(' ', \sanitize_text_field($_GET[$taxonomy]));
-
+        if (!empty($terms)) {
             $query_args['tax_query'] = [
                 'relation' => 'AND',
             ];
@@ -62,22 +68,23 @@ function filter_args(array $args): ?array
                 ];
             }
         }
-
-        if (empty($args['items'])) {
-            $query = new \WP_Query($query_args);
-            $args['items'] = [];
-
-            foreach ($query->posts as $post) {
-                $args['items'][]['object'] = $post;
-            }
-
-            $max_num_pages = $query->max_num_pages;
-        } else {
-            $max_num_pages = 1;
-        }
     }
 
-    // Set default taxonomy filter arguments.
+    if (empty($args['items'])) {
+        $query = new \WP_Query($query_args);
+        $args['items'] = [];
+
+        foreach ($query->posts as $post) {
+            $args['items'][] = [
+                'object' => $post,
+            ];
+        }
+
+        $max_num_pages = $query->max_num_pages;
+    } else {
+        $max_num_pages = 1;
+    }
+
     $args['taxonomy_filters_args'] = [
         'label' => $args['filter_label'],
         'taxonomy' => $args['taxonomy'],
@@ -86,18 +93,15 @@ function filter_args(array $args): ?array
         'preserve_url' => true,
     ];
 
-    // Fill items into items component args.
     $args['items_component_args']['items'] = $args['items'];
     $args['items_component_args']['wp_query'] = false;
     $args['items_component_args']['post_type'] = $post_type;
     $args['items_component_args']['limit'] = 12;
 
-    // Set columns to 3 if not already set
     if (!isset($args['items_component_args']['columns'])) {
         $args['items_component_args']['columns'] = 3;
     }
 
-    // Set columns to 2 for case studies
     if ($post_type === 'case-study') {
         $args['items_component_args']['columns'] = 2;
         $args['taxonomy_filters_args']['label'] = \__('Explore and filter all case studies', 'granola');
@@ -106,24 +110,18 @@ function filter_args(array $args): ?array
         $args['taxonomy_filters_args'] = [];
     }
 
-    // Set up pagination args.
     $args['pagination_args'] = [
         'paged' => $paged,
         'max_num_pages' => $max_num_pages,
     ];
 
-    // Filterable items output component.
     $args['items_component'] = \apply_filters('granola/components/template-loop/items-component', 'cards-automatic');
 
-    // Filterable items output component arguments.
     $args['items_component_args'] = \apply_filters(
         'granola/components/template-loop/items-component/args',
         $args['items_component_args']
     );
 
-    // -------------------------------------------------------------------------
-    // Return the filtered args.
-    // -------------------------------------------------------------------------
     return $args;
 }
 
