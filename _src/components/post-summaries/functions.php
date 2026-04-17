@@ -30,7 +30,7 @@ function filter_args(array $args): ?array
     if (\is_search()) {
         $query = \Granola\WordPress\PageObject::get();
 
-        if (!empty($query->query['s'])) {
+        if (!empty($query->get('s'))) {
             $args['heading'] = [
                 'content' => sprintf(
                     \_n(
@@ -41,7 +41,7 @@ function filter_args(array $args): ?array
                         'granola'
                     ),
                     \number_format_i18n($query->found_posts),
-                    $query->query['s']
+                    $query->get('s')
                 ),
                 'classes' => [
                     'post-summaries__heading',
@@ -77,71 +77,83 @@ function filter_args(array $args): ?array
 function get_search_query_post_type_tags(\WP_Query $query): array
 {
     $tags = [];
+    $search_term = (string) $query->get('s');
 
-    $all_results_query = new \WP_Query([
-        's' => $query->get('s'),
+    if ($search_term === '') {
+        return $tags;
+    }
+
+    $sidebar_query = new \WP_Query([
+        'posts_per_page' => 500,
+        's' => $search_term,
         'post_status' => 'publish',
         'perm' => 'readable',
-        'posts_per_page' => -1,
-        'fields' => 'ids',
+
+        // Query optimisation.
         'no_found_rows' => true,
         'update_post_meta_cache' => false,
         'update_post_term_cache' => false,
     ]);
 
-    $post_type_counts = [];
+    foreach ($sidebar_query->posts as $query_post) {
+        $pt = $query_post->post_type;
 
-    foreach ($all_results_query->posts as $post_id) {
-        $pt = get_post_type($post_id);
-
-        if (!$pt) {
-            continue;
+        if (empty($tags[$pt]['count'])) {
+            $tags[$pt]['count'] = 1;
+        } else {
+            $tags[$pt]['count']++;
         }
-
-        $post_type_counts[$pt] = ($post_type_counts[$pt] ?? 0) + 1;
     }
 
-    foreach ($post_type_counts as $pt_name => $count) {
-        $pt_object = get_post_type_object($pt_name);
+    $total = 0;
+
+    $tags = array_map(function ($tag, $pt_name) use ($search_term, &$total) {
+        $pt_object = \get_post_type_object($pt_name);
 
         if (!$pt_object) {
-            continue;
+            return null;
         }
 
-        $tags[] = [
-            'content' => sprintf(
-                _n(
-                    '%1$s (%3$s)',
-                    '%2$s (%3$s)',
-                    $count,
-                    'granola'
-                ),
-                $pt_object->labels->singular_name,
-                $pt_object->labels->name,
-                number_format_i18n($count)
+        $total += (int) $tag['count'];
+
+        $tag['content'] = sprintf(
+            _n(
+                '%1$s (%3$s)',
+                '%2$s (%3$s)',
+                $tag['count'],
+                'granola'
             ),
-            'url' => add_query_arg([
-                's' => $query->get('s'),
-                'post_type' => $pt_name,
-            ], home_url('/')),
-            'classes' => [
-                'g-tag',
-                'is-interactive',
-            ],
+            $pt_object->labels->singular_name,
+            $pt_object->labels->name,
+            \number_format_i18n($tag['count'])
+        );
+
+        $tag['url'] = \add_query_arg([
+            's' => $search_term,
+            'post_type' => $pt_name,
+        ], \home_url('/'));
+
+        $tag['classes'] = [
+            'g-tag',
+            'is-interactive',
         ];
-    }
 
-    $total = array_sum($post_type_counts);
+        unset($tag['count']);
 
-    if ($total > 0) {
+        return $tag;
+    }, $tags, array_keys($tags));
+
+    $tags = array_values(array_filter($tags));
+
+    if (!empty($tags)) {
         array_unshift($tags, [
             'content' => sprintf(
                 _x('All (%s)', 'Search sidebar all items label', 'granola'),
-                number_format_i18n($total)
+                \number_format_i18n($total)
             ),
-            'url' => add_query_arg([
-                's' => $query->get('s'),
-            ], home_url('/')),
+            'url' => \add_query_arg([
+                's' => $search_term,
+            ], \home_url('/')),
             'classes' => [
                 'g-tag',
                 'is-interactive',
