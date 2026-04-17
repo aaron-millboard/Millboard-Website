@@ -76,19 +76,6 @@ function filter_args(array $args): ?array
  */
 function get_search_query_post_type_tags(\WP_Query $query): array
 {
-
-    //global $wp_query;
-
-    echo '<pre>';
-    var_dump([
-        'is_search' => is_search(),
-        'pageobject_s' => \Granola\WordPress\PageObject::get()->get('s'),
-        'mainquery_s' => $query->get('s'),
-        'get_search_query' => get_search_query(),
-        'requested_post_type' => get_query_var('post_type'),
-        'found_posts' => $query->found_posts,
-    ]);
-    echo '</pre>';
     $tags = [];
     $search_term = (string) $query->get('s');
 
