@@ -37,6 +37,7 @@ class ImageCategory
                 'hierarchical'      => true,
                 'show_admin_column' => true,
                 'show_in_rest'      => true,
+                'public'            => false,
 
                 // Extended taxonomy configuration.
                 'meta_box'         => 'simple',
