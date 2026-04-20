@@ -86,6 +86,22 @@
             >
                 Skip timeline
             </button>
+
+            <div class="timeline__nav__arrows">
+                <button 
+                    class="timeline__nav__arrow timeline__nav__arrow--prev" 
+                    aria-label="Previous timeline item"
+                >
+                    <span class="timeline__nav__arrow-icon">&larr;</span>
+                </button>
+                
+                <button 
+                    class="timeline__nav__arrow timeline__nav__arrow--next" 
+                    aria-label="Next timeline item"
+                >
+                    <span class="timeline__nav__arrow-icon">&rarr;</span>
+                </button>
+            </div>
         </div>
     </nav>
 </div>
