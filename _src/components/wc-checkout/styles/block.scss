@@ -128,7 +128,8 @@
                 align-items: flex-start;
                 gap: var(--space--xs);
 
-                &:has(input[type='radio']:checked) {
+                &:has(input[type='radio']:checked),
+                &:only-child {
                     background-color: var(--color--brand-1);
                     border-color: var(--color--brand-4);
 

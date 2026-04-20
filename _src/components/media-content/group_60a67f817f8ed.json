@@ -83,7 +83,7 @@
         },
         {
             "key": "field_60a67f8182d6e",
-            "label": "Subheading",
+            "label": "Content",
             "name": "subheading",
             "aria-label": "",
             "type": "wysiwyg",
