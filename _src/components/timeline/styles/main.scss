@@ -302,6 +302,7 @@
             @include mq(medium) {
                 justify-content: flex-start;
                 flex-direction: row;
+                padding: var(--space--xs) var(--space--m);
             }
         }
 
@@ -346,6 +347,39 @@
                     border-top:1px solid var(--color--black);
                      padding: var(--space--xs) var(--space--3xs) 0;
                 }
+            }
+        }
+
+        &__arrows{
+           position:absolute;
+           top: 26px;
+           width:100%;
+           @include mq(medium) {
+                display: none;
+           }
+        }
+
+        &__arrow{
+            display: block;
+            width: var(--accordion--button--size);
+            height: var(--accordion--button--size);
+            background-color: var(--color--black);
+            content: '';
+            grid-area: button;
+            mask-position: center;
+            mask-repeat: no-repeat;
+            mask-size: var(--accordion--icon--size);
+            position: absolute;
+
+            &--next{
+                mask-image: url(#{asset-path('images/icons/chevron-right.svg')});
+                right:35px;
+            }
+
+            &--prev{
+                mask-image: url(#{asset-path('images/icons/chevron-right.svg')});
+                transform: rotate(180deg);
+                left:-35px;
             }
         }
     }
