@@ -3,12 +3,12 @@
 .quote {
     $this: &;
 
-    @include align-width--l;
-
     &__inner {
         --grid--row-gap: var(--space--l);
 
         @include grid(1, 2);
+
+        @include align-width--l;
 
         @include mq(medium) {
             --grid--column-gap: var(--space--2xl);
