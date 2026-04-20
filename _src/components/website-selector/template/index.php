@@ -33,14 +33,16 @@
                             </div>
                         <?php } ?>
 
-                        <?php if (!empty($column['cta'])) { ?>
+                        <?php if (!empty($column['cta']) && is_array($column['cta'])) { ?>
                             <div class="website-selector__column__cta">
-                                <?= \Granola\Component::get('link', [
-                                    'url' => 'https://www.deployhq.com',
-                                    'content' => 'test',
-                                    'target' => $column['cta']['target'],
-                                    'classes' => ['website-selector__column__cta__button'],
-                                ]); ?>
+                                <?php foreach ($column['cta'] as $cta) { ?>
+                                    <?= \Granola\Component::get('link', [
+                                        'url' => $cta['url'],
+                                        'content' => $cta['title'],
+                                        'target' => $cta['target'],
+                                        'classes' => ['website-selector__column__cta__button'],
+                                    ]); ?>
+                                <?php } ?>
                             </div>
                         <?php } ?>
 
