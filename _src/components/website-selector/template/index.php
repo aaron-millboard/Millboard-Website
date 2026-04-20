@@ -33,17 +33,31 @@
                             </div>
                         <?php } ?>
 
-                        <?php if (!empty($column['cta']) && is_array($column['cta'])) { ?>
-                            <div class="website-selector__column__cta">
-                                <?php foreach ($column['cta'] as $cta) { ?>
-                                    <?= \Granola\Component::get('link', [
-                                        'url' => $cta['url'],
-                                        'content' => $cta['title'],
-                                        'target' => $cta['target'],
-                                        'classes' => ['website-selector__column__cta__button'],
-                                    ]); ?>
-                                <?php } ?>
-                            </div>
+                        <?php
+                            // Check if either CTA exists
+                            $cta1 = get_field('website_selector_column_1_cta');
+                            $cta2 = get_field('website_selector_column_2_cta');
+
+                        if (!empty($cta1) || !empty($cta2)) { ?>
+                                <div class="website-selector__column__cta">
+                                    <?php if (!empty($cta1)) { ?>
+                                        <?= \Granola\Component::get('link', [
+                                            'url' => $cta1['url'],
+                                            'content' => $cta1['title'],
+                                            'target' => $cta1['target'] ?? '_self',
+                                            'classes' => ['website-selector__column__cta__button'],
+                                        ]); ?>
+                                    <?php } ?>
+
+                                    <?php if (!empty($cta2)) { ?>
+                                        <?= \Granola\Component::get('link', [
+                                            'url' => $cta2['url'],
+                                            'content' => $cta2['title'],
+                                            'target' => $cta2['target'] ?? '_self',
+                                            'classes' => ['website-selector__column__cta__button'],
+                                        ]); ?>
+                                    <?php } ?>
+                                </div>
                         <?php } ?>
 
                     </div>
