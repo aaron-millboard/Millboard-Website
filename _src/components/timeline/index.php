@@ -64,16 +64,20 @@
 
     <nav class="timeline__nav">
         <div class="timeline__nav__inner">
-            <?php foreach ($args['items'] as $index => $item) { ?>
-                <button 
-                    class="timeline__nav__item<?= $index === 0 ? ' timeline__nav__item--active' : ''; ?>" 
-                    data-target="<?= esc_attr($item['id']); ?>"
-                    data-index="<?= esc_attr($index); ?>"
-                    aria-label="Go to <?= esc_attr($item['year'] ?? 'timeline item ' . ($index + 1)); ?>"
-                >
-                    <?= esc_html($item['year'] ?? ($index + 1)); ?>
-                </button>
-            <?php } ?>
+            <div class="timeline__nav__items">
+                <?php foreach ($args['items'] as $index => $item) { ?>
+                    
+                        <button 
+                            class="timeline__nav__item<?= $index === 0 ? ' timeline__nav__item--active' : ''; ?>" 
+                            data-target="<?= esc_attr($item['id']); ?>"
+                            data-index="<?= esc_attr($index); ?>"
+                            aria-label="Go to <?= esc_attr($item['year'] ?? 'timeline item ' . ($index + 1)); ?>"
+                        >
+                            <?= esc_html($item['year'] ?? ($index + 1)); ?>
+                        </button>
+                
+                <?php } ?>
+            </div>
             
             <button 
                 class="timeline__nav__item timeline__nav__item--skip" 
@@ -82,6 +86,22 @@
             >
                 Skip timeline
             </button>
+
+            <div class="timeline__nav__arrows">
+                <button 
+                    class="timeline__nav__arrow timeline__nav__arrow--prev" 
+                    aria-label="Previous timeline item"
+                >
+                    <span class="timeline__nav__arrow-icon">&larr;</span>
+                </button>
+                
+                <button 
+                    class="timeline__nav__arrow timeline__nav__arrow--next" 
+                    aria-label="Next timeline item"
+                >
+                    <span class="timeline__nav__arrow-icon">&rarr;</span>
+                </button>
+            </div>
         </div>
     </nav>
 </div>
