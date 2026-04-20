@@ -37,7 +37,7 @@
         position: relative;
         display: grid;
         grid-template-columns: 1fr;
-        gap: var(--space--l);
+        row-gap: var(--space--l);
 
         @include mq(large) {
             gap: var(--space--xl);
