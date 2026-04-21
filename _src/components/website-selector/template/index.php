@@ -39,12 +39,17 @@
                             </div>
                         <?php } ?>
 
-                        <?php if (!empty($column['cta'])) { ?>
+                        <?php
+                        // Assign the correct popup link based on the column index
+                        $cta = ($index === 0) ? $popup_link_1 : (($index === 1) ? $popup_link_2 : null);
+
+                        // Check if the column has a specific CTA
+                        if (!empty($cta)) { ?>
                             <div class="website-selector__column__cta">
                                 <?= \Granola\Component::get('link', [
-                                    'url' => $column['cta']['url'],
-                                    'content' => $column['cta']['title'],
-                                    'target' => $column['cta']['target'],
+                                    'url' => $cta['url'],
+                                    'content' => $cta['title'],
+                                    'target' => $cta['target'] ?? '_self',
                                     'classes' => ['website-selector__column__cta__button'],
                                 ]); ?>
                             </div>
