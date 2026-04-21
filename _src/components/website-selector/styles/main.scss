@@ -43,10 +43,11 @@
 
     &__columns {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr;
         gap: var(--space--m);
 
         @include mq(medium) {
+            grid-template-columns: 1fr 1fr;
             gap: var(--space--l);
         }
 
