@@ -34,28 +34,13 @@
                         <?php } ?>
 
                         <?php
-                        // Retrieve the new fields for the CTAs
-                        $cta1 = get_field('popup_link_1', 'options');
-                        $cta2 = get_field('popup_link_2', 'options');
-
-                        // Check if either CTA exists
-                        if (!empty($cta1)) { ?>
+                        // Check if the column has a specific CTA
+                        if (!empty($column['cta'])) { ?>
                             <div class="website-selector__column__cta">
                                 <?= \Granola\Component::get('link', [
-                                    'url' => $cta1['url'],
-                                    'content' => $cta1['title'],
-                                    'target' => $cta1['target'] ?? '_self',
-                                    'classes' => ['website-selector__column__cta__button'],
-                                ]); ?>
-                            </div>
-                        <?php }
-
-                        if (!empty($cta2)) { ?>
-                            <div class="website-selector__column__cta">
-                                <?= \Granola\Component::get('link', [
-                                    'url' => $cta2['url'],
-                                    'content' => $cta2['title'],
-                                    'target' => $cta2['target'] ?? '_self',
+                                    'url' => $column['cta']['url'],
+                                    'content' => $column['cta']['title'],
+                                    'target' => $column['cta']['target'] ?? '_self',
                                     'classes' => ['website-selector__column__cta__button'],
                                 ]); ?>
                             </div>
