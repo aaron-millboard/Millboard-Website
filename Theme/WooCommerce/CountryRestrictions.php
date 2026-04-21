@@ -8,6 +8,7 @@ class CountryRestrictions
     {
         \add_filter('woocommerce_countries_allowed_countries', [__CLASS__, 'filter_allowed_countries']);
         \add_filter('woocommerce_countries_shipping_countries', [__CLASS__, 'filter_shipping_countries']);
+        \add_filter('woocommerce_package_rates', [__CLASS__, 'filter_package_rates'], 100, 2);
     }
 
     /**
@@ -38,6 +39,37 @@ class CountryRestrictions
         }
 
         return self::merge_with_all_countries($countries);
+    }
+
+    /**
+     * Add a fallback zero-cost shipping method for zero-cost baskets going to countries
+     * outside the site's configured shipping markets.
+     *
+     * @param array<string, \WC_Shipping_Rate> $rates
+     * @param array<string, mixed> $package
+     * @return array<string, \WC_Shipping_Rate>
+     */
+    public static function filter_package_rates(array $rates, array $package): array
+    {
+        if (!self::should_allow_worldwide_zero_cost_checkout()) {
+            return $rates;
+        }
+
+        if (!empty($rates)) {
+            return $rates;
+        }
+
+        $rate_id = 'millboard_zero_cost_shipping';
+
+        $rates[$rate_id] = new \WC_Shipping_Rate(
+            $rate_id,
+            \__('Sample delivery', 'granola'),
+            0,
+            [],
+            $rate_id
+        );
+
+        return $rates;
     }
 
     private static function should_allow_worldwide_zero_cost_checkout(): bool
