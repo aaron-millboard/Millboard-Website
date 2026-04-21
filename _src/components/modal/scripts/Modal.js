@@ -58,34 +58,51 @@ export default class Modal {
         }
     }
 
-    /**
-     * Initialize click handlers for links inside the modal that should create a cookie and close the modal
-     */
-    initModalLinks() {
-        const modalLinks = this.element.querySelectorAll('a[href]');
-
-        modalLinks.forEach((link) => {
-            link.addEventListener('click', (event) => {
-                // Stop the browser following the link immediately
-                event.preventDefault();
-
-                // Avoid running this flow more than once
-                if (this.cookieSet) {
-                    window.location.assign(link.href);
-                    return;
-                }
-
-                // Close modal and set cookie
-                this.close();
-
-                // Navigate directly to the chosen destination
-                if (link.href) {
-                    window.location.assign(link.href);
-                }
-            });
-        });
+/**
+ * Initialize click handlers for links inside the modal that should create a cookie and close the modal
+ */
+initModalLinks() {
+    // Bail early - this behavior only applies if cookie is not set.
+    if (this.cookieSet) {
+        return;
     }
-    /**
+
+    const modalLinks = this.element.querySelectorAll('a[href]');
+
+    modalLinks.forEach((link) => {
+        link.addEventListener('click', (event) => {
+            // Check if the link has the data-ignore-popup-close attribute
+            if (link.hasAttribute('data-ignore-popup-close')) {
+                // Allow the link to work without closing the modal
+                return;
+            }
+
+            // Prevent the initial link click.
+            event.preventDefault();
+
+            // Close the modal and set cookie if configured
+            this.close();
+
+            // get link url without hash
+            let linkUrl = link.href;
+
+            // get current url
+            let currentUrl = window.location.href;
+
+            if (linkUrl && currentUrl) {
+                linkUrl = linkUrl.split('/?')[0];
+                currentUrl = currentUrl.split('/?')[0];
+
+                // Perform click if url is not current
+                if (linkUrl !== currentUrl) {
+                    // This time (as cookie is set) the default action will be performed without interruption if user clicks the link again
+                    link.click();
+                }
+            }
+        });
+    });
+}
+/**
 
     /**
      * Initialize dismiss button click handlers
