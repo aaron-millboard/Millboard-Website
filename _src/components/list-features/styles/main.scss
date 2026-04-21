@@ -58,7 +58,7 @@
 
         &__title {
             @include typestyle-h6;
-
+            font-size: #{rfs(14, 16)};
             font-family: var(--type--2--font-family);
             font-weight: 400;
         }
