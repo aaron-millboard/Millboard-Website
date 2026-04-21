@@ -38,16 +38,16 @@
             z-index: 1;
             display: grid;
             width: 100%;
-            max-width: var(--gallery--lightbox--max-width);
             max-height: initial;
             align-items: center;
             gap: var(--space--l);
             grid-template-columns: 1fr;
             justify-self: center;
+            overflow-x: hidden;
 
             @include mq($until: large) {
                 height: 100%;
-                padding-top: var(--space--l);
+                padding-top: var(--space--xl);
                 grid-template-rows: auto 1fr;
                 grid-template-rows: var(--gallery--lightbox--thumbnails--size) 1fr;
             }
@@ -61,7 +61,7 @@
         // Main image
         // ------------------------------
         &__main-image {
-            margin: var(--space--l) 0;
+            margin: 0 0 var(--space--l);
             display: flex;
             flex-direction: column;
             height: calc(100vh - (var(--space--l) * 2));
@@ -174,7 +174,7 @@
             z-index: 1;
             top: 0;
             right: 0;
-            text-decoration: underline;
+            text-decoration: none;
             text-decoration-color: currentColor;
             display: inline-flex;
             gap: var(--space--3xs);
@@ -203,6 +203,7 @@
             flex-flow: column;
             align-items: center;
             gap: var(--space--2xs);
+            margin-top: var(--space--m);
 
             @include mq($until: large) {
                 flex-flow: row;
