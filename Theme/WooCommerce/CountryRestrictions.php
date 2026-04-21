@@ -105,6 +105,31 @@ class CountryRestrictions
             return $countries;
         }
 
-        return array_replace($all_countries, $countries);
+        $allowed_countries = array_replace($all_countries, $countries);
+        $disallowed_countries = self::get_disallowed_free_sample_countries();
+
+        if (empty($disallowed_countries)) {
+            return $allowed_countries;
+        }
+
+        return array_diff_key($allowed_countries, array_flip($disallowed_countries));
+    }
+
+    /**
+     * @return string[]
+     */
+    private static function get_disallowed_free_sample_countries(): array
+    {
+        if (!function_exists('get_field')) {
+            return [];
+        }
+
+        $countries = \get_field('free_sample_disallowed_countries', 'option');
+
+        if (!is_array($countries)) {
+            return [];
+        }
+
+        return array_values(array_filter($countries, static fn ($country): bool => is_string($country) && $country !== ''));
     }
 }
