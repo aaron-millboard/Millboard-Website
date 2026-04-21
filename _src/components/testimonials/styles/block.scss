@@ -34,7 +34,7 @@
         &__ui {
             @include mq($until: medium) {
                 order: 2;
-                align-self: center;
+                align-self: flex-start;
                 margin-block: var(--space--s);
             }
 
