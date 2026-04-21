@@ -34,31 +34,31 @@
                         <?php } ?>
 
                         <?php
-// Retrieve the new fields for the CTAs
+                        // Retrieve the new fields for the CTAs
                         $cta1 = get_field('popup_link_1', 'options');
                         $cta2 = get_field('popup_link_2', 'options');
 
-// Check if either CTA exists
-                        if (!empty($cta1) || !empty($cta2)) { ?>
-    <div class="website-selector__column__cta">
-                                <?php if (!empty($cta1)) { ?>
-                                    <?= \Granola\Component::get('link', [
+                        // Check if either CTA exists
+                        if (!empty($cta1)) { ?>
+                            <div class="website-selector__column__cta">
+                                <?= \Granola\Component::get('link', [
                                     'url' => $cta1['url'],
                                     'content' => $cta1['title'],
                                     'target' => $cta1['target'] ?? '_self',
                                     'classes' => ['website-selector__column__cta__button'],
-            ]); ?>
-                                <?php } ?>
+                                ]); ?>
+                            </div>
+                        <?php }
 
-                                <?php if (!empty($cta2)) { ?>
-                                    <?= \Granola\Component::get('link', [
+                        if (!empty($cta2)) { ?>
+                            <div class="website-selector__column__cta">
+                                <?= \Granola\Component::get('link', [
                                     'url' => $cta2['url'],
                                     'content' => $cta2['title'],
                                     'target' => $cta2['target'] ?? '_self',
                                     'classes' => ['website-selector__column__cta__button'],
-            ]); ?>
-                                <?php } ?>
-    </div>
+                                ]); ?>
+                            </div>
                         <?php } ?>
 
                     </div>
