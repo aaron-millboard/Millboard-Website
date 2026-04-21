@@ -111,7 +111,8 @@
 
             &__caption {
                 opacity: 0.8;
-                margin: var(--space--s) auto;
+                font-size: 0.8rem;
+                margin: var(--space--2xs) auto;
                 width: var(--gallery--lightbox--main-image--width);
 
                 &__secondary {

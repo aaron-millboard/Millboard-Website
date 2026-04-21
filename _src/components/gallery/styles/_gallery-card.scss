@@ -7,7 +7,7 @@
         display: flex;
         overflow: visible;
         flex-direction: column;
-        gap: var(--space--s);
+        gap: var(--space--2xs);
         width: var(--gallery--lightbox--card--size, initial);
         flex-shrink: 0;
 
@@ -86,6 +86,7 @@
 
         &__caption {
             opacity: 0.8;
+            font-size: 0.8rem;
 
             &-main {
                 font-family: var(--type--2--font-family);
