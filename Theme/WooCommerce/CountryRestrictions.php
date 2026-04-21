@@ -63,7 +63,7 @@ class CountryRestrictions
 
         $rates[$rate_id] = new \WC_Shipping_Rate(
             $rate_id,
-            \__('Sample delivery', 'granola'),
+            \__('Free shipping', 'granola'),
             0,
             [],
             $rate_id
