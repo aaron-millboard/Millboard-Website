@@ -134,24 +134,6 @@
             "wrapper": {
                 "width": "50%"
             }
-        },
-        {
-            "key": "field_popup_link_1",
-            "label": "Popup Link 1",
-            "type": "link",
-            "name": "popup_link_1",
-            "wrapper": {
-                "width": "50%"
-            }
-        },
-        {
-            "key": "field_popup_link_2",
-            "label": "Popup Link 2",
-            "type": "link",
-            "name": "popup_link_2",
-            "wrapper": {
-                "width": "50%"
-            }
         }
     ],
     "location": [
