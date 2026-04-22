@@ -24,13 +24,7 @@ add_action('wp_footer', function () {
         return;
     }
 
-
-    // Check if cookie is set - don't show modal if it is
-
-    if (!empty($_COOKIE['modal-website-selector'])) {
-        return;
-    }
-
+    // Remove cookie checks to always show the modal
     // Check if we are on the right page
     $current_post_id = get_the_ID();
     $query_type = get_field('website_selector_query_type', 'options');
