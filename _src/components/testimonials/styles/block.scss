@@ -34,7 +34,7 @@
         &__ui {
             @include mq($until: medium) {
                 order: 2;
-                align-self: center;
+                align-self: flex-start;
                 margin-block: var(--space--s);
             }
 
@@ -46,6 +46,21 @@
 
             @include mq(xlarge) {
                 top: calc(50% + (var(--testimonials-content-container-height) / 2) + var(--space--xl));
+            }
+
+            .g-button{
+                background:none;
+                border:none;
+                outline:none;
+                &:hover, &:active, &:focus{
+                    color: var(--color--foreground);
+                }
+                
+                &--arrow{
+                    &:after{
+                        mask-size: 26px;
+                    }
+                }
             }
         }
     }

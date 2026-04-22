@@ -5,13 +5,13 @@
 
     &__inner {
         --grid--row-gap: var(--space--l);
-
+        @include align-width--l;
         @include grid(1, 2);
 
         @include align-width--l;
 
         @include mq(medium) {
-            --grid--column-gap: var(--space--2xl);
+            --grid--column-gap: var(--space--xl);
 
             align-items: flex-start;
         }
@@ -44,7 +44,7 @@
     &__testimonial {
         font-family: var(--type--2--font-family);
         font-weight: var(--type--2--font-weight);
-        font-size: #{rfs(20, 24)};
+        font-size: #{rfs(20, 26)};
         margin-bottom: var(--space--s);
     }
 
@@ -64,6 +64,7 @@
 
     &__citation {
         font-style: initial;
+        letter-spacing: 1.5px;
     }
 
     // -------------------------------------------------------------------------

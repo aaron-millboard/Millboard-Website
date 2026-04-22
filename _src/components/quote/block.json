@@ -11,11 +11,7 @@
         "renderCallback": "\\Granola\\Component::acf_render_callback"
     },
     "supports": {
-        "align": [
-            "wide",
-            "full",
-            "center"
-        ],
+        "align": false,
         "anchor": true,
         "color": {
             "text": false
@@ -25,7 +21,7 @@
     "attributes": {
         "align": {
             "type": "string",
-            "default": "center"
+            "default": "full"
         }
     }
 }
