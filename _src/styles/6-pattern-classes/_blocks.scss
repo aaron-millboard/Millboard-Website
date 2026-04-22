@@ -1,6 +1,6 @@
 .blocks {
     display: flow-root; // clear alignright/left floats.
-    margin-bottom: var(--blocks--margin-bottom);
+    margin-bottom: 0;
 
     // Default width & margins for all child elements.
     > * {

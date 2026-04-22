@@ -1,7 +1,7 @@
 .gallery {
     --grid--column-gap: var(--space--m);
     --grid--row-gap: var(--grid--column-gap);
-
+    margin-top: var(--space--xl);
     $this: &;
 
     &__list {
