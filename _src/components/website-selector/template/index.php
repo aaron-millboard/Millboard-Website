@@ -17,38 +17,42 @@
         <?php } ?>
 
         <div class="website-selector__columns">
-            <?php foreach ($args['columns'] as $column) { ?>
-                <div class="website-selector__column">
-                    <?php if (!empty($column['description'])) { ?>
-                        <div class="website-selector__column__description">
-                            <?= wp_kses_post($column['description']); ?>
-                        </div>
-                    <?php } ?>
+    <?php foreach ($args['columns'] as $column) { ?>
+        <div class="website-selector__column">
 
-                    <div class="website-selector__column--widget">
-
-                        <?php if (!empty($column['image_data'])) { ?>
-                            <div class="website-selector__column__image">
-                                <?= \Granola\Component::get('image', $column['image_data']); ?>
-                            </div>
-                        <?php } ?>
-
-                        <?php if (!empty($column['cta'])) { ?>
-                            <div class="website-selector__column__cta">
-                                <?= \Granola\Component::get('link', [
-                                    'url' => $column['cta']['url'],
-                                    'content' => $column['cta']['title'],
-                                    'target' => $column['cta']['target'],
-                                    'classes' => ['website-selector__column__cta__button'],
-                                ]); ?>
-                            </div>
-                        <?php } ?>
-
-                    </div>
-
+            <?php if (!empty($column['description'])) { ?>
+                <div class="website-selector__column__description">
+                    <?= wp_kses_post($column['description']); ?>
                 </div>
             <?php } ?>
+
+            <div class="website-selector__column--widget">
+
+                <?php if (!empty($column['image_data'])) { ?>
+                    <div class="website-selector__column__image">
+                        <?= \Granola\Component::get('image', $column['image_data']); ?>
+                    </div>
+                <?php } ?>
+
+                <?php if (!empty($column['cta'])) { ?>
+                    <div class="website-selector__column__cta">
+                        <?= \Granola\Component::get('link', [
+                            'url' => $column['cta']['url'],
+                            'content' => $column['cta']['title'],
+                            'target' => $column['cta']['target'],
+                            'classes' => ['website-selector__column__cta__button'],
+                            'attributes' => [
+                                'data-ignore-popup-close' => true,
+                            ],
+                        ]); ?>
+                    </div>
+                <?php } ?>
+
+            </div>
+
         </div>
+    <?php } ?>
+</div>
 
         <div class="website-selector__background">
             <div class="website-selector__background-left"></div>
