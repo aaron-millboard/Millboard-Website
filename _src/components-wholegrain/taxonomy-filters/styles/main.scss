@@ -61,6 +61,7 @@
         align-items: center;
         gap: 10px;
         text-transform: none;
+        font-weight: var(--type--1--font-weight);
 
         &--current {
             @include button--interacted;
