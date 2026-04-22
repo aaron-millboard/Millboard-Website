@@ -1,195 +1,107 @@
-.website-selector {
-    --website-selector--widget-gap: var(--space--xs);
-    --website-selector--overlay-opacity: 20%;
-    --website-selector--gradient-color: rgba(0, 0, 0, 0.3);
+import { setCookie } from '../../../scripts/helpers/cookies.js';
 
-    // Adjust gradient color for brand backgrounds
-    &.has-brand-6-background-color {
-        --website-selector--gradient-color: rgba(255, 255, 255, 0.15);
+/**
+ * Modal component with open/close functionality and cookie support.
+ */
+export default class Modal {
+    /**
+     * @param {HTMLElement} element The modal container element.
+     */
+    constructor(element) {
+        this.element = element;
+        this.lockScroll = this.element.dataset.lockScroll === 'true';
+        this.cookieSet = false;
+        this.init();
     }
 
-    &__inner {
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        gap: var(--space--l);
-        margin: 0 auto;
-        padding: var(--space--l);
+    /**
+     * Initialize the component
+     */
+    init() {
+        this.initDismissButton();
+        this.initOpenButton();
+        this.initModalLinks();
 
-        @media screen and (width > 768px) and (height > 768px) {
-            padding: var(--space--xl);
-        }
-
-        @media screen and (width > 768px) and (height > 992px) {
-            padding: var(--space--2xl);
-        }
-
-        @media screen and (width > 992px) and (height > 992px) {
-            padding: var(--space--2xl) var(--space--3xl);
-        }
-    }
-
-    &__preheading,
-    &__heading {
-        @include typestyle-h2;
-
-        text-transform: uppercase;
-        margin: 0;
-    }
-
-    &__heading {
-        text-align: center;
-    }
-
-    &__columns {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: var(--space--m);
-
-        @include mq(medium) {
-            gap: var(--space--l);
-        }
-
-        @include mq(large) {
-            gap: var(--space--xl);
+        if (this.element.classList.contains('modal--active')) {
+            this.open();
         }
     }
 
-    &__column {
-        display: flex;
-        flex-direction: column;
-        gap: var(--website-selector--widget-gap);
-        justify-content: end;
+    /**
+     * Open the modal
+     */
+    open() {
+        this.element.classList.add('modal--active');
 
-        &__description {
-            font-size: rfs(16, 18);
-            line-height: var(--line-height--normal);
-            color: var(--color--text);
-            width: 100%;
-            margin-bottom: var(--space--m);
+        if (this.lockScroll) {
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    /**
+     * Close the modal and set cookie if configured
+     */
+    close() {
+        this.element.classList.remove('modal--active');
+
+        if (this.lockScroll) {
+            document.body.style.overflow = '';
         }
 
-        &--widget {
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            gap: var(--website-selector--widget-gap);
-            align-items: flex-start;
-            justify-content: end;
+        // Get number of days to set the cookie
+        if (this.element.dataset.cookie) {
+            const modalId = this.element.getAttribute('id');
+            const { hash } = this.element.dataset;
+            const days = this.element.dataset.cookie || 3;
+            setCookie(modalId, hash, days);
+            this.cookieSet = true;
         }
+    }
 
-        &__image {
-            width: 100%;
-            overflow: hidden;
-            aspect-ratio: 2 / 1;
-
-            @include mq(medium) {
-                aspect-ratio: 1 / 1;
-            }
-
-            @media screen and (height <= 900px) {
-                aspect-ratio: 1 / 1;
-            }
-
-            @media screen and (height <= 800px) {
-                aspect-ratio: 3 / 2;
-            }
-
-            @media screen and (height <= 700px) {
-                aspect-ratio: 2 / 1;
-            }
-
-            img {
-                display: block;
-                width: 100%;
-                height: 100%;
-                object-fit: cover;
-            }
-        }
-
-        &__cta {
-            width: 100%;
-
-            &__button {
-                @include typestyle-h6;
-
-                text-decoration: none;
-                width: 100%;
-                display: flex;
-                gap: var(--space--s);
-                justify-content: space-between;
-                align-items: center;
-                z-index: 1;
-
-                &::before {
-                    content: '';
-                    position: absolute;
-                    inset: 0;
-                    width: 100%;
-                    height: 100%;
+    /**
+     * Initialize click handlers for links inside the modal
+     */
+    initModalLinks() {
+        const modalLinks = this.element.querySelectorAll('a[href]');
+    
+        modalLinks.forEach((link) => {
+            link.addEventListener('click', (event) => {
+                // Prevent the modal from closing for all links
+                event.stopPropagation();
+    
+                // Allow the link to work normally
+                if (!link.hasAttribute('data-close-modal')) {
+                    return;
                 }
-
-                &::after {
-                    width: #{px-to-rem(16)};
-                    height: #{px-to-rem(16)};
-                    background-color: var(--color--foreground);
-                    content: '';
-                    mask-image: url(#{asset-path('images/icons/chevron-right.svg')});
-                    mask-position: center;
-                    mask-repeat: no-repeat;
-                    mask-size: #{px-to-rem(16)};
-                }
-            }
-        }
+    
+                // If the link has the data-close-modal attribute, close the modal
+                event.preventDefault();
+                this.close();
+                window.location.href = link.href;
+            });
+        });
+    }
+        /**
+     * Initialize dismiss button click handlers
+     */
+    initDismissButton() {
+        const modalDismissers = this.element.querySelectorAll('.modal__dismiss');
+        modalDismissers.forEach((modalDismisser) => {
+            modalDismisser.addEventListener('click', () => {
+                this.close();
+            });
+        });
     }
 
-    &__background {
-        position: absolute;
-        inset: 0;
-        pointer-events: none;
-        z-index: 0;
-        overflow: hidden;
-
-        &-left {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 50%;
-            height: 100%;
-            background: radial-gradient(
-                ellipse at left center,
-                var(--website-selector--gradient-color) 0%,
-                color-mix(in srgb, var(--website-selector--gradient-color) 33%, transparent) 40%,
-                transparent 70%
-            );
-        }
-
-        &-top {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 50%;
-            background: radial-gradient(
-                ellipse at top center,
-                var(--website-selector--gradient-color) 0%,
-                color-mix(in srgb, var(--website-selector--gradient-color) 50%, transparent) 30%,
-                transparent 60%
-            );
-        }
-
-        &-bottom {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 50%;
-            background: radial-gradient(
-                ellipse at bottom center,
-                var(--website-selector--gradient-color) 0%,
-                color-mix(in srgb, var(--website-selector--gradient-color) 33%, transparent) 40%,
-                transparent 70%
-            );
-        }
+    /**
+     * Initialize open button click handlers
+     */
+    initOpenButton() {
+        const modalOpeners = document.querySelectorAll(`[data-open-modal="${this.element.id}"]`);
+        modalOpeners.forEach((modalOpener) => {
+            modalOpener.addEventListener('click', () => {
+                this.open();
+            });
+        });
     }
 }
