@@ -43,7 +43,6 @@ class Settings
                     'multiple' => 1,
                     'ui' => 1,
                     'return_format' => 'value',
-                    'choices' => self::get_country_choices(),
                 ],
             ],
             'location' => [
@@ -56,17 +55,24 @@ class Settings
                 ],
             ],
         ]);
+
+        \add_filter('acf/load_field/name=free_sample_disallowed_countries', [__CLASS__, 'load_country_choices']);
     }
 
     /**
-     * @return array<string, string>
+     * Dynamically load country choices when the field is rendered.
+     *
+     * @param array<string, mixed> $field
+     * @return array<string, mixed>
      */
-    private static function get_country_choices(): array
+    public static function load_country_choices(array $field): array
     {
         if (!function_exists('WC') || !\WC()->countries instanceof \WC_Countries) {
-            return [];
+            return $field;
         }
 
-        return \WC()->countries->get_countries();
+        $field['choices'] = \WC()->countries->get_countries();
+
+        return $field;
     }
 }
