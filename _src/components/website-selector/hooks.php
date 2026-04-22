@@ -24,11 +24,7 @@ add_action('wp_footer', function () {
         return;
     }
 
-    // Check if cookie is set - don't show modal if it is
-    if (!empty($_COOKIE['modal-website-selector'])) {
-        return;
-    }
-
+    // Remove cookie checks to always show the modal
     // Check if we are on the right page
     $current_post_id = get_the_ID();
     $query_type = get_field('website_selector_query_type', 'options');
@@ -74,16 +70,7 @@ add_action('wp_footer', function () {
     $options_fields = json_encode($content_args);
     $current_hash = md5($options_fields);
 
-    // Check if we have cookie
-    if (!empty($_COOKIE[$modal_id])) {
-        // get hash from cookie
-        $cookie_hash = $_COOKIE[$modal_id];
-        // Look if we have the modal ID
-        if ($current_hash == $cookie_hash) {
-            return;
-        }
-    }
-
+    // Remove cookie hash checks to always show the modal
     // modal args
     $modal_args = [
         'classes' => ['modal--active'], // Add 'modal--active' class to show the modal on page load
