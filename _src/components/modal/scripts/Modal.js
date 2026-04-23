@@ -63,42 +63,25 @@ export default class Modal {
      */
     initModalLinks() {
         const modalLinks = this.element.querySelectorAll('a[href]');
-
+    
         modalLinks.forEach((link) => {
             link.addEventListener('click', (event) => {
-                // Check if the link has the data-ignore-popup-close attribute
-                if (link.hasAttribute('data-ignore-popup-close')) {
-                    // Allow the link to work without closing the modal
+                // Prevent the modal from closing for all links
+                event.stopPropagation();
+    
+                // Allow the link to work normally
+                if (!link.hasAttribute('data-close-modal')) {
                     return;
                 }
-
-                // Prevent the initial link click.
+    
+                // If the link has the data-close-modal attribute, close the modal
                 event.preventDefault();
-
-                // Close the modal and set cookie if configured
                 this.close();
-
-                // Get link URL without hash
-                let linkUrl = link.href;
-
-                // Get current URL
-                let currentUrl = window.location.href;
-
-                if (linkUrl && currentUrl) {
-                    linkUrl = linkUrl.split('/?')[0];
-                    currentUrl = currentUrl.split('/?')[0];
-
-                    // Perform click if URL is not current
-                    if (linkUrl !== currentUrl) {
-                        // This time (as cookie is set) the default action will be performed without interruption if user clicks the link again
-                        link.click();
-                    }
-                }
+                window.location.href = link.href;
             });
         });
     }
-
-    /**
+        /**
      * Initialize dismiss button click handlers
      */
     initDismissButton() {

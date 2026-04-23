@@ -54,6 +54,20 @@
                 --block--margin-bottom: calc(var(--blocks--margin-bottom) * -1);
             }
         }
+
+        // Reduce spacing around iframe blocks
+        &:has(+ :where(.iframe)) {
+            --block--margin-bottom: calc(var(--space--layout) / 2);
+        }
+
+        &:where(.iframe){
+            margin-top: calc(var(--block--margin-top) / 2);
+            margin-bottom: calc(var(--block--margin-bottom) / 2);
+        }
+
+        &:where(.iframe) + :where([class*='wp-block']) {
+            --block--margin-top: calc(var(--space--layout) / 2);
+        }
     }
 
     > .alignright {

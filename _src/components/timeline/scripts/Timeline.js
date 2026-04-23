@@ -15,6 +15,10 @@ export default class Timeline {
         this.activeLine = this.element.querySelector('.timeline__line--active');
         this.navItems = Array.from(this.element.querySelectorAll('.timeline__nav__item'));
         this.navInner = this.element.querySelector('.timeline__nav__inner');
+        this.navItemsContainer = this.element.querySelector('.timeline__nav__items');
+        this.prevArrow = this.element.querySelector('.timeline__nav__arrow--prev');
+        this.nextArrow = this.element.querySelector('.timeline__nav__arrow--next');
+        
 
         if (!this.items.length || !this.activeLine) return;
 
@@ -32,6 +36,15 @@ export default class Timeline {
         this.navItems.forEach((navItem) => {
             navItem.addEventListener('click', this.handleNavClick.bind(this));
         });
+
+        // Set up arrow click handlers
+        if (this.prevArrow) {
+            this.prevArrow.addEventListener('click', this.handlePrevArrowClick.bind(this));
+        }
+
+        if (this.nextArrow) {
+            this.nextArrow.addEventListener('click', this.handleNextArrowClick.bind(this));
+        }
 
         // Set up scroll handler
         window.addEventListener('scroll', this.debouncedScrollHandler, { passive: true });
@@ -107,17 +120,16 @@ export default class Timeline {
      * @param {HTMLElement} navItem Navigation item element
      */
     scrollNavItemIntoView(navItem) {
-        const navContainer = this.element.querySelector('.timeline__nav');
-        if (!navContainer) return;
+        if (!this.navItemsContainer) return;
 
         const navItemLeft = navItem.offsetLeft;
         const navItemWidth = navItem.offsetWidth;
-        const navContainerWidth = navContainer.offsetWidth;
+        const navContainerWidth = this.navItemsContainer.offsetWidth;
 
         // Calculate scroll position to center the item
         const scrollLeft = navItemLeft - (navContainerWidth / 2) + (navItemWidth / 2);
 
-        navContainer.scrollTo({
+        this.navItemsContainer.scrollTo({
             left: scrollLeft,
             behavior: 'smooth'
         });
@@ -149,6 +161,35 @@ export default class Timeline {
 
         window.scrollTo({
             top: targetTop - offset,
+            behavior: 'smooth'
+        });
+    }
+
+    /**
+     * Handle previous arrow click
+     */
+    handlePrevArrowClick() {
+        this.scrollNavByAmount(-1);
+    }
+
+    /**
+     * Handle next arrow click
+     */
+    handleNextArrowClick() {
+        this.scrollNavByAmount(1);
+    }
+
+    /**
+     * Scroll navigation horizontally by a set amount
+     * @param {number} direction Scroll direction (-1 for left, 1 for right)
+     */
+    scrollNavByAmount(direction) {
+        if (!this.navItemsContainer) return;
+
+        const scrollAmount = this.navItemsContainer.offsetWidth * 0.6;
+
+        this.navItemsContainer.scrollBy({
+            left: scrollAmount * direction,
             behavior: 'smooth'
         });
     }
