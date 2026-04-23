@@ -5,7 +5,7 @@
 $type-min-width: 320px;
 $type-max-width: 1200px;
 
-$base-font-size: 18px;
+$base-font-size: 20px;
 
 @mixin type-variables {
     --type--font-size--base: #{$base-font-size};

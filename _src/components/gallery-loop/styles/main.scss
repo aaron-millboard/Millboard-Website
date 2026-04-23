@@ -5,7 +5,7 @@
 
 .gallery-loop {
 
-    --gallery--list--row-gap: 60px;
+    margin-top: var(--space--xl);
 
     .gallery__list {
         column-gap: var(--space--xl);
