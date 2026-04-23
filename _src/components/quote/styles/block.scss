@@ -2,6 +2,10 @@
 
 .quote {
     $this: &;
+    
+    @include mq($until: medium){
+        @include align-width--l;
+    }
 
     &__inner {
         --grid--row-gap: var(--space--l);
