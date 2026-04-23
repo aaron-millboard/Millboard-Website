@@ -204,7 +204,7 @@
 
         @include mq($until: large) {
             left: calc(var(--space--m) - (var(--timeline--dot-size) / 2));
-            top: var(--space--xl);
+            top: calc(var(--space--xl) + 6px);
         }
 
         @include mq(large) {
