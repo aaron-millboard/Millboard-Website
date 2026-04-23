@@ -7,7 +7,7 @@
         display: flex;
         overflow: visible;
         flex-direction: column;
-        gap: var(--space--s);
+        gap: var(--space--2xs);
         width: var(--gallery--lightbox--card--size, initial);
         flex-shrink: 0;
 
@@ -43,6 +43,7 @@
                 height: var(--gallery--lightbox--thumbnails--button--size);
                 margin: auto;
                 background-color: var(--color--white);
+                border:1px solid var(--color--foreground);
                 inset: 0;
                 opacity: var(--gallery--card--overlay-opacity);
                 pointer-events: none;
@@ -55,7 +56,7 @@
                     display: block;
                     width: calc(var(--gallery--lightbox--thumbnails--button--size) * 0.25);
                     height: calc(var(--gallery--lightbox--thumbnails--button--size) * 0.25);
-                    border: #{px-to-rem(4)} solid var(--color--foreground);
+                    border: #{px-to-rem(2)} solid var(--color--foreground);
                     transition: transition(left, right, top, bottom);
                     content: '';
                 }
@@ -85,6 +86,7 @@
 
         &__caption {
             opacity: 0.8;
+            font-size: 0.8rem;
 
             &-main {
                 font-family: var(--type--2--font-family);
