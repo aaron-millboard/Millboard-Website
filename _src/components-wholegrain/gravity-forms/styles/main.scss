@@ -589,6 +589,13 @@
             }
         }
 
+        input[type='checkbox']{
+            &:hover{
+                outline: 2px solid var(--color--brand-6);
+                outline-offset: 0px;
+            }
+        }
+
         .hs_ops_out_marketing {
             input {
                 margin-right: px-to-rem(8px);
