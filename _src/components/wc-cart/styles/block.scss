@@ -1,4 +1,143 @@
 .woocommerce {
+    .cart__quote-share {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space--s);
+        align-items: flex-start;
+        padding: var(--space--s) var(--space--m);
+        border: 0.5px solid var(--color--black);
+        margin-bottom: var(--space--m);
+
+        @include mq('medium') {
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+        }
+
+        &__copy {
+            @include typestyle-large;
+            margin: 0;
+        }
+
+        &__open {
+            @include button;
+            @include button--interaction;
+        }
+    }
+
+    .cart-quote-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: var(--space--s);
+
+        &[hidden] {
+            display: none;
+        }
+
+        &__overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45);
+        }
+
+        &__dialog {
+            position: relative;
+            width: min(100%, #{px-to-rem(720)});
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: var(--space--l);
+            background: var(--color--background);
+            border: 1px solid var(--color--brand-5);
+            box-shadow: 0 #{px-to-rem(12)} #{px-to-rem(42)} rgba(0, 0, 0, 0.2);
+        }
+
+        &__title {
+            @include typestyle-h5;
+            font-weight: 700;
+            padding-bottom: var(--space--s);
+            margin: 0;
+            border-bottom: 1px solid var(--color--brand-1);
+        }
+
+        &__subtitle {
+            @include typestyle-h6;
+            margin: var(--space--s) 0 0;
+        }
+
+        &__close {
+            @include button-reset-hard;
+
+            position: absolute;
+            width: auto;
+            height: auto;
+            top: 1rem;
+            right: 1rem;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space--3xs);
+            color: inherit;
+
+            svg {
+                width: #{px-to-rem(28)};
+                height: #{px-to-rem(28)};
+                fill: var(--color--foreground);
+                color: inherit;
+            }
+        }
+
+        &__form {
+            margin-top: var(--space--m);
+            display: grid;
+            gap: var(--space--s);
+
+            label {
+                display: grid;
+                gap: var(--space--3xs);
+                font-size: #{px-to-rem(14)};
+                text-transform: uppercase;
+                letter-spacing: 0.06em;
+
+                &:first-of-type,
+                &:last-of-type {
+                    grid-column-start: 1;
+                    grid-column-end: 3;
+                }
+            }
+
+            @include mq('medium') {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            input,
+            textarea {
+                width: 100%;
+                border: 1px solid var(--color--brand-5);
+                padding: var(--space--2xs) var(--space--xs);
+                font: inherit;
+                background: var(--color--background);
+            }
+        }
+
+        &__actions {
+            margin-top: var(--space--s);
+            display: flex;
+            flex-direction: column;
+            gap: var(--space--2xs);
+            grid-column-start: 1;
+            grid-column-end: 3;
+
+            @include mq('small') {
+                flex-direction: row;
+            }
+        }
+    }
+
     &__section-header {
         display: flex;
         justify-content: space-between;
