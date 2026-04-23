@@ -56,10 +56,22 @@
     }
 
     &__column {
+        flex: 1;
         display: flex;
         flex-direction: column;
         gap: var(--website-selector--widget-gap);
         justify-content: end;
+
+        &__link {
+            display: block;
+            text-decoration: none;
+            color: inherit;
+
+            &:hover {
+                text-decoration: none;
+                color: inherit;
+            }
+        }
 
         &__description {
             font-size: rfs(16, 18);
