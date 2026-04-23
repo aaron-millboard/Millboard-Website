@@ -12,6 +12,8 @@
         @include align-width--l;
         @include grid(1, 2);
 
+        @include align-width--l;
+
         @include mq(medium) {
             --grid--column-gap: var(--space--xl);
 

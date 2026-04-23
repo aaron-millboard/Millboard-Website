@@ -37,7 +37,7 @@
     // Menus.
     // -------------------------------------------------------------------------
     &__menus {
-        --grid--row-gap: var(--space--xl);
+        --grid--row-gap: var(--space--m);
 
         @include site-footer-divider();
         @include grid(1, 2, 5);
@@ -61,6 +61,7 @@
 
         .menu-list {
             gap: var(--space--xs);
+            margin-top: var(--space--xs);
 
             &[aria-hidden="true"] {
                 display: none;
@@ -86,6 +87,7 @@
 
     .menu__heading {
         @include typestyle-h6;
+        margin-bottom: 0;
     }
 
     .menu__heading__button {
@@ -108,7 +110,7 @@
             @include mq($until: medium) {
                 display: flex;
                 justify-content: space-between;
-                align-items: flex-start;
+                align-items: center;
             }
         }
     }

@@ -59,46 +59,29 @@ export default class Modal {
     }
 
     /**
-     * Initialize click handlers for links inside the modal that should create a cookie and close the modal
+     * Initialize click handlers for links inside the modal
      */
     initModalLinks() {
-        // Bail early - this behavior only applies if cookie is not set.
-        if (this.cookieSet) {
-            return;
-        }
-
         const modalLinks = this.element.querySelectorAll('a[href]');
-
+    
         modalLinks.forEach((link) => {
             link.addEventListener('click', (event) => {
-                // Prevent the initial link click.
-                event.preventDefault();
-
-                // Close the modal and set cookie if configured
-                this.close();
-
-                // get link url without hash
-                let linkUrl = link.href;
-
-                // get current url
-                let currentUrl = window.location.href;
-
-                if (linkUrl && currentUrl) {
-                    linkUrl = linkUrl.split('/?')[0];
-                    currentUrl = currentUrl.split('/?')[0];
-
-                    // Perform click if url is not current
-                    if (linkUrl !== currentUrl) {
-                        // This time (as cookie is set) the default action will be performed without interruption if user clicks the link again
-                        link.click();
-                    }
+                // Prevent the modal from closing for all links
+                event.stopPropagation();
+    
+                // Allow the link to work normally
+                if (!link.hasAttribute('data-close-modal')) {
+                    return;
                 }
+    
+                // If the link has the data-close-modal attribute, close the modal
+                event.preventDefault();
+                this.close();
+                window.location.href = link.href;
             });
         });
     }
-    /**
-
-    /**
+        /**
      * Initialize dismiss button click handlers
      */
     initDismissButton() {

@@ -22,7 +22,7 @@
             "aria-label": "",
             "type": "button_group",
             "choices": {
-                "all": "All pages \/ Posts",
+                "all": "All pages / Posts",
                 "custom": "Specific Pages",
                 "exclude": "All pages except..."
             },
@@ -31,7 +31,7 @@
         },
         {
             "key": "field_68123df525b1d",
-            "label": "Select pages \/ posts",
+            "label": "Select pages / posts",
             "name": "website_selector_restrict_posts",
             "type": "relationship",
             "conditional_logic": [
@@ -50,15 +50,8 @@
                     }
                 ]
             ],
-            "post_type": [
-                "post",
-                "page"
-            ],
-            "filters": [
-                "search",
-                "post_type",
-                "taxonomy"
-            ],
+            "post_type": ["post", "page"],
+            "filters": ["search", "post_type", "taxonomy"],
             "return_format": "id"
         },
         {
