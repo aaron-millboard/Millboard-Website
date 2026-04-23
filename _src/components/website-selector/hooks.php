@@ -70,7 +70,16 @@ add_action('wp_footer', function () {
     $options_fields = json_encode($content_args);
     $current_hash = md5($options_fields);
 
-    // Remove cookie hash checks to always show the modal
+    // Check if we have cookie
+    if (!empty($_COOKIE[$modal_id])) {
+        // get hash from cookie
+        $cookie_hash = $_COOKIE[$modal_id];
+        // Look if we have the modal ID
+        if ($current_hash == $cookie_hash) {
+            return;
+        }
+    }
+
     // modal args
     $modal_args = [
         'classes' => ['modal--active'], // Add 'modal--active' class to show the modal on page load
