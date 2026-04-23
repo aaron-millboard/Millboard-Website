@@ -1,0 +1,916 @@
+<?php
+
+namespace Theme\WooCommerce;
+
+class QuoteShare
+{
+    private const RESTORE_LINK_TEXT = 'Add items to basket';
+
+    public static function init(): void
+    {
+        \add_action('admin_post_millboard_quote_submit', [__CLASS__, 'handle_submit']);
+        \add_action('admin_post_nopriv_millboard_quote_submit', [__CLASS__, 'handle_submit']);
+        \add_action('template_redirect', [__CLASS__, 'maybe_restore_quote']);
+    }
+
+    public static function handle_submit(): void
+    {
+        if (!isset($_POST['millboard_quote_nonce']) || !\wp_verify_nonce(\sanitize_text_field(\wp_unslash($_POST['millboard_quote_nonce'])), 'millboard_quote_submit')) {
+            self::redirect_with_notice(\__('Unable to process your quote request. Please try again.', 'granola'), 'error');
+        }
+
+        $intent = isset($_POST['quote_intent']) ? \sanitize_text_field(\wp_unslash($_POST['quote_intent'])) : '';
+        $form_data = self::get_form_data();
+        $cart_data = self::get_cart_data();
+        $restore_url = self::get_quote_restore_url($cart_data);
+
+        if (!self::has_required_form_fields($form_data)) {
+            self::redirect_with_notice(\__('Please complete all required fields.', 'granola'), 'error');
+        }
+
+        if (empty($cart_data['lines'])) {
+            self::redirect_with_notice(\__('Your basket is empty, so there is no quote to share.', 'granola'), 'error');
+        }
+
+        if ($intent === 'download') {
+            self::stream_pdf($form_data, $cart_data, $restore_url);
+        }
+
+        if ($intent !== 'email') {
+            self::redirect_with_notice(\__('Please choose a valid quote action.', 'granola'), 'error');
+        }
+
+        if (!self::is_valid_email_address($form_data['email_address'])) {
+            self::redirect_with_notice(\__('Please provide a valid email address.', 'granola'), 'error');
+        }
+
+        $pdf_content = self::generate_pdf(self::build_pdf_lines($form_data, $cart_data, $restore_url), $restore_url);
+        $tmp_file = \wp_tempnam('millboard-quote.pdf');
+
+        if (empty($tmp_file) || \file_put_contents($tmp_file, $pdf_content) === false) {
+            self::redirect_with_notice(\__('Unable to generate the quote PDF. Please try again.', 'granola'), 'error');
+        }
+
+        $hubspot_success = self::submit_quote_to_crm_perks($form_data, $cart_data);
+
+        // Optional safety fallback for environments not yet migrated to CRM Perks feeds.
+        if (!$hubspot_success && \apply_filters('theme/quote_share/use_direct_hubspot_fallback', false)) {
+            $hubspot_success = self::submit_quote_to_hubspot($form_data, $cart_data);
+        }
+
+        $email_success = self::send_quote_email($form_data, $cart_data, $tmp_file, $restore_url);
+
+        if (\file_exists($tmp_file)) {
+            \unlink($tmp_file);
+        }
+
+        if ($email_success && $hubspot_success) {
+            self::redirect_with_notice(\__('Your quote has been emailed and stored successfully.', 'success'));
+        }
+
+        if ($email_success && !$hubspot_success) {
+            self::redirect_with_notice(\__('Your quote email was sent, but HubSpot storage failed. Please review HubSpot form configuration.', 'granola'), 'notice');
+        }
+
+        self::redirect_with_notice(\__('Unable to send your quote email. Please try again.', 'error'));
+    }
+
+    private static function get_form_data(): array
+    {
+        return [
+            'company_name' => isset($_POST['company_name']) ? \sanitize_text_field(\wp_unslash($_POST['company_name'])) : '',
+            'contact_name' => isset($_POST['contact_name']) ? \sanitize_text_field(\wp_unslash($_POST['contact_name'])) : '',
+            'email_address' => isset($_POST['email_address']) ? \sanitize_email(\wp_unslash($_POST['email_address'])) : '',
+            'phone_number' => isset($_POST['phone_number']) ? \sanitize_text_field(\wp_unslash($_POST['phone_number'])) : '',
+            'customer_reference_number' => isset($_POST['customer_reference_number']) ? \sanitize_text_field(\wp_unslash($_POST['customer_reference_number'])) : '',
+            'sales_notes' => isset($_POST['sales_notes']) ? \sanitize_textarea_field(\wp_unslash($_POST['sales_notes'])) : '',
+        ];
+    }
+
+    private static function get_cart_data(): array
+    {
+        if (!function_exists('WC') || empty(WC()->cart)) {
+            return self::get_posted_cart_snapshot();
+        }
+
+        if (WC()->cart->is_empty()) {
+            return self::get_posted_cart_snapshot();
+        }
+
+        $lines = [];
+        $items = [];
+
+        foreach (WC()->cart->get_cart() as $cart_item) {
+            if (empty($cart_item['data']) || !$cart_item['data'] instanceof \WC_Product) {
+                continue;
+            }
+
+            $product = $cart_item['data'];
+            $quantity = isset($cart_item['quantity']) ? (int) $cart_item['quantity'] : 0;
+
+            if ($quantity < 1) {
+                continue;
+            }
+
+            $lines[] = sprintf('%s x %d', \wp_strip_all_tags($product->get_name()), $quantity);
+            $items[] = [
+                'product_id' => isset($cart_item['product_id']) ? (int) $cart_item['product_id'] : 0,
+                'variation_id' => isset($cart_item['variation_id']) ? (int) $cart_item['variation_id'] : 0,
+                'quantity' => $quantity,
+                'variation' => isset($cart_item['variation']) && is_array($cart_item['variation']) ? $cart_item['variation'] : [],
+            ];
+        }
+
+        if (empty($lines)) {
+            return self::get_posted_cart_snapshot();
+        }
+
+        $total = \wp_strip_all_tags(\html_entity_decode(WC()->cart->get_total(), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+
+        return [
+            'items' => $items,
+            'lines' => $lines,
+            'total' => $total,
+        ];
+    }
+
+    private static function get_posted_cart_snapshot(): array
+    {
+        if (empty($_POST['quote_snapshot'])) {
+            return [
+                'items' => [],
+                'lines' => [],
+                'total' => '',
+            ];
+        }
+
+        $encoded_snapshot = \sanitize_text_field(\wp_unslash($_POST['quote_snapshot']));
+        $json_snapshot = \base64_decode($encoded_snapshot, true);
+
+        if ($json_snapshot === false) {
+            return [
+                'items' => [],
+                'lines' => [],
+                'total' => '',
+            ];
+        }
+
+        $snapshot = \json_decode($json_snapshot, true);
+
+        if (!is_array($snapshot)) {
+            return [
+                'items' => [],
+                'lines' => [],
+                'total' => '',
+            ];
+        }
+
+        $items = [];
+        $lines = [];
+
+        if (!empty($snapshot['items']) && is_array($snapshot['items'])) {
+            foreach ($snapshot['items'] as $item) {
+                if (!is_array($item)) {
+                    continue;
+                }
+
+                $product_id = isset($item['product_id']) ? (int) $item['product_id'] : 0;
+                $variation_id = isset($item['variation_id']) ? (int) $item['variation_id'] : 0;
+                $quantity = isset($item['quantity']) ? (int) $item['quantity'] : 0;
+
+                if ($product_id < 1 || $quantity < 1) {
+                    continue;
+                }
+
+                $variation = [];
+                if (!empty($item['variation']) && is_array($item['variation'])) {
+                    foreach ($item['variation'] as $key => $value) {
+                        $variation[(string) $key] = \sanitize_text_field((string) $value);
+                    }
+                }
+
+                $items[] = [
+                    'product_id' => $product_id,
+                    'variation_id' => $variation_id,
+                    'quantity' => $quantity,
+                    'variation' => $variation,
+                ];
+            }
+        }
+
+        if (!empty($snapshot['lines']) && is_array($snapshot['lines'])) {
+            foreach ($snapshot['lines'] as $line) {
+                $clean_line = \sanitize_text_field((string) $line);
+
+                if ($clean_line === '') {
+                    continue;
+                }
+
+                $lines[] = $clean_line;
+            }
+        }
+
+        $total = !empty($snapshot['total']) ? \sanitize_text_field((string) $snapshot['total']) : '';
+
+        return [
+            'items' => $items,
+            'lines' => $lines,
+            'total' => $total,
+        ];
+    }
+
+    private static function build_pdf_lines(array $form_data, array $cart_data, string $restore_url = ''): array
+    {
+        $lines = [
+            \__('Millboard Quote', 'granola'),
+            sprintf(\__('Date: %s', 'granola'), \wp_date('Y-m-d H:i')),
+            '',
+            sprintf(\__('Company: %s', 'granola'), $form_data['company_name']),
+            sprintf(\__('Contact: %s', 'granola'), $form_data['contact_name']),
+            sprintf(\__('Email: %s', 'granola'), $form_data['email_address']),
+            sprintf(\__('Phone: %s', 'granola'), $form_data['phone_number']),
+            sprintf(\__('Customer Reference: %s', 'granola'), $form_data['customer_reference_number']),
+            '',
+            \__('Items', 'granola'),
+        ];
+
+        foreach ($cart_data['lines'] as $item_line) {
+            $lines[] = '- ' . $item_line;
+        }
+
+        $lines[] = '';
+        $lines[] = sprintf(\__('Quote Total: %s', 'granola'), $cart_data['total']);
+
+        if (!empty($form_data['sales_notes'])) {
+            $lines[] = '';
+            $lines[] = \__('Sales Notes', 'granola');
+            $lines[] = $form_data['sales_notes'];
+        }
+
+        if (!empty($restore_url)) {
+            $lines[] = '';
+            $lines[] = \__(self::RESTORE_LINK_TEXT, 'granola');
+        }
+
+        return self::wrap_pdf_lines($lines);
+    }
+
+    private static function wrap_pdf_lines(array $lines): array
+    {
+        $wrapped = [];
+
+        foreach ($lines as $line) {
+            if (str_starts_with($line, 'http://') || str_starts_with($line, 'https://')) {
+                $wrapped[] = $line;
+                continue;
+            }
+
+            if (\strlen($line) <= 95) {
+                $wrapped[] = $line;
+                continue;
+            }
+
+            $parts = \explode("\n", \wordwrap($line, 95, "\n", true));
+            foreach ($parts as $part) {
+                $wrapped[] = $part;
+            }
+        }
+
+        return $wrapped;
+    }
+
+    private static function generate_pdf(array $lines, string $restore_url = ''): string
+    {
+        $link_text = \__(self::RESTORE_LINK_TEXT, 'granola');
+        $link_line_index = self::get_pdf_link_line_index($lines, $link_text);
+
+        $stream = "BT\n/F1 12 Tf\n14 TL\n50 790 Td\n";
+
+        foreach ($lines as $index => $line) {
+            if ($index > 0) {
+                $stream .= "T*\n";
+            }
+
+            if ($link_line_index !== null && $index === $link_line_index) {
+                // Make the CTA line look like a conventional hyperlink.
+                $stream .= "0 0 1 rg\n";
+            }
+
+            $stream .= '(' . self::escape_pdf_text($line) . ") Tj\n";
+
+            if ($link_line_index !== null && $index === $link_line_index) {
+                $stream .= "0 0 0 rg\n";
+            }
+        }
+
+        $stream .= "ET";
+
+        if ($link_line_index !== null) {
+            $line_y = 790 - ($link_line_index * 14);
+            $underline_y = max(0, $line_y - 1);
+            $underline_x_start = 50;
+            $underline_x_end = min(560, $underline_x_start + max(120, (\strlen($link_text) * 5.2)));
+            $stream .= "\n0 0 1 RG\n0.8 w\n" . $underline_x_start . " " . $underline_y . " m\n" . $underline_x_end . " " . $underline_y . " l\nS\n0 0 0 RG";
+        }
+        $page_object = "3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R";
+
+        if ($link_line_index !== null) {
+            $page_object .= " /Annots [6 0 R]";
+        }
+
+        $page_object .= " >>\nendobj\n";
+
+        $objects = [];
+        $objects[] = "1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n";
+        $objects[] = "2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n";
+        $objects[] = $page_object;
+        $objects[] = "4 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj\n";
+        $objects[] = "5 0 obj\n<< /Length " . \strlen($stream) . " >>\nstream\n" . $stream . "\nendstream\nendobj\n";
+
+        if ($link_line_index !== null) {
+            $line_y = 790 - ($link_line_index * 14);
+            $x_start = 50;
+            $x_end = min(560, $x_start + max(120, (\strlen($link_text) * 5.2)));
+            $y_bottom = max(0, $line_y - 2);
+            $y_top = min(842, $line_y + 12);
+
+            $objects[] = "6 0 obj\n<< /Type /Annot /Subtype /Link /Rect [" . $x_start . ' ' . $y_bottom . ' ' . $x_end . ' ' . $y_top . "] /Border [0 0 0] /A << /S /URI /URI (" . self::escape_pdf_text($restore_url) . ") >> >>\nendobj\n";
+        }
+
+        $pdf = "%PDF-1.4\n";
+        $offsets = [0];
+
+        foreach ($objects as $index => $object) {
+            $offsets[$index + 1] = \strlen($pdf);
+            $pdf .= $object;
+        }
+
+        $xref_position = \strlen($pdf);
+        $pdf .= "xref\n0 " . (\count($objects) + 1) . "\n";
+        $pdf .= "0000000000 65535 f \n";
+
+        foreach ($offsets as $object_number => $offset) {
+            if ($object_number === 0) {
+                continue;
+            }
+
+            $pdf .= \sprintf('%010d 00000 n ' . "\n", $offset);
+        }
+
+        $pdf .= "trailer\n<< /Size " . (\count($objects) + 1) . " /Root 1 0 R >>\n";
+        $pdf .= "startxref\n" . $xref_position . "\n%%EOF";
+
+        return $pdf;
+    }
+
+    private static function get_pdf_link_line_index(array $lines, string $link_text): ?int
+    {
+        if ($link_text === '') {
+            return null;
+        }
+
+        foreach ($lines as $index => $line) {
+            if ($line === $link_text) {
+                return $index;
+            }
+        }
+
+        return null;
+    }
+
+    private static function escape_pdf_text(string $text): string
+    {
+        $text = \str_replace(["\\r", "\\n"], ' ', $text);
+        return \str_replace(['\\', '(', ')'], ['\\\\', '\\(', '\\)'], $text);
+    }
+
+    private static function submit_quote_to_crm_perks(array $form_data, array $cart_data): bool
+    {
+        if (!\class_exists('vxc_hubspot') || !\function_exists('wc_create_order')) {
+            return false;
+        }
+
+        $order = \wc_create_order([
+            'created_via' => 'quote-share',
+        ]);
+
+        if (\is_wp_error($order) || !$order instanceof \WC_Order) {
+            return false;
+        }
+
+        self::populate_order_from_form($order, $form_data);
+        self::populate_order_items_from_cart($order, $cart_data);
+        self::populate_order_quote_meta($order, $form_data, $cart_data);
+
+        $order->calculate_totals();
+        $order->save();
+
+        global $vxc_hubspot;
+
+        if (!is_object($vxc_hubspot) || !\method_exists($vxc_hubspot, 'push')) {
+            return false;
+        }
+
+        $result = $vxc_hubspot->push($order->get_id(), '');
+
+        if (is_array($result)) {
+            return ($result['class'] ?? '') !== 'error';
+        }
+
+        return $result !== false;
+    }
+
+    private static function populate_order_from_form(\WC_Order $order, array $form_data): void
+    {
+        $contact_parts = \preg_split('/\s+/', trim($form_data['contact_name']));
+        $first_name = '';
+        $last_name = '';
+
+        if (is_array($contact_parts) && !empty($contact_parts)) {
+            $first_name = array_shift($contact_parts) ?: '';
+            $last_name = !empty($contact_parts) ? implode(' ', $contact_parts) : '';
+        }
+
+        $order->set_billing_first_name($first_name);
+        $order->set_billing_last_name($last_name);
+        $order->set_billing_company($form_data['company_name']);
+        $order->set_billing_email($form_data['email_address']);
+        $order->set_billing_phone($form_data['phone_number']);
+    }
+
+    private static function populate_order_items_from_cart(\WC_Order $order, array $cart_data): void
+    {
+        if (!empty($cart_data['items']) && is_array($cart_data['items'])) {
+            foreach ($cart_data['items'] as $item) {
+                if (!is_array($item)) {
+                    continue;
+                }
+
+                $product_id = isset($item['product_id']) ? (int) $item['product_id'] : 0;
+                $variation_id = isset($item['variation_id']) ? (int) $item['variation_id'] : 0;
+                $quantity = isset($item['quantity']) ? (int) $item['quantity'] : 0;
+
+                if ($quantity < 1) {
+                    continue;
+                }
+
+                $target_id = $variation_id > 0 ? $variation_id : $product_id;
+                if ($target_id < 1) {
+                    continue;
+                }
+
+                $product = \wc_get_product($target_id);
+
+                if (!$product instanceof \WC_Product) {
+                    continue;
+                }
+
+                $order->add_product($product, $quantity);
+            }
+
+            return;
+        }
+
+        if (!\function_exists('WC') || empty(\WC()->cart)) {
+            return;
+        }
+
+        foreach (\WC()->cart->get_cart() as $cart_item) {
+            if (empty($cart_item['data']) || !$cart_item['data'] instanceof \WC_Product) {
+                continue;
+            }
+
+            $quantity = isset($cart_item['quantity']) ? (int) $cart_item['quantity'] : 0;
+
+            if ($quantity < 1) {
+                continue;
+            }
+
+            $order->add_product($cart_item['data'], $quantity);
+        }
+    }
+
+    private static function populate_order_quote_meta(\WC_Order $order, array $form_data, array $cart_data): void
+    {
+        $order->update_meta_data('_quote_share_submission', '1');
+        $order->update_meta_data('customer_reference_number', $form_data['customer_reference_number']);
+        $order->update_meta_data('sales_notes', $form_data['sales_notes']);
+        $order->update_meta_data('quote_items', implode(' | ', $cart_data['lines']));
+        $order->update_meta_data('quote_total', $cart_data['total']);
+
+        if (!empty($form_data['sales_notes'])) {
+            $order->set_customer_note($form_data['sales_notes']);
+        }
+    }
+
+    private static function submit_quote_to_hubspot(array $form_data, array $cart_data): bool
+    {
+        $portal_id = \apply_filters('theme/quote_share/hubspot_portal_id', \defined('MILLBOARD_QUOTE_HUBSPOT_PORTAL_ID') ? (string) \constant('MILLBOARD_QUOTE_HUBSPOT_PORTAL_ID') : '');
+        $form_guid = \apply_filters('theme/quote_share/hubspot_form_guid', \defined('MILLBOARD_QUOTE_HUBSPOT_FORM_GUID') ? (string) \constant('MILLBOARD_QUOTE_HUBSPOT_FORM_GUID') : '');
+
+        if (empty($portal_id) || empty($form_guid)) {
+            return false;
+        }
+
+        $field_map = \apply_filters('theme/quote_share/hubspot_field_map', [
+            'company_name' => 'company',
+            'contact_name' => 'firstname',
+            'email_address' => 'email',
+            'phone_number' => 'phone',
+            'customer_reference_number' => 'customer_reference_number',
+            'sales_notes' => 'sales_notes',
+            'quote_items' => 'quote_items',
+            'quote_total' => 'quote_total',
+        ]);
+
+        $fields = [];
+
+        foreach ($form_data as $key => $value) {
+            if (!isset($field_map[$key]) || $value === '') {
+                continue;
+            }
+
+            $fields[] = [
+                'name' => $field_map[$key],
+                'value' => $value,
+            ];
+        }
+
+        if (!empty($field_map['quote_items'])) {
+            $fields[] = [
+                'name' => $field_map['quote_items'],
+                'value' => implode(' | ', $cart_data['lines']),
+            ];
+        }
+
+        if (!empty($field_map['quote_total'])) {
+            $fields[] = [
+                'name' => $field_map['quote_total'],
+                'value' => $cart_data['total'],
+            ];
+        }
+
+        $request_uri = isset($_SERVER['REQUEST_URI']) ? \sanitize_text_field(\wp_unslash($_SERVER['REQUEST_URI'])) : '';
+        $hutk = isset($_COOKIE['hubspotutk']) ? \sanitize_text_field(\wp_unslash($_COOKIE['hubspotutk'])) : '';
+
+        $body = [
+            'fields' => $fields,
+            'context' => [
+                'pageUri' => \home_url($request_uri),
+                'pageName' => 'Cart Quote Modal',
+            ],
+        ];
+
+        if (!empty($hutk)) {
+            $body['context']['hutk'] = $hutk;
+        }
+
+        $endpoint = "https://api.hsforms.com/submissions/v3/integration/submit/{$portal_id}/{$form_guid}";
+
+        $response = \wp_remote_post($endpoint, [
+            'headers' => [
+                'Content-Type' => 'application/json',
+            ],
+            'body' => \wp_json_encode($body),
+            'timeout' => 10,
+        ]);
+
+        if (\is_wp_error($response)) {
+            return false;
+        }
+
+        $status_code = \wp_remote_retrieve_response_code($response);
+        return $status_code >= 200 && $status_code < 300;
+    }
+
+    private static function send_quote_email(array $form_data, array $cart_data, string $attachment_path, string $restore_url = ''): bool
+    {
+        $to = $form_data['email_address'];
+        $subject = \__('Your Millboard quote', 'granola');
+
+        $message = [
+            \__('Thanks for requesting a quote. Your quote summary is below and attached as a PDF.', 'granola'),
+            '',
+            sprintf(\__('Company: %s', 'granola'), $form_data['company_name']),
+            sprintf(\__('Contact: %s', 'granola'), $form_data['contact_name']),
+            sprintf(\__('Customer reference: %s', 'granola'), $form_data['customer_reference_number']),
+            '',
+            \__('Items:', 'granola'),
+        ];
+
+        foreach ($cart_data['lines'] as $line) {
+            $message[] = '- ' . $line;
+        }
+
+        $message[] = '';
+        $message[] = sprintf(\__('Quote Total: %s', 'granola'), $cart_data['total']);
+
+        if (!empty($form_data['sales_notes'])) {
+            $message[] = '';
+            $message[] = \__('Sales Notes:', 'granola');
+            $message[] = $form_data['sales_notes'];
+        }
+
+        if (!empty($restore_url)) {
+            $message[] = '';
+            $message[] = \__(self::RESTORE_LINK_TEXT, 'granola') . ':';
+            $message[] = $restore_url;
+        }
+
+        return \wp_mail(
+            $to,
+            $subject,
+            implode("\n", $message),
+            ['Content-Type: text/plain; charset=UTF-8'],
+            [$attachment_path]
+        );
+    }
+
+    private static function stream_pdf(array $form_data, array $cart_data, string $restore_url = ''): void
+    {
+        $pdf_content = self::generate_pdf(self::build_pdf_lines($form_data, $cart_data, $restore_url), $restore_url);
+        $filename = 'millboard-quote-' . \gmdate('Ymd-His') . '.pdf';
+
+        while (\ob_get_level() > 0) {
+            \ob_end_clean();
+        }
+
+        \status_header(200);
+        \nocache_headers();
+        \header('Content-Type: application/pdf');
+        \header('Content-Disposition: attachment; filename="' . $filename . '"');
+        \header('Content-Transfer-Encoding: binary');
+        \header('Accept-Ranges: none');
+        \header('Content-Length: ' . \strlen($pdf_content));
+
+        echo $pdf_content; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+        exit;
+    }
+
+    private static function get_quote_restore_url(array $cart_data): string
+    {
+        if (empty($cart_data['items']) || !is_array($cart_data['items'])) {
+            return '';
+        }
+
+        $payload = [
+            'items' => $cart_data['items'],
+        ];
+
+        $encoded_payload = self::encode_restore_payload($payload);
+        $signature = self::sign_restore_payload($encoded_payload);
+
+        return (string) \add_query_arg(
+            [
+                'quote_restore_data' => $encoded_payload,
+                'quote_restore_sig' => $signature,
+            ],
+            \wc_get_cart_url()
+        );
+    }
+
+    public static function maybe_restore_quote(): void
+    {
+        if (\is_admin() || !\function_exists('is_cart') || !\is_cart()) {
+            return;
+        }
+
+        if (empty($_GET['quote_restore_data']) || empty($_GET['quote_restore_sig'])) {
+            return;
+        }
+
+        $encoded_payload = \sanitize_text_field(\wp_unslash($_GET['quote_restore_data']));
+        $provided_signature = \sanitize_text_field(\wp_unslash($_GET['quote_restore_sig']));
+
+        if ($encoded_payload === '' || $provided_signature === '') {
+            return;
+        }
+
+        $expected_signature = self::sign_restore_payload($encoded_payload);
+
+        if (!\hash_equals($expected_signature, $provided_signature)) {
+            if (\function_exists('wc_add_notice')) {
+                \wc_add_notice(\__('Quote link is invalid.', 'granola'), 'error');
+            }
+
+            \wp_safe_redirect(\wc_get_cart_url());
+            exit;
+        }
+
+        $restore_data = self::decode_restore_payload($encoded_payload);
+
+        if (!is_array($restore_data) || empty($restore_data['items']) || !is_array($restore_data['items'])) {
+            if (\function_exists('wc_add_notice')) {
+                \wc_add_notice(\__('Quote link is invalid.', 'granola'), 'error');
+            }
+
+            \wp_safe_redirect(\wc_get_cart_url());
+            exit;
+        }
+
+        if (!\function_exists('WC') || empty(\WC()->cart)) {
+            if (\function_exists('wc_load_cart')) {
+                \wc_load_cart();
+            }
+        }
+
+        if (empty(\WC()->cart)) {
+            \wp_safe_redirect(\wc_get_cart_url());
+            exit;
+        }
+
+        $items_to_restore = self::sanitize_restore_items($restore_data['items']);
+
+        if (empty($items_to_restore)) {
+            if (\function_exists('wc_add_notice')) {
+                \wc_add_notice(\__('Quote contains no valid items to restore.', 'granola'), 'error');
+            }
+
+            \wp_safe_redirect(\wc_get_cart_url());
+            exit;
+        }
+
+        $existing_items = self::build_items_snapshot_from_live_cart();
+        \WC()->cart->empty_cart();
+
+        $added = 0;
+        foreach ($items_to_restore as $item) {
+            $cart_item_key = \WC()->cart->add_to_cart($item['product_id'], $item['quantity'], $item['variation_id'], $item['variation']);
+            if ($cart_item_key) {
+                $added++;
+            }
+        }
+
+        if ($added < 1 && !empty($existing_items)) {
+            foreach ($existing_items as $item) {
+                \WC()->cart->add_to_cart($item['product_id'], $item['quantity'], $item['variation_id'], $item['variation']);
+            }
+        }
+
+        if (\function_exists('wc_add_notice')) {
+            if ($added > 0) {
+                \wc_add_notice(\__('Quote restored to your basket.', 'granola'), 'success');
+            } else {
+                \wc_add_notice(\__('Unable to restore quote items.', 'granola'), 'error');
+            }
+        }
+
+        \wp_safe_redirect(\wc_get_cart_url());
+        exit;
+    }
+
+    private static function sanitize_restore_items(array $items): array
+    {
+        $sanitized = [];
+
+        foreach ($items as $item) {
+            if (!is_array($item)) {
+                continue;
+            }
+
+            $product_id = isset($item['product_id']) ? (int) $item['product_id'] : 0;
+            $variation_id = isset($item['variation_id']) ? (int) $item['variation_id'] : 0;
+            $quantity = isset($item['quantity']) ? (int) $item['quantity'] : 0;
+
+            if ($product_id < 1 || $quantity < 1) {
+                continue;
+            }
+
+            $target_id = $variation_id > 0 ? $variation_id : $product_id;
+            $product = \wc_get_product($target_id);
+
+            if (!$product instanceof \WC_Product || !$product->exists()) {
+                continue;
+            }
+
+            $variation = [];
+            if (!empty($item['variation']) && is_array($item['variation'])) {
+                foreach ($item['variation'] as $key => $value) {
+                    $variation[(string) $key] = \sanitize_text_field((string) $value);
+                }
+            }
+
+            $sanitized[] = [
+                'product_id' => $product_id,
+                'variation_id' => $variation_id,
+                'quantity' => $quantity,
+                'variation' => $variation,
+            ];
+        }
+
+        return $sanitized;
+    }
+
+    private static function is_valid_email_address(string $email): bool
+    {
+        $email = trim($email);
+
+        if ($email === '' || strlen($email) > 254) {
+            return false;
+        }
+
+        if (!\is_email($email)) {
+            return false;
+        }
+
+        return (bool) preg_match('/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/', $email);
+    }
+
+    private static function has_required_form_fields(array $form_data): bool
+    {
+        $required_fields = [
+            'company_name',
+            'contact_name',
+            'email_address',
+            'phone_number',
+            'customer_reference_number',
+        ];
+
+        foreach ($required_fields as $field) {
+            if (!array_key_exists($field, $form_data) || trim((string) $form_data[$field]) === '') {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static function build_items_snapshot_from_live_cart(): array
+    {
+        if (!\function_exists('WC') || empty(\WC()->cart)) {
+            return [];
+        }
+
+        $items = [];
+
+        foreach (\WC()->cart->get_cart() as $cart_item) {
+            if (empty($cart_item['data']) || !$cart_item['data'] instanceof \WC_Product) {
+                continue;
+            }
+
+            $quantity = isset($cart_item['quantity']) ? (int) $cart_item['quantity'] : 0;
+            if ($quantity < 1) {
+                continue;
+            }
+
+            $items[] = [
+                'product_id' => isset($cart_item['product_id']) ? (int) $cart_item['product_id'] : 0,
+                'variation_id' => isset($cart_item['variation_id']) ? (int) $cart_item['variation_id'] : 0,
+                'quantity' => $quantity,
+                'variation' => isset($cart_item['variation']) && is_array($cart_item['variation']) ? $cart_item['variation'] : [],
+            ];
+        }
+
+        return $items;
+    }
+
+    private static function encode_restore_payload(array $payload): string
+    {
+        $json = \wp_json_encode($payload);
+
+        if (!is_string($json) || $json === '') {
+            return '';
+        }
+
+        return \rtrim(\strtr(\base64_encode($json), '+/', '-_'), '=');
+    }
+
+    private static function decode_restore_payload(string $encoded_payload): ?array
+    {
+        if ($encoded_payload === '') {
+            return null;
+        }
+
+        $normalized = \strtr($encoded_payload, '-_', '+/');
+        $padding = \strlen($normalized) % 4;
+
+        if ($padding > 0) {
+            $normalized .= \str_repeat('=', 4 - $padding);
+        }
+
+        $decoded = \base64_decode($normalized, true);
+
+        if ($decoded === false) {
+            return null;
+        }
+
+        $payload = \json_decode($decoded, true);
+
+        return is_array($payload) ? $payload : null;
+    }
+
+    private static function sign_restore_payload(string $encoded_payload): string
+    {
+        return \hash_hmac('sha256', $encoded_payload, (string) \wp_salt('auth'));
+    }
+
+    private static function redirect_with_notice(string $message, string $type = 'notice'): void
+    {
+        if (function_exists('wc_add_notice')) {
+            \wc_add_notice($message, $type);
+        }
+
+        \wp_safe_redirect(\wc_get_cart_url());
+        exit;
+    }
+}

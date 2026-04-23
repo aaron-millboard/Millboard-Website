@@ -18,8 +18,51 @@
 
 defined('ABSPATH') || exit;
 
+$quote_form_action = esc_url(admin_url('admin-post.php'));
+$quote_snapshot = [
+    'items' => [],
+    'lines' => [],
+    'total' => wp_strip_all_tags(html_entity_decode(WC()->cart->get_total(), ENT_QUOTES | ENT_HTML5, 'UTF-8')),
+];
+
+foreach (WC()->cart->get_cart() as $quote_item) {
+    if (empty($quote_item['data']) || !$quote_item['data'] instanceof \WC_Product) {
+        continue;
+    }
+
+    $quote_quantity = isset($quote_item['quantity']) ? (int) $quote_item['quantity'] : 0;
+
+    if ($quote_quantity < 1) {
+        continue;
+    }
+
+    $quote_snapshot['lines'][] = sprintf('%s x %d', wp_strip_all_tags($quote_item['data']->get_name()), $quote_quantity);
+
+    $quote_snapshot['items'][] = [
+        'product_id' => isset($quote_item['product_id']) ? (int) $quote_item['product_id'] : 0,
+        'variation_id' => isset($quote_item['variation_id']) ? (int) $quote_item['variation_id'] : 0,
+        'quantity' => $quote_quantity,
+        'variation' => isset($quote_item['variation']) && is_array($quote_item['variation']) ? $quote_item['variation'] : [],
+    ];
+}
+
+$quote_snapshot_encoded = base64_encode(wp_json_encode($quote_snapshot));
+
 // Notices here
 do_action('woocommerce_before_cart');?>
+
+<section class="cart__quote-share" aria-label="<?php esc_attr_e('Share quote', 'granola'); ?>">
+    <p class="cart__quote-share__copy"><?php esc_html_e('Want to share this quote?', 'granola'); ?></p>
+    <button
+        type="button"
+        class="button cart__quote-share__open"
+        data-quote-share-open
+        aria-haspopup="dialog"
+        aria-controls="quote-share-modal"
+    >
+        <?php esc_html_e('SHARE & SAVE QUOTE', 'granola'); ?>
+    </button>
+</section>
 
 <form class="cart woocommerce-cart-form" action="<?php echo esc_url(wc_get_cart_url()); ?>" method="post">
     <?php do_action('woocommerce_before_cart_table'); ?>
@@ -356,6 +399,80 @@ do_action('woocommerce_before_cart');?>
 
 </form>
 
+<div
+    id="quote-share-modal"
+    class="cart-quote-modal"
+    data-quote-share-modal
+    hidden
+    aria-hidden="true"
+>
+    <div class="cart-quote-modal__overlay" data-quote-share-close></div>
+    <div
+        class="cart-quote-modal__dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="quote-share-modal__title"
+    >
+            <button type="button" class="cart-quote-modal__close" data-quote-share-close aria-label="<?php esc_attr_e('Close modal', 'granola'); ?>">
+                <?= esc_html__('Close', 'granola'); ?>
+                <?= \Granola\SVG::get('icons/cross.svg'); ?>
+            </button>
+
+        <h2 class="cart-quote-modal__title"><?php esc_html_e('Generate Quote', 'granola'); ?></h2>
+
+        <h3 class="cart-quote-modal__subtitle"><?php esc_html_e('Enter details', 'granola'); ?></h3>
+
+        <form class="cart-quote-modal__form" action="<?php echo $quote_form_action; ?>" method="post">
+            <input type="hidden" name="action" value="millboard_quote_submit">
+            <input type="hidden" name="quote_snapshot" value="<?php echo esc_attr($quote_snapshot_encoded); ?>">
+            <?php wp_nonce_field('millboard_quote_submit', 'millboard_quote_nonce'); ?>
+
+            <label>
+                <?php esc_html_e('Company name', 'granola'); ?>
+                <input type="text" name="company_name" required>
+            </label>
+
+            <label>
+                <?php esc_html_e('Contact name', 'granola'); ?>
+                <input type="text" name="contact_name" required>
+            </label>
+
+            <label>
+                <?php esc_html_e('Email address', 'granola'); ?>
+                <input
+                    type="email"
+                    name="email_address"
+                    required
+                    maxlength="254"
+                    autocomplete="email"
+                    pattern="^[^\s@]+@[^\s@]+\.[^\s@]{2,}$"
+                    title="Please enter a valid email address"
+                >
+            </label>
+
+            <label>
+                <?php esc_html_e('Phone number', 'granola'); ?>
+                <input type="tel" name="phone_number" required>
+            </label>
+
+            <label>
+                <?php esc_html_e('Customer reference number', 'granola'); ?>
+                <input type="text" name="customer_reference_number" required>
+            </label>
+
+            <label>
+                <?php esc_html_e('Sales notes', 'granola'); ?>
+                <textarea name="sales_notes" rows="4"></textarea>
+            </label>
+
+            <div class="cart-quote-modal__actions">
+                <button type="submit" class="g-button" name="quote_intent" value="email"><?php esc_html_e('Email Quote', 'granola'); ?></button>
+                <button type="submit" class="g-button g-button--secondary" name="quote_intent" value="download"><?php esc_html_e('Download Quote (PDF)', 'granola'); ?></button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <div class="cart-collaterals">
     <?php
         /**
@@ -369,3 +486,38 @@ do_action('woocommerce_before_cart');?>
 </div>
 
 <?php do_action('woocommerce_after_cart'); ?>
+
+<script>
+    (function () {
+        const modal = document.querySelector('[data-quote-share-modal]');
+        const openTrigger = document.querySelector('[data-quote-share-open]');
+
+        if (!modal || !openTrigger) {
+            return;
+        }
+
+        const closeTriggers = modal.querySelectorAll('[data-quote-share-close]');
+
+        const closeModal = function () {
+            modal.setAttribute('hidden', 'hidden');
+            modal.setAttribute('aria-hidden', 'true');
+        };
+
+        const openModal = function () {
+            modal.removeAttribute('hidden');
+            modal.setAttribute('aria-hidden', 'false');
+        };
+
+        openTrigger.addEventListener('click', openModal);
+
+        closeTriggers.forEach(function (trigger) {
+            trigger.addEventListener('click', closeModal);
+        });
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape' && !modal.hasAttribute('hidden')) {
+                closeModal();
+            }
+        });
+    })();
+</script>
