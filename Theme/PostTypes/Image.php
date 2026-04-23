@@ -141,6 +141,7 @@ class Image
 
         if (!empty($image_category)) {
             $robots['noindex'] = true;
+            $robots['nofollow'] = true;
         }
 
         return $robots;
