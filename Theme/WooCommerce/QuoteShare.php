@@ -81,7 +81,7 @@ class QuoteShare
             self::redirect_with_notice(\__('Your basket is empty, so there is no quote to share.', 'granola'), 'error');
         }
 
-        // Best effort: always send to HubSpot form for both actions.
+        // Best effort: create a quote order so HubSpot for WooCommerce can sync it.
         self::submit_quote_to_hubspot($form_data, $cart_data);
 
         if ($intent === 'download') {
@@ -546,82 +546,28 @@ class QuoteShare
 
     private static function submit_quote_to_hubspot(array $form_data, array $cart_data): bool
     {
-        $portal_id = \apply_filters('theme/quote_share/hubspot_portal_id', \defined('MILLBOARD_QUOTE_HUBSPOT_PORTAL_ID') ? (string) \constant('MILLBOARD_QUOTE_HUBSPOT_PORTAL_ID') : '');
-        $form_guid = \apply_filters('theme/quote_share/hubspot_form_guid', \defined('MILLBOARD_QUOTE_HUBSPOT_FORM_GUID') ? (string) \constant('MILLBOARD_QUOTE_HUBSPOT_FORM_GUID') : '');
-
-        if (empty($portal_id) || empty($form_guid)) {
+        if (!\function_exists('wc_create_order')) {
             return false;
         }
 
-        $field_map = \apply_filters('theme/quote_share/hubspot_field_map', [
-            'company_name' => 'company',
-            'contact_name' => 'firstname',
-            'email_address' => 'email',
-            'phone_number' => 'phone',
-            'customer_reference_number' => 'customer_reference_number',
-            'sales_notes' => 'sales_notes',
-            'quote_items' => 'quote_items',
-            'quote_total' => 'quote_total',
+        $order = \wc_create_order([
+            'created_via' => 'quote-share',
         ]);
 
-        $fields = [];
-
-        foreach ($form_data as $key => $value) {
-            if (!isset($field_map[$key]) || $value === '') {
-                continue;
-            }
-
-            $fields[] = [
-                'name' => $field_map[$key],
-                'value' => $value,
-            ];
-        }
-
-        if (!empty($field_map['quote_items'])) {
-            $fields[] = [
-                'name' => $field_map['quote_items'],
-                'value' => implode(' | ', $cart_data['lines']),
-            ];
-        }
-
-        if (!empty($field_map['quote_total'])) {
-            $fields[] = [
-                'name' => $field_map['quote_total'],
-                'value' => $cart_data['total'],
-            ];
-        }
-
-        $request_uri = isset($_SERVER['REQUEST_URI']) ? \sanitize_text_field(\wp_unslash($_SERVER['REQUEST_URI'])) : '';
-        $hutk = isset($_COOKIE['hubspotutk']) ? \sanitize_text_field(\wp_unslash($_COOKIE['hubspotutk'])) : '';
-
-        $body = [
-            'fields' => $fields,
-            'context' => [
-                'pageUri' => \home_url($request_uri),
-                'pageName' => 'Cart Quote Modal',
-            ],
-        ];
-
-        if (!empty($hutk)) {
-            $body['context']['hutk'] = $hutk;
-        }
-
-        $endpoint = "https://api.hsforms.com/submissions/v3/integration/submit/{$portal_id}/{$form_guid}";
-
-        $response = \wp_remote_post($endpoint, [
-            'headers' => [
-                'Content-Type' => 'application/json',
-            ],
-            'body' => \wp_json_encode($body),
-            'timeout' => 10,
-        ]);
-
-        if (\is_wp_error($response)) {
+        if (\is_wp_error($order) || !$order instanceof \WC_Order) {
             return false;
         }
 
-        $status_code = \wp_remote_retrieve_response_code($response);
-        return $status_code >= 200 && $status_code < 300;
+        self::populate_order_from_form($order, $form_data);
+        self::populate_order_items_from_cart($order, $cart_data);
+        self::populate_order_quote_meta($order, $form_data, $cart_data);
+
+        // Keep as pending quote so no checkout/payment flow is triggered.
+        $order->set_status('pending');
+        $order->calculate_totals();
+        $order->save();
+
+        return $order->get_id() > 0;
     }
 
     private static function send_quote_email(array $form_data, array $cart_data, string $attachment_path, string $restore_url = ''): bool
