@@ -18,51 +18,10 @@
 
 defined('ABSPATH') || exit;
 
-$quote_form_action = esc_url(admin_url('admin-post.php'));
-$quote_snapshot = [
-    'items' => [],
-    'lines' => [],
-    'total' => wp_strip_all_tags(html_entity_decode(WC()->cart->get_total(), ENT_QUOTES | ENT_HTML5, 'UTF-8')),
-];
-
-foreach (WC()->cart->get_cart() as $quote_item) {
-    if (empty($quote_item['data']) || !$quote_item['data'] instanceof \WC_Product) {
-        continue;
-    }
-
-    $quote_quantity = isset($quote_item['quantity']) ? (int) $quote_item['quantity'] : 0;
-
-    if ($quote_quantity < 1) {
-        continue;
-    }
-
-    $quote_snapshot['lines'][] = sprintf('%s x %d', wp_strip_all_tags($quote_item['data']->get_name()), $quote_quantity);
-
-    $quote_snapshot['items'][] = [
-        'product_id' => isset($quote_item['product_id']) ? (int) $quote_item['product_id'] : 0,
-        'variation_id' => isset($quote_item['variation_id']) ? (int) $quote_item['variation_id'] : 0,
-        'quantity' => $quote_quantity,
-        'variation' => isset($quote_item['variation']) && is_array($quote_item['variation']) ? $quote_item['variation'] : [],
-    ];
-}
-
-$quote_snapshot_encoded = base64_encode(wp_json_encode($quote_snapshot));
+$show_quote_share = \Theme\WooCommerce\QuoteShare::is_quote_share_enabled();
 
 // Notices here
 do_action('woocommerce_before_cart');?>
-
-<section class="cart__quote-share" aria-label="<?php esc_attr_e('Share quote', 'granola'); ?>">
-    <p class="cart__quote-share__copy"><?php esc_html_e('Want to share this quote?', 'granola'); ?></p>
-    <button
-        type="button"
-        class="button cart__quote-share__open"
-        data-quote-share-open
-        aria-haspopup="dialog"
-        aria-controls="quote-share-modal"
-    >
-        <?php esc_html_e('SHARE & SAVE QUOTE', 'granola'); ?>
-    </button>
-</section>
 
 <form class="cart woocommerce-cart-form" action="<?php echo esc_url(wc_get_cart_url()); ?>" method="post">
     <?php do_action('woocommerce_before_cart_table'); ?>
@@ -359,6 +318,51 @@ do_action('woocommerce_before_cart');?>
                     </div>
                 </div>
 
+                <?php if ($show_quote_share) :
+                    $quote_form_action = esc_url(admin_url('admin-post.php'));
+                    $quote_snapshot = [
+                        'items' => [],
+                        'lines' => [],
+                        'total' => wp_strip_all_tags(html_entity_decode(WC()->cart->get_total(), ENT_QUOTES | ENT_HTML5, 'UTF-8')),
+                    ];
+
+                    foreach (WC()->cart->get_cart() as $quote_item) {
+                        if (empty($quote_item['data']) || !$quote_item['data'] instanceof \WC_Product) {
+                            continue;
+                        }
+
+                        $quote_quantity = isset($quote_item['quantity']) ? (int) $quote_item['quantity'] : 0;
+
+                        if ($quote_quantity < 1) {
+                            continue;
+                        }
+
+                        $quote_snapshot['lines'][] = sprintf('%s x %d', wp_strip_all_tags($quote_item['data']->get_name()), $quote_quantity);
+
+                        $quote_snapshot['items'][] = [
+                            'product_id' => isset($quote_item['product_id']) ? (int) $quote_item['product_id'] : 0,
+                            'variation_id' => isset($quote_item['variation_id']) ? (int) $quote_item['variation_id'] : 0,
+                            'quantity' => $quote_quantity,
+                            'variation' => isset($quote_item['variation']) && is_array($quote_item['variation']) ? $quote_item['variation'] : [],
+                        ];
+                    }
+
+                    $quote_snapshot_encoded = base64_encode(wp_json_encode($quote_snapshot));
+                ?>
+                <section class="cart__quote-share" aria-label="<?php esc_attr_e('Share quote', 'granola'); ?>">
+                    <p class="cart__quote-share__copy"><?php esc_html_e('Want to share this quote?', 'granola'); ?></p>
+                    <button
+                        type="button"
+                        class="button cart__quote-share__open"
+                        data-quote-share-open
+                        aria-haspopup="dialog"
+                        aria-controls="quote-share-modal"
+                    >
+                        <?php esc_html_e('SHARE & SAVE QUOTE', 'granola'); ?>
+                    </button>
+                </section>
+                <?php endif; ?>
+
                 <?php do_action('woocommerce_cart_totals_after_order_total'); ?>
 
             </table>
@@ -399,6 +403,7 @@ do_action('woocommerce_before_cart');?>
 
 </form>
 
+<?php if ($show_quote_share) : ?>
 <div
     id="quote-share-modal"
     class="cart-quote-modal"
@@ -418,7 +423,7 @@ do_action('woocommerce_before_cart');?>
                 <?= \Granola\SVG::get('icons/cross.svg'); ?>
             </button>
 
-        <h2 class="cart-quote-modal__title"><?php esc_html_e('Generate Quote', 'granola'); ?></h2>
+        <h2 class="cart-quote-modal__title" id="quote-share-modal__title"><?php esc_html_e('Generate Quote', 'granola'); ?></h2>
 
         <h3 class="cart-quote-modal__subtitle"><?php esc_html_e('Enter details', 'granola'); ?></h3>
 
@@ -472,6 +477,7 @@ do_action('woocommerce_before_cart');?>
         </form>
     </div>
 </div>
+<?php endif; ?>
 
 <div class="cart-collaterals">
     <?php
@@ -487,6 +493,7 @@ do_action('woocommerce_before_cart');?>
 
 <?php do_action('woocommerce_after_cart'); ?>
 
+<?php if ($show_quote_share) : ?>
 <script>
     (function () {
         const modal = document.querySelector('[data-quote-share-modal]');
@@ -521,3 +528,4 @@ do_action('woocommerce_before_cart');?>
         });
     })();
 </script>
+<?php endif; ?>
