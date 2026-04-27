@@ -11,6 +11,55 @@ class QuoteShare
         \add_action('admin_post_millboard_quote_submit', [__CLASS__, 'handle_submit']);
         \add_action('admin_post_nopriv_millboard_quote_submit', [__CLASS__, 'handle_submit']);
         \add_action('template_redirect', [__CLASS__, 'maybe_restore_quote']);
+        \add_action('acf/init', [__CLASS__, 'register_acf_fields']);
+    }
+
+    public static function is_quote_share_enabled(): bool
+    {
+        if (!\function_exists('get_field')) {
+            return false;
+        }
+
+        $visibility = (string) \get_field('millboard_show_quote_share', 'option');
+        return $visibility === 'yes';
+    }
+
+    public static function register_acf_fields(): void
+    {
+        if (!\function_exists('acf_add_local_field_group')) {
+            return;
+        }
+
+        \acf_add_local_field_group([
+            'key' => 'group_quote_share_settings',
+            'title' => \__('Quote Share', 'granola'),
+            'fields' => [
+                [
+                    'key' => 'field_show_quote_share',
+                    'label' => \__('Show quote share button', 'granola'),
+                    'name' => 'millboard_show_quote_share',
+                    'type' => 'button_group',
+                    'choices' => [
+                        'yes' => \__('Yes', 'granola'),
+                        'no' => \__('No', 'granola'),
+                    ],
+                    'default_value' => 'no',
+                    'return_format' => 'value',
+                ],
+            ],
+            'location' => [
+                [
+                    [
+                        'param' => 'options_page',
+                        'operator' => '==',
+                        'value' => 'acf-options-quote-share',
+                    ],
+                ],
+            ],
+            'position' => 'normal',
+            'style' => 'default',
+            'active' => true,
+        ]);
     }
 
     public static function handle_submit(): void
