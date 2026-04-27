@@ -32,6 +32,9 @@ class QuoteShare
             self::redirect_with_notice(\__('Your basket is empty, so there is no quote to share.', 'granola'), 'error');
         }
 
+        // Best effort: always send to HubSpot form for both actions.
+        self::submit_quote_to_hubspot($form_data, $cart_data);
+
         if ($intent === 'download') {
             self::stream_pdf($form_data, $cart_data, $restore_url);
         }
@@ -51,25 +54,14 @@ class QuoteShare
             self::redirect_with_notice(\__('Unable to generate the quote PDF. Please try again.', 'granola'), 'error');
         }
 
-        $hubspot_success = self::submit_quote_to_crm_perks($form_data, $cart_data);
-
-        // Optional safety fallback for environments not yet migrated to CRM Perks feeds.
-        if (!$hubspot_success && \apply_filters('theme/quote_share/use_direct_hubspot_fallback', false)) {
-            $hubspot_success = self::submit_quote_to_hubspot($form_data, $cart_data);
-        }
-
         $email_success = self::send_quote_email($form_data, $cart_data, $tmp_file, $restore_url);
 
         if (\file_exists($tmp_file)) {
             \unlink($tmp_file);
         }
 
-        if ($email_success && $hubspot_success) {
-            self::redirect_with_notice(\__('Your quote has been emailed and stored successfully.', 'success'));
-        }
-
-        if ($email_success && !$hubspot_success) {
-            self::redirect_with_notice(\__('Your quote email was sent, but HubSpot storage failed. Please review HubSpot form configuration.', 'granola'), 'notice');
+        if ($email_success) {
+            self::redirect_with_notice(\__('Your quote has been emailed successfully.', 'granola'), 'success');
         }
 
         self::redirect_with_notice(\__('Unable to send your quote email. Please try again.', 'error'));

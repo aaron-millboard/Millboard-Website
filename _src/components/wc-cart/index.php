@@ -51,19 +51,6 @@ $quote_snapshot_encoded = base64_encode(wp_json_encode($quote_snapshot));
 // Notices here
 do_action('woocommerce_before_cart');?>
 
-<section class="cart__quote-share" aria-label="<?php esc_attr_e('Share quote', 'granola'); ?>">
-    <p class="cart__quote-share__copy"><?php esc_html_e('Want to share this quote?', 'granola'); ?></p>
-    <button
-        type="button"
-        class="button cart__quote-share__open"
-        data-quote-share-open
-        aria-haspopup="dialog"
-        aria-controls="quote-share-modal"
-    >
-        <?php esc_html_e('SHARE & SAVE QUOTE', 'granola'); ?>
-    </button>
-</section>
-
 <form class="cart woocommerce-cart-form" action="<?php echo esc_url(wc_get_cart_url()); ?>" method="post">
     <?php do_action('woocommerce_before_cart_table'); ?>
 
@@ -359,6 +346,19 @@ do_action('woocommerce_before_cart');?>
                     </div>
                 </div>
 
+                <section class="cart__quote-share" aria-label="<?php esc_attr_e('Share quote', 'granola'); ?>">
+                    <p class="cart__quote-share__copy"><?php esc_html_e('Want to share this quote?', 'granola'); ?></p>
+                    <button
+                        type="button"
+                        class="button cart__quote-share__open"
+                        data-quote-share-open
+                        aria-haspopup="dialog"
+                        aria-controls="quote-share-modal"
+                    >
+                        <?php esc_html_e('SHARE & SAVE QUOTE', 'granola'); ?>
+                    </button>
+                </section>
+
                 <?php do_action('woocommerce_cart_totals_after_order_total'); ?>
 
             </table>
@@ -418,7 +418,7 @@ do_action('woocommerce_before_cart');?>
                 <?= \Granola\SVG::get('icons/cross.svg'); ?>
             </button>
 
-        <h2 class="cart-quote-modal__title"><?php esc_html_e('Generate Quote', 'granola'); ?></h2>
+        <h2 class="cart-quote-modal__title" id="quote-share-modal__title"><?php esc_html_e('Generate Quote', 'granola'); ?></h2>
 
         <h3 class="cart-quote-modal__subtitle"><?php esc_html_e('Enter details', 'granola'); ?></h3>
 
