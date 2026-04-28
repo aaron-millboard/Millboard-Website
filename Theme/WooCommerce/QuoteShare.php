@@ -468,6 +468,48 @@ class QuoteShare
         return (string) \wp_get_attachment_image_url($custom_logo_id, 'full');
     }
 
+    private static function get_brand_logo_url_for_email(): string
+    {
+        if (\function_exists('get_theme_mod') && \function_exists('get_attached_file') && \function_exists('wp_get_attachment_image_url')) {
+            $custom_logo_id = (int) \get_theme_mod('custom_logo');
+
+            if ($custom_logo_id > 0) {
+                $logo_path = (string) \get_attached_file($custom_logo_id);
+                $logo_url = (string) \wp_get_attachment_image_url($custom_logo_id, 'full');
+                $extension = \strtolower((string) \pathinfo($logo_path, PATHINFO_EXTENSION));
+
+                if ($logo_url !== '' && $extension !== 'svg') {
+                    return $logo_url;
+                }
+            }
+        }
+
+        if (\function_exists('get_stylesheet_directory') && \function_exists('get_stylesheet_directory_uri')) {
+            $stylesheet_dir = \trailingslashit((string) \get_stylesheet_directory());
+            $stylesheet_uri = \trailingslashit((string) \get_stylesheet_directory_uri());
+            $fallback_logo_files = [
+                'assets/images/logo.png',
+                'assets/images/logo.jpg',
+                'assets/images/logo.jpeg',
+                'assets/images/logo.webp',
+                '_src/images/logo.png',
+                '_src/images/logo.jpg',
+                '_src/images/logo.jpeg',
+                '_src/images/logo.webp',
+                'assets/images/icon-512.png',
+                '_src/images/icon-512.png',
+            ];
+
+            foreach ($fallback_logo_files as $fallback_logo_file) {
+                if (\file_exists($stylesheet_dir . $fallback_logo_file)) {
+                    return $stylesheet_uri . $fallback_logo_file;
+                }
+            }
+        }
+
+        return self::get_brand_logo_url();
+    }
+
     private static function get_quote_terms_urls(): array
     {
         if (!\function_exists('home_url')) {
@@ -1063,7 +1105,7 @@ class QuoteShare
     private static function build_quote_email_html(array $form_data, array $cart_data, string $restore_url = ''): string
     {
         $site_name = \wp_specialchars_decode(\get_bloginfo('name'), ENT_QUOTES);
-        $logo_url = self::get_brand_logo_url();
+        $logo_url = self::get_brand_logo_url_for_email();
         $terms_urls = self::get_quote_terms_urls();
 
         $rows_html = '';
