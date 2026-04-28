@@ -1064,57 +1064,115 @@ class QuoteShare
     {
         $site_name = \wp_specialchars_decode(\get_bloginfo('name'), ENT_QUOTES);
         $logo_url = self::get_brand_logo_url();
+        $terms_urls = self::get_quote_terms_urls();
 
         $rows_html = '';
         foreach ($cart_data['lines'] as $line) {
-            $rows_html .= '<tr><td style="padding:8px 0;border-bottom:1px solid #e6e6e6;color:#1f2937;font-size:14px;line-height:1.5;">' . \esc_html($line) . '</td></tr>';
+            $item_name = $line;
+            $item_qty = '';
+
+            if (\preg_match('/^(.*)\s+x\s+(\d+)$/i', $line, $matches) === 1) {
+                $item_name = \trim((string) $matches[1]);
+                $item_qty = 'x' . (string) $matches[2];
+            }
+
+            $rows_html .= '<tr>'
+                . '<td style="padding:11px 10px;border-bottom:1px solid #c9c9c9;background:#ffffff;color:#222222;font-size:14px;line-height:1.5;letter-spacing:0.02em;">' . \esc_html($item_name) . '</td>'
+                . '<td style="padding:11px 0;border-bottom:1px solid #c9c9c9;background:#ffffff;color:#222222;font-size:14px;line-height:1.5;text-align:right;width:60px;">' . \esc_html($item_qty) . '</td>'
+                . '</tr>';
+        }
+
+        if ($rows_html === '') {
+            $rows_html = '<tr>'
+                . '<td style="padding:11px 10px;border-bottom:1px solid #c9c9c9;background:#ffffff;color:#222222;font-size:14px;line-height:1.5;" colspan="2">' . \esc_html__('No items available', 'granola') . '</td>'
+                . '</tr>';
         }
 
         $restore_html = '';
         if (!empty($restore_url)) {
-            $restore_html = '<p style="margin:16px 0 0;color:#1f2937;font-size:14px;line-height:1.6;">'
+            $restore_html = '<table role="presentation" cellspacing="0" cellpadding="0" style="margin-top:20px;"><tr><td style="background:#5d5d5d;border:1px solid #5d5d5d;padding:0;">'
+                . '<a href="' . \esc_url($restore_url) . '" style="display:inline-block;padding:10px 14px;color:#ffffff;text-decoration:none;text-transform:uppercase;font-size:11px;font-weight:400;letter-spacing:0.08em;font-family:Helvetica,sans-serif;">'
                 . \esc_html(\__(self::RESTORE_LINK_TEXT, 'granola'))
-                . ': <a href="' . \esc_url($restore_url) . '" style="color:#0f766e;text-decoration:underline;">'
-                . \esc_html($restore_url)
-                . '</a></p>';
+                . '</a>'
+                . '</td></tr></table>';
         }
 
         $sales_notes_html = '';
         if (!empty($form_data['sales_notes'])) {
-            $sales_notes_html = '<p style="margin:16px 0 0;color:#1f2937;font-size:14px;line-height:1.6;"><strong>'
-                . \esc_html(\__('Sales Notes:', 'granola'))
-                . '</strong><br>'
-                . nl2br(\esc_html($form_data['sales_notes']))
-                . '</p>';
+            $sales_notes_html = '<tr>'
+                . '<td style="width:34%;padding:9px 14px;vertical-align:top;border-right:1px solid #9e9e9e;background:rgba(249, 247, 241, 0.50);font-weight:400;text-transform:uppercase;font-size:11px;letter-spacing:0.06em;">' . \esc_html(__('Sales notes', 'granola')) . '</td>'
+                . '<td style="padding:9px 14px;vertical-align:top;font-size:13px;color:#222222;">' . nl2br(\esc_html($form_data['sales_notes'])) . '</td>'
+                . '</tr>';
+        }
+
+        $terms_html = '';
+        foreach ($terms_urls as $terms_label => $terms_url) {
+            if (!is_string($terms_label) || $terms_label === '' || !is_string($terms_url) || $terms_url === '') {
+                continue;
+            }
+
+            $terms_html .= '<p style="margin:0 0 2px;font-size:12px;line-height:1.5;"><a href="' . \esc_url($terms_url) . '" style="color:#222222;text-decoration:none;">' . \esc_html($terms_label) . '</a></p>';
         }
 
         $logo_html = '';
         if ($logo_url !== '') {
-            $logo_html = '<img src="' . \esc_url($logo_url) . '" alt="' . \esc_attr($site_name) . '" style="max-height:44px;width:auto;display:block;margin:0 auto 16px;">';
+            $logo_html = '<img src="' . \esc_url($logo_url) . '" alt="' . \esc_attr($site_name) . '" style="width:127px;height:24px;display:block;margin:0 auto 8px;object-fit:contain;">';
         }
 
         return '<!doctype html>'
-            . '<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body style="margin:0;padding:0;background:#f3f4f6;">'
-            . '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f3f4f6;padding:24px 12px;"><tr><td align="center">'
-            . '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:640px;background:#ffffff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;">'
-            . '<tr><td style="padding:24px 28px;background:#111827;color:#ffffff;text-align:center;">'
+            . '<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body style="margin:0;padding:0;background:#ffffff;">'
+            . '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#ffffff;"><tr><td align="center">'
+            . '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:640px;background:#ffffff;">'
+            . '<tr><td style="padding:26px 0 14px;background:#F9F7F1;color:#222222;text-align:center;">'
             . $logo_html
-            . '<h1 style="margin:0;font-size:24px;line-height:1.2;font-weight:700;">' . \esc_html(\__('Your Quote', 'granola')) . '</h1>'
+            . '<h1 style="margin:0 0 4px;font-size:16px;line-height:1.3;font-weight:400;text-transform:uppercase;letter-spacing:0.08em;color:#222222;">' . \esc_html(\__('Your Millboard Quote', 'granola')) . '</h1>'
+            . '<p style="margin:0;font-size:11px;line-height:1.5;color:#444444;">' . \esc_html(sprintf(\__('Date: %s', 'granola'), \wp_date('Y-m-d H:i'))) . '</p>'
             . '</td></tr>'
-            . '<tr><td style="padding:24px 28px;">'
-            . '<p style="margin:0 0 16px;color:#1f2937;font-size:14px;line-height:1.6;">' . \esc_html(\__('Thanks for requesting a quote. Your quote summary is below and attached as a PDF.', 'granola')) . '</p>'
-            . '<p style="margin:0;color:#1f2937;font-size:14px;line-height:1.6;">'
-            . '<strong>' . \esc_html(\__('Company:', 'granola')) . '</strong> ' . \esc_html($form_data['company_name']) . '<br>'
-            . '<strong>' . \esc_html(\__('Contact:', 'granola')) . '</strong> ' . \esc_html($form_data['contact_name']) . '<br>'
-            . '<strong>' . \esc_html(\__('Customer reference:', 'granola')) . '</strong> ' . \esc_html($form_data['customer_reference_number'])
-            . '</p>'
-            . '<h2 style="margin:24px 0 8px;color:#111827;font-size:16px;line-height:1.4;font-weight:700;">' . \esc_html(\__('Items', 'granola')) . '</h2>'
-            . '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">'
-            . $rows_html
-            . '</table>'
-            . '<p style="margin:16px 0 0;color:#111827;font-size:16px;line-height:1.5;font-weight:700;">' . \esc_html(sprintf(\__('Quote Total: %s', 'granola'), $cart_data['total'])) . '</p>'
+            . '<tr><td style="border-top:2px solid #8a9623;font-size:0;line-height:0;">&nbsp;</td></tr>'
+            . '<tr><td style="padding:28px 64px 24px;">'
+            . '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border:1px solid #9e9e9e;border-collapse:collapse;margin:0 0 30px;">'
+            . '<tr>'
+            . '<td style="width:34%;padding:9px 14px;vertical-align:top;border-right:1px solid #9e9e9e;border-bottom:1px solid #9e9e9e;background:rgba(249, 247, 241, 0.50);font-weight:400;text-transform:uppercase;font-size:11px;letter-spacing:0.06em;">' . \esc_html(\__('Company', 'granola')) . '</td>'
+            . '<td style="padding:9px 14px;vertical-align:top;border-bottom:1px solid #9e9e9e;font-size:13px;color:#222222;">' . \esc_html($form_data['company_name']) . '</td>'
+            . '</tr>'
+            . '<tr>'
+            . '<td style="width:34%;padding:9px 14px;vertical-align:top;border-right:1px solid #9e9e9e;border-bottom:1px solid #9e9e9e;background:rgba(249, 247, 241, 0.50);font-weight:400;text-transform:uppercase;font-size:11px;letter-spacing:0.06em;">' . \esc_html(\__('Contact', 'granola')) . '</td>'
+            . '<td style="padding:9px 14px;vertical-align:top;border-bottom:1px solid #9e9e9e;font-size:13px;color:#222222;">' . \esc_html($form_data['contact_name']) . '</td>'
+            . '</tr>'
+            . '<tr>'
+            . '<td style="width:34%;padding:9px 14px;vertical-align:top;border-right:1px solid #9e9e9e;border-bottom:1px solid #9e9e9e;background:rgba(249, 247, 241, 0.50);font-weight:400;text-transform:uppercase;font-size:11px;letter-spacing:0.06em;">' . \esc_html(\__('Email', 'granola')) . '</td>'
+            . '<td style="padding:9px 14px;vertical-align:top;border-bottom:1px solid #9e9e9e;font-size:13px;color:#222222;">' . \esc_html($form_data['email_address']) . '</td>'
+            . '</tr>'
+            . '<tr>'
+            . '<td style="width:34%;padding:9px 14px;vertical-align:top;border-right:1px solid #9e9e9e;border-bottom:1px solid #9e9e9e;background:rgba(249, 247, 241, 0.50);font-weight:400;text-transform:uppercase;font-size:11px;letter-spacing:0.06em;">' . \esc_html(\__('Phone', 'granola')) . '</td>'
+            . '<td style="padding:9px 14px;vertical-align:top;border-bottom:1px solid #9e9e9e;font-size:13px;color:#222222;">' . \esc_html($form_data['phone_number']) . '</td>'
+            . '</tr>'
+            . '<tr>'
+            . '<td style="width:34%;padding:9px 14px;vertical-align:top;border-right:1px solid #9e9e9e;' . ($sales_notes_html !== '' ? 'border-bottom:1px solid #9e9e9e;' : '') . 'background:rgba(249, 247, 241, 0.50);font-weight:400;text-transform:uppercase;font-size:11px;letter-spacing:0.06em;">' . \esc_html(\__('Customer reference', 'granola')) . '</td>'
+            . '<td style="padding:9px 14px;vertical-align:top;' . ($sales_notes_html !== '' ? 'border-bottom:1px solid #9e9e9e;' : '') . 'font-size:13px;color:#222222;">' . \esc_html($form_data['customer_reference_number']) . '</td>'
+            . '</tr>'
             . $sales_notes_html
+            . '</table>'
+            . '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;margin-bottom:14px;">'
+            . '<thead><tr>'
+            . '<th style="text-align:left;padding:9px 10px;font-size:12px;font-weight:400;color:#ffffff;background:#62554D;">' . \esc_html(\__('Your items', 'granola')) . '</th>'
+            . '<th style="text-align:left;padding:9px 10px;font-size:12px;font-weight:400;color:#ffffff;background:#62554D;width:60px;">&nbsp;</th>'
+            . '</tr></thead>'
+            . '<tbody>'
+            . $rows_html
+            . '</tbody></table>'
+            . '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;margin-top:8px;">'
+            . '<tr>'
+            . '<td style="padding:12px 0 2px;border-top:2px solid #585858;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;color:#222222;">' . \esc_html(\__('Total', 'granola')) . '</td>'
+            . '<td style="padding:12px 0 2px;border-top:2px solid #585858;font-weight:700;text-transform:uppercase;letter-spacing:0.03em;color:#222222;text-align:right;">' . \esc_html((string) $cart_data['total']) . '</td>'
+            . '</tr>'
+            . '</table>'
+            . '<p style="margin:0;font-size:11px;line-height:1.5;color:#444444;">' . \esc_html(\__('Prices are valid for 30 calendar days', 'granola')) . '</p>'
             . $restore_html
+            . '<div style="margin-top:72px;">'
+            . '<p style="margin:0 0 4px;font-size:18px;line-height:1.3;font-weight:400;text-transform:uppercase;letter-spacing:0.08em;color:#222222;">' . \esc_html(\__('Terms and conditions', 'granola')) . '</p>'
+            . $terms_html
+            . '</div>'
             . '</td></tr>'
             . '<tr><td style="padding:14px 28px;border-top:1px solid #e5e7eb;background:#f9fafb;color:#6b7280;font-size:12px;line-height:1.5;text-align:center;">'
             . \esc_html($site_name)
