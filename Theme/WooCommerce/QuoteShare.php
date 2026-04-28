@@ -488,16 +488,11 @@ class QuoteShare
             $stylesheet_dir = \trailingslashit((string) \get_stylesheet_directory());
             $stylesheet_uri = \trailingslashit((string) \get_stylesheet_directory_uri());
             $fallback_logo_files = [
+                'assets/images/logo.svg',
                 'assets/images/logo.png',
                 'assets/images/logo.jpg',
                 'assets/images/logo.jpeg',
                 'assets/images/logo.webp',
-                '_src/images/logo.png',
-                '_src/images/logo.jpg',
-                '_src/images/logo.jpeg',
-                '_src/images/logo.webp',
-                'assets/images/icon-512.png',
-                '_src/images/icon-512.png',
             ];
 
             foreach ($fallback_logo_files as $fallback_logo_file) {
