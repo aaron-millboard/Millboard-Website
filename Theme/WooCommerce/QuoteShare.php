@@ -36,7 +36,7 @@ class QuoteShare
             'fields' => [
                 [
                     'key' => 'field_show_quote_share',
-                    'label' => \__('Show quote share button', 'granola'),
+                    'label' => \__('Enable Quote Share', 'granola'),
                     'name' => 'millboard_show_quote_share',
                     'type' => 'button_group',
                     'choices' => [
@@ -45,6 +45,7 @@ class QuoteShare
                     ],
                     'default_value' => 'no',
                     'return_format' => 'value',
+                    'instructions' => \__('Show the quote share button on the basket page, this allows customers to share their quote via email or download a PDF version.', 'granola'),
                 ],
                 [
                     'key' => 'field_quote_hubspot_portal_id',
@@ -55,6 +56,15 @@ class QuoteShare
                     'required' => 0,
                     'default_value' => '',
                     'placeholder' => '12345678',
+                    'conditional_logic' => [
+                        [
+                            [
+                                'field'    => 'field_show_quote_share',
+                                'operator' => '==',
+                                'value'    => 'yes',
+                            ],
+                        ],
+                    ],
                 ],
                 [
                     'key' => 'field_quote_hubspot_form_guid',
@@ -65,6 +75,15 @@ class QuoteShare
                     'required' => 0,
                     'default_value' => '',
                     'placeholder' => 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
+                    'conditional_logic' => [
+                        [
+                            [
+                                'field'    => 'field_show_quote_share',
+                                'operator' => '==',
+                                'value'    => 'yes',
+                            ],
+                        ],
+                    ],
                 ],
             ],
             'location' => [
