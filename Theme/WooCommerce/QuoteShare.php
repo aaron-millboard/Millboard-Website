@@ -96,10 +96,10 @@ class QuoteShare
             self::redirect_with_notice(\__('Please provide a valid email address.', 'granola'), 'error');
         }
 
-        $pdf_content = self::generate_pdf(self::build_pdf_lines($form_data, $cart_data, $restore_url), $restore_url);
-        $tmp_file = \wp_tempnam('millboard-quote.pdf');
+        $pdf_content = self::generate_quote_pdf($form_data, $cart_data, $restore_url);
+        $tmp_file = self::create_temp_pdf_file($pdf_content);
 
-        if (empty($tmp_file) || \file_put_contents($tmp_file, $pdf_content) === false) {
+        if (empty($tmp_file)) {
             self::redirect_with_notice(\__('Unable to generate the quote PDF. Please try again.', 'granola'), 'error');
         }
 
@@ -114,6 +114,158 @@ class QuoteShare
         }
 
         self::redirect_with_notice(\__('Unable to send your quote email. Please try again.', 'error'));
+    }
+
+    private static function create_temp_pdf_file(string $pdf_content): ?string
+    {
+        // Guard against attaching a non-PDF file if PDF generation fails unexpectedly.
+        if (\strpos($pdf_content, '%PDF-') !== 0) {
+            return null;
+        }
+
+        $temp_dir = \trailingslashit(\get_temp_dir());
+        $filename = 'millboard-quote-' . \wp_generate_password(12, false, false) . '.pdf';
+        $tmp_file = $temp_dir . $filename;
+
+        if (\file_put_contents($tmp_file, $pdf_content) === false) {
+            return null;
+        }
+
+        return $tmp_file;
+    }
+
+    private static function generate_quote_pdf(array $form_data, array $cart_data, string $restore_url = ''): string
+    {
+        $html = self::render_quote_pdf_html($form_data, $cart_data, $restore_url);
+        $pdf_content = self::generate_pdf_from_html($html);
+
+        if (is_string($pdf_content) && $pdf_content !== '') {
+            return $pdf_content;
+        }
+
+        // Fallback for environments where Dompdf is unavailable.
+        return self::generate_pdf(self::build_pdf_lines($form_data, $cart_data, $restore_url), $restore_url);
+    }
+
+    private static function render_quote_pdf_html(array $form_data, array $cart_data, string $restore_url = ''): string
+    {
+        $rows = '';
+
+        foreach ($cart_data['lines'] as $line) {
+            $rows .= '<tr><td>' . \esc_html($line) . '</td></tr>';
+        }
+
+        if ($rows === '') {
+            $rows = '<tr><td>' . \esc_html__('No items available', 'granola') . '</td></tr>';
+        }
+
+        $sales_notes_html = '';
+        if (!empty($form_data['sales_notes'])) {
+            $sales_notes_html = '<div class="quote-meta__row"><span class="quote-meta__label">' . \esc_html__('Sales notes', 'granola') . '</span><span class="quote-meta__value">' . \nl2br(\esc_html($form_data['sales_notes'])) . '</span></div>';
+        }
+
+        $restore_link_html = '';
+        if ($restore_url !== '') {
+            $restore_link_html = '<div class="quote-meta__row"><span class="quote-meta__label">' . \esc_html__(self::RESTORE_LINK_TEXT, 'granola') . '</span><span class="quote-meta__value"><a href="' . \esc_url($restore_url) . '">' . \esc_html(self::get_short_restore_link_text($restore_url)) . '</a></span></div>';
+        }
+
+        return '<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        * { box-sizing: border-box; }
+        body { margin: 24px; font-family: Arial, Helvetica, sans-serif; color: #111; font-size: 12px; }
+        .woocommerce-cart-form { border: 1px solid #111; padding: 20px; }
+        .quote-header { margin-bottom: 18px; }
+        .quote-header__title { margin: 0 0 6px; font-size: 20px; text-transform: uppercase; letter-spacing: 0.04em; }
+        .quote-header__date { margin: 0; font-size: 11px; color: #444; }
+        .quote-meta { margin: 0 0 18px; border: 1px solid #ddd; }
+        .quote-meta__row { display: table; width: 100%; border-bottom: 1px solid #eee; }
+        .quote-meta__row:last-child { border-bottom: 0; }
+        .quote-meta__label, .quote-meta__value { display: table-cell; padding: 8px 10px; vertical-align: top; }
+        .quote-meta__label { width: 34%; font-weight: 700; text-transform: uppercase; font-size: 11px; background: #fafafa; }
+        .cart-table { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
+        .cart-table th { text-align: left; border-bottom: 2px solid #111; padding: 8px 10px; text-transform: uppercase; font-size: 11px; letter-spacing: 0.04em; }
+        .cart-table td { border-bottom: 1px solid #ddd; padding: 8px 10px; }
+        .quote-total { display: table; width: 100%; }
+        .quote-total__label, .quote-total__value { display: table-cell; padding: 10px; border-top: 2px solid #111; font-weight: 700; text-transform: uppercase; }
+        .quote-total__value { text-align: right; }
+        a { color: #111; text-decoration: underline; overflow-wrap: anywhere; word-break: normal; }
+    </style>
+</head>
+<body>
+    <form class="cart woocommerce-cart-form" action="#" method="post">
+        <div class="quote-header">
+            <h1 class="quote-header__title">' . \esc_html__('Millboard Quote', 'granola') . '</h1>
+            <p class="quote-header__date">' . \esc_html(sprintf(\__('Date: %s', 'granola'), \wp_date('Y-m-d H:i'))) . '</p>
+        </div>
+
+        <div class="quote-meta">
+            <div class="quote-meta__row"><span class="quote-meta__label">' . \esc_html__('Company', 'granola') . '</span><span class="quote-meta__value">' . \esc_html($form_data['company_name']) . '</span></div>
+            <div class="quote-meta__row"><span class="quote-meta__label">' . \esc_html__('Contact', 'granola') . '</span><span class="quote-meta__value">' . \esc_html($form_data['contact_name']) . '</span></div>
+            <div class="quote-meta__row"><span class="quote-meta__label">' . \esc_html__('Email', 'granola') . '</span><span class="quote-meta__value">' . \esc_html($form_data['email_address']) . '</span></div>
+            <div class="quote-meta__row"><span class="quote-meta__label">' . \esc_html__('Phone', 'granola') . '</span><span class="quote-meta__value">' . \esc_html($form_data['phone_number']) . '</span></div>
+            <div class="quote-meta__row"><span class="quote-meta__label">' . \esc_html__('Customer reference', 'granola') . '</span><span class="quote-meta__value">' . \esc_html($form_data['customer_reference_number']) . '</span></div>
+            ' . $sales_notes_html . '
+            ' . $restore_link_html . '
+        </div>
+
+        <table class="cart-table" cellspacing="0">
+            <thead>
+                <tr>
+                    <th>' . \esc_html__('Your items', 'granola') . '</th>
+                </tr>
+            </thead>
+            <tbody>
+                ' . $rows . '
+            </tbody>
+        </table>
+
+        <div class="quote-total">
+            <span class="quote-total__label">' . \esc_html__('Total', 'granola') . '</span>
+            <span class="quote-total__value">' . \esc_html((string) $cart_data['total']) . '</span>
+        </div>
+    </form>
+</body>
+</html>';
+    }
+
+    private static function generate_pdf_from_html(string $html): ?string
+    {
+        if (!\class_exists('\\Dompdf\\Dompdf') || !\class_exists('\\Dompdf\\Options')) {
+            return null;
+        }
+
+        try {
+            $options = new \Dompdf\Options();
+            $options->set('isRemoteEnabled', true);
+            $options->set('defaultFont', 'DejaVu Sans');
+
+            $dompdf = new \Dompdf\Dompdf($options);
+            $dompdf->loadHtml($html);
+            $dompdf->setPaper('A4', 'portrait');
+            $dompdf->render();
+
+            return $dompdf->output();
+        } catch (\Throwable $exception) {
+            return null;
+        }
+    }
+
+    private static function get_short_restore_link_text(string $restore_url): string
+    {
+        $parsed_url = \wp_parse_url($restore_url);
+
+        if (!is_array($parsed_url) || empty($parsed_url['host'])) {
+            return \mb_strimwidth($restore_url, 0, 72, '...');
+        }
+
+        $path = isset($parsed_url['path']) ? (string) $parsed_url['path'] : '/';
+        $query = isset($parsed_url['query']) ? '?' . (string) $parsed_url['query'] : '';
+        $short_url = $parsed_url['host'] . $path . $query;
+
+        return \mb_strimwidth($short_url, 0, 72, '...');
     }
 
     private static function get_form_data(): array
@@ -615,7 +767,7 @@ class QuoteShare
 
     private static function stream_pdf(array $form_data, array $cart_data, string $restore_url = ''): void
     {
-        $pdf_content = self::generate_pdf(self::build_pdf_lines($form_data, $cart_data, $restore_url), $restore_url);
+        $pdf_content = self::generate_quote_pdf($form_data, $cart_data, $restore_url);
         $filename = 'millboard-quote-' . \gmdate('Ymd-His') . '.pdf';
 
         while (\ob_get_level() > 0) {
