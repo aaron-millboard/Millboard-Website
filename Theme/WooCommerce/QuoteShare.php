@@ -902,14 +902,7 @@ class QuoteShare
 
     private static function populate_order_from_form(\WC_Order $order, array $form_data): void
     {
-        $contact_parts = \preg_split('/\s+/', trim($form_data['contact_name']));
-        $first_name = '';
-        $last_name = '';
-
-        if (is_array($contact_parts) && !empty($contact_parts)) {
-            $first_name = array_shift($contact_parts) ?: '';
-            $last_name = !empty($contact_parts) ? implode(' ', $contact_parts) : '';
-        }
+        [$first_name, $last_name] = self::split_contact_name((string) $form_data['contact_name']);
 
         $order->set_billing_first_name($first_name);
         $order->set_billing_last_name($last_name);
@@ -996,17 +989,24 @@ class QuoteShare
             return false;
         }
 
+        [$first_name, $last_name] = self::split_contact_name((string) $form_data['contact_name']);
         $items_text = \implode('; ', $cart_data['lines']);
+        $submission_date = \wp_date('c');
+        $quote_locale = \function_exists('determine_locale') ? (string) \determine_locale() : (string) \get_locale();
+        $quote_total_value = \wp_strip_all_tags(\html_entity_decode((string) $cart_data['total'], ENT_QUOTES | ENT_HTML5, 'UTF-8'));
 
         $fields = [
-            ['name' => 'company',                    'value' => $form_data['company_name']],
-            ['name' => 'firstname',                  'value' => $form_data['contact_name']],
-            ['name' => 'email',                      'value' => $form_data['email_address']],
-            ['name' => 'phone',                      'value' => $form_data['phone_number']],
-            ['name' => 'customer_reference_number',  'value' => $form_data['customer_reference_number']],
-            ['name' => 'sales_notes',                'value' => $form_data['sales_notes']],
-            ['name' => 'quote_items',                'value' => $items_text],
-            ['name' => 'quote_total',                'value' => $cart_data['total']],
+            ['name' => 'firstname',             'value' => $first_name],
+            ['name' => 'lastname',              'value' => $last_name],
+            ['name' => 'email',                 'value' => $form_data['email_address']],
+            ['name' => 'phone',                 'value' => $form_data['phone_number']],
+            ['name' => 'quote_notes',           'value' => $form_data['sales_notes']],
+            ['name' => 'quote_submission_date', 'value' => $submission_date],
+            ['name' => 'quote_locale',          'value' => $quote_locale],
+            ['name' => 'quote_total_value',     'value' => $quote_total_value],
+            ['name' => 'quote_reference',       'value' => $form_data['customer_reference_number']],
+            ['name' => 'quote_basket_contents', 'value' => $items_text],
+            ['name' => 'quote_status',          'value' => 'Submitted'],
         ];
 
         $context = [];
@@ -1041,6 +1041,20 @@ class QuoteShare
 
         $status_code = (int) \wp_remote_retrieve_response_code($response);
         return $status_code >= 200 && $status_code < 300;
+    }
+
+    private static function split_contact_name(string $contact_name): array
+    {
+        $contact_parts = \preg_split('/\s+/', trim($contact_name));
+        $first_name = '';
+        $last_name = '';
+
+        if (is_array($contact_parts) && !empty($contact_parts)) {
+            $first_name = (string) (array_shift($contact_parts) ?: '');
+            $last_name = !empty($contact_parts) ? (string) implode(' ', $contact_parts) : '';
+        }
+
+        return [$first_name, $last_name];
     }
 
     private static function send_quote_email(array $form_data, array $cart_data, string $attachment_path, string $restore_url = ''): bool
