@@ -497,13 +497,9 @@ do_action('woocommerce_before_cart');?>
 <script>
     (function () {
         const modal = document.querySelector('[data-quote-share-modal]');
-        const openTrigger = document.querySelector('[data-quote-share-open]');
-
-        if (!modal || !openTrigger) {
+        if (!modal) {
             return;
         }
-
-        const closeTriggers = modal.querySelectorAll('[data-quote-share-close]');
 
         const closeModal = function () {
             modal.setAttribute('hidden', 'hidden');
@@ -515,10 +511,20 @@ do_action('woocommerce_before_cart');?>
             modal.setAttribute('aria-hidden', 'false');
         };
 
-        openTrigger.addEventListener('click', openModal);
+        document.addEventListener('click', function (event) {
+            const openTrigger = event.target.closest('[data-quote-share-open]');
 
-        closeTriggers.forEach(function (trigger) {
-            trigger.addEventListener('click', closeModal);
+            if (openTrigger) {
+                event.preventDefault();
+                openModal();
+                return;
+            }
+
+            const closeTrigger = event.target.closest('[data-quote-share-close]');
+            if (closeTrigger && modal.contains(closeTrigger)) {
+                event.preventDefault();
+                closeModal();
+            }
         });
 
         document.addEventListener('keydown', function (event) {

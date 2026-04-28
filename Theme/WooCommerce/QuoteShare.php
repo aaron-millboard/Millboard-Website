@@ -10,6 +10,7 @@ class QuoteShare
     {
         \add_action('admin_post_millboard_quote_submit', [__CLASS__, 'handle_submit']);
         \add_action('admin_post_nopriv_millboard_quote_submit', [__CLASS__, 'handle_submit']);
+        \add_action('template_redirect', [__CLASS__, 'maybe_add_quote_sent_notice'], 5);
         \add_action('template_redirect', [__CLASS__, 'maybe_restore_quote']);
         \add_action('acf/init', [__CLASS__, 'register_acf_fields']);
     }
@@ -149,7 +150,7 @@ class QuoteShare
         }
 
         if ($email_success) {
-            self::redirect_with_notice(\__('Your quote has been emailed successfully.', 'granola'), 'success');
+            self::redirect_to_cart(['quote_sent' => '1']);
         }
 
         self::redirect_with_notice(\__('Unable to send your quote email. Please try again.', 'error'));
@@ -1383,6 +1384,29 @@ class QuoteShare
         exit;
     }
 
+    public static function maybe_add_quote_sent_notice(): void
+    {
+        if (\is_admin() || !\function_exists('is_cart') || !\is_cart()) {
+            return;
+        }
+
+        if (empty($_GET['quote_sent']) || is_array($_GET['quote_sent'])) {
+            return;
+        }
+
+        $quote_sent = \sanitize_text_field(\wp_unslash($_GET['quote_sent']));
+
+        if ($quote_sent !== '1') {
+            return;
+        }
+
+        if (\function_exists('wc_add_notice')) {
+            \wc_add_notice(\__('Your quote has been emailed successfully.', 'granola'), 'success');
+        }
+
+        self::redirect_to_cart();
+    }
+
     private static function sanitize_restore_items(array $items): array
     {
         $sanitized = [];
@@ -1528,13 +1552,24 @@ class QuoteShare
         return \hash_hmac('sha256', $encoded_payload, (string) \wp_salt('auth'));
     }
 
-    private static function redirect_with_notice(string $message, string $type = 'notice'): void
+    private static function redirect_with_notice(string $message, string $type = 'notice', array $query_args = []): void
     {
         if (function_exists('wc_add_notice')) {
             \wc_add_notice($message, $type);
         }
 
-        \wp_safe_redirect(\wc_get_cart_url());
+        self::redirect_to_cart($query_args);
+    }
+
+    private static function redirect_to_cart(array $query_args = []): void
+    {
+        $redirect_url = \wc_get_cart_url();
+
+        if (!empty($query_args)) {
+            $redirect_url = (string) \add_query_arg($query_args, $redirect_url);
+        }
+
+        \wp_safe_redirect($redirect_url);
         exit;
     }
 }
