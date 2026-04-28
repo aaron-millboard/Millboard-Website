@@ -169,14 +169,25 @@ class QuoteShare
 
     private static function render_quote_pdf_html(array $form_data, array $cart_data, string $restore_url = ''): string
     {
+        $logo_src = self::get_brand_logo_src_for_pdf();
+        $font_face_css = self::get_pdf_font_face_css();
+        $terms_urls = self::get_quote_terms_urls();
         $rows = '';
 
         foreach ($cart_data['lines'] as $line) {
-            $rows .= '<tr><td>' . \esc_html($line) . '</td></tr>';
+            $item_name = $line;
+            $item_qty = '';
+
+            if (\preg_match('/^(.*)\s+x\s+(\d+)$/i', $line, $matches) === 1) {
+                $item_name = \trim((string) $matches[1]);
+                $item_qty = 'x' . (string) $matches[2];
+            }
+
+            $rows .= '<tr><td class="cart-table__name">' . \esc_html($item_name) . '</td><td class="cart-table__qty">' . \esc_html($item_qty) . '</td></tr>';
         }
 
         if ($rows === '') {
-            $rows = '<tr><td>' . \esc_html__('No items available', 'granola') . '</td></tr>';
+            $rows = '<tr><td class="cart-table__name">' . \esc_html__('No items available', 'granola') . '</td><td class="cart-table__qty"></td></tr>';
         }
 
         $sales_notes_html = '';
@@ -184,42 +195,85 @@ class QuoteShare
             $sales_notes_html = '<div class="quote-meta__row"><span class="quote-meta__label">' . \esc_html__('Sales notes', 'granola') . '</span><span class="quote-meta__value">' . \nl2br(\esc_html($form_data['sales_notes'])) . '</span></div>';
         }
 
+        $logo_html = '';
+        if ($logo_src !== '') {
+            $logo_html = '<div class="quote-header__logo-wrap"><img class="quote-header__logo" src="' . \esc_attr($logo_src) . '" alt="' . \esc_attr(\wp_specialchars_decode(\get_bloginfo('name'), ENT_QUOTES)) . '"></div>';
+        }
+
         $restore_link_html = '';
         if ($restore_url !== '') {
-            $restore_link_html = '<div class="quote-meta__row"><span class="quote-meta__label">' . \esc_html__(self::RESTORE_LINK_TEXT, 'granola') . '</span><span class="quote-meta__value"><a href="' . \esc_url($restore_url) . '">' . \esc_html(self::get_short_restore_link_text($restore_url)) . '</a></span></div>';
+            $restore_link_html = '<div class="quote-actions"><a href="' . \esc_url($restore_url) . '" class="g-button">' . \esc_html__(self::RESTORE_LINK_TEXT, 'granola') . '</a></div>';
         }
+
+        $line_count = \count($cart_data['lines']);
+        $sales_notes_penalty = !empty($form_data['sales_notes']) ? 36 : 0;
+        $terms_margin_top = \max(72, 260 - ($line_count * 22) - $sales_notes_penalty);
+
+        $terms_links_html = '<div class="quote-terms" style="margin-top:' . (int) $terms_margin_top . 'px;">'
+            . '<p class="quote-terms__title">' . \esc_html__('Terms and conditions', 'granola') . '</p>';
+
+        foreach ($terms_urls as $terms_label => $terms_url) {
+            if (!is_string($terms_label) || $terms_label === '' || !is_string($terms_url) || $terms_url === '') {
+                continue;
+            }
+
+            $terms_links_html .= '<p class="quote-terms__link"><a href="' . \esc_url($terms_url) . '">' . \esc_html($terms_label) . '</a></p>';
+        }
+
+        $terms_links_html .= '</div>';
 
         return '<!doctype html>
 <html>
 <head>
     <meta charset="utf-8">
     <style>
+        ' . $font_face_css . '
+        @page { margin: 0; }
         * { box-sizing: border-box; }
-        body { margin: 24px; font-family: Arial, Helvetica, sans-serif; color: #111; font-size: 12px; }
-        .woocommerce-cart-form { border: 1px solid #111; padding: 20px; }
-        .quote-header { margin-bottom: 18px; }
-        .quote-header__title { margin: 0 0 6px; font-size: 20px; text-transform: uppercase; letter-spacing: 0.04em; }
+        body { margin: 0; font-family: "F37 Ginger", Helvetica, sans-serif; color: #222; font-size: 12px; font-weight: 400; background: #ffffff; }
+        .quote-page { width: 100%; background: #ffffff; }
+        .quote-header { text-align: center; padding: 26px 0 14px; background: #F9F7F1; }
+        .quote-header__logo-wrap { margin: 0 0 8px; text-align: center; }
+        .quote-header__logo { width: 127px; height: 24px; object-fit: contain; object-position: center center; }
+        .quote-header__title { margin: 0 0 4px; font-size: 16px; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 400; }
         .quote-header__date { margin: 0; font-size: 11px; color: #444; }
-        .quote-meta { margin: 0 0 18px; border: 1px solid #ddd; }
-        .quote-meta__row { display: table; width: 100%; border-bottom: 1px solid #eee; }
+        .quote-divider { border-top: 2px solid #8a9623; margin: 0; }
+        .quote-inner { width: 80%; margin: 28px auto 0; }
+        .quote-meta { margin: 0 0 30px; border: 1px solid #9e9e9e; background: transparent; }
+        .quote-meta__row { display: table; width: 100%; border-bottom: 1px solid #9e9e9e; }
         .quote-meta__row:last-child { border-bottom: 0; }
-        .quote-meta__label, .quote-meta__value { display: table-cell; padding: 8px 10px; vertical-align: top; }
-        .quote-meta__label { width: 34%; font-weight: 700; text-transform: uppercase; font-size: 11px; background: #fafafa; }
+        .quote-meta__label, .quote-meta__value { display: table-cell; padding: 9px 14px; vertical-align: top; }
+        .quote-meta__label { width: 34%; font-weight: 400; text-transform: uppercase; font-size: 11px; letter-spacing: 0.06em; border-right: 1px solid #9e9e9e; background: rgba(249, 247, 241, 0.50); }
+        .quote-meta__value { font-size: 13px; }
         .cart-table { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
-        .cart-table th { text-align: left; border-bottom: 2px solid #111; padding: 8px 10px; text-transform: uppercase; font-size: 11px; letter-spacing: 0.04em; }
-        .cart-table td { border-bottom: 1px solid #ddd; padding: 8px 10px; }
-        .quote-total { display: table; width: 100%; }
-        .quote-total__label, .quote-total__value { display: table-cell; padding: 10px; border-top: 2px solid #111; font-weight: 700; text-transform: uppercase; }
+        .cart-table thead th { text-align: left; padding: 9px 10px; font-size: 12px; font-weight: 400; color: #fff; background: #62554D; }
+        .cart-table thead th:last-child { width: 60px; }
+        .cart-table td { border-bottom: 1px solid #c9c9c9; padding: 11px 0; font-size: 14px; background: #ffffff; }
+        .cart-table__name { letter-spacing: 0.02em; background: #ffffff; padding-left: 10px; padding-right: 10px; }
+        .cart-table__qty { text-align: right; width: 60px; }
+        .quote-total { display: table; width: 100%; border-top: 2px solid #585858; margin-top: 8px; }
+        .quote-total__label, .quote-total__value { display: table-cell; padding: 12px 0 2px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; }
         .quote-total__value { text-align: right; }
-        a { color: #111; text-decoration: underline; overflow-wrap: anywhere; word-break: normal; }
+        .quote-total-note { margin: 0; font-size: 11px; color: #444; }
+        .quote-actions { margin-top: 20px; }
+        .g-button { display: inline-block; padding: 10px 14px; border: 1px solid #5d5d5d; background: #5d5d5d; color: #fff; text-decoration: none; text-transform: uppercase; font-size: 11px; font-weight: 400; letter-spacing: 0.08em; font-family: "F37 Ginger", Helvetica, sans-serif; }
+        .quote-terms { }
+        .quote-terms__title { margin: 0 0 4px; font-size: 18px; font-weight: 400; text-transform: uppercase; letter-spacing: 0.08em; }
+        .quote-terms__link { margin: 0 0 2px; font-size: 12px; }
+        a { color: #222; text-decoration: none; overflow-wrap: anywhere; word-break: normal; }
+        .g-button { color: #fff; text-decoration: none; }
     </style>
 </head>
 <body>
-    <form class="cart woocommerce-cart-form" action="#" method="post">
+    <div class="quote-page">
         <div class="quote-header">
-            <h1 class="quote-header__title">' . \esc_html__('Millboard Quote', 'granola') . '</h1>
+            ' . $logo_html . '
+            <h1 class="quote-header__title">' . \esc_html__('Your Millboard Quote', 'granola') . '</h1>
             <p class="quote-header__date">' . \esc_html(sprintf(\__('Date: %s', 'granola'), \wp_date('Y-m-d H:i'))) . '</p>
         </div>
+        <div class="quote-divider"></div>
+
+        <div class="quote-inner">
 
         <div class="quote-meta">
             <div class="quote-meta__row"><span class="quote-meta__label">' . \esc_html__('Company', 'granola') . '</span><span class="quote-meta__value">' . \esc_html($form_data['company_name']) . '</span></div>
@@ -228,13 +282,13 @@ class QuoteShare
             <div class="quote-meta__row"><span class="quote-meta__label">' . \esc_html__('Phone', 'granola') . '</span><span class="quote-meta__value">' . \esc_html($form_data['phone_number']) . '</span></div>
             <div class="quote-meta__row"><span class="quote-meta__label">' . \esc_html__('Customer reference', 'granola') . '</span><span class="quote-meta__value">' . \esc_html($form_data['customer_reference_number']) . '</span></div>
             ' . $sales_notes_html . '
-            ' . $restore_link_html . '
         </div>
 
         <table class="cart-table" cellspacing="0">
             <thead>
                 <tr>
                     <th>' . \esc_html__('Your items', 'granola') . '</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
@@ -246,9 +300,184 @@ class QuoteShare
             <span class="quote-total__label">' . \esc_html__('Total', 'granola') . '</span>
             <span class="quote-total__value">' . \esc_html((string) $cart_data['total']) . '</span>
         </div>
-    </form>
+        <p class="quote-total-note">' . \esc_html__('Prices are valid for 30 calendar days', 'granola') . '</p>
+
+        ' . $restore_link_html . '
+        ' . $terms_links_html . '
+        </div>
+    </div>
 </body>
 </html>';
+    }
+
+    private static function get_pdf_font_face_css(): string
+    {
+        if (!\function_exists('get_stylesheet_directory') || !\function_exists('get_stylesheet_directory_uri')) {
+            return '';
+        }
+
+        $stylesheet_dir = \trailingslashit((string) \get_stylesheet_directory());
+        $stylesheet_uri = \trailingslashit((string) \get_stylesheet_directory_uri());
+
+        $light_src = self::get_pdf_font_src_with_fallbacks([
+            $stylesheet_dir . 'assets/static/f37-ginger-light.woff2',
+            $stylesheet_dir . '_src/static/f37-ginger-light.woff2',
+        ], [
+            $stylesheet_uri . 'assets/static/f37-ginger-light.woff2',
+            $stylesheet_uri . '_src/static/f37-ginger-light.woff2',
+        ]);
+
+        $regular_src = self::get_pdf_font_src_with_fallbacks([
+            $stylesheet_dir . 'assets/static/f37-ginger.woff2',
+            $stylesheet_dir . '_src/static/f37-ginger.woff2',
+        ], [
+            $stylesheet_uri . 'assets/static/f37-ginger.woff2',
+            $stylesheet_uri . '_src/static/f37-ginger.woff2',
+        ]);
+
+        $bold_src = self::get_pdf_font_src_with_fallbacks([
+            $stylesheet_dir . 'assets/static/f37-ginger-bold.woff2',
+            $stylesheet_dir . '_src/static/f37-ginger-bold.woff2',
+        ], [
+            $stylesheet_uri . 'assets/static/f37-ginger-bold.woff2',
+            $stylesheet_uri . '_src/static/f37-ginger-bold.woff2',
+        ]);
+
+        if ($light_src === '' && $regular_src === '' && $bold_src === '') {
+            return '';
+        }
+
+        return '@font-face {'
+            . 'font-family: "F37 Ginger";'
+            . 'font-style: normal;'
+            . 'font-weight: 300;'
+            . 'src: ' . $light_src . ';'
+            . '}'
+            . '@font-face {'
+            . 'font-family: "F37 Ginger";'
+            . 'font-style: normal;'
+            . 'font-weight: 400;'
+            . 'src: ' . $regular_src . ';'
+            . '}'
+            . '@font-face {'
+            . 'font-family: "F37 Ginger";'
+            . 'font-style: normal;'
+            . 'font-weight: 700;'
+            . 'src: ' . $bold_src . ';'
+            . '}';
+    }
+
+    private static function get_pdf_font_src_with_fallbacks(array $file_paths, array $fallback_uris): string
+    {
+        foreach ($file_paths as $file_path) {
+            if (!is_string($file_path) || $file_path === '' || !\file_exists($file_path) || !\is_readable($file_path)) {
+                continue;
+            }
+
+            $font_bytes = \file_get_contents($file_path);
+            if (is_string($font_bytes) && $font_bytes !== '') {
+                return 'url("data:font/woff2;base64,' . \base64_encode($font_bytes) . '") format("woff2")';
+            }
+        }
+
+        foreach ($fallback_uris as $fallback_uri) {
+            if (is_string($fallback_uri) && $fallback_uri !== '') {
+                return 'url("' . \esc_url($fallback_uri) . '") format("woff2")';
+            }
+        }
+
+        return '';
+    }
+
+    private static function get_brand_logo_src_for_pdf(): string
+    {
+        if (\function_exists('get_theme_mod') && \function_exists('get_attached_file')) {
+            $custom_logo_id = (int) \get_theme_mod('custom_logo');
+
+            if ($custom_logo_id > 0) {
+                $logo_path = (string) \get_attached_file($custom_logo_id);
+
+                $custom_logo_data_uri = self::get_inline_asset_data_uri($logo_path);
+                if ($custom_logo_data_uri !== '') {
+                    return $custom_logo_data_uri;
+                }
+            }
+        }
+
+        if (\function_exists('get_stylesheet_directory')) {
+            $stylesheet_dir = \trailingslashit((string) \get_stylesheet_directory());
+            $fallback_logo_paths = [
+                $stylesheet_dir . 'assets/images/logo.svg',
+                $stylesheet_dir . 'assets/images/logo-alt.svg',
+                $stylesheet_dir . '_src/images/logo.svg',
+                $stylesheet_dir . '_src/images/logo-alt.svg',
+                $stylesheet_dir . 'assets/images/icon-512.png',
+            ];
+
+            foreach ($fallback_logo_paths as $fallback_logo_path) {
+                $fallback_logo_data_uri = self::get_inline_asset_data_uri($fallback_logo_path);
+                if ($fallback_logo_data_uri !== '') {
+                    return $fallback_logo_data_uri;
+                }
+            }
+        }
+
+        return self::get_brand_logo_url();
+    }
+
+    private static function get_inline_asset_data_uri(string $file_path): string
+    {
+        if ($file_path === '' || !\file_exists($file_path) || !\is_readable($file_path)) {
+            return '';
+        }
+
+        $mime_type = (string) \wp_check_filetype($file_path)['type'];
+        if ($mime_type === '') {
+            $extension = \strtolower((string) \pathinfo($file_path, PATHINFO_EXTENSION));
+
+            if ($extension === 'svg') {
+                $mime_type = 'image/svg+xml';
+            } elseif ($extension === 'webp') {
+                $mime_type = 'image/webp';
+            } elseif ($extension === 'jpg' || $extension === 'jpeg') {
+                $mime_type = 'image/jpeg';
+            } else {
+                $mime_type = 'image/png';
+            }
+        }
+
+        $asset_bytes = \file_get_contents($file_path);
+        if (!is_string($asset_bytes) || $asset_bytes === '') {
+            return '';
+        }
+
+        return 'data:' . $mime_type . ';base64,' . \base64_encode($asset_bytes);
+    }
+
+    private static function get_brand_logo_url(): string
+    {
+        if (!\function_exists('get_theme_mod') || !\function_exists('wp_get_attachment_image_url')) {
+            return '';
+        }
+
+        $custom_logo_id = (int) \get_theme_mod('custom_logo');
+        if ($custom_logo_id < 1) {
+            return '';
+        }
+
+        return (string) \wp_get_attachment_image_url($custom_logo_id, 'full');
+    }
+
+    private static function get_quote_terms_urls(): array
+    {
+        if (!\function_exists('home_url')) {
+            return [];
+        }
+
+        return [
+            'Business Terms (B2B)' => (string) \home_url('/trust-centre/millboard-uk-business-terms-and-conditions-of-sale-b2b/'),
+            'Consumer Terms (B2C)' => (string) \home_url('/trust-centre/millboard-uk-consumer-terms-and-conditions-of-sale-b2c/'),
+        ];
     }
 
     private static function generate_pdf_from_html(string $html): ?string
@@ -260,7 +489,8 @@ class QuoteShare
         try {
             $options = new \Dompdf\Options();
             $options->set('isRemoteEnabled', true);
-            $options->set('defaultFont', 'DejaVu Sans');
+            $options->set('defaultFont', 'F37 Ginger');
+            $options->set('isFontSubsettingEnabled', true);
 
             $dompdf = new \Dompdf\Dompdf($options);
             $dompdf->loadHtml($html);
@@ -781,6 +1011,23 @@ class QuoteShare
         $to = $form_data['email_address'];
         $subject = \__('Your Millboard quote', 'granola');
 
+        $html_message = self::build_quote_email_html($form_data, $cart_data, $restore_url);
+        $text_message = self::build_quote_email_text($form_data, $cart_data, $restore_url);
+
+        return \wp_mail(
+            $to,
+            $subject,
+            $html_message,
+            [
+                'Content-Type: text/html; charset=UTF-8',
+                'X-Alt-Body: ' . $text_message,
+            ],
+            [$attachment_path]
+        );
+    }
+
+    private static function build_quote_email_text(array $form_data, array $cart_data, string $restore_url = ''): string
+    {
         $message = [
             \__('Thanks for requesting a quote. Your quote summary is below and attached as a PDF.', 'granola'),
             '',
@@ -810,13 +1057,69 @@ class QuoteShare
             $message[] = $restore_url;
         }
 
-        return \wp_mail(
-            $to,
-            $subject,
-            implode("\n", $message),
-            ['Content-Type: text/plain; charset=UTF-8'],
-            [$attachment_path]
-        );
+        return implode("\n", $message);
+    }
+
+    private static function build_quote_email_html(array $form_data, array $cart_data, string $restore_url = ''): string
+    {
+        $site_name = \wp_specialchars_decode(\get_bloginfo('name'), ENT_QUOTES);
+        $logo_url = self::get_brand_logo_url();
+
+        $rows_html = '';
+        foreach ($cart_data['lines'] as $line) {
+            $rows_html .= '<tr><td style="padding:8px 0;border-bottom:1px solid #e6e6e6;color:#1f2937;font-size:14px;line-height:1.5;">' . \esc_html($line) . '</td></tr>';
+        }
+
+        $restore_html = '';
+        if (!empty($restore_url)) {
+            $restore_html = '<p style="margin:16px 0 0;color:#1f2937;font-size:14px;line-height:1.6;">'
+                . \esc_html(\__(self::RESTORE_LINK_TEXT, 'granola'))
+                . ': <a href="' . \esc_url($restore_url) . '" style="color:#0f766e;text-decoration:underline;">'
+                . \esc_html($restore_url)
+                . '</a></p>';
+        }
+
+        $sales_notes_html = '';
+        if (!empty($form_data['sales_notes'])) {
+            $sales_notes_html = '<p style="margin:16px 0 0;color:#1f2937;font-size:14px;line-height:1.6;"><strong>'
+                . \esc_html(\__('Sales Notes:', 'granola'))
+                . '</strong><br>'
+                . nl2br(\esc_html($form_data['sales_notes']))
+                . '</p>';
+        }
+
+        $logo_html = '';
+        if ($logo_url !== '') {
+            $logo_html = '<img src="' . \esc_url($logo_url) . '" alt="' . \esc_attr($site_name) . '" style="max-height:44px;width:auto;display:block;margin:0 auto 16px;">';
+        }
+
+        return '<!doctype html>'
+            . '<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body style="margin:0;padding:0;background:#f3f4f6;">'
+            . '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f3f4f6;padding:24px 12px;"><tr><td align="center">'
+            . '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:640px;background:#ffffff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;">'
+            . '<tr><td style="padding:24px 28px;background:#111827;color:#ffffff;text-align:center;">'
+            . $logo_html
+            . '<h1 style="margin:0;font-size:24px;line-height:1.2;font-weight:700;">' . \esc_html(\__('Your Quote', 'granola')) . '</h1>'
+            . '</td></tr>'
+            . '<tr><td style="padding:24px 28px;">'
+            . '<p style="margin:0 0 16px;color:#1f2937;font-size:14px;line-height:1.6;">' . \esc_html(\__('Thanks for requesting a quote. Your quote summary is below and attached as a PDF.', 'granola')) . '</p>'
+            . '<p style="margin:0;color:#1f2937;font-size:14px;line-height:1.6;">'
+            . '<strong>' . \esc_html(\__('Company:', 'granola')) . '</strong> ' . \esc_html($form_data['company_name']) . '<br>'
+            . '<strong>' . \esc_html(\__('Contact:', 'granola')) . '</strong> ' . \esc_html($form_data['contact_name']) . '<br>'
+            . '<strong>' . \esc_html(\__('Customer reference:', 'granola')) . '</strong> ' . \esc_html($form_data['customer_reference_number'])
+            . '</p>'
+            . '<h2 style="margin:24px 0 8px;color:#111827;font-size:16px;line-height:1.4;font-weight:700;">' . \esc_html(\__('Items', 'granola')) . '</h2>'
+            . '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">'
+            . $rows_html
+            . '</table>'
+            . '<p style="margin:16px 0 0;color:#111827;font-size:16px;line-height:1.5;font-weight:700;">' . \esc_html(sprintf(\__('Quote Total: %s', 'granola'), $cart_data['total'])) . '</p>'
+            . $sales_notes_html
+            . $restore_html
+            . '</td></tr>'
+            . '<tr><td style="padding:14px 28px;border-top:1px solid #e5e7eb;background:#f9fafb;color:#6b7280;font-size:12px;line-height:1.5;text-align:center;">'
+            . \esc_html($site_name)
+            . '</td></tr>'
+            . '</table></td></tr></table></body></html>';
     }
 
     private static function stream_pdf(array $form_data, array $cart_data, string $restore_url = ''): void
