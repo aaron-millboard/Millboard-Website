@@ -46,6 +46,26 @@ class QuoteShare
                     'default_value' => 'no',
                     'return_format' => 'value',
                 ],
+                [
+                    'key' => 'field_quote_hubspot_portal_id',
+                    'label' => \__('HubSpot Portal ID', 'granola'),
+                    'name' => 'millboard_quote_hubspot_portal_id',
+                    'type' => 'text',
+                    'instructions' => \__('Your HubSpot account/portal ID (numeric).', 'granola'),
+                    'required' => 0,
+                    'default_value' => '',
+                    'placeholder' => '12345678',
+                ],
+                [
+                    'key' => 'field_quote_hubspot_form_guid',
+                    'label' => \__('HubSpot Form GUID', 'granola'),
+                    'name' => 'millboard_quote_hubspot_form_guid',
+                    'type' => 'text',
+                    'instructions' => \__('The GUID of the custom HubSpot form to submit quote data to.', 'granola'),
+                    'required' => 0,
+                    'default_value' => '',
+                    'placeholder' => 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
+                ],
             ],
             'location' => [
                 [
@@ -698,28 +718,62 @@ class QuoteShare
 
     private static function submit_quote_to_hubspot(array $form_data, array $cart_data): bool
     {
-        if (!\function_exists('wc_create_order')) {
+        if (!\function_exists('get_field')) {
             return false;
         }
 
-        $order = \wc_create_order([
-            'created_via' => 'quote-share',
+        $portal_id = \trim((string) \get_field('millboard_quote_hubspot_portal_id', 'option'));
+        $form_guid = \trim((string) \get_field('millboard_quote_hubspot_form_guid', 'option'));
+
+        if ($portal_id === '' || $form_guid === '') {
+            return false;
+        }
+
+        $items_text = \implode('; ', $cart_data['lines']);
+
+        $fields = [
+            ['name' => 'company',                    'value' => $form_data['company_name']],
+            ['name' => 'firstname',                  'value' => $form_data['contact_name']],
+            ['name' => 'email',                      'value' => $form_data['email_address']],
+            ['name' => 'phone',                      'value' => $form_data['phone_number']],
+            ['name' => 'customer_reference_number',  'value' => $form_data['customer_reference_number']],
+            ['name' => 'sales_notes',                'value' => $form_data['sales_notes']],
+            ['name' => 'quote_items',                'value' => $items_text],
+            ['name' => 'quote_total',                'value' => $cart_data['total']],
+        ];
+
+        $context = [];
+        if (!empty($_COOKIE['hubspotutk'])) {
+            $context['hutk'] = \sanitize_text_field($_COOKIE['hubspotutk']);
+        }
+        $page_url = \wp_unslash($_SERVER['HTTP_REFERER'] ?? '');
+        if ($page_url) {
+            $context['pageUri'] = \esc_url_raw($page_url);
+        }
+
+        $endpoint = \sprintf(
+            'https://api.hsforms.com/submissions/v3/integration/submit/%s/%s',
+            \rawurlencode($portal_id),
+            \rawurlencode($form_guid)
+        );
+
+        $body = ['fields' => $fields];
+        if (!empty($context)) {
+            $body['context'] = $context;
+        }
+
+        $response = \wp_remote_post($endpoint, [
+            'headers' => ['Content-Type' => 'application/json'],
+            'body'    => \wp_json_encode($body),
+            'timeout' => 15,
         ]);
 
-        if (\is_wp_error($order) || !$order instanceof \WC_Order) {
+        if (\is_wp_error($response)) {
             return false;
         }
 
-        self::populate_order_from_form($order, $form_data);
-        self::populate_order_items_from_cart($order, $cart_data);
-        self::populate_order_quote_meta($order, $form_data, $cart_data);
-
-        // Keep as pending quote so no checkout/payment flow is triggered.
-        $order->set_status('pending');
-        $order->calculate_totals();
-        $order->save();
-
-        return $order->get_id() > 0;
+        $status_code = (int) \wp_remote_retrieve_response_code($response);
+        return $status_code >= 200 && $status_code < 300;
     }
 
     private static function send_quote_email(array $form_data, array $cart_data, string $attachment_path, string $restore_url = ''): bool
