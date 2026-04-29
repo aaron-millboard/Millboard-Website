@@ -626,11 +626,13 @@ class QuoteShare
         }
 
         $total = \wp_strip_all_tags(\html_entity_decode(WC()->cart->get_total(), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+        $total_raw = (string) \round((float) WC()->cart->get_total('edit'), 2);
 
         return [
             'items' => $items,
             'lines' => $lines,
             'total' => $total,
+            'total_raw' => $total_raw,
         ];
     }
 
@@ -1014,8 +1016,9 @@ class QuoteShare
         $submission_date = \wp_date('c');
         $raw_locale = \function_exists('determine_locale') ? (string) \determine_locale() : (string) \get_locale();
         $quote_locale = \strtolower(\str_replace('_', '-', $raw_locale));
-        $raw_total = \wp_strip_all_tags(\html_entity_decode((string) $cart_data['total'], ENT_QUOTES | ENT_HTML5, 'UTF-8'));
-        $quote_total_value = \preg_replace('/[^0-9.]/', '', $raw_total);
+        $quote_total_value = !empty($cart_data['total_raw'])
+            ? (string) $cart_data['total_raw']
+            : (string) \round((float) \preg_replace('/[^0-9.,]/', '', \wp_strip_all_tags(\html_entity_decode((string) $cart_data['total'], ENT_QUOTES | ENT_HTML5, 'UTF-8'))), 2);
 
         $fields = [
             ['name' => 'firstname',             'value' => $first_name],
