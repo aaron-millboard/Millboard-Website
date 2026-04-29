@@ -324,6 +324,7 @@ do_action('woocommerce_before_cart');?>
                         'items' => [],
                         'lines' => [],
                         'total' => wp_strip_all_tags(html_entity_decode(WC()->cart->get_total(), ENT_QUOTES | ENT_HTML5, 'UTF-8')),
+                        'total_raw' => (string) round((float) WC()->cart->get_total('edit'), 2),
                     ];
 
                     foreach (WC()->cart->get_cart() as $quote_item) {
