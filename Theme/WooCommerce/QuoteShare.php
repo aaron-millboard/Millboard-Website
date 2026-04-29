@@ -925,6 +925,20 @@ class QuoteShare
     private static function populate_order_from_form(\WC_Order $order, array $form_data): void
     {
         [$first_name, $last_name] = self::split_contact_name((string) $form_data['contact_name']);
+        $first_name = \trim((string) $first_name);
+        $last_name = \trim((string) $last_name);
+
+        if ($first_name === '') {
+            $first_name = \trim((string) ($form_data['company_name'] ?? ''));
+        }
+
+        if ($first_name === '') {
+            $first_name = 'Customer';
+        }
+
+        if ($last_name === '') {
+            $last_name = $first_name;
+        }
 
         $order->set_billing_first_name($first_name);
         $order->set_billing_last_name($last_name);
@@ -1000,7 +1014,18 @@ class QuoteShare
 
     private static function submit_quote_to_hubspot(array $form_data, array $cart_data): bool
     {
+        self::log_hubspot_submission_event(
+            'warning',
+            'HubSpot quote submission attempt started',
+            [
+                'has_contact_name' => !empty($form_data['contact_name']),
+                'has_email' => !empty($form_data['email_address']),
+                'cart_line_count' => isset($cart_data['lines']) && is_array($cart_data['lines']) ? count($cart_data['lines']) : 0,
+            ]
+        );
+
         if (!\function_exists('get_field')) {
+            self::log_hubspot_submission_event('warning', 'HubSpot quote submission skipped: get_field() is unavailable');
             return false;
         }
 
@@ -1008,6 +1033,14 @@ class QuoteShare
         $form_guid = \trim((string) \get_field('millboard_quote_hubspot_form_guid', 'option'));
 
         if ($portal_id === '' || $form_guid === '') {
+            self::log_hubspot_submission_event(
+                'warning',
+                'HubSpot quote submission skipped: portal ID or form GUID missing',
+                [
+                    'portal_id_present' => $portal_id !== '',
+                    'form_guid_present' => $form_guid !== '',
+                ]
+            );
             return false;
         }
 
@@ -1061,11 +1094,121 @@ class QuoteShare
         ]);
 
         if (\is_wp_error($response)) {
+            self::log_hubspot_submission_event(
+                'error',
+                'HubSpot quote submission request failed: ' . $response->get_error_message(),
+                [
+                    'endpoint' => $endpoint,
+                    'portal_id' => $portal_id,
+                    'form_guid' => $form_guid,
+                ]
+            );
             return false;
         }
 
         $status_code = (int) \wp_remote_retrieve_response_code($response);
-        return $status_code >= 200 && $status_code < 300;
+        if ($status_code >= 200 && $status_code < 300) {
+            self::log_hubspot_submission_event(
+                'warning',
+                'HubSpot quote submission succeeded',
+                [
+                    'status_code' => $status_code,
+                    'portal_id' => $portal_id,
+                    'form_guid' => $form_guid,
+                ]
+            );
+            return true;
+        }
+
+        self::log_hubspot_submission_event(
+            'warning',
+            'HubSpot quote submission non-2xx response',
+            [
+                'status_code' => $status_code,
+                'response_body' => (string) \wp_remote_retrieve_body($response),
+                'endpoint' => $endpoint,
+                'portal_id' => $portal_id,
+                'form_guid' => $form_guid,
+                'fields_sent' => \array_map(static fn ($field) => $field['name'] ?? '', $fields),
+            ]
+        );
+
+        // Retry with core contact fields only in case one custom field is misconfigured in HubSpot.
+        $fallback_fields = [
+            ['name' => 'firstname', 'value' => $first_name],
+            ['name' => 'lastname', 'value' => $last_name],
+            ['name' => 'email', 'value' => $form_data['email_address']],
+            ['name' => 'phone', 'value' => $form_data['phone_number']],
+        ];
+
+        $fallback_body = ['fields' => $fallback_fields];
+        if (!empty($context)) {
+            $fallback_body['context'] = $context;
+        }
+
+        $fallback_response = \wp_remote_post($endpoint, [
+            'headers' => ['Content-Type' => 'application/json'],
+            'body'    => \wp_json_encode($fallback_body),
+            'timeout' => 15,
+        ]);
+
+        if (\is_wp_error($fallback_response)) {
+            self::log_hubspot_submission_event(
+                'error',
+                'HubSpot quote fallback submission failed: ' . $fallback_response->get_error_message(),
+                [
+                    'endpoint' => $endpoint,
+                    'portal_id' => $portal_id,
+                    'form_guid' => $form_guid,
+                ]
+            );
+            return false;
+        }
+
+        $fallback_status_code = (int) \wp_remote_retrieve_response_code($fallback_response);
+
+        if ($fallback_status_code >= 200 && $fallback_status_code < 300) {
+            self::log_hubspot_submission_event(
+                'info',
+                'HubSpot quote fallback submission succeeded with core fields only',
+                [
+                    'portal_id' => $portal_id,
+                    'form_guid' => $form_guid,
+                ]
+            );
+            return true;
+        }
+
+        self::log_hubspot_submission_event(
+            'warning',
+            'HubSpot quote fallback submission non-2xx response',
+            [
+                'status_code' => $fallback_status_code,
+                'response_body' => (string) \wp_remote_retrieve_body($fallback_response),
+                'endpoint' => $endpoint,
+                'portal_id' => $portal_id,
+                'form_guid' => $form_guid,
+                'fields_sent' => \array_map(static fn ($field) => $field['name'] ?? '', $fallback_fields),
+            ]
+        );
+
+        return false;
+    }
+
+    private static function log_hubspot_submission_event(string $level, string $message, array $context = []): void
+    {
+        if (!\function_exists('wc_get_logger')) {
+            return;
+        }
+
+        $logger = \wc_get_logger();
+        $context['source'] = 'quote-share-hubspot';
+
+        if (!\method_exists($logger, $level)) {
+            $level = 'info';
+        }
+
+        $logger->{$level}($message, $context);
     }
 
     private static function split_contact_name(string $contact_name): array
@@ -1077,6 +1220,11 @@ class QuoteShare
         if (is_array($contact_parts) && !empty($contact_parts)) {
             $first_name = (string) (array_shift($contact_parts) ?: '');
             $last_name = !empty($contact_parts) ? (string) implode(' ', $contact_parts) : '';
+        }
+
+        // HubSpot form requires lastname; mirror firstname when a single-word name is provided.
+        if ($first_name !== '' && $last_name === '') {
+            $last_name = $first_name;
         }
 
         return [$first_name, $last_name];
