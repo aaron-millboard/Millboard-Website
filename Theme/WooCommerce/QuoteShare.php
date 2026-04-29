@@ -1012,8 +1012,10 @@ class QuoteShare
         [$first_name, $last_name] = self::split_contact_name((string) $form_data['contact_name']);
         $items_text = \implode('; ', $cart_data['lines']);
         $submission_date = \wp_date('c');
-        $quote_locale = \function_exists('determine_locale') ? (string) \determine_locale() : (string) \get_locale();
-        $quote_total_value = \wp_strip_all_tags(\html_entity_decode((string) $cart_data['total'], ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+        $raw_locale = \function_exists('determine_locale') ? (string) \determine_locale() : (string) \get_locale();
+        $quote_locale = \strtolower(\str_replace('_', '-', $raw_locale));
+        $raw_total = \wp_strip_all_tags(\html_entity_decode((string) $cart_data['total'], ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+        $quote_total_value = \preg_replace('/[^0-9.]/', '', $raw_total);
 
         $fields = [
             ['name' => 'firstname',             'value' => $first_name],
