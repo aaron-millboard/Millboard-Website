@@ -713,12 +713,54 @@ class QuoteShare
         }
 
         $total = !empty($snapshot['total']) ? \sanitize_text_field((string) $snapshot['total']) : '';
+        $total_raw_input = !empty($snapshot['total_raw']) ? (string) $snapshot['total_raw'] : $total;
+        $total_raw = self::normalize_quote_total_value($total_raw_input);
 
         return [
             'items' => $items,
             'lines' => $lines,
             'total' => $total,
+            'total_raw' => $total_raw,
         ];
+    }
+
+    private static function normalize_quote_total_value(string $value): string
+    {
+        $clean_value = \wp_strip_all_tags(\html_entity_decode($value, ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+        $clean_value = (string) \preg_replace('/[^0-9,.-]/', '', $clean_value);
+
+        if ($clean_value === '') {
+            return '0';
+        }
+
+        $has_comma = \strpos($clean_value, ',') !== false;
+        $has_dot = \strpos($clean_value, '.') !== false;
+
+        if ($has_comma && $has_dot) {
+            $last_comma = (int) \strrpos($clean_value, ',');
+            $last_dot = (int) \strrpos($clean_value, '.');
+
+            if ($last_comma > $last_dot) {
+                // 1.234,56 -> 1234.56
+                $clean_value = \str_replace('.', '', $clean_value);
+                $clean_value = \str_replace(',', '.', $clean_value);
+            } else {
+                // 1,234.56 -> 1234.56
+                $clean_value = \str_replace(',', '', $clean_value);
+            }
+        } elseif ($has_comma) {
+            if (\preg_match('/,\d{1,2}$/', $clean_value) === 1) {
+                $clean_value = \str_replace(',', '.', $clean_value);
+            } else {
+                $clean_value = \str_replace(',', '', $clean_value);
+            }
+        } elseif ($has_dot) {
+            if (\preg_match('/^\d{1,3}(\.\d{3})+$/', $clean_value) === 1) {
+                $clean_value = \str_replace('.', '', $clean_value);
+            }
+        }
+
+        return (string) \round((float) $clean_value, 2);
     }
 
     private static function build_pdf_lines(array $form_data, array $cart_data, string $restore_url = ''): array
@@ -1050,8 +1092,8 @@ class QuoteShare
         $raw_locale = \function_exists('determine_locale') ? (string) \determine_locale() : (string) \get_locale();
         $quote_locale = \strtolower(\str_replace('_', '-', $raw_locale));
         $quote_total_value = !empty($cart_data['total_raw'])
-            ? (string) $cart_data['total_raw']
-            : (string) \round((float) \preg_replace('/[^0-9.,]/', '', \wp_strip_all_tags(\html_entity_decode((string) $cart_data['total'], ENT_QUOTES | ENT_HTML5, 'UTF-8'))), 2);
+            ? self::normalize_quote_total_value((string) $cart_data['total_raw'])
+            : self::normalize_quote_total_value((string) ($cart_data['total'] ?? ''));
 
         $fields = [
             ['name' => 'firstname',             'value' => $first_name],
