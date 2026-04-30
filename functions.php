@@ -94,6 +94,7 @@ if (file_exists($autoloader = __DIR__ . '/vendor/autoload.php')) {
 // ----------------------------------------------------
 
 \Theme\WooCommerce\CountryRestrictions::init();
+\Theme\WooCommerce\QuoteShare::init();
 \Theme\WooCommerce\Settings::init();
 
 // ----------------------------------------------------
