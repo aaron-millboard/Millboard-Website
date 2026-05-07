@@ -6,7 +6,7 @@
     "description": "A logo grid block",
     "category": "granola-blocks",
     "icon": "image-flip-horizontal",
-    "keywords": [ ],
+    "keywords": [],
     "acf": {
         "mode": "edit",
         "renderCallback": "\\Granola\\Component::acf_render_callback",
@@ -16,11 +16,15 @@
             "post",
             "granola-template",
             "distributor",
-            "installer"
+            "installer",
+            "case-study"
         ]
     },
     "supports": {
-        "align": [ "wide", "full" ],
+        "align": [
+            "wide",
+            "full"
+        ],
         "anchor": true,
         "color": {
             "text": false
