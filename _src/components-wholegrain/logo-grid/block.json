@@ -9,16 +9,7 @@
     "keywords": [],
     "acf": {
         "mode": "edit",
-        "renderCallback": "\\Granola\\Component::acf_render_callback",
-        "postTypes": [
-            "page",
-            "advice-centre",
-            "post",
-            "granola-template",
-            "distributor",
-            "installer",
-            "case-study"
-        ]
+        "renderCallback": "\\Granola\\Component::acf_render_callback"
     },
     "supports": {
         "align": [
