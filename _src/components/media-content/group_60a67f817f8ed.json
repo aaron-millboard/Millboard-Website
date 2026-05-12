@@ -295,10 +295,11 @@
                 "left": "Left",
                 "right": "Right"
             },
+            "default_value": "left",
+            "return_format": "value",
             "allow_null": 0,
-            "default_value": "",
-            "layout": "horizontal",
-            "return_format": "value"
+            "allow_in_bindings": 1,
+            "layout": "horizontal"
         }
     ],
     "location": [
@@ -321,5 +322,5 @@
     "show_in_rest": 0,
     "display_title": "",
     "granola_save_location": 0,
-    "modified": 1763736428
+    "modified": 1778595766
 }
