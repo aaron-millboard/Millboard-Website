@@ -202,8 +202,18 @@ class CountryRestrictions
             return 0.0;
         }
 
-        if (!self::cart_contains_small_sample()) {
-            return 0.0;
+        $has_small_sample = self::cart_contains_small_sample();
+
+        if (!$has_small_sample) {
+            $allow_metadata_fallback = (bool) apply_filters(
+                'millboard/homeowner_small_sample_metadata_fallback',
+                true,
+                $package
+            );
+
+            if (!$allow_metadata_fallback || !self::cart_contains_only_zero_cost_items()) {
+                return 0.0;
+            }
         }
 
         $country = self::resolve_checkout_country($package);
@@ -358,6 +368,47 @@ class CountryRestrictions
         }
 
         return false;
+    }
+
+    private static function cart_contains_only_zero_cost_items(): bool
+    {
+        if (!function_exists('WC') || !\WC()->cart instanceof \WC_Cart) {
+            return false;
+        }
+
+        $cart_items = \WC()->cart->get_cart();
+
+        if (empty($cart_items)) {
+            return false;
+        }
+
+        foreach ($cart_items as $cart_item) {
+            if (!is_array($cart_item)) {
+                return false;
+            }
+
+            $line_total = isset($cart_item['line_total']) ? (float) $cart_item['line_total'] : null;
+
+            if ($line_total !== null && $line_total > 0.0) {
+                return false;
+            }
+
+            $product = $cart_item['data'] ?? null;
+
+            if ($product instanceof \WC_Product) {
+                if ((float) $product->get_price() > 0.0) {
+                    return false;
+                }
+
+                continue;
+            }
+
+            if ($line_total === null) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
