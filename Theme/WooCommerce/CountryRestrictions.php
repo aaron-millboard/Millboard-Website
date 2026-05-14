@@ -261,6 +261,12 @@ class CountryRestrictions
             }
         }
 
+        $country = self::normalize_country_code((string) get_option('woocommerce_default_country', ''));
+
+        if ($country !== '') {
+            return $country;
+        }
+
         return '';
     }
 
