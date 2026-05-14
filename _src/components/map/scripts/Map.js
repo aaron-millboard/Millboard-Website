@@ -476,20 +476,26 @@ class Map {
             return;
         }
 
+        const initiallyActiveButton = [...filterButtons].find((button) => button.classList.contains('map__filter--active'));
+        this.setActivePostTypeFilter(initiallyActiveButton ? initiallyActiveButton.dataset.filterValue : '');
+
         filterButtons.forEach((button) => {
             button.addEventListener('click', () => {
-                const filterValue = button.dataset.filterValue;
-                
-                // Update active state
-                filterButtons.forEach((btn) => {
-                    btn.classList.remove('map__filter--active');
-                });
-                button.classList.add('map__filter--active');
-                
-                // Update filter and apply
-                this.activePostTypeFilter = filterValue;
+                const filterValue = button.dataset.filterValue || '';
+
+                this.setActivePostTypeFilter(filterValue);
                 this.filterByDistanceAndPostType();
             });
+        });
+    }
+
+    setActivePostTypeFilter(filterValue = '') {
+        this.activePostTypeFilter = filterValue;
+
+        const filterButtons = this.el.querySelectorAll('.map__filter');
+        filterButtons.forEach((button) => {
+            const buttonValue = button.dataset.filterValue || '';
+            button.classList.toggle('map__filter--active', buttonValue === this.activePostTypeFilter);
         });
     }
 

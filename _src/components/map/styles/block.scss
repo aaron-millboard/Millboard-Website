@@ -66,6 +66,7 @@
             --input--background-color: transparent;
 
             border-right: 0;
+            line-height: 1;
         }
 
         &__submit {
@@ -88,6 +89,7 @@
             align-items: center;
             gap: var(--space--2xs);
             justify-self: start;
+            text-align: left;
 
             @include interact {
                 text-decoration: underline;
