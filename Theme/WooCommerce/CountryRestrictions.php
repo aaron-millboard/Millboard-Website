@@ -17,6 +17,13 @@ class CountryRestrictions
         'woningeigenaar',
         'huis eigenaar',
     ];
+    private const SMALL_SAMPLE_MATCH_TERMS = [
+        'small',
+        'klein',
+        'petit',
+        'piccolo',
+        'pequeno',
+    ];
 
     public static function init(): void
     {
@@ -339,7 +346,7 @@ class CountryRestrictions
                 continue;
             }
 
-            if (self::is_small_sample_product($product)) {
+            if (self::is_small_sample_product($product, is_array($cart_item) ? $cart_item : [])) {
                 return true;
             }
         }
@@ -347,21 +354,29 @@ class CountryRestrictions
         return false;
     }
 
-    private static function is_small_sample_product(\WC_Product $product): bool
+    /**
+     * @param array<string, mixed> $cart_item
+     */
+    private static function is_small_sample_product(\WC_Product $product, array $cart_item = []): bool
     {
         $sample_size_taxonomy = \get_field('product_sample_size_taxonomy', 'options');
-        $sample_size = strtolower((string) $product->get_attribute($sample_size_taxonomy ?? 'pa_sample-size'));
+        $sample_size_values = [
+            (string) $product->get_attribute($sample_size_taxonomy ?? 'pa_sample-size'),
+            (string) $product->get_attribute('pa_sample-size'),
+        ];
 
-        if ($sample_size !== '') {
-            if (str_contains($sample_size, 'small')) {
-                return true;
+        $variation_values = $cart_item['variation'] ?? [];
+
+        if (is_array($variation_values)) {
+            foreach ($variation_values as $value) {
+                if (is_string($value)) {
+                    $sample_size_values[] = $value;
+                }
             }
+        }
 
-            if (str_contains($sample_size, 'large')) {
-                return false;
-            }
-
-            if (str_contains($sample_size, '100') && str_contains($sample_size, '26')) {
+        foreach ($sample_size_values as $sample_size_value) {
+            if (self::matches_small_sample_size_value($sample_size_value)) {
                 return true;
             }
         }
@@ -374,6 +389,25 @@ class CountryRestrictions
         }
 
         return self::dimensions_match_small_sample($length, $width);
+    }
+
+    private static function matches_small_sample_size_value(string $value): bool
+    {
+        $normalized = self::normalize_match_value($value);
+
+        if ($normalized === '') {
+            return false;
+        }
+
+        foreach (self::SMALL_SAMPLE_MATCH_TERMS as $term) {
+            $normalized_term = self::normalize_match_value($term);
+
+            if ($normalized_term !== '' && str_contains($normalized, $normalized_term)) {
+                return true;
+            }
+        }
+
+        return str_contains($normalized, '100') && str_contains($normalized, '26');
     }
 
     private static function dimensions_match_small_sample(float $length, float $width): bool
