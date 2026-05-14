@@ -199,17 +199,77 @@ class CountryRestrictions
             return 0.0;
         }
 
-        $country = strtoupper((string) ($package['destination']['country'] ?? ''));
-
-        if ($country === '') {
-            $country = strtoupper((string) \WC()->customer->get_shipping_country());
-        }
+        $country = self::resolve_checkout_country($package);
 
         return match ($country) {
             'DE' => 6.0,
             'US' => 5.0,
             default => 0.0,
         };
+    }
+
+    /**
+     * @param array<string, mixed> $package
+     */
+    private static function resolve_checkout_country(array $package): string
+    {
+        $country = self::normalize_country_code((string) ($package['destination']['country'] ?? ''));
+
+        if ($country !== '') {
+            return $country;
+        }
+
+        if (function_exists('WC') && \WC()->customer instanceof \WC_Customer) {
+            $country = self::normalize_country_code((string) \WC()->customer->get_shipping_country());
+
+            if ($country !== '') {
+                return $country;
+            }
+
+            $country = self::normalize_country_code((string) \WC()->customer->get_billing_country());
+
+            if ($country !== '') {
+                return $country;
+            }
+        }
+
+        if (function_exists('wp_unslash')) {
+            $post_data = $_POST['post_data'] ?? null;
+
+            if (is_string($post_data) && $post_data !== '') {
+                $parsed = [];
+                parse_str((string) wp_unslash($post_data), $parsed);
+
+                $country = self::normalize_country_code((string) ($parsed['shipping_country'] ?? $parsed['billing_country'] ?? ''));
+
+                if ($country !== '') {
+                    return $country;
+                }
+            }
+
+            $country = self::normalize_country_code((string) ($_POST['shipping_country'] ?? $_POST['billing_country'] ?? ''));
+
+            if ($country !== '') {
+                return $country;
+            }
+        }
+
+        return '';
+    }
+
+    private static function normalize_country_code(string $country): string
+    {
+        $country = strtoupper(trim($country));
+
+        if ($country === '') {
+            return '';
+        }
+
+        if (preg_match('/^[A-Z]{2}/', $country, $matches) === 1) {
+            return $matches[0];
+        }
+
+        return '';
     }
 
     private static function cart_is_non_empty_and_zero_total(): bool
@@ -227,11 +287,43 @@ class CountryRestrictions
 
     private static function is_checkout_homeowner(): bool
     {
-        if (!function_exists('WC') || !\WC()->session instanceof \WC_Session) {
+        if (function_exists('WC') && \WC()->session instanceof \WC_Session) {
+            if ((bool) \WC()->session->get(self::HOMEOWNER_SESSION_KEY, false)) {
+                return true;
+            }
+        }
+
+        return self::is_homeowner_selected_in_request();
+    }
+
+    private static function is_homeowner_selected_in_request(): bool
+    {
+        if (!function_exists('wp_unslash')) {
             return false;
         }
 
-        return (bool) \WC()->session->get(self::HOMEOWNER_SESSION_KEY, false);
+        $post_data = $_POST['post_data'] ?? null;
+
+        if (is_string($post_data) && $post_data !== '') {
+            $parsed = [];
+            parse_str((string) wp_unslash($post_data), $parsed);
+
+            if (self::is_homeowner_selected($parsed)) {
+                return true;
+            }
+        }
+
+        $raw_posted = [];
+
+        foreach ($_POST as $key => $value) {
+            if (!is_string($key)) {
+                continue;
+            }
+
+            $raw_posted[$key] = is_string($value) ? wp_unslash($value) : $value;
+        }
+
+        return self::is_homeowner_selected($raw_posted);
     }
 
     private static function cart_contains_small_sample(): bool
