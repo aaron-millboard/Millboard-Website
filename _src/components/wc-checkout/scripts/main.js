@@ -14,3 +14,9 @@ jQuery(document.body).one('update_checkout', function(){
       jQuery(document.body).trigger('update_checkout');
    }, 500);
 });
+
+// Recalculate shipping when the "who am I" field changes so homeowner-specific
+// rates are applied or removed without requiring an address field interaction.
+jQuery(document.body).on('change', '#who-am-i, #billing_who-am-i, [name="who-am-i"], [name="who-am-i?"]', function() {
+   jQuery(document.body).trigger('update_checkout');
+});
