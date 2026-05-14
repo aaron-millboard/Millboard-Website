@@ -227,11 +227,43 @@ class CountryRestrictions
 
     private static function is_checkout_homeowner(): bool
     {
-        if (!function_exists('WC') || !\WC()->session instanceof \WC_Session) {
+        if (function_exists('WC') && \WC()->session instanceof \WC_Session) {
+            if ((bool) \WC()->session->get(self::HOMEOWNER_SESSION_KEY, false)) {
+                return true;
+            }
+        }
+
+        return self::is_homeowner_selected_in_request();
+    }
+
+    private static function is_homeowner_selected_in_request(): bool
+    {
+        if (!function_exists('wp_unslash')) {
             return false;
         }
 
-        return (bool) \WC()->session->get(self::HOMEOWNER_SESSION_KEY, false);
+        $post_data = $_POST['post_data'] ?? null;
+
+        if (is_string($post_data) && $post_data !== '') {
+            $parsed = [];
+            parse_str((string) wp_unslash($post_data), $parsed);
+
+            if (self::is_homeowner_selected($parsed)) {
+                return true;
+            }
+        }
+
+        $raw_posted = [];
+
+        foreach ($_POST as $key => $value) {
+            if (!is_string($key)) {
+                continue;
+            }
+
+            $raw_posted[$key] = is_string($value) ? wp_unslash($value) : $value;
+        }
+
+        return self::is_homeowner_selected($raw_posted);
     }
 
     private static function cart_contains_small_sample(): bool
