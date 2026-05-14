@@ -247,10 +247,6 @@ class CountryRestrictions
                 continue;
             }
 
-            if (!Utils::is_sample($product)) {
-                continue;
-            }
-
             if (self::is_small_sample_product($product)) {
                 return true;
             }
