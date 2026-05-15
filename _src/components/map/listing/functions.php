@@ -30,16 +30,6 @@ function filter_args(array $args): ?array
     // Finally set address.
     $args['address'] = $args['address']['address'];
 
-    if (!empty($args['phone'])) {
-        $args['phone'] = [
-            'content' => $args['phone'],
-            'url' => 'tel:' . $args['phone'],
-            'classes' => [
-                'map__listing__phone',
-            ],
-        ];
-    }
-
     if (!empty($args['url'])) {
         $args['link'] = [
             'content' => !empty($args['post']->post_type) ? sprintf(

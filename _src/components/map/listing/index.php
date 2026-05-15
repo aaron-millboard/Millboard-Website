@@ -10,7 +10,9 @@
     <?php } ?>
 
     <?php if (!empty($args['phone'])) { ?>
-        <?= \Granola\Component::get('link', $args['phone']); ?>
+        <span class="map__listing__phone">
+            <?= esc_html($args['phone']); ?>
+        </span>
     <?php } ?>
 
     <?= \Granola\Component::get('element', [

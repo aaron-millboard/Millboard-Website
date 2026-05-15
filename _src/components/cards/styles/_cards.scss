@@ -5,6 +5,12 @@
 
     $this: &;
 
+    &__inner{
+        max-width: var(--width--responsive--l);
+        margin-left: auto;
+        margin-right: auto;
+    }
+
     &__header {
         margin-bottom: var(--space--s);
     }
