@@ -5,6 +5,10 @@
 
     $this: &;
 
+    @include mq($until: medium) {
+        margin-bottom: var(--space--2xl);
+    }
+
     &__header {
         margin-bottom: var(--space--s);
     }
