@@ -241,7 +241,6 @@ class CountryRestrictions
         $country = self::resolve_checkout_country($package);
 
         return match ($country) {
-            'DE' => 6.0,
             'US' => 5.0,
             default => 0.0,
         };
