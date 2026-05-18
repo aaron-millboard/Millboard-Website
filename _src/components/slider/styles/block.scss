@@ -130,7 +130,7 @@
         height: var(--slider--pip--height);
         margin: auto;
 
-        &[aria-selected='true'] {
+        &[aria-current='true'] {
             background: var(--color--accent);
         }
     }

@@ -10,6 +10,7 @@ function filter_args(array $args): ?array
     $args = array_merge([
         'classes' => [],
         'attributes' => [],
+        'ref' => \wp_unique_prefixed_id('gallery-video-'),
         'preheading' => '',
         'heading' => '',
         'items' => [],
