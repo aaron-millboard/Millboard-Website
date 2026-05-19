@@ -8,7 +8,24 @@ class CountryRestrictions
     {
         \add_filter('woocommerce_countries_allowed_countries', [__CLASS__, 'filter_allowed_countries']);
         \add_filter('woocommerce_countries_shipping_countries', [__CLASS__, 'filter_shipping_countries']);
+        \add_filter('woocommerce_cart_needs_payment', [__CLASS__, 'filter_cart_needs_payment'], 10, 2);
         \add_filter('woocommerce_package_rates', [__CLASS__, 'filter_package_rates'], 100, 2);
+    }
+
+    /**
+     * Skip payment collection for genuinely zero-total baskets.
+     */
+    public static function filter_cart_needs_payment(bool $needs_payment, $cart): bool
+    {
+        if (!$cart instanceof \WC_Cart) {
+            return $needs_payment;
+        }
+
+        if (self::get_zero_cost_cart_total($cart) > 0.0) {
+            return $needs_payment;
+        }
+
+        return false;
     }
 
     /**
@@ -90,7 +107,12 @@ class CountryRestrictions
             return false;
         }
 
-        return (float) \WC()->cart->get_cart_contents_total() === 0.0;
+        return self::get_zero_cost_cart_total(\WC()->cart) === 0.0;
+    }
+
+    private static function get_zero_cost_cart_total(\WC_Cart $cart): float
+    {
+        return (float) \round((float) $cart->get_total('edit'), 2);
     }
 
     /**
