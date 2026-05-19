@@ -16,6 +16,7 @@ function filter_args(array $args): ?array
         'attributes' => [],
         'show_breadcrumbs' => true,
         'bg_gradient' => false,
+        'author_info' => [],
     ], $args);
 
     // -------------------------------------------------------------------------
@@ -39,7 +40,7 @@ function filter_args(array $args): ?array
         }
 
         // Check if this is WC product - set type to product
-        if ((class_exists('\WooCommerce')) && $args['object'] instanceof \WC_Product) {
+        if ((class_exists('\\WooCommerce')) && $args['object'] instanceof \WC_Product) {
             $args['type'] = 'product';
         }
     }
@@ -102,7 +103,7 @@ function filter_args(array $args): ?array
                     $object->data->display_name
                 );
             }
-        } elseif ((class_exists('\WooCommerce')) && $object instanceof \WC_Product) {
+        } elseif ((class_exists('\\WooCommerce')) && $object instanceof \WC_Product) {
             // WP Products
             // Adjust background color for products
             $args['background_color'] = 'brand-2';
@@ -146,12 +147,14 @@ function filter_args(array $args): ?array
                 }
             }
 
+            $args['author_info'] = get_author_info($object);
+
             unset($args['object']);
         }
 
 
         // WC Checkout Order Received page
-        if ((class_exists('\WooCommerce')) && \is_order_received_page()) {
+        if ((class_exists('\\WooCommerce')) && \is_order_received_page()) {
             // Get WC order
             $order_id = absint(\get_query_var('order-received'));
             $order = \wc_get_order($order_id);
@@ -180,7 +183,7 @@ function filter_args(array $args): ?array
     }
 
     // -------------------------------------------------------------------------
-    // Prepeare args for sub-components
+    // Prepare args for sub-components
     // -------------------------------------------------------------------------
     if (!empty($args['image'])) {
         if (!is_array($args['image'])) {
@@ -255,4 +258,110 @@ function filter_args(array $args): ?array
     // Return the filtered args.
     // -------------------------------------------------------------------------
     return $args;
+}
+
+/**
+ * Build author info for supported single post types.
+ */
+function get_author_info(\WP_Post $post): array
+{
+    $supported_author_types = ['post', 'case-study', 'advice-centre'];
+
+    if (!\is_singular($supported_author_types) || (int) \get_queried_object_id() !== (int) $post->ID) {
+        return [];
+    }
+
+    $author_id = (int) $post->post_author;
+
+    if ($author_id <= 0) {
+        return [];
+    }
+
+    $first_name = trim((string) \get_the_author_meta('first_name', $author_id));
+    $last_name = trim((string) \get_the_author_meta('last_name', $author_id));
+    $display_name = trim($first_name . ' ' . $last_name);
+
+    if ($display_name === '') {
+        $display_name = trim((string) \get_the_author_meta('display_name', $author_id));
+    }
+
+    if ($display_name === '') {
+        $user = \get_userdata($author_id);
+        $display_name = ($user instanceof \WP_User) ? (string) $user->display_name : '';
+    }
+
+    if ($display_name === '') {
+        return [];
+    }
+
+    $author_info = [
+        'display_name' => $display_name,
+        'bio' => '',
+        'image' => [],
+    ];
+
+    $bio = trim((string) \get_the_author_meta('description', $author_id));
+
+    if ($bio !== '') {
+        $author_info['bio'] = $bio;
+    }
+
+    $attachment_id = get_author_image_attachment_id($author_id);
+
+    if ($attachment_id > 0) {
+        $author_info['image'] = [
+            'attachment_id' => $attachment_id,
+            'size' => 'thumbnail',
+            'alt' => $display_name,
+            'classes' => ['page-header__author-avatar-image'],
+        ];
+    }
+
+    return $author_info;
+}
+
+/**
+ * Resolve author avatar attachment id from ACF user fields.
+ */
+function get_author_image_attachment_id(int $author_id): int
+{
+    if (!\function_exists('get_field')) {
+        return 0;
+    }
+
+    $field_names = \apply_filters(
+        'granola/components/page-header/author-image-fields',
+        ['user_image', 'author_image', 'image']
+    );
+
+    if (!is_array($field_names)) {
+        $field_names = ['user_image', 'author_image', 'image'];
+    }
+
+    $field_names = array_values(array_unique(array_filter($field_names, 'is_string')));
+    $user_field_reference = 'user_' . $author_id;
+
+    foreach ($field_names as $field_name) {
+        $image_value = \get_field($field_name, $user_field_reference);
+
+        if (is_array($image_value)) {
+            if (!empty($image_value['attachment_id'])) {
+                return (int) $image_value['attachment_id'];
+            }
+
+            if (!empty($image_value['id'])) {
+                return (int) $image_value['id'];
+            }
+
+            if (!empty($image_value['ID'])) {
+                return (int) $image_value['ID'];
+            }
+        }
+
+        if (is_numeric($image_value)) {
+            return (int) $image_value;
+        }
+    }
+
+    return 0;
 }

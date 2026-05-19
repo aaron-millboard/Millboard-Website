@@ -8,6 +8,7 @@ class ACF
     {
         \add_action('acf/init', [__CLASS__, 'option_pages']);
         \add_action('acf/init', [__CLASS__, 'set_acf_google_api_key']);
+        \add_action('acf/init', [__CLASS__, 'register_user_profile_fields']);
 
         \add_action('acf/init', [__CLASS__, 'fix_previews']);
         \add_action('acf/init', [__CLASS__, 'disable_shortcode']);
@@ -73,6 +74,49 @@ class ACF
         foreach ($options_pages as $page) {
             \acf_add_options_sub_page($page);
         }
+    }
+
+    /**
+     * Register user profile fields used across content templates.
+     */
+    public static function register_user_profile_fields(): void
+    {
+        if (!\function_exists('acf_add_local_field_group')) {
+            return;
+        }
+
+        \acf_add_local_field_group([
+            'key' => 'group_user_profile',
+            'title' => 'User Profile',
+            'fields' => [
+                [
+                    'key' => 'field_user_image',
+                    'label' => 'Profile image',
+                    'name' => 'user_image',
+                    'type' => 'image',
+                    'instructions' => 'Used as the author profile image in article headers.',
+                    'required' => 0,
+                    'return_format' => 'array',
+                    'preview_size' => 'thumbnail',
+                    'library' => 'all'
+                ],
+            ],
+            'location' => [
+                [
+                    [
+                        'param' => 'user_role',
+                        'operator' => '==',
+                        'value' => 'all',
+                    ],
+                ],
+            ],
+            'position' => 'normal',
+            'style' => 'default',
+            'label_placement' => 'top',
+            'instruction_placement' => 'label',
+            'active' => true,
+            'show_in_rest' => 0,
+        ]);
     }
 
     /**
