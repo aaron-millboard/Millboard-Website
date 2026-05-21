@@ -54,6 +54,22 @@ class CountryRestrictions
     }
 
     /**
+     * Skip payment collection for genuinely zero-total baskets.
+     */
+    public static function filter_cart_needs_payment(bool $needs_payment, $cart): bool
+    {
+        if (!$cart instanceof \WC_Cart) {
+            return $needs_payment;
+        }
+
+        if (self::get_zero_cost_cart_total($cart) > 0.0) {
+            return $needs_payment;
+        }
+
+        return false;
+    }
+
+    /**
      * Allow billing in any WooCommerce-supported country for zero-cost baskets.
      *
      * @param array<string, string> $countries
