@@ -17,21 +17,25 @@
         <?php } ?>
 
         <?php if (!empty($args['items']) && is_array($args['items'])) { ?>
+            <?php $gallery_ref = !empty($args['ref']) ? $args['ref'] : \wp_unique_prefixed_id('gallery-video-'); ?>
             <div class="gallery-video__content">
 
                 <?php if (count($args['items']) > 1) { ?>
                     <div class="gallery-video__sidebar-wrapper">
                         <div class="gallery-video__sidebar">
                             <?php foreach ($args['items'] as $index => $item) { ?>
-                                <div 
+                                <button
+                                    type="button"
                                     class="gallery-video__thumbnail<?= $index === 0 ? ' gallery-video__thumbnail--active' : ''; ?>"
                                     data-video-index="<?= esc_attr($index); ?>"
+                                    aria-controls="<?= esc_attr($gallery_ref . '-video-' . ($index + 1)); ?>"
+                                    aria-pressed="<?= $index === 0 ? 'true' : 'false'; ?>"
                                     aria-label="<?= esc_attr(sprintf(__('Play video %d', 'granola'), $index + 1)); ?>"
                                 >
                                     <?php if (!empty($item['thumbnail_data'])) { ?>
                                         <?= \Granola\Component::get('image', $item['thumbnail_data']); ?>
                                     <?php } ?>
-                                </div>
+                                </button>
                             <?php } ?>
                         </div>
                     </div>
@@ -43,6 +47,8 @@
                             <div 
                                 class="gallery-video__video<?= $index === 0 ? ' gallery-video__video--active' : ''; ?>" 
                                 data-video-index="<?= esc_attr($index); ?>"
+                                id="<?= esc_attr($gallery_ref . '-video-' . ($index + 1)); ?>"
+                                aria-hidden="<?= $index === 0 ? 'false' : 'true'; ?>"
                             >
                                 <div class="gallery-video__cover">
                                     <?php if (!empty($item['cover_image_data'])) { ?>
@@ -60,7 +66,9 @@
 
                                 <div class="gallery-video__iframe">
                                     <iframe 
-                                        src="" 
+                                        src=""
+                                        title="<?= esc_attr(sprintf(__('Video %d', 'granola'), $index + 1)); ?>"
+                                        loading="lazy"
                                         frameborder="0" 
                                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                                         allowfullscreen

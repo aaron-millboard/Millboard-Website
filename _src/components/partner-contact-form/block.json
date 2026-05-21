@@ -9,14 +9,16 @@
     "keywords": [
         "form",
         "installer",
-        "distributor"
+        "distributor",
+        "display-area"
     ],
     "acf": {
         "mode": "auto",
         "renderCallback": "\\Granola\\Component::acf_render_callback",
         "postTypes": [
             "installer",
-            "distributor"
+            "distributor",
+            "display_area"
         ]
     },
     "supports": {

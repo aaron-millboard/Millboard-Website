@@ -64,6 +64,8 @@ class Map {
         this.allMarkersGroup = new L.FeatureGroup();
         this.filteredMarkersGroup = new L.FeatureGroup();
 
+        this.activePostTypeFilter = ''; // Empty string means all post types
+
         this.googleApiKey = window.params.google_api_key;
 
         if (typeof L === 'object') {
@@ -77,6 +79,7 @@ class Map {
         this.initListingSelectionSync();
         this.initSearch();
         this.initDistanceFilter();
+        this.initPostTypeFilters();
         this.initTablist();
 
         this.applyLocationFromUrl();
@@ -98,7 +101,7 @@ class Map {
 
             this.lmap.addEventListener('locationfound', ({latlng}) => {
                 this.LMAP_DISTANCE_CENTER = latlng;
-                this.filterListingsByDistance();
+                this.filterByDistanceAndPostType();
             });
         }
     }
@@ -389,6 +392,7 @@ class Map {
                 themeData: {
                     listingElement: el,
                     distanceInMiles: this.calcLatLngDistanceMilesFromMapCenter(listingLatLng),
+                    postType: listingData.postType,
                 },
             });
 
@@ -462,7 +466,36 @@ class Map {
         }
 
         this.distanceSelect.addEventListener('change', () => {
-            this.filterListingsByDistance();
+            this.filterByDistanceAndPostType();
+        });
+    }
+
+    initPostTypeFilters() {
+        const filterButtons = this.el.querySelectorAll('.map__filter');
+        if (!filterButtons || filterButtons.length === 0) {
+            return;
+        }
+
+        const initiallyActiveButton = [...filterButtons].find((button) => button.classList.contains('map__filter--active'));
+        this.setActivePostTypeFilter(initiallyActiveButton ? initiallyActiveButton.dataset.filterValue : '');
+
+        filterButtons.forEach((button) => {
+            button.addEventListener('click', () => {
+                const filterValue = button.dataset.filterValue || '';
+
+                this.setActivePostTypeFilter(filterValue);
+                this.filterByDistanceAndPostType();
+            });
+        });
+    }
+
+    setActivePostTypeFilter(filterValue = '') {
+        this.activePostTypeFilter = filterValue;
+
+        const filterButtons = this.el.querySelectorAll('.map__filter');
+        filterButtons.forEach((button) => {
+            const buttonValue = button.dataset.filterValue || '';
+            button.classList.toggle('map__filter--active', buttonValue === this.activePostTypeFilter);
         });
     }
 
@@ -580,6 +613,73 @@ class Map {
             marker.options.themeData.distanceInMiles = distanceInMiles;
 
             if (distance === 0 || distanceInMiles <= distance) {
+                this.filteredMarkersGroup.addLayer(marker);
+                marker.options.themeData.listingElement.removeAttribute('hidden', '');
+                marker.options.themeData.distanceInMiles = distanceInMiles;
+                bounds.extend(marker.getLatLng());
+            } else {
+                marker.options.themeData.listingElement.setAttribute('hidden', '');
+            }
+
+            this.updateMarkerDistanceMeta(marker);
+        });
+
+        this.lmap.addLayer(this.filteredMarkersGroup);
+
+        const filteredLayers = this.filteredMarkersGroup.getLayers();
+        const markerCount = filteredLayers.length;
+
+        // Update listings heading content.
+        if (markerCount === 1) {
+            this.listingsHeading.textContent = `Displaying: ${markerCount} result`
+        } else {
+            this.listingsHeading.textContent = `Displaying: ${markerCount} results`
+        }
+
+        // Update no content element classes.
+        if (markerCount > 0) {
+            this.listingContainer.classList.remove('no-results');
+        } else {
+            this.listingContainer.classList.add('no-results');
+        }
+
+        if (shouldAdjustMapBounds) {
+            this.lmap.fitBounds(bounds);
+        }
+
+        this.sortlistingEls(filteredLayers);
+    }
+
+    filterByDistanceAndPostType(shouldAdjustMapBounds = true) {
+        if (!this.distanceSelect) {
+            return;
+        }
+
+        // Clean up map.
+        this.lmap.removeLayer(this.filteredMarkersGroup);
+
+        // Reset filters markers.
+        this.filteredMarkersGroup = new L.FeatureGroup();
+
+        // Start a bounded area.
+        const distance = parseFloat(this.distanceSelect.value) || 0;
+        const bounds = L.latLngBounds();
+        bounds.extend(this.LMAP_DISTANCE_CENTER);
+
+        // Process all markers.
+        this.allMarkersGroup.eachLayer((marker) => {
+            // Updating marker distance data.
+            const distanceInMiles = this.calcLatLngDistanceMilesFromMapCenter(marker.getLatLng());
+            marker.options.themeData.distanceInMiles = distanceInMiles;
+
+            // Check distance filter
+            const passesDistanceFilter = distance === 0 || distanceInMiles <= distance;
+            
+            // Check post type filter
+            const passesPostTypeFilter = this.activePostTypeFilter === '' || marker.options.themeData.postType === this.activePostTypeFilter;
+            
+            // Show/hide based on both filters
+            if (passesDistanceFilter && passesPostTypeFilter) {
                 this.filteredMarkersGroup.addLayer(marker);
                 marker.options.themeData.listingElement.removeAttribute('hidden', '');
                 marker.options.themeData.distanceInMiles = distanceInMiles;
@@ -747,6 +847,7 @@ class Map {
             lat: element.dataset.mapItemLat,
             lng: element.dataset.mapItemLng,
             name: element.querySelector('.map__listing__title').textContent,
+            postType: element.dataset.mapItemPostType,
         };
     }
 

@@ -299,6 +299,27 @@
                 display: none;
             }
 
+            @include mq(medium) {
+                justify-content: flex-start;
+                flex-direction: row;
+                padding: var(--space--xs) var(--space--m);
+            }
+        }
+
+        &__items {
+            display: flex;
+            gap: var(--space--3xs);
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
+            justify-content: center;
+
+            scrollbar-width: none;
+
+            &::-webkit-scrollbar {
+                display: none;
+            }
+
             @include mq($until: medium) {
                 justify-content: flex-start;
             }

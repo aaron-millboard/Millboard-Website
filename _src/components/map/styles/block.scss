@@ -66,6 +66,7 @@
             --input--background-color: transparent;
 
             border-right: 0;
+            line-height: 1;
         }
 
         &__submit {
@@ -88,6 +89,7 @@
             align-items: center;
             gap: var(--space--2xs);
             justify-self: start;
+            text-align: left;
 
             @include interact {
                 text-decoration: underline;
@@ -313,6 +315,52 @@
                 mask-image: url(#{asset-path('images/icons/chevron-right.svg')});
                 mask-size: #{px-to-rem(24)};
             }
+        }
+    }
+
+    &__filters {
+        display: flex;
+        gap: var(--space--3xs);
+        flex-wrap: wrap;
+        padding-bottom: var(--space--l);
+        margin-bottom: var(--space--l);
+        border-bottom: 1px solid var(--color--brand-1);
+        width: 100%;
+
+        &--mobile {
+            margin-top: var(--space--l);
+
+            @include mq(medium) {
+                display: none;
+            }
+        }
+
+        &--sidebar {
+            @include mq($until: medium) {
+                display: none;
+            }
+        }
+    }
+
+    &__filter {
+        @include button-reset-hard;
+        @include typestyle-small;
+
+        line-height: 1;
+        display: flex;
+        padding: var(--space--3xs) px-to-rem(12);
+        align-items: flex-start;
+        gap: px-to-rem(10);
+        border: 1px solid var(--color--brand-1);
+
+        @include interact {
+            background-color: var(--color--wenge);
+            color: var(--color--white);
+        }
+
+        &--active {
+            background-color: var(--color--wenge);
+            color: var(--color--white);
         }
     }
 }

@@ -1,4 +1,5 @@
 <div <?= \Granola\Helpers::build_attributes($args['attributes']); ?>>
+    <?php var_dump($args); ?>
     <div class="partner-contact-form__inner">
         <div class="partner-contact-form__grid">
             <div class="partner-contact-form__column partner-contact-form__column--content">
