@@ -27,6 +27,10 @@ function filter_args(array $args): ?array
     $args['attributes']['data-map-item-lat'] = $args['address']['lat'];
     $args['attributes']['data-map-item-lng'] = $args['address']['lng'];
 
+    if (!empty($args['advanced_installer'])) {
+        $args['attributes']['data-map-item-advanced-installer'] = '1';
+    }
+
     // Finally set address.
     $args['address'] = $args['address']['address'];
 

@@ -318,6 +318,74 @@
         }
     }
 
+    &__marker-tooltip {
+        &__title {
+            @include typestyle-xlarge;
+
+            margin: 0;
+            font-weight: var(--type--2--font-weight);
+            letter-spacing: 0;
+        }
+
+        &__meta {
+            order: -1;
+            display: flex;
+            flex-flow: row wrap;
+            align-items: center;
+            gap: var(--space--3xs);
+
+            &:not(:empty) {
+                margin-bottom: var(--space--s);
+            }
+
+            .g-tag {
+                border-color: var(--color--brand-4);
+            }
+        }
+
+        &__distance {
+            @include typestyle-small;
+
+            font-weight: var(--type--2--font-weight);
+        }
+
+        &__phone,
+        &__address {
+            @include typestyle-small;
+
+            margin-top: var(--space--3xs);
+            color: var(--link--color);
+        }
+
+        &__link {
+            @include typestyle-h6;
+            @include mask-icon;
+
+            display: inline-flex;
+            gap: var(--space--2xs);
+            align-items: center;
+            text-decoration: none;
+            margin-top: var(--space--s);
+
+            @include interact {
+                text-decoration: none;
+            }
+
+            &::after {
+                display: block;
+                width: #{px-to-rem(24)};
+                height: #{px-to-rem(24)};
+                content: '';
+                mask-image: url(#{asset-path('images/icons/chevron-right.svg')});
+                mask-size: #{px-to-rem(24)};
+            }
+        }
+
+        a {
+            color: var(--link--color);
+        }
+    }
+    
     &__filters {
         display: flex;
         gap: var(--space--3xs);
