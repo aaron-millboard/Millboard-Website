@@ -105,6 +105,7 @@ function get_item_data($args): array|null
         $items[] = [
             'id' => $wp_post_id,
             'title' => $wp_post->post_title,
+            'advanced_installer' => !empty(\get_field('advanced_installer', $wp_post_id)),
             'address' => \get_field('address', $wp_post_id),
             'phone' => \get_field('phone', $wp_post_id),
             'email' => \get_field('email', $wp_post_id),
@@ -112,6 +113,19 @@ function get_item_data($args): array|null
             'url' => \get_permalink($wp_post),
             'post' => $wp_post,
         ];
+    }
+
+    if ($args['content_type'] === 'installer') {
+        usort($items, static function (array $left, array $right): int {
+            $left_priority = !empty($left['advanced_installer']) ? 0 : 1;
+            $right_priority = !empty($right['advanced_installer']) ? 0 : 1;
+
+            if ($left_priority !== $right_priority) {
+                return $left_priority <=> $right_priority;
+            }
+
+            return strcasecmp($left['title'] ?? '', $right['title'] ?? '');
+        });
     }
 
     return $items;

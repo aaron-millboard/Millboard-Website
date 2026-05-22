@@ -41,11 +41,12 @@ class Map {
         // Variables for the Leaflet Map.
         this.LMAP_ZOOM_DELTA = 1.4; // Ws 0.8
         this.LMAP_ZOOM_SNAP = this.LMAP_ZOOM_DELTA;
-        this.LMAP_INITIAL_ZOOM = 6; // Was 3.5.
+        this.LMAP_INITIAL_ZOOM = 8; // Closer default view.
+        this.LMAP_GB_INITIAL_ZOOM = 9; // Even closer view for GB/Coventry.
         this.LMAP_MIN_ZOOM = 2.4;
         this.LMAP_MAX_ZOOM = 15; // Was 7.2
-        this.LMAP_INITIAL_CENTER = [55, -5]; // Move center to UK.
-        this.LMAP_DISTANCE_CENTER = L.latLng(52.3, -1.4);
+        this.LMAP_INITIAL_CENTER = [52.4068, -1.5197]; // Center on Coventry.
+        this.LMAP_DISTANCE_CENTER = L.latLng(52.4068, -1.5197);
 
         this.localeCountryCode = this.getCountryCodeFromUrl() || 'gb';
         this.urlLocaleLatLng = this.getLatLngFromLocaleCode();
@@ -54,6 +55,10 @@ class Map {
         if (this.urlLocaleLatLng) {
             this.LMAP_INITIAL_CENTER = [this.urlLocaleLatLng.lat, this.urlLocaleLatLng.lng];
             this.LMAP_DISTANCE_CENTER = this.urlLocaleLatLng;
+        }
+
+        if (this.localeCountryCode === 'gb') {
+            this.LMAP_INITIAL_ZOOM = this.LMAP_GB_INITIAL_ZOOM;
         }
 
         this.LMAP_MARKER_WIDTH = 31;
@@ -190,7 +195,7 @@ class Map {
             es: [40.4637, -3.7492],
             fi: [61.9241, 25.7482],
             fr: [46.2276, 2.2137],
-            gb: [55, -5],
+            gb: [52.4068, -1.5197],
             ie: [53.1424, -7.6921],
             it: [41.8719, 12.5674],
             nl: [52.1326, 5.2913],
@@ -316,7 +321,7 @@ class Map {
 
         const countryBounds = this.getBoundsFromCountryCode();
 
-        if (countryBounds) {
+        if (countryBounds && this.localeCountryCode !== 'gb') {
             this.lmap.fitBounds(countryBounds);
         }
 
@@ -391,6 +396,17 @@ class Map {
                     distanceInMiles: this.calcLatLngDistanceMilesFromMapCenter(listingLatLng),
                 },
             });
+
+            const markerTooltipHtml = this.getMarkerTooltipHtml(marker);
+
+            if (markerTooltipHtml) {
+                marker.bindPopup(markerTooltipHtml, {
+                    className: 'map__marker-tooltip',
+                    offset: [0, -this.LMAP_MARKER_HEIGHT],
+                    autoPan: true,
+                    closeButton: false,
+                });
+            }
 
             marker.addEventListener('click', () => {
                 this.selectListingByMarker(marker);
@@ -589,6 +605,10 @@ class Map {
             }
 
             this.updateMarkerDistanceMeta(marker);
+
+            if (marker.getPopup() && marker.isPopupOpen()) {
+                marker.setPopupContent(this.getMarkerTooltipHtml(marker));
+            }
         });
 
         this.lmap.addLayer(this.filteredMarkersGroup);
@@ -625,8 +645,17 @@ class Map {
     }
 
     sortlistingEls(filteredLayers) {
-        // Sort map markers by distance from central point.
-        filteredLayers.sort((a, b) => a.options.themeData.distanceInMiles - b.options.themeData.distanceInMiles);
+        // Keep advanced installers at the top, then sort by distance from the central point.
+        filteredLayers.sort((a, b) => {
+            const aIsAdvanced = a.options.themeData.listingElement?.dataset.mapItemAdvancedInstaller === '1';
+            const bIsAdvanced = b.options.themeData.listingElement?.dataset.mapItemAdvancedInstaller === '1';
+
+            if (aIsAdvanced !== bIsAdvanced) {
+                return aIsAdvanced ? -1 : 1;
+            }
+
+            return a.options.themeData.distanceInMiles - b.options.themeData.distanceInMiles;
+        });
 
         // Order listings from closest > furthest away.
         filteredLayers.forEach((layer) => {
@@ -728,6 +757,7 @@ class Map {
             }
 
             markerEl.classList.remove('leaflet-marker-icon--selected');
+            marker.closePopup();
         });
 
         if (!activeMarker) {
@@ -739,6 +769,114 @@ class Map {
         if (activeMarkerEl) {
             activeMarkerEl.classList.add('leaflet-marker-icon--selected');
         }
+
+        activeMarker.setPopupContent(this.getMarkerTooltipHtml(activeMarker));
+        activeMarker.openPopup();
+    }
+
+    getMarkerTooltipHtml(marker) {
+        if (!marker || !marker.options || !marker.options.themeData || !marker.options.themeData.listingElement) {
+            return '';
+        }
+
+        const listingEl = marker.options.themeData.listingElement;
+
+        const titleEl = listingEl.querySelector('.map__listing__title');
+        const addressEl = listingEl.querySelector('.map__listing__address');
+        const phoneEl = listingEl.querySelector('.map__listing__phone');
+        const linkEl = listingEl.querySelector('.map__listing__link');
+
+        const title = titleEl ? this.escapeHtml(titleEl.textContent.trim()) : '';
+        const address = addressEl ? this.escapeHtml(addressEl.textContent.trim()) : '';
+
+        const distanceInMiles = marker.options.themeData.distanceInMiles;
+        const distance = Number.isFinite(distanceInMiles)
+            ? `${distanceInMiles} miles away`
+            : '';
+
+        let phone = '';
+        let phoneHref = '';
+
+        if (phoneEl) {
+            if (phoneEl.matches('a')) {
+                phone = this.escapeHtml(phoneEl.textContent.trim());
+                phoneHref = this.escapeHtml(phoneEl.getAttribute('href') || '');
+            } else {
+                const phoneAnchorEl = phoneEl.querySelector('a');
+
+                if (phoneAnchorEl) {
+                    phone = this.escapeHtml(phoneAnchorEl.textContent.trim());
+                    phoneHref = this.escapeHtml(phoneAnchorEl.getAttribute('href') || '');
+                } else {
+                    phone = this.escapeHtml(phoneEl.textContent.trim());
+                }
+            }
+        }
+
+        let linkHref = '';
+        let linkText = '';
+
+        if (linkEl) {
+            if (linkEl.matches('a')) {
+                linkHref = linkEl.getAttribute('href') || '';
+                linkText = linkEl.textContent.trim();
+            } else {
+                const anchorEl = linkEl.querySelector('a');
+
+                if (anchorEl) {
+                    linkHref = anchorEl.getAttribute('href') || '';
+                    linkText = anchorEl.textContent.trim();
+                }
+            }
+        }
+
+        const safeLinkHref = this.escapeHtml(linkHref);
+        const safeLinkText = this.escapeHtml(linkText);
+
+        if (!title && !distance && !address && !phone && !safeLinkHref) {
+            return '';
+        }
+
+        let html = '<div class="map__marker-tooltip__inner">';
+
+        if (title) {
+            html += `<h4 class="map__marker-tooltip__title">${title}</h4>`;
+        }
+
+        if (distance) {
+            html += `<p class="map__marker-tooltip__distance">${distance}</p>`;
+        }
+
+        if (address) {
+            html += `<p class="map__marker-tooltip__address">${address}</p>`;
+        }
+
+        if (phone && phoneHref) {
+            html += `<a class="map__marker-tooltip__phone" href="${phoneHref}">${phone}</a>`;
+        } else if (phone) {
+            html += `<p class="map__marker-tooltip__phone">${phone}</p>`;
+        }
+
+        if (safeLinkHref) {
+            html += `<a class="map__marker-tooltip__link" href="${safeLinkHref}">${safeLinkText || 'View store'}</a>`;
+        }
+
+        html += '</div>';
+
+        return html;
+    }
+
+    escapeHtml(content) {
+        if (!content) {
+            return '';
+        }
+
+        return content
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
     }
 
     // Helpers
