@@ -181,11 +181,13 @@ function get_item_data($args): array|null
         $address = \get_field('address', $wp_post_id);
         $lat = \get_field('address_lat', $wp_post_id);
         $lng = \get_field('address_lng', $wp_post_id);
+        $advanced_installer = !empty(\get_field('advanced_installer', $wp_post_id));
 
         $items[] = [
             'id' => $wp_post_id,
             'title' => $wp_post->post_title,
             'address' => $address,
+            'advanced_installer' => $advanced_installer,
             'phone' => \get_field('phone', $wp_post_id),
             'email' => \get_field('email', $wp_post_id),
             'website' => \get_field('website', $wp_post_id),
@@ -199,6 +201,19 @@ function get_item_data($args): array|null
                 'data-map-item-post-type' => $wp_post->post_type,
             ],
         ];
+    }
+
+    if ($args['content_type'] === 'installer') {
+        usort($items, static function (array $left, array $right): int {
+            $left_priority = !empty($left['advanced_installer']) ? 0 : 1;
+            $right_priority = !empty($right['advanced_installer']) ? 0 : 1;
+
+            if ($left_priority !== $right_priority) {
+                return $left_priority <=> $right_priority;
+            }
+
+            return strcasecmp($left['title'] ?? '', $right['title'] ?? '');
+        });
     }
 
     return $items;
