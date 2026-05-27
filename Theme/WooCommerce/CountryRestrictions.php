@@ -4,7 +4,6 @@ namespace Theme\WooCommerce;
 
 class CountryRestrictions
 {
-    private const FREE_SAMPLE_SHIPPING_RATE_ID = 'millboard_free_sample_shipping_homeowner';
     private const HOMEOWNER_MATCH_TERMS = [
         'homeowner',
         'house owner',
@@ -93,20 +92,12 @@ class CountryRestrictions
      */
     public static function filter_package_rates(array $rates, array $package): array
     {
-        if (self::should_force_free_sample_shipping()) {
-            $rate = self::build_free_sample_shipping_rate($package);
-
-            return [
-                self::FREE_SAMPLE_SHIPPING_RATE_ID => $rate,
-            ];
-        }
-
         if (!self::should_allow_worldwide_zero_cost_checkout()) {
-            return self::apply_homeowner_sample_surcharge($rates, $package);
+            return self::apply_sample_shipping_surcharge($rates, $package);
         }
 
         if (!empty($rates)) {
-            return self::apply_homeowner_sample_surcharge($rates, $package);
+            return self::apply_sample_shipping_surcharge($rates, $package);
         }
 
         $rate_id = 'millboard_zero_cost_shipping';
@@ -119,7 +110,7 @@ class CountryRestrictions
             $rate_id
         );
 
-        return self::apply_homeowner_sample_surcharge($rates, $package);
+        return self::apply_sample_shipping_surcharge($rates, $package);
     }
 
     /**
@@ -185,9 +176,9 @@ class CountryRestrictions
      * @param array<string, mixed> $package
      * @return array<string, \WC_Shipping_Rate>
      */
-    private static function apply_homeowner_sample_surcharge(array $rates, array $package): array
+    private static function apply_sample_shipping_surcharge(array $rates, array $package): array
     {
-        $surcharge = self::get_homeowner_small_sample_surcharge($package);
+        $surcharge = self::get_sample_shipping_surcharge($package);
 
         if ($surcharge <= 0 || empty($rates)) {
             return $rates;
@@ -214,9 +205,9 @@ class CountryRestrictions
     /**
      * @param array<string, mixed> $package
      */
-    private static function get_homeowner_small_sample_surcharge(array $package): float
+    private static function get_sample_shipping_surcharge(array $package): float
     {
-        if (!self::cart_is_non_empty_and_zero_total()) {
+        if (!function_exists('WC') || !\WC()->cart instanceof \WC_Cart || \WC()->cart->is_empty()) {
             return 0.0;
         }
 
@@ -224,96 +215,57 @@ class CountryRestrictions
             return 0.0;
         }
 
-        $has_small_sample = self::cart_contains_small_sample();
-
-        if (!$has_small_sample) {
-            $allow_metadata_fallback = (bool) apply_filters(
-                'millboard/homeowner_small_sample_metadata_fallback',
-                true,
-                $package
-            );
-
-            if (!$allow_metadata_fallback || !self::cart_contains_only_zero_cost_items()) {
-                return 0.0;
-            }
+        if (self::cart_contains_non_sample_products()) {
+            return 0.0;
         }
 
-        $country = self::resolve_checkout_country($package);
+        if (self::cart_contains_large_sample()) {
+            $shipping_cost = self::get_large_sample_shipping_cost();
 
-        return match ($country) {
-            'US' => 5.0,
-            default => 0.0,
-        };
+            return $shipping_cost ?? 0.0;
+        }
+
+        if (self::cart_contains_small_sample()) {
+            $shipping_cost = self::get_small_sample_shipping_cost();
+
+            return $shipping_cost ?? 0.0;
+        }
+
+        return 0.0;
     }
 
-    /**
-     * @param array<string, mixed> $package
-     */
-    private static function resolve_checkout_country(array $package): string
+    private static function get_small_sample_shipping_cost(): ?float
     {
-        $country = self::normalize_country_code((string) ($package['destination']['country'] ?? ''));
+        $cost = function_exists('get_field') ? \get_field('small_sample_shipping', 'option') : null;
 
-        if ($country !== '') {
-            return $country;
+        if (!is_numeric($cost)) {
+            return null;
         }
 
-        if (function_exists('WC') && \WC()->customer instanceof \WC_Customer) {
-            $country = self::normalize_country_code((string) \WC()->customer->get_shipping_country());
+        $cost = (float) $cost;
 
-            if ($country !== '') {
-                return $country;
-            }
-
-            $country = self::normalize_country_code((string) \WC()->customer->get_billing_country());
-
-            if ($country !== '') {
-                return $country;
-            }
+        if ($cost < 0.0) {
+            return null;
         }
 
-        if (function_exists('wp_unslash')) {
-            $post_data = $_POST['post_data'] ?? null;
-
-            if (is_string($post_data) && $post_data !== '') {
-                $parsed = [];
-                parse_str((string) wp_unslash($post_data), $parsed);
-
-                $country = self::normalize_country_code((string) ($parsed['shipping_country'] ?? $parsed['billing_country'] ?? ''));
-
-                if ($country !== '') {
-                    return $country;
-                }
-            }
-
-            $country = self::normalize_country_code((string) ($_POST['shipping_country'] ?? $_POST['billing_country'] ?? ''));
-
-            if ($country !== '') {
-                return $country;
-            }
-        }
-
-        $country = self::normalize_country_code((string) get_option('woocommerce_default_country', ''));
-
-        if ($country !== '') {
-            return $country;
-        }
-
-        return '';
+        return (float) round($cost, 2);
     }
 
-    private static function normalize_country_code(string $country): string
+    private static function get_large_sample_shipping_cost(): ?float
     {
-        $country = strtoupper(trim($country));
+        $cost = function_exists('get_field') ? \get_field('large_sample_shipping', 'option') : null;
 
-        if ($country === '') {
-            return '';
+        if (!is_numeric($cost)) {
+            return null;
         }
 
-        if (preg_match('/^[A-Z]{2}/', $country, $matches) === 1) {
-            return $matches[0];
+        $cost = (float) $cost;
+
+        if ($cost < 0.0) {
+            return null;
         }
 
-        return '';
+        return (float) round($cost, 2);
     }
 
     private static function cart_is_non_empty_and_zero_total(): bool
@@ -383,6 +335,10 @@ class CountryRestrictions
                 continue;
             }
 
+            if (Utils::is_sample($product) !== true) {
+                continue;
+            }
+
             if (self::is_small_sample_product($product, is_array($cart_item) ? $cart_item : [])) {
                 return true;
             }
@@ -391,45 +347,50 @@ class CountryRestrictions
         return false;
     }
 
-    private static function cart_contains_only_zero_cost_items(): bool
+    private static function cart_contains_large_sample(): bool
     {
         if (!function_exists('WC') || !\WC()->cart instanceof \WC_Cart) {
             return false;
         }
 
-        $cart_items = \WC()->cart->get_cart();
-
-        if (empty($cart_items)) {
-            return false;
-        }
-
-        foreach ($cart_items as $cart_item) {
-            if (!is_array($cart_item)) {
-                return false;
-            }
-
-            $line_total = isset($cart_item['line_total']) ? (float) $cart_item['line_total'] : null;
-
-            if ($line_total !== null && $line_total > 0.0) {
-                return false;
-            }
-
+        foreach (\WC()->cart->get_cart() as $cart_item) {
             $product = $cart_item['data'] ?? null;
 
-            if ($product instanceof \WC_Product) {
-                if ((float) $product->get_price() > 0.0) {
-                    return false;
-                }
-
+            if (!$product instanceof \WC_Product) {
                 continue;
             }
 
-            if ($line_total === null) {
-                return false;
+            if (Utils::is_sample($product) !== true) {
+                continue;
+            }
+
+            if (!self::is_small_sample_product($product, is_array($cart_item) ? $cart_item : [])) {
+                return true;
             }
         }
 
-        return true;
+        return false;
+    }
+
+    private static function cart_contains_non_sample_products(): bool
+    {
+        if (!function_exists('WC') || !\WC()->cart instanceof \WC_Cart) {
+            return false;
+        }
+
+        foreach (\WC()->cart->get_cart() as $cart_item) {
+            $product = $cart_item['data'] ?? null;
+
+            if (!$product instanceof \WC_Product) {
+                continue;
+            }
+
+            if (Utils::is_sample($product) !== true) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -498,36 +459,6 @@ class CountryRestrictions
     private static function floats_match(float $a, float $b): bool
     {
         return abs($a - $b) < 0.01;
-    }
-
-    private static function should_force_free_sample_shipping(): bool
-    {
-        if (!self::cart_is_non_empty_and_zero_total()) {
-            return false;
-        }
-
-        return self::is_checkout_homeowner();
-    }
-
-    /**
-     * @param array<string, mixed> $package
-     */
-    private static function build_free_sample_shipping_rate(array $package): \WC_Shipping_Rate
-    {
-        $cost = self::get_homeowner_small_sample_surcharge($package);
-        $taxes = [];
-
-        if ($cost > 0) {
-            $taxes = \WC_Tax::calc_shipping_tax($cost, \WC_Tax::get_shipping_tax_rates());
-        }
-
-        return new \WC_Shipping_Rate(
-            self::FREE_SAMPLE_SHIPPING_RATE_ID,
-            \__('Free Sample Shipping', 'granola'),
-            $cost,
-            $taxes,
-            self::FREE_SAMPLE_SHIPPING_RATE_ID
-        );
     }
 
     /**

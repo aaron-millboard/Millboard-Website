@@ -82,6 +82,50 @@
             "optgroup": false,
             "multiple": 0,
             "allow_null": 0
+        },
+        {
+            "key": "field_69b43bb0a0823",
+            "label": "Small Sample Shipping",
+            "name": "small_sample_shipping",
+            "aria-label": "",
+            "type": "number",
+            "instructions": "Used as the homeowner small sample shipping surcharge.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "min": 0,
+            "max": "",
+            "allow_in_bindings": 0,
+            "placeholder": "",
+            "step": 0.01,
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_69b43bc1a0824",
+            "label": "Large Sample Shipping",
+            "name": "large_sample_shipping",
+            "aria-label": "",
+            "type": "number",
+            "instructions": "Used as the large sample shipping surcharge.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "min": 0,
+            "max": "",
+            "allow_in_bindings": 0,
+            "placeholder": "",
+            "step": 0.01,
+            "prepend": "",
+            "append": ""
         }
     ],
     "location": [
