@@ -2,7 +2,7 @@
 
 namespace Theme\WooCommerce;
 
-class CountryRestrictions
+class SampleShipping
 {
     private const HOMEOWNER_MATCH_TERMS = [
         'homeowner',
@@ -178,9 +178,9 @@ class CountryRestrictions
      */
     private static function apply_sample_shipping_surcharge(array $rates, array $package): array
     {
-        $surcharge = self::get_sample_shipping_surcharge($package);
+        $shipping_cost = self::get_sample_shipping_surcharge($package);
 
-        if ($surcharge <= 0 || empty($rates)) {
+        if ($shipping_cost <= 0 || empty($rates)) {
             return $rates;
         }
 
@@ -189,12 +189,14 @@ class CountryRestrictions
                 continue;
             }
 
-            $new_cost = (float) $rate->get_cost() + $surcharge;
-            $rate->set_cost($new_cost);
+            // The configured sample shipping value is the final amount to charge.
+            $rate->set_cost($shipping_cost);
 
-            if ($rate->get_tax_status() === 'taxable') {
-                $rate->set_taxes(\WC_Tax::calc_shipping_tax($new_cost, \WC_Tax::get_shipping_tax_rates()));
+            if (method_exists($rate, 'set_tax_status')) {
+                $rate->set_tax_status('none');
             }
+
+            $rate->set_taxes([]);
 
             $rates[$rate_id] = $rate;
         }
