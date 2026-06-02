@@ -85,11 +85,11 @@
         },
         {
             "key": "field_69b43bb0a0823",
-            "label": "Small Sample Shipping",
+            "label": "Small Sample Shipping Cost",
             "name": "small_sample_shipping",
             "aria-label": "",
             "type": "number",
-            "instructions": "Used as the homeowner small sample shipping surcharge.",
+            "instructions": "Used as the homeowner small sample shipping cost.",
             "required": 0,
             "conditional_logic": 0,
             "wrapper": {
@@ -107,11 +107,11 @@
         },
         {
             "key": "field_69b43bc1a0824",
-            "label": "Large Sample Shipping",
+            "label": "Large Sample Shipping Cost",
             "name": "large_sample_shipping",
             "aria-label": "",
             "type": "number",
-            "instructions": "Used as the large sample shipping surcharge.",
+            "instructions": "Used as the large sample shipping cost.",
             "required": 0,
             "conditional_logic": 0,
             "wrapper": {
