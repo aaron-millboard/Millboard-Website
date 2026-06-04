@@ -51,6 +51,28 @@
                 <?php if (\is_search()) { ?>
                     <?= \Granola\Component::get('search-form'); ?>
                 <?php } ?>
+
+                <?php if (!empty($args['author_info']['display_name'])) { ?>
+                    <div class="page-header__author">
+                        <?php if (!empty($args['author_info']['image']['attachment_id'])) { ?>
+                            <div class="page-header__author-avatar img-fit">
+                                <?= \Granola\Component::get('image', $args['author_info']['image']); ?>
+                            </div>
+                        <?php } ?>
+
+                        <div class="page-header__author-content">
+                            <p class="page-header__author-name is-style-typestyle-h6">
+                                <?= esc_html(sprintf(__('By %s', 'granola'), $args['author_info']['display_name'])); ?>
+                            </p>
+
+                            <?php if (!empty($args['author_info']['bio'])) { ?>
+                                <p class="page-header__author-bio">
+                                    <?= esc_html($args['author_info']['bio']); ?>
+                                </p>
+                            <?php } ?>
+                        </div>
+                    </div>
+                <?php } ?>
             </div>
         </div>
     </div>
