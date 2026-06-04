@@ -45,7 +45,7 @@
 @mixin typestyle-h1 {
     @include heading-attributes;
 
-    font-size: rfs(32, 56);
+    font-size: rfs(28, 56);
     text-transform: uppercase;
 }
 
