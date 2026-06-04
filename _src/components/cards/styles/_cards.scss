@@ -5,10 +5,8 @@
 
     $this: &;
 
-    &__inner{
-        max-width: var(--width--responsive--l);
-        margin-left: auto;
-        margin-right: auto;
+    @include mq($until: medium) {
+        margin-bottom: var(--space--2xl);
     }
 
     &__header {
