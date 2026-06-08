@@ -4,6 +4,9 @@
     position: relative;
     margin-top: 0;
     padding: var(--space--xl) 0;
+    max-width: var(--width--responsive--l);
+    margin-left: auto;
+    margin-right: auto;
 
     .product-samples__button--in-cart {
         @include button--interacted;
