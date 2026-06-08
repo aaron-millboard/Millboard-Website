@@ -9,10 +9,12 @@ namespace Theme\PostTypes;
 class Image
 {
     protected const SLUG = 'image';
+    public const ARCHIVE_POSTS_PER_PAGE = 7;
 
     public static function init(): void
     {
         \add_action('init', [__CLASS__, 'register_post_type']);
+        \add_action('pre_get_posts', [__CLASS__, 'filter_archive_posts_per_page']);
         \add_filter('granola/templates/post-types', [__CLASS__, 'filter_granola_templates_post_types']);
         \add_action('template_redirect', [__CLASS__, 'redirect_single_cpt']);
         \add_filter('wp_robots', [__CLASS__, 'filter_gallery_robots_link']);
@@ -24,6 +26,17 @@ class Image
         if (is_singular(self::SLUG)) {
             wp_redirect(get_post_type_archive_link(self::SLUG), 301);
             exit;
+        }
+    }
+
+    public static function filter_archive_posts_per_page(\WP_Query $query): void
+    {
+        if (\is_admin() || !$query->is_main_query()) {
+            return;
+        }
+
+        if ($query->is_post_type_archive(self::SLUG)) {
+            $query->set('posts_per_page', self::ARCHIVE_POSTS_PER_PAGE);
         }
     }
 
@@ -136,7 +149,7 @@ class Image
         if (!\is_post_type_archive(self::SLUG)) {
             return $robots;
         }
-        
+
         $image_category = isset($_GET['image_category']) ? sanitize_text_field($_GET['image_category']) : '';
 
         if (!empty($image_category)) {
