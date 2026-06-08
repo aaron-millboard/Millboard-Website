@@ -203,6 +203,7 @@
                 @include typestyle-base;
                 letter-spacing: normal;
                 margin-bottom: 0;
+                font-size: calc(16/16*1rem + (16 - 16)*var(--fluid-bp));
             }
         }
 
@@ -252,6 +253,7 @@
             label {
                 @include typestyle-base;
                 margin: 0;
+                font-size: calc(16/16*1rem + (16 - 16)*var(--fluid-bp));
             }
 
             .woocommerce-terms-and-conditions {
