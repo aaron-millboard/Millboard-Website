@@ -23,11 +23,12 @@ export default class GalleryVideo {
     init() {
         this.videos.forEach((video, index) => {
             const playButton = video.querySelector('.gallery-video__play-button');
+            const cover = video.querySelector('.gallery-video__cover');
             const metaPlayButton = video.querySelector('.gallery-video__meta__play');
             const iframe = video.querySelector('iframe');
 
-            if (playButton) {
-                playButton.addEventListener('click', () => {
+            if (cover && playButton) {
+                cover.addEventListener('click', () => {
                     this.playVideo(index, playButton, iframe);
                 });
             }
