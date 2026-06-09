@@ -61,10 +61,11 @@ function filter_args(array $args): ?array
  */
 function get_language_from_url() {
     // Get request URI (e.g. /de-de/some-page/)
-    $request_uri = $_SERVER['REQUEST_URI'];
+    $request_uri = $_SERVER['REQUEST_URI'] ?? '';
+    $request_path = (string) \wp_parse_url($request_uri, PHP_URL_PATH);
 
     // Trim slashes and split path segments
-    $segments = explode('/', trim($request_uri, '/'));
+    $segments = explode('/', trim($request_path, '/'));
 
     // First segment should be the language (e.g. de-de)
     if (!empty($segments[0]) && preg_match('/^[a-z]{2}-[a-z]{2}$/i', $segments[0])) {
