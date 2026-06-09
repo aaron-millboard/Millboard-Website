@@ -27,7 +27,7 @@ function filter_args(array $args): ?array
     $args['attributes'] = array_merge([
         'autocomplete' => 'off',
         'method' => 'get',
-        'action' => \home_url(),
+        'action' => \home_url('/'),
         'role' => 'search',
     ], $args['attributes']);
 
