@@ -56,6 +56,45 @@ class Settings
             ],
         ]);
 
+        \acf_add_local_field_group([
+            'key' => 'group_product_settings_order_essentials',
+            'title' => 'Order Essentials',
+            'fields' => [
+                [
+                    'key' => 'field_order_essentials_default_project_type',
+                    'label' => 'Default project type',
+                    'name' => 'order_essentials_default_project_type',
+                    'type' => 'select',
+                    'instructions' => 'Select the default project type used for recommendations.',
+                    'choices' => [
+                        'residential' => 'Residential',
+                        'commercial' => 'Commercial',
+                    ],
+                    'default_value' => 'residential',
+                    'ui' => 1,
+                    'return_format' => 'value',
+                ],
+                [
+                    'key' => 'field_order_essentials_matrix_json',
+                    'label' => 'Recommendation matrix (JSON)',
+                    'name' => 'order_essentials_matrix_json',
+                    'type' => 'textarea',
+                    'instructions' => 'Provide an array of rules. Example: [{"source_product_ids":[123],"source_category_slugs":["decking"],"target_product_id":456,"residential_multiplier":0.08,"commercial_multiplier":0.1,"rounding":"ceil","reason":"Fixings for board coverage"}]',
+                    'rows' => 10,
+                    'new_lines' => '',
+                ],
+            ],
+            'location' => [
+                [
+                    [
+                        'param' => 'options_page',
+                        'operator' => '==',
+                        'value' => 'acf-options-product-settings',
+                    ],
+                ],
+            ],
+        ]);
+
         \add_filter('acf/load_field/name=free_sample_disallowed_countries', [__CLASS__, 'load_country_choices']);
     }
 

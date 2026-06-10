@@ -349,7 +349,7 @@ do_action('woocommerce_before_cart');?>
                     }
 
                     $quote_snapshot_encoded = base64_encode(wp_json_encode($quote_snapshot));
-                ?>
+                    ?>
                 <section class="cart__quote-share" aria-label="<?php esc_attr_e('Share quote', 'granola'); ?>">
                     <p class="cart__quote-share__copy"><?php esc_html_e('Want to share this quote?', 'granola'); ?></p>
                     <button
@@ -388,6 +388,12 @@ do_action('woocommerce_before_cart');?>
     </div>
 
     <div class="cart__actions">
+        <div class="wc-order-essentials-link">
+            <a href="<?php echo esc_url(\Theme\WooCommerce\OrderEssentials::get_order_essentials_url()); ?>" class="button">
+                <?php esc_html_e('Review order essentials', 'granola'); ?>
+            </a>
+        </div>
+
         <div class="wc-proceed-to-checkout">
             <a href="<?php echo esc_url(wc_get_checkout_url()); ?>" class="checkout-button button alt wc-forward<?php echo esc_attr(wc_wp_theme_get_element_class_name('button') ? ' ' . wc_wp_theme_get_element_class_name('button') : ''); ?>">
                 <?php esc_html_e('Proceed to checkout', 'woocommerce'); ?>
