@@ -93,11 +93,11 @@ class SampleShipping
     public static function filter_package_rates(array $rates, array $package): array
     {
         if (!self::should_allow_worldwide_zero_cost_checkout()) {
-            return self::apply_sample_shipping_surcharge($rates, $package);
+            return self::apply_sample_shipping_surcharge($rates);
         }
 
         if (!empty($rates)) {
-            return self::apply_sample_shipping_surcharge($rates, $package);
+            return self::apply_sample_shipping_surcharge($rates);
         }
 
         $rate_id = 'millboard_zero_cost_shipping';
@@ -110,7 +110,7 @@ class SampleShipping
             $rate_id
         );
 
-        return self::apply_sample_shipping_surcharge($rates, $package);
+        return self::apply_sample_shipping_surcharge($rates);
     }
 
     /**
@@ -173,12 +173,11 @@ class SampleShipping
 
     /**
      * @param array<string, \WC_Shipping_Rate> $rates
-     * @param array<string, mixed> $package
      * @return array<string, \WC_Shipping_Rate>
      */
-    private static function apply_sample_shipping_surcharge(array $rates, array $package): array
+    private static function apply_sample_shipping_surcharge(array $rates): array
     {
-        $shipping_cost = self::get_sample_shipping_surcharge($package);
+        $shipping_cost = self::get_sample_shipping_surcharge();
 
         if ($shipping_cost <= 0 || empty($rates)) {
             return $rates;
@@ -188,6 +187,8 @@ class SampleShipping
             if (!$rate instanceof \WC_Shipping_Rate) {
                 continue;
             }
+
+            $rate->set_label(__('Sample shipping', 'granola'));
 
             // The configured sample shipping value is the final amount to charge.
             $rate->set_cost($shipping_cost);
@@ -205,9 +206,8 @@ class SampleShipping
     }
 
     /**
-     * @param array<string, mixed> $package
      */
-    private static function get_sample_shipping_surcharge(array $package): float
+    private static function get_sample_shipping_surcharge(): float
     {
         if (!function_exists('WC') || !\WC()->cart instanceof \WC_Cart || \WC()->cart->is_empty()) {
             return 0.0;
@@ -268,19 +268,6 @@ class SampleShipping
         }
 
         return (float) round($cost, 2);
-    }
-
-    private static function cart_is_non_empty_and_zero_total(): bool
-    {
-        if (!function_exists('WC') || !\WC()->cart instanceof \WC_Cart) {
-            return false;
-        }
-
-        if (\WC()->cart->is_empty()) {
-            return false;
-        }
-
-        return (float) \WC()->cart->get_cart_contents_total() === 0.0;
     }
 
     private static function is_checkout_homeowner(): bool
