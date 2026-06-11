@@ -123,11 +123,16 @@
             object-fit: contain;
             object-position: center;
             pointer-events: none;
+            transition: color 0.3s ease;
         }
 
         @include interact {
-            text-decoration: none;
+            text-decoration: underline;
             cursor: pointer;
+
+            svg{
+                color: var(--color--olivegreen);
+            }
         }
     }
 }
