@@ -267,7 +267,7 @@ export default (env, argv) => {
                                     silenceDeprecations: ['import', 'global-builtin', 'color-functions'], // Ignore deprecation about @import.
                                 },
                                 additionalData: (content, loaderContext) => {
-                                    const resourcePath = loaderContext.resourcePath;
+                                    const resourcePath = loaderContext.resourcePath.replace(/\\/g, '/');
 
                                     // Prepend core imports for component files.
                                     if (resourcePath.includes('/components')) {
