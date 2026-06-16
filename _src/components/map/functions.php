@@ -204,18 +204,30 @@ function get_item_data($args): array|null
     }
 
     if ($args['content_type'] === 'installer') {
+    // Sort everything alphabetically first.
         usort($items, static function (array $left, array $right): int {
-            $left_priority = !empty($left['advanced_installer']) ? 0 : 1;
-            $right_priority = !empty($right['advanced_installer']) ? 0 : 1;
-
-            if ($left_priority !== $right_priority) {
-                return $left_priority <=> $right_priority;
-            }
-
             return strcasecmp($left['title'] ?? '', $right['title'] ?? '');
         });
-    }
 
+    // Only the single (alphabetically first) advanced installer gets
+    // pinned to the top of the list. Any other advanced installers stay
+    // in their normal alphabetical position among the rest.
+        $first_advanced_installer_index = null;
+
+        foreach ($items as $index => $item) {
+            if (!empty($item['advanced_installer'])) {
+                $first_advanced_installer_index = $index;
+                break;
+            }
+        }
+
+        if ($first_advanced_installer_index !== null && $first_advanced_installer_index !== 0) {
+            $first_advanced_installer = $items[$first_advanced_installer_index];
+            unset($items[$first_advanced_installer_index]);
+            array_unshift($items, $first_advanced_installer);
+            $items = array_values($items);
+        }
+    }
     return $items;
 }
 
