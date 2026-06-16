@@ -218,32 +218,61 @@
 // Fields
 //
 .gfield--type-fileupload {
+    --file-upload--border-color: var(--color--brand-4);
+    --file-upload--icon-size: 2.5rem;
+    --file-upload--min-height: 12rem;
+    --file-upload--prompt-top: calc(var(--space--l) + var(--file-upload--icon-size) + var(--space--s));
+
     .gform_drop_area {
-        --input--border-color: var(--color--brand-4);
+        --input--border-color: var(--file-upload--border-color);
         position: relative;
 
-        padding: var(--space--l);
+        min-height: var(--file-upload--min-height);
+        padding: var(--file-upload--prompt-top) var(--space--l) var(--space--l);
         border: var(--border-width--m) dashed var(--input--border-color);
-        background: hsla(var(--color--black--hsl), 0.025);
+        background: transparent;
         display: flex;
+        flex-direction: column;
         justify-content: center;
         align-items: center;
         gap: var(--space--3xs);
-        padding-top: calc(var(--space--l) + 3rem);
+        text-align: center;
+
+        &:focus-within {
+            outline: var(--focus--1--width) solid var(--focus--color);
+            outline-offset: var(--focus--1--offset);
+        }
+
+        .gform_drop_instructions {
+            @include typestyle-h4;
+
+            margin: 0;
+            text-transform: none;
+            letter-spacing: 0;
+        }
 
         .button {
             @include button-reset-hard;
+
+            @include typestyle-h4;
+
+            margin: 0;
+            color: inherit;
             text-decoration: underline;
+            text-transform: none;
+            letter-spacing: 0;
         }
 
         &::before {
             content: url(#{asset-path('images/icons-custom/download.svg')});
             margin: 0;
-            width: 40px;
-            height: 40px;
+            width: var(--file-upload--icon-size);
+            height: var(--file-upload--icon-size);
             display: block;
             position: absolute;
-            top: 2rem;
+            top: var(--space--l);
+            left: 50%;
+            transform: translateX(-50%);
 
             .has-brand-6-background-color &,
             .has-brand-5-background-color & {
@@ -252,8 +281,86 @@
         }
     }
 
-    &.gfield_error .gform_drop_area {
-        --input--border-color: var(--color--error);
+    .ginput_container_fileupload {
+        position: relative;
+        padding-top: var(--file-upload--min-height);
+
+        &::before {
+            position: absolute;
+            z-index: 0;
+            top: 0;
+            right: 0;
+            left: 0;
+            height: var(--file-upload--min-height);
+            border: var(--border-width--m) dashed var(--file-upload--border-color);
+            background-image: url(#{asset-path('images/icons-custom/download.svg')});
+            background-position: center var(--space--l);
+            background-repeat: no-repeat;
+            background-size: var(--file-upload--icon-size) var(--file-upload--icon-size);
+            content: '';
+
+            .has-brand-6-background-color &,
+            .has-brand-5-background-color & {
+                background-image: url(#{asset-path('images/icons-custom/download-white.svg')});
+            }
+        }
+
+        &::after,
+        .gform_fileupload_rules::before {
+            font-size: $base-font-size;
+
+            position: absolute;
+            z-index: 1;
+            top: var(--file-upload--prompt-top);
+            margin: 0;
+            color: var(--color--foreground);
+            line-height: 1.36;
+            pointer-events: none;
+            text-transform: none;
+            letter-spacing: 0;
+        }
+
+        &::after {
+            font-size: $base-font-size;
+            right: calc(50% - 18px);
+            content: 'Drop files here or';
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .gform_fileupload_rules::before {
+            left: calc(50% + var(--space--l));
+            content: 'Select files';
+            text-decoration: underline;
+            white-space: nowrap;
+        }
+
+        > input[type='file'] {
+            position: absolute;
+            z-index: 2;
+            top: 0;
+            right: 0;
+            left: 0;
+            width: 100%;
+            height: var(--file-upload--min-height);
+            cursor: pointer;
+            opacity: 0;
+        }
+
+        &:focus-within::before {
+            outline: var(--focus--1--width) solid var(--focus--color);
+            outline-offset: var(--focus--1--offset);
+        }
+    }
+
+    &.gfield_error {
+        .gform_drop_area {
+            --input--border-color: var(--color--error);
+        }
+
+        .ginput_container_fileupload::before {
+            border-color: var(--color--error);
+        }
     }
 
     .gform_fileupload_rules {
