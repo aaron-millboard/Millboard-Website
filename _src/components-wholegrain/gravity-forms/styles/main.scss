@@ -307,7 +307,7 @@
 
         &::after,
         .gform_fileupload_rules::before {
-            @include typestyle-h4;
+            font-size: $base-font-size;
 
             position: absolute;
             z-index: 1;
@@ -321,6 +321,7 @@
         }
 
         &::after {
+            font-size: $base-font-size;
             right: calc(50% - 18px);
             content: 'Drop files here or';
             text-align: right;
