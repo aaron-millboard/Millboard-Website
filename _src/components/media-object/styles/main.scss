@@ -10,8 +10,8 @@
     --media-object--text-align: left;
 
     // Padding.
-    --media-object--inner-padding-x: 0px;
-    --media-object--inner-padding-y: 0px;
+    --media-object--inner-padding-x: 0;
+    --media-object--inner-padding-y: 0;
 
     // Media.
     --media-object--media--width: 100%;
@@ -48,12 +48,12 @@
     }
 
     &__inner {
-        display: flex;
         display: grid;
         flex-flow: var(--media-object--flex-flow);
         gap: var(--media-object--gap);
         grid-template-columns: var(--media-object--grid-template-columns);
         grid-template-rows: var(--media-object--grid-template-rows);
+        padding: 0 var(--media-object--inner-padding-x);
     }
 
     &__media {
@@ -61,9 +61,9 @@
         min-width: var(--media-object--media--width);
         min-height: var(--media-object--media--min-height, initial);
         border-radius: var(--media-object--media--border-radius, 0);
-        aspect-ratio: var(--media-object--media--ratio);
 
         > * {
+            aspect-ratio: var(--media-object--media--ratio);
             transition: transition(opacity);
         }
 
@@ -92,7 +92,6 @@
         width: 100%;
         justify-content: var(--media-object--content--justify-content);
         padding-block: var(--media-object--inner-padding-y);
-        padding-inline: var(--media-object--inner-padding-x);
     }
 
     &__heading {
@@ -171,10 +170,6 @@
     // -------------------------------------------------------------------------
     &[data-orientation='vertical'] {
         --media-object--media--min-height: #{px-to-rem(300)};
-        // @include mq(medium) {
-        // --media-object--grid-template-rows: 1fr 1fr;
-        // --media-object--media--ratio: 3 / 2; // Set the aspect ratio for horizontal layout.
-        // }
 
         &[data-media] {
             @include mq(medium) {
