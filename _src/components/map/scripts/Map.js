@@ -410,6 +410,14 @@ class Map {
                     autoPan: true,
                     closeButton: false,
                 });
+
+                // Leaflet's bindPopup auto-attaches a 'click' listener to open the
+                // popup. Remove it here (before the selection click handler below
+                // is registered) and open/close on hover instead.
+                marker.off('click');
+
+                marker.on('mouseover', () => marker.openPopup());
+                marker.on('mouseout', () => marker.closePopup());
             }
 
             marker.addEventListener('click', () => {
@@ -745,15 +753,8 @@ class Map {
     }
 
     sortlistingEls(filteredLayers) {
-        // Keep advanced installers at the top, then sort by distance from the central point.
+        // Sort purely by distance from the search location, closest first.
         filteredLayers.sort((a, b) => {
-            const aIsAdvanced = a.options.themeData.listingElement?.dataset.mapItemAdvancedInstaller === '1';
-            const bIsAdvanced = b.options.themeData.listingElement?.dataset.mapItemAdvancedInstaller === '1';
-
-            if (aIsAdvanced !== bIsAdvanced) {
-                return aIsAdvanced ? -1 : 1;
-            }
-
             return a.options.themeData.distanceInMiles - b.options.themeData.distanceInMiles;
         });
 
