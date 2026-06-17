@@ -15,6 +15,8 @@
         "enable_webmanifest": false,
 
         "image_sizes": {
+            "granola_square_s": [ 680, 680, true ],
+            "granola_square_m": [ 960, 960, true ],
             "granola_super": [ 2500, 2500 ],
             "hero": [ 2800, 1575 ]
         },
