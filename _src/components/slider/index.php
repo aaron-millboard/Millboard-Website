@@ -16,7 +16,7 @@
             <?php } ?>
 
             <?php if ($args['show_pips']) { ?>
-                <ul class="slider__pips list-reset--hard" role="tablist" aria-label="Slide navigation">
+                <ul class="slider__pips list-reset--hard" aria-label="Slide navigation">
                     <?php foreach ($args['pips'] as $pip) { ?>
                         <li><?= \Granola\Component::get('button', $pip); ?></li>
                     <?php } ?>
