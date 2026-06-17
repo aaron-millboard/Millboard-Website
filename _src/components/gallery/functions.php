@@ -203,6 +203,14 @@ function process_image(array $row, int $key, array $args, int $pattern_part, boo
     $pattern_columns = pattern_part_to_grid_span($pattern_part, 100, 12, 0, $is_last);
     $orientation = get_image_orientation($row['image']);
 
+    if ($pattern_part < 50) {
+        $image_size = 'granola_square_m';
+    } elseif ($pattern_part > 50) {
+        $image_size = '2048x2048';
+    } else {
+        $image_size = '1536x1536';
+    }
+
     // Collect attributes.
     return [
         'image' => $row,
@@ -229,7 +237,7 @@ function process_image(array $row, int $key, array $args, int $pattern_part, boo
         ],
         'image_medium' => [
             'attachment_id' => $row['image'],
-            'size' => 'medium_large',
+            'size' => $image_size,
         ],
         'image_thumbnail' => [
             'attachment_id' => $row['image'],
@@ -245,7 +253,6 @@ function process_image(array $row, int $key, array $args, int $pattern_part, boo
                 'gallery__card',
             ],
         ],
-        // 'aspect_ratio' => $row['aspect_ratio'] ?? '1/1',
     ];
 }
 
@@ -270,10 +277,11 @@ function pattern_part_to_grid_span(int $part, int $total = 100, int $grid = 12, 
     $columns = (int) round(($part / $total) * $grid);
 
     // First item starts at line 1
-    if (! $is_last) {
+    if (!$is_last) {
         $start = 1;
-        $end   = $start + $columns;
+        $end = $start + $columns;
     }
+
     // Last item always ends at grid + 1
     else {
         $end   = $grid + 1;
