@@ -24,11 +24,27 @@ function filter_args(array $args): ?array
         } else {
             $post_type = 'any';
         }
-    } elseif (!empty($args['post_type'])) {
+    }
+
+    // Set default taxonomy filter arguments.
+    $args['taxonomy_filters'] = [
+        'label' => $args['filter_label'],
+        'taxonomy' => $args['taxonomy'],
+        'object' => $args['object'],
+    ];
+
+    // Fill items into items component args.
+    $args['items_component_args']['items'] = $args['items'];
+    $args['items_component_args']['wp_query'] = false;
+
+    if (!empty($args['post_type'])) {
         $post_type = $args['post_type'];
     } else {
-        $post_type = \get_post_type();
+        $post_type = get_post_type_from_object($args['object']);
     }
+
+    $args['items_component_args']['post_type'] = $post_type;
+    $args['taxonomy_filters']['post_type'] = $post_type;
 
     $paged = \get_query_var('paged') ? \get_query_var('paged') : 1;
     $taxonomy = $args['taxonomy'];
@@ -104,10 +120,10 @@ function filter_args(array $args): ?array
 
     if ($post_type === 'case-study') {
         $args['items_component_args']['columns'] = 2;
-        $args['taxonomy_filters_args']['label'] = \__('Explore and filter all case studies', 'granola');
+        $args['taxonomy_filters']['label'] = \__('Explore and filter all case studies', 'granola');
     } elseif ($post_type === 'product') {
         $args['items_component_args']['columns'] = 4;
-        $args['taxonomy_filters_args'] = [];
+        unset($args['taxonomy_filters']);
     }
 
     $args['pagination_args'] = [
@@ -123,6 +139,54 @@ function filter_args(array $args): ?array
     );
 
     return $args;
+}
+
+/**
+ * Gets the relevant post type from the queried/template object.
+ *
+ * @param object|null $object The queried or templated object.
+ * @return string|null The resolved post type, if available.
+ */
+function get_post_type_from_object(?object $object): ?string
+{
+    if ($object instanceof \WP_Post) {
+        return $object->post_type;
+    }
+
+    if ($object instanceof \WP_Post_Type) {
+        return $object->name;
+    }
+
+    if ($object instanceof \WP_Term) {
+        $taxonomy = \get_taxonomy($object->taxonomy);
+
+        if ($taxonomy instanceof \WP_Taxonomy) {
+            return get_post_type_from_taxonomy($taxonomy);
+        }
+    }
+
+    if ($object instanceof \WP_Taxonomy) {
+        return get_post_type_from_taxonomy($object);
+    }
+
+    return \get_post_type() ?: null;
+}
+
+/**
+ * Gets the first registered post type for a taxonomy.
+ *
+ * @param \WP_Taxonomy $taxonomy The taxonomy object.
+ * @return string|null The resolved post type, if available.
+ */
+function get_post_type_from_taxonomy(\WP_Taxonomy $taxonomy): ?string
+{
+    if (empty($taxonomy->object_type)) {
+        return null;
+    }
+
+    $object_types = array_values($taxonomy->object_type);
+
+    return $object_types[0] ?? null;
 }
 
 /**
