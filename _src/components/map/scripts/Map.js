@@ -976,9 +976,9 @@ let markerHtml = `
             html += `<p class="map__marker-tooltip__phone">${phone}</p>`;
         }
 
-        if (safeLinkHref) {
-            html += `<a class="map__marker-tooltip__link" href="${safeLinkHref}">${safeLinkText || 'View store'}</a>`;
-        }
+        // if (safeLinkHref) {
+        //     html += `<a class="map__marker-tooltip__link" href="${safeLinkHref}">${safeLinkText || 'View store'}</a>`;
+        // }
 
         html += '</div>';
 
