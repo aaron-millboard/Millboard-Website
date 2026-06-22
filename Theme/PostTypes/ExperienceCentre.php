@@ -1,14 +1,14 @@
 <?php
 
 /**
- * Registers 'Display Area' CPT & handles related functionality.
+ * Registers 'Experience Centre' CPT & handles related functionality.
  */
 
 namespace Theme\PostTypes;
 
-class DisplayArea
+class ExperienceCentre
 {
-    protected const SLUG = 'display_area';
+    protected const SLUG = 'experience_centre';
 
     public static function init(): void
     {
@@ -35,10 +35,10 @@ class DisplayArea
             'hierarchical' => false,
             'show_in_rest' => true,
             'menu_position' => 25, // Below comments.
-            'menu_icon' => 'dashicons-desktop',
-            'enter_title_here' => 'Display Area Name',
+            'menu_icon' => 'dashicons-store',
+            'enter_title_here' => 'Experience Centre Name',
             'rewrite' => [
-                'slug' => 'display-areas',
+                'slug' => 'experience-centre',
             ],
             'supports' => [
                 'title',
@@ -70,7 +70,7 @@ class DisplayArea
             'admin_filters' => [],
             'admin_cols' => [
                 'title' => [
-                    'title' => 'Display Area Name',
+                    'title' => 'Experience Centre Name',
                 ],
                 'updated' => [
                     'title'      => 'Updated',
@@ -80,8 +80,8 @@ class DisplayArea
             ],
         ], [
             // Override the base names used for labels (optional).
-            'singular' => \__('Display Area', 'granola'),
-            'plural'   => \__('Display Areas', 'granola'),
+            'singular' => \__('Experience Centre', 'granola'),
+            'plural'   => \__('Experience Centres', 'granola'),
             'slug'     => self::SLUG,
         ]);
     }
@@ -96,9 +96,9 @@ class DisplayArea
         }
 
         \acf_add_options_sub_page([
-            'page_title'  => \__('Display Areas Settings', 'granola'),
-            'menu_title'  => \__('Display Areas Settings', 'granola'),
-            'menu_slug'   => 'acf-options-display-areas-settings',
+            'page_title'  => \__('Experience Centre Settings', 'granola'),
+            'menu_title'  => \__('Experience Centre Settings', 'granola'),
+            'menu_slug'   => 'acf-options-experience-centre-settings',
             'parent_slug' => 'edit.php?post_type=' . self::SLUG,
         ]);
     }

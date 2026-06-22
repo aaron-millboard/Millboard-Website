@@ -10,7 +10,8 @@
         "form",
         "installer",
         "distributor",
-        "display-area"
+        "showroom",
+        "experience centre"
     ],
     "acf": {
         "mode": "auto",
@@ -18,7 +19,8 @@
         "postTypes": [
             "installer",
             "distributor",
-            "display_area"
+            "showroom",
+            "experience_centre"
         ]
     },
     "supports": {

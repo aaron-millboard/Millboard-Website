@@ -73,7 +73,8 @@ if (file_exists($autoloader = __DIR__ . '/vendor/autoload.php')) {
 \Theme\PostTypes\Post::init();
 \Theme\PostTypes\Product::init();
 \Theme\PostTypes\Distributor::init();
-\Theme\PostTypes\DisplayArea::init();
+\Theme\PostTypes\Showroom::init();
+\Theme\PostTypes\ExperienceCentre::init();
 
 // ----------------------------------------------------
 // Custom Taxonomies.
