@@ -610,7 +610,14 @@
             {
                 "param": "post_type",
                 "operator": "==",
-                "value": "display_area"
+                "value": "showroom"
+            }
+        ],
+        [
+            {
+                "param": "post_type",
+                "operator": "==",
+                "value": "experience_centre"
             }
         ],
         [

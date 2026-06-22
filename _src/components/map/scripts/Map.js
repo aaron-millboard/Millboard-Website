@@ -379,10 +379,28 @@ class Map {
             );
             const listingTitle = listingData.name;
 
-            let markerHtml = `<span class="leaflet-marker-icon__icon-container" aria-hidden="true">`;
-            markerHtml += `<span class="leaflet-marker-icon__icon"></span>`;
-            markerHtml += `<span class="screen-reader-text">${listingTitle}</span>`;
-            markerHtml += ' </span>';
+            // Convert post type into filename format
+const markerType = listingData.postType
+    .toLowerCase()
+    .replace(/\s+/g, '-');
+
+// Example:
+// Installer -> installer-marker.png
+// Experience Centre -> experience-centre-marker.png
+const markerIconUrl = `/wp-content/themes/millboard/assets/images/icons/${markerType}-marker.png`;
+
+let markerHtml = `
+    <span class="leaflet-marker-icon__icon-container" aria-hidden="true">
+        <img 
+            class="leaflet-marker-icon__icon"
+            src="${markerIconUrl}"
+            alt="${listingData.postType} marker"
+            width="${this.LMAP_MARKER_WIDTH}"
+            height="${this.LMAP_MARKER_HEIGHT}"
+        />
+        <span class="screen-reader-text">${listingTitle}</span>
+    </span>
+`;
 
             // https://leafletjs.com/reference.html#marker
             const marker = L.marker(listingLatLng, {
