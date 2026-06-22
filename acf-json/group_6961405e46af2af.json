@@ -1,9 +1,9 @@
 {
-    "key": "group_6961405e46af3da",
-    "title": "Showroom Details",
+    "key": "group_6961405e46af2af",
+    "title": "Experience Centre Details",
     "fields": [
         {
-            "key": "field_6961405e576f1da",
+            "key": "field_6961405e576f1da12",
             "label": "Address",
             "name": "address",
             "aria-label": "",
@@ -22,7 +22,7 @@
             "zoom": ""
         },
         {
-            "key": "field_696140df576f2da",
+            "key": "field_696140df576f2da12",
             "label": "Email",
             "name": "email",
             "aria-label": "",
@@ -41,7 +41,7 @@
             "append": ""
         },
         {
-            "key": "field_696140ed576f3da",
+            "key": "field_696140ed576f3da12",
             "label": "Phone",
             "name": "phone",
             "aria-label": "",
@@ -62,7 +62,7 @@
             "append": ""
         },
         {
-            "key": "field_696140ff576f4da",
+            "key": "field_696140ff576f4da12",
             "label": "Website",
             "name": "website",
             "aria-label": "",
@@ -84,7 +84,7 @@
             {
                 "param": "post_type",
                 "operator": "==",
-                "value": "showroom"
+                "value": "experience_centre"
             }
         ]
     ],
