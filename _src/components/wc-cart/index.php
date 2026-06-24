@@ -349,7 +349,7 @@ do_action('woocommerce_before_cart');?>
                     }
 
                     $quote_snapshot_encoded = base64_encode(wp_json_encode($quote_snapshot));
-                ?>
+                    ?>
                 <section class="cart__quote-share" aria-label="<?php esc_attr_e('Share quote', 'granola'); ?>">
                     <p class="cart__quote-share__copy"><?php esc_html_e('Want to share this quote?', 'granola'); ?></p>
                     <button
@@ -461,7 +461,19 @@ do_action('woocommerce_before_cart');?>
                 <input type="tel" name="phone_number" required>
             </label>
 
-            <label>
+                        <label>
+                <?php esc_html_e('Rep email address', 'granola'); ?>
+                <input
+                    type="email"
+                    name="rep_email_address"
+                    maxlength="254"
+                    autocomplete="email"
+                    pattern="^[^\s@]+@[^\s@]+\.[^\s@]{2,}$"
+                    title="Please enter a valid email address"
+                >
+            </label>
+
+            <label class="cart-quote-modal__customer-reference-number">
                 <?php esc_html_e('Customer reference number', 'granola'); ?>
                 <input type="text" name="customer_reference_number" required>
             </label>
