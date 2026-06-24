@@ -1280,11 +1280,9 @@ class QuoteShare
         $bcc = $form_data['rep_email_address'] ?? '';
 
         $html_message = self::build_quote_email_html($form_data, $cart_data, $restore_url);
-        $text_message = self::build_quote_email_text($form_data, $cart_data, $restore_url);
 
         $headers = [
             'Content-Type: text/html; charset=UTF-8',
-            'X-Alt-Body: ' . $text_message,
         ];
 
         if (!empty($bcc) && is_email($bcc)) {
