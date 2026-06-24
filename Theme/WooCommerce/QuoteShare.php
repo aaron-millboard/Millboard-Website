@@ -584,6 +584,7 @@ class QuoteShare
             'phone_number' => isset($_POST['phone_number']) ? \sanitize_text_field(\wp_unslash($_POST['phone_number'])) : '',
             'customer_reference_number' => isset($_POST['customer_reference_number']) ? \sanitize_text_field(\wp_unslash($_POST['customer_reference_number'])) : '',
             'sales_notes' => isset($_POST['sales_notes']) ? \sanitize_textarea_field(\wp_unslash($_POST['sales_notes'])) : '',
+            'rep_email_address' => isset($_POST['rep_email_address']) ? \sanitize_email(\wp_unslash($_POST['rep_email_address'])) : ''
         ];
     }
 
