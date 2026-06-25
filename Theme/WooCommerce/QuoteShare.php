@@ -584,6 +584,7 @@ class QuoteShare
             'phone_number' => isset($_POST['phone_number']) ? \sanitize_text_field(\wp_unslash($_POST['phone_number'])) : '',
             'customer_reference_number' => isset($_POST['customer_reference_number']) ? \sanitize_text_field(\wp_unslash($_POST['customer_reference_number'])) : '',
             'sales_notes' => isset($_POST['sales_notes']) ? \sanitize_textarea_field(\wp_unslash($_POST['sales_notes'])) : '',
+            'rep_email_address' => isset($_POST['rep_email_address']) ? \sanitize_email(\wp_unslash($_POST['rep_email_address'])) : '',
         ];
     }
 
@@ -1276,18 +1277,25 @@ class QuoteShare
     {
         $to = $form_data['email_address'];
         $subject = \__('Your Millboard quote', 'granola');
+        $bcc = $form_data['rep_email_address'] ?? '';
 
         $html_message = self::build_quote_email_html($form_data, $cart_data, $restore_url);
         $text_message = self::build_quote_email_text($form_data, $cart_data, $restore_url);
 
-        return \wp_mail(
+        $headers = [
+            'Content-Type: text/html; charset=UTF-8',
+            'X-Alt-Body: ' . $text_message,
+        ];
+
+        if (!empty($bcc) && is_email($bcc)) {
+            $headers[] = 'Bcc: ' . $bcc;
+        }
+
+        return wp_mail(
             $to,
             $subject,
             $html_message,
-            [
-                'Content-Type: text/html; charset=UTF-8',
-                'X-Alt-Body: ' . $text_message,
-            ],
+            $headers,
             [$attachment_path]
         );
     }
