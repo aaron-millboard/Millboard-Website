@@ -119,6 +119,11 @@
             }
         }
 
+        &__customer-reference-number {
+            grid-column-start: 1;
+            grid-column-end: 3;
+        }
+
         &__actions {
             margin-top: var(--space--s);
             display: flex;
