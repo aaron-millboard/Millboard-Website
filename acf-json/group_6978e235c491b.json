@@ -3,6 +3,26 @@
     "title": "Installer Details",
     "fields": [
         {
+            "key": "field_6978e235c8c97",
+            "label": "Advanced Installer",
+            "name": "advanced_installer",
+            "aria-label": "",
+            "type": "true_false",
+            "instructions": "",
+            "required": false,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "message": "",
+            "default_value": 0,
+            "ui": 1,
+            "ui_on_text": "",
+            "ui_off_text": ""
+        },
+        {
             "key": "field_6978e235c8c7a",
             "label": "Address",
             "name": "address",
@@ -99,5 +119,5 @@
     "show_in_rest": 0,
     "display_title": "",
     "granola_save_location": 0,
-    "modified": 1769529920
+    "modified": 1772150000
 }

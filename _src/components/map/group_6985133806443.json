@@ -19,7 +19,8 @@
             "choices": {
                 "installer": "Installers",
                 "distributor": "Distributors",
-                "display_area": "Display Areas",
+                "showroom": "Showrooms",
+                "experience_centre": "Experience Centres",
                 "multiple": "Multiple Sources",
                 "custom": "Custom"
             },
@@ -54,7 +55,8 @@
             "choices": {
                 "installer": "Installers",
                 "distributor": "Distributors",
-                "display_area": "Display Areas"
+                "showroom": "Showrooms",
+                "experience_centre": "Experience Centres"
             },
             "default_value": [],
             "return_format": "value",
