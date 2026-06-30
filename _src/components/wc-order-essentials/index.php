@@ -135,7 +135,6 @@ do_action('woocommerce_before_cart');
                                     <?php checked($essentials_is_selected); ?>
                                     data-essentials-select
                                 >
-                                <span><?php esc_html_e('Select', 'granola'); ?></span>
                             </label>
                         </div>
 
@@ -232,9 +231,9 @@ do_action('woocommerce_before_cart');
             <?php endif; ?>
 
             <div class="cart__order-essentials__actions">
-                <button type="submit" class="button" name="millboard_add_all_essentials" value="1" <?php disabled(!$has_outstanding_essentials); ?>><?php esc_html_e('Add ALL essentials', 'granola'); ?></button>
-                <button type="submit" class="button cart__order-essentials__action-primary" name="millboard_add_selected_essentials" value="1"><?php esc_html_e('Add selected to basket', 'granola'); ?></button>
-                <button type="submit" class="button cart__order-essentials__action-secondary" name="millboard_continue_to_basket" value="1"><?php esc_html_e('Continue without essentials', 'granola'); ?></button>
+                <button type="submit" class="g-button" name="millboard_add_all_essentials" value="1" <?php disabled(!$has_outstanding_essentials); ?>><?php esc_html_e('Add ALL essentials', 'granola'); ?></button>
+                <button type="submit" class="g-button g-button--solid cart__order-essentials__action-primary" name="millboard_add_selected_essentials" value="1"><?php esc_html_e('Add selected to basket', 'granola'); ?></button>
+                <button type="submit" class="g-button g-button--secondary cart__order-essentials__action-secondary" name="millboard_continue_to_basket" value="1"><?php esc_html_e('Continue without essentials', 'granola'); ?></button>
             </div>
         <?php else : ?>
             <p><?php esc_html_e('No essentials are currently recommended for your basket.', 'granola'); ?></p>

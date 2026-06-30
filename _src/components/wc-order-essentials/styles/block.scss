@@ -124,6 +124,16 @@
             outline-offset: -2px;
         }
 
+        &__item {
+            display: flex;
+            align-items: center;
+            gap: var(--space--s);
+
+            &-details {
+                flex: 1 1 auto;
+            }
+        }
+
         &__summary {
             margin-top: var(--space--l);
             padding: var(--space--s) var(--space--l);
@@ -209,13 +219,6 @@
         }
 
         &__action-secondary {
-            @include button-reset-hard;
-            @include typestyle-h5;
-
-            text-transform: uppercase;
-            letter-spacing: 0.12em;
-            color: var(--color--foreground);
-            text-decoration: none;
         }
 
         @include mq($until: small) {
