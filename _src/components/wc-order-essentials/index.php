@@ -2,7 +2,7 @@
 
 defined('ABSPATH') || exit;
 
-$essentials_context = \Theme\WooCommerce\OrderEssentials::get_cart_step_context();
+$essentials_context = \Granola\Components\WC_OrderEssentials\get_cart_step_context();
 $essentials_project_type = isset($essentials_context['project_type']) ? (string) $essentials_context['project_type'] : 'residential';
 $essentials_recommendations = isset($essentials_context['recommendations']) && is_array($essentials_context['recommendations']) ? $essentials_context['recommendations'] : [];
 $has_essentials = !empty($essentials_context['has_recommendations']);
@@ -12,63 +12,13 @@ $essentials_summary_label_singular = __('selected item', 'granola');
 $essentials_summary_label_plural = __('selected items', 'granola');
 $essentials_selected_count = 0;
 $essentials_selected_total = 0.0;
-$essentials_resolve_unit_price = static function (int $product_id): float {
-    $product = wc_get_product($product_id);
-
-    if (!$product instanceof \WC_Product) {
-        return 0.0;
-    }
-
-    if ($product instanceof \WC_Product_Variable) {
-        $default_attributes = $product->get_default_attributes();
-
-        if (!empty($default_attributes)) {
-            foreach ($product->get_children() as $variation_id) {
-                $variation = wc_get_product($variation_id);
-
-                if (!$variation instanceof \WC_Product_Variation) {
-                    continue;
-                }
-
-                $matches_default_attributes = true;
-
-                foreach ($default_attributes as $attribute_name => $attribute_value) {
-                    if ((string) $variation->get_attribute($attribute_name) !== (string) $attribute_value) {
-                        $matches_default_attributes = false;
-                        break;
-                    }
-                }
-
-                if ($matches_default_attributes) {
-                    return (float) wc_get_price_to_display($variation);
-                }
-            }
-        }
-
-        foreach ($product->get_children() as $variation_id) {
-            $variation = wc_get_product($variation_id);
-
-            if (!$variation instanceof \WC_Product_Variation || !$variation->is_purchasable()) {
-                continue;
-            }
-
-            $variation_price = (float) wc_get_price_to_display($variation);
-
-            if ($variation_price > 0) {
-                return $variation_price;
-            }
-        }
-    }
-
-    return (float) wc_get_price_to_display($product);
-};
 
 // Notices here.
-do_action('woocommerce_before_cart');
+\Granola\Components\WC_OrderEssentials\render_before_cart();
 ?>
 
 <section class="cart__order-essentials-page" aria-labelledby="order-essentials-heading">
-    <form class="cart woocommerce-cart-form" action="<?php echo esc_url(\Theme\WooCommerce\OrderEssentials::get_order_essentials_url()); ?>" method="post">
+    <form class="cart woocommerce-cart-form" action="<?php echo esc_url(\Theme\WooCommerce\OrderEssentials::get_order_essentials_url()); ?>" method="post" data-currency-code="<?php echo esc_attr(get_woocommerce_currency()); ?>">
 
         <header class="cart__order-essentials__header">
             <h1 class="cart__order-essentials__title"><?php esc_html_e('Order essentials', 'granola'); ?></h1>
@@ -111,7 +61,7 @@ do_action('woocommerce_before_cart');
                     $essentials_missing_qty = isset($essentials_item['missing_qty']) ? (int) $essentials_item['missing_qty'] : 0;
                     $essentials_default_add_qty = isset($essentials_item['default_add_qty']) ? (int) $essentials_item['default_add_qty'] : 0;
                     $essentials_reason = isset($essentials_item['reason']) ? (string) $essentials_item['reason'] : '';
-                    $essentials_unit_price = $essentials_resolve_unit_price($essentials_product_id);
+                    $essentials_unit_price = \Granola\Components\WC_OrderEssentials\resolve_unit_price($essentials_product_id);
                     $essentials_is_selected = $essentials_missing_qty > 0 || $essentials_in_cart_qty > 0;
                     $essentials_is_in_basket = $essentials_in_cart_qty > 0;
                     $essentials_qty_to_add = max(0, $essentials_default_add_qty);
@@ -246,72 +196,4 @@ do_action('woocommerce_before_cart');
     </form>
 </section>
 
-<script>
-    (function () {
-        const form = document.querySelector('.cart__order-essentials-page .woocommerce-cart-form');
-
-        if (!form) {
-            return;
-        }
-
-        const countEl = form.querySelector('[data-essentials-summary-count]');
-        const labelEl = form.querySelector('[data-essentials-summary-label]');
-        const totalEl = form.querySelector('[data-essentials-summary-total]');
-
-        if (!countEl || !labelEl || !totalEl) {
-            return;
-        }
-
-        const formatCurrency = new Intl.NumberFormat(document.documentElement.lang || 'en-GB', {
-            style: 'currency',
-            currency: '<?php echo esc_js(get_woocommerce_currency()); ?>'
-        });
-
-        const updateSummary = function () {
-            let selectedCount = 0;
-            let total = 0;
-
-            form.querySelectorAll('.cart__order-essentials__item').forEach(function (item) {
-                const checkbox = item.querySelector('[data-essentials-select]');
-                const qtyInput = item.querySelector('[data-essentials-qty]');
-
-                if (!checkbox || !qtyInput || !checkbox.checked) {
-                    return;
-                }
-
-                const parsedQty = Number.parseInt(String(qtyInput.value || '0'), 10);
-                const qty = Number.isNaN(parsedQty) ? 0 : Math.max(0, parsedQty);
-
-                if (qty < 1) {
-                    return;
-                }
-
-                const parsedUnitPrice = Number.parseFloat(String(qtyInput.dataset.unitPrice || '0'));
-                const unitPrice = Number.isNaN(parsedUnitPrice) ? 0 : parsedUnitPrice;
-
-                selectedCount += 1;
-                total += unitPrice * qty;
-            });
-
-            countEl.textContent = String(selectedCount);
-            labelEl.textContent = selectedCount === 1 ? (labelEl.dataset.singular || 'selected item') : (labelEl.dataset.plural || 'selected items');
-            totalEl.textContent = formatCurrency.format(total);
-        };
-
-        const queueUpdate = function () {
-            window.requestAnimationFrame(updateSummary);
-        };
-
-        form.addEventListener('change', queueUpdate);
-        form.addEventListener('input', queueUpdate);
-        form.addEventListener('click', function (event) {
-            if (event.target && event.target.closest('label')) {
-                queueUpdate();
-            }
-        });
-
-        updateSummary();
-    })();
-</script>
-
-<?php do_action('woocommerce_after_cart'); ?>
+<?php \Granola\Components\WC_OrderEssentials\render_after_cart(); ?>
