@@ -479,7 +479,7 @@ class OrderEssentials
                 continue;
             }
 
-            $recommended_qty = self::apply_rounding((float) $raw_required_quantity, (string) $rule['rounding']);
+            $recommended_qty = self::apply_rounding((float) $raw_required_quantity);
 
             if ($recommended_qty < 1) {
                 continue;
@@ -594,19 +594,12 @@ class OrderEssentials
                 continue;
             }
 
-            $rounding = strtolower((string) ($rule['rounding'] ?? 'ceil'));
-
-            if (!\in_array($rounding, ['ceil', 'floor', 'round'], true)) {
-                $rounding = 'ceil';
-            }
-
             $normalised[] = [
                 'source_product_ids' => $source_product_ids,
                 'source_category_slugs' => $source_category_slugs,
                 'target_product_id' => $target_product_id,
                 'residential_multiplier' => $residential_multiplier,
                 'commercial_multiplier' => $commercial_multiplier,
-                'rounding' => $rounding,
                 'reason' => isset($rule['reason']) ? (string) $rule['reason'] : '',
             ];
         }
@@ -778,20 +771,11 @@ class OrderEssentials
         return $removed;
     }
 
-    private static function apply_rounding(float $quantity, string $rounding): int
+    private static function apply_rounding(float $quantity): int
     {
         if ($quantity <= 0) {
             return 0;
         }
-
-        if ($rounding === 'floor') {
-            return (int) floor($quantity);
-        }
-
-        if ($rounding === 'round') {
-            return (int) round($quantity, 0, PHP_ROUND_HALF_UP);
-        }
-
         return (int) ceil($quantity);
     }
 
