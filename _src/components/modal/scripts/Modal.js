@@ -69,7 +69,19 @@ export default class Modal {
         const modalLinks = this.element.querySelectorAll('a[href]');
 
         modalLinks.forEach((link) => {
-            link.addEventListener('click', () => {
+            link.addEventListener('click', (event) => {
+                const linkPath = link.pathname.replace(/\/$/, '');
+                const currentPath = window.location.pathname.replace(/\/$/, '');
+                const isCurrentPage =
+                    link.origin === window.location.origin &&
+                    linkPath === currentPath &&
+                    !link.search &&
+                    !link.hash;
+
+                if (isCurrentPage) {
+                    event.preventDefault();
+                }
+
                 this.close();
             });
         });
