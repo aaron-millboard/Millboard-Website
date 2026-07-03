@@ -69,7 +69,9 @@ export default (env, argv) => {
     // ----------------------------------------------
 
     // normalize component paths (components-wholegrain -> components).
-    const normalizeComponentPath = (filePath) => filePath.replace('components-wholegrain/', 'components/');
+    // Normalise backslashes to forward slashes first so this works on Windows
+    // (path.relative() returns backslashes there, which broke the merge into assets/components/).
+    const normalizeComponentPath = (filePath) => filePath.replace(/\\/g, '/').replace('components-wholegrain/', 'components/');
 
     // build webpack entries from glob pattern.
     const buildEntries = (globPattern, filterFn = null) => {
@@ -271,7 +273,10 @@ export default (env, argv) => {
 
                                     // Prepend core imports for component files.
                                     if (resourcePath.includes('/components')) {
-                                        return `@import '${PATHS.src}/core.scss';\n${content}`;
+                                        // Normalise to forward slashes so the @import resolves on Windows
+                                        // (Sass treats backslashes as escape characters).
+                                        const corePath = PATHS.src.replace(/\\/g, '/');
+                                        return `@import '${corePath}/core.scss';\n${content}`;
                                     }
 
                                     // Lookup table: which glob imports apply to which file.
