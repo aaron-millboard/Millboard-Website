@@ -27,12 +27,16 @@ workflow:
 
 build:
   stage: build
-  image: webdevops/php-node:8.2   # PHP 8.2 + Composer + Node + npm
+  image: node:20-bookworm   # official Node + npm; PHP 8.2 + Composer installed below (Debian Bookworm ships PHP 8.2)
+  before_script:
+    - apt-get update -qq
+    - DEBIAN_FRONTEND=noninteractive apt-get install -y -qq php-cli php-mbstring php-xml php-curl php-zip php-gd unzip git rsync > /dev/null
+    - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+    - php -v && composer --version && node -v
   script:
     - composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
     - npm ci
     - npm run build   # runs pot (needs vendor/bin/wp) then webpack production build
-    - command -v rsync >/dev/null 2>&1 || (apt-get update -qq && apt-get install -y -qq rsync)
     # Assemble a clean deploy tree honouring .deployignore (ships vendor/ + assets/, not _src/ etc.)
     - rsync -a --exclude-from='.deployignore' --exclude='.git' --exclude='.deploy' ./ .deploy/
   artifacts:
