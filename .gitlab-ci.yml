@@ -36,7 +36,9 @@ build:
   script:
     - composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
     - npm ci
-    - npm run build   # runs pot (needs vendor/bin/wp) then webpack production build
+    # Equivalent of `npm run build`, but pass --allow-root to pot (CI runs as root) so wp-cli doesn't bail.
+    - npm run pot -- --allow-root
+    - npx webpack --config build/webpack.config.js --mode=production
     # Assemble a clean deploy tree honouring .deployignore (ships vendor/ + assets/, not _src/ etc.)
     - rsync -a --exclude-from='.deployignore' --exclude='.git' --exclude='.deploy' ./ .deploy/
   artifacts:
