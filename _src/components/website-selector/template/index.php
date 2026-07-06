@@ -41,9 +41,6 @@
                             'content' => $column['cta']['title'],
                             'target' => $column['cta']['target'],
                             'classes' => ['website-selector__column__cta__button'],
-                            'attributes' => [
-                                'data-ignore-popup-close' => true,
-                            ],
                         ]); ?>
                     </div>
                 <?php } ?>
