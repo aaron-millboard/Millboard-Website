@@ -13,6 +13,7 @@ function filter_args(array $args): ?array
         'label' => \__('Filter by', 'granola'),
         'show_images' => false,
         'preserve_url' => false,
+        'post_type' => null,
     ], $args);
 
     // ---------------------------------------
@@ -69,7 +70,7 @@ function get_taxonomy_items($args): array
         return $items;
     }
 
-    $post_type = get_post_type();
+    $post_type = !empty($args['post_type']) ? $args['post_type'] : get_post_type();
 
     // Get current URL without query parameters.
     $current_url = \network_home_url($_SERVER['REQUEST_URI']);
@@ -193,7 +194,7 @@ function get_taxonomy_items($args): array
 
 function get_reset_item($args): array
 {
-    $post_type = get_post_type();
+    $post_type = !empty($args['post_type']) ? $args['post_type'] : get_post_type();
 
     if (!empty($args['object'])) {
         if ($args['object'] instanceof \WP_Term || $args['object'] instanceof \WP_Post_Type) {
