@@ -75,7 +75,7 @@ $essentials_selected_total = 0.0;
                         continue;
                     }
                     ?>
-                    <article class="cart__order-essentials__item">
+                    <article class="cart__order-essentials__item<?php echo $essentials_is_selected ? ' is-selected' : ''; ?>">
                         <div class="cart__order-essentials__item-select">
                             <label>
                                 <input
@@ -105,9 +105,9 @@ $essentials_selected_total = 0.0;
                                 <?php
                                 echo esc_html(
                                     sprintf(
-                                        __('Recommended: %1$d | Already in basket: %2$d', 'granola'),
-                                        $essentials_recommended_qty,
-                                        $essentials_in_cart_qty
+                                        '%1$s%2$.2f each',
+                                        get_woocommerce_currency_symbol(),
+                                        number_format($essentials_unit_price, 2)
                                     )
                                 );
                                 ?>
@@ -123,22 +123,24 @@ $essentials_selected_total = 0.0;
                         </div>
 
                         <div class="cart__order-essentials__item-qty">
-                            <label for="millboard-essentials-qty-<?php echo esc_attr($essentials_product_id); ?>"><?php esc_html_e('Qty to add', 'granola'); ?></label>
-                            <input
-                                id="millboard-essentials-qty-<?php echo esc_attr($essentials_product_id); ?>"
-                                type="number"
-                                min="0"
-                                step="1"
-                                name="millboard_essentials_qty[<?php echo esc_attr($essentials_product_id); ?>]"
-                                value="<?php echo esc_attr($essentials_qty_to_add); ?>"
-                                data-essentials-qty
-                                data-unit-price="<?php echo esc_attr(wc_format_decimal($essentials_unit_price, 6)); ?>"
-                            >
-
+                            <div>
+                                <label for="millboard-essentials-qty-<?php echo esc_attr($essentials_product_id); ?>"><?php esc_html_e('Recommended', 'granola'); ?></label>
+                                <input
+                                    id="millboard-essentials-qty-<?php echo esc_attr($essentials_product_id); ?>"
+                                    type="number"
+                                    min="0"
+                                    step="1"
+                                    name="millboard_essentials_qty[<?php echo esc_attr($essentials_product_id); ?>]"
+                                    value="<?php echo esc_attr($essentials_qty_to_add); ?>"
+                                    data-essentials-qty
+                                    data-unit-price="<?php echo esc_attr(wc_format_decimal($essentials_unit_price, 6)); ?>"
+                                >
+                            </div>
+                                
                             <?php if ($essentials_is_in_basket) : ?>
-                                <button type="submit" class="button cart__order-essentials__item-action" name="millboard_remove_essential_item" value="<?php echo esc_attr($essentials_product_id); ?>"><?php esc_html_e('Remove item', 'granola'); ?></button>
+                                <button type="submit" class="g-button g-button--solid cart__order-essentials__item-action" name="millboard_remove_essential_item" value="<?php echo esc_attr($essentials_product_id); ?>"><?php esc_html_e('Remove', 'granola'); ?></button>
                             <?php else : ?>
-                                <button type="submit" class="button cart__order-essentials__item-action" name="millboard_add_essential_item" value="<?php echo esc_attr($essentials_product_id); ?>"><?php esc_html_e('Add item', 'granola'); ?></button>
+                                <button type="submit" class="g-button cart__order-essentials__item-action" name="millboard_add_essential_item" value="<?php echo esc_attr($essentials_product_id); ?>"><?php esc_html_e('Add item', 'granola'); ?></button>
                             <?php endif; ?>
                         </div>
                     </article>

@@ -30,6 +30,10 @@
                 const checkbox = item.querySelector('[data-essentials-select]');
                 const qtyInput = item.querySelector('[data-essentials-qty]');
 
+                if (checkbox) {
+                    item.classList.toggle('is-selected', checkbox.checked);
+                }
+
                 if (!checkbox || !qtyInput || !checkbox.checked) {
                     return;
                 }
