@@ -1,5 +1,6 @@
 body {
     --wp--admin-bar-height: 0px;
+    --wp--admin-bar-height--sticky: 0px;
 
     --backdrop--background-color: hsla(var(--color--black--hsl), 0.4);
     --backdrop--transition-duration: 500ms;
@@ -21,6 +22,7 @@ body {
 
         @media screen and (min-width:783px) {
             --wp--admin-bar-height: 32px;
+            --wp--admin-bar-height--sticky: var(--wp--admin-bar-height);
         }
     }
 

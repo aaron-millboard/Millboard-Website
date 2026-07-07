@@ -25,7 +25,12 @@ function filter_args(array $args): ?array
     if ($args['content'] === 'automatic') {
         $query_args = [
             'post_type' => 'product',
-            'post_per_page' => 500,
+            'posts_per_page' => 500,
+
+            // Query optimisation.
+            'no_found_rows' => true,
+            'update_post_meta_cache' => false,
+            'update_post_term_cache' => false,
         ];
 
         if (!empty($args['product_category'])) {
@@ -42,14 +47,10 @@ function filter_args(array $args): ?array
             if (count($args['product_category']) > 1) {
                 $query_args['tax_query'][]['relation'] = 'AND';
             }
-        } else {
-            // $args['object']
         }
-
 
         $product_query = new \WP_Query($query_args);
 
-        // \Granola\Debug::dump($product_query->have_posts());
         if ($product_query->have_posts()) {
             foreach ($product_query->posts as $product) {
                 $args['items'][]['object'] = $product;
@@ -60,10 +61,6 @@ function filter_args(array $args): ?array
             $args['items'][]['object'] = $product;
         }
     }
-
-    // \Granola\Debug::dump($args);
-
-    // \Granola\Debug::dump($args['items']);
 
     $args['cards_args'] = [
         'items' => $args['items'],

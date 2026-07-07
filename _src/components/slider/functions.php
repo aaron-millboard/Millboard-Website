@@ -53,8 +53,6 @@ function filter_args(array $args): ?array
     // -------------------------------------------------------------------------
     $args['track_attributes'] = [
         'class' => ['slider__track', 'list-reset--hard'],
-        'role' => 'tablist',
-        'aria-label' => __('Slider', 'granola'),
         'style' => [
             '--slider-transition-duration: ' . $args['transition_duration'],
         ],
@@ -67,7 +65,8 @@ function filter_args(array $args): ?array
         // $args['slides'][$index]['card']->args['classes'][] = 'slider__slide';
         $args['slides'][$index]['card']->args['attributes']['class'][] = 'slider__slide';
         $args['slides'][$index]['card']->args['attributes']['id'] = $args['ref'] . '-slide-' . ($index + 1);
-        $args['slides'][$index]['card']->args['attributes']['role'] = 'tabpanel';
+        $args['slides'][$index]['card']->args['attributes']['role'] = 'group';
+        $args['slides'][$index]['card']->args['attributes']['aria-roledescription'] = __('slide', 'granola');
         $args['slides'][$index]['card']->args['attributes']['aria-label'] = __('Slide', 'granola') . ' ' . ($index + 1) . ' of ' . $args['total_slides'];
     }
 
@@ -75,16 +74,17 @@ function filter_args(array $args): ?array
     foreach ($args['slides'] as $index => $slide) {
         $args['pips'][] = [
             'classes' => ['slider__pip', 'g-button'],
-            'role' => 'tab',
-            'aria-label' => sprintf(
-                // translators: slide number
-                \__('Go to slide %s', 'granola'),
-                ($index + 1)
-            ),
-            'data-index' => $index,
-            'aria-selected' => $index === 0 ? 'true' : 'false',
             'visually_hidden_text' => true,
-            'aria-controls' => $args['ref'] . '-slide-' . ($index + 1),
+            'attributes' => [
+                'aria-label' => sprintf(
+                    // translators: slide number
+                    \__('Go to slide %s', 'granola'),
+                    ($index + 1)
+                ),
+                'data-index' => $index,
+                'aria-current' => $index === 0 ? 'true' : 'false',
+                'aria-controls' => $args['ref'] . '-slide-' . ($index + 1),
+            ],
             'content' => sprintf(
                 // translators: slide number
                 \__('Slide %s', 'granola'),
@@ -105,8 +105,9 @@ function filter_args(array $args): ?array
                 'g-button--arrow',
                 'slider__navigation--' . ($index === 0 ? 'previous' : 'next'),
             ],
-            'role' => 'tab',
-            'aria-label' => $aria_label,
+            'attributes' => [
+                'aria-label' => $aria_label,
+            ],
             'content_filter' => false,
             'content' => ' ',
         ];

@@ -14,10 +14,16 @@ class Head
         \add_action('wp_head', [__CLASS__, 'meta_elements'], 0);
         \add_action('wp_head', [__CLASS__, 'link_elements'], 0);
         \add_action('wp_head', [__CLASS__, 'javascript_detection'], 0);
+        \add_action('wp_head', [__CLASS__, 'convert_experiments_script'], 0);
 
         \add_filter('granola/wordpress/head/meta', [__CLASS__, 'add_theme_color_meta']);
         \add_filter('granola/wordpress/head/links', [__CLASS__, 'add_webmanifest_link']);
         \add_filter('granola/wordpress/head/links', [__CLASS__, 'preload_theme_assets']);
+    }
+
+    public static function convert_experiments_script(): void
+    {
+        echo '<script type="text/javascript" src="//cdn-4.convertexperiments.com/v1/js/10042354-100416782.js?environment=production"></script>';
     }
 
     /**
@@ -28,13 +34,13 @@ class Head
     public static function meta_elements(): void
     {
         $meta_items = \apply_filters('granola/wordpress/head/meta', [
-            [
-                'charset' => \get_bloginfo('charset')
-            ],
-            [
-                'name' => 'viewport',
-                'content' => 'width=device-width, initial-scale=1, viewport-fit=cover',
-            ],
+        [
+            'charset' => \get_bloginfo('charset')
+        ],
+        [
+            'name' => 'viewport',
+            'content' => 'width=device-width, initial-scale=1, viewport-fit=cover',
+        ],
         ]);
 
 
@@ -57,8 +63,8 @@ class Head
 
         if (!empty($manifest['theme_color'])) {
             $meta[] = [
-                'name' => 'theme-color',
-                'content' => $manifest['theme_color'],
+            'name' => 'theme-color',
+            'content' => $manifest['theme_color'],
             ];
         }
 
@@ -99,9 +105,9 @@ class Head
         }
 
         $links[] = [
-            'rel' => 'manifest',
-            'href' => \Granola\Asset::url('static/site.webmanifest'),
-            'crossorigin' => 'use-credentials',
+        'rel' => 'manifest',
+        'href' => \Granola\Asset::url('static/site.webmanifest'),
+        'crossorigin' => 'use-credentials',
         ];
 
         return $links;
@@ -127,9 +133,9 @@ class Head
         }
 
         $defaults = [
-            'rel'        => 'preload',
-            'href'        => '',
-            'crossorigin' => 'anonymous',
+        'rel'        => 'preload',
+        'href'        => '',
+        'crossorigin' => 'anonymous',
         ];
 
         foreach ($preload_assets as $asset) {

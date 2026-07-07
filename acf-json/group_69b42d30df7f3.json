@@ -1,0 +1,152 @@
+{
+    "key": "group_69b42d30df7f3",
+    "title": "Product Custom Settings",
+    "fields": [
+        {
+            "key": "field_69b4333892309",
+            "label": "Product Board Width Taxonomy",
+            "name": "product_board_width_taxonomy",
+            "aria-label": "",
+            "type": "taxonomy_selector",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "post_type": [
+                "product"
+            ],
+            "return_format": "id",
+            "field_type": "select",
+            "public": 0,
+            "allow_private": 1,
+            "allow_in_bindings": 0,
+            "layout": "vertical",
+            "optgroup": false,
+            "multiple": 0,
+            "allow_null": 0
+        },
+        {
+            "key": "field_69b43b85a0821",
+            "label": "Product Colour Taxonomy",
+            "name": "product_colour_taxonomy",
+            "aria-label": "",
+            "type": "taxonomy_selector",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "post_type": [
+                "product"
+            ],
+            "return_format": "id",
+            "field_type": "select",
+            "public": 0,
+            "allow_private": 1,
+            "allow_in_bindings": 0,
+            "layout": "vertical",
+            "optgroup": false,
+            "multiple": 0,
+            "allow_null": 0
+        },
+        {
+            "key": "field_69b43b9fa0822",
+            "label": "Product Sample Size Taxonomy",
+            "name": "product_sample_size_taxonomy",
+            "aria-label": "",
+            "type": "taxonomy_selector",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "post_type": [
+                "product"
+            ],
+            "return_format": "id",
+            "field_type": "select",
+            "public": 0,
+            "allow_private": 1,
+            "allow_in_bindings": 0,
+            "layout": "vertical",
+            "optgroup": false,
+            "multiple": 0,
+            "allow_null": 0
+        },
+        {
+            "key": "field_69b43bb0a0823",
+            "label": "Small Sample Shipping Cost",
+            "name": "small_sample_shipping",
+            "aria-label": "",
+            "type": "number",
+            "instructions": "Used as the homeowner small sample shipping cost.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "min": 0,
+            "max": "",
+            "allow_in_bindings": 0,
+            "placeholder": "",
+            "step": 0.01,
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_69b43bc1a0824",
+            "label": "Large Sample Shipping Cost",
+            "name": "large_sample_shipping",
+            "aria-label": "",
+            "type": "number",
+            "instructions": "Used as the large sample shipping cost.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "min": 0,
+            "max": "",
+            "allow_in_bindings": 0,
+            "placeholder": "",
+            "step": 0.01,
+            "prepend": "",
+            "append": ""
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "options_page",
+                "operator": "==",
+                "value": "acf-options-product-settings"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "",
+    "show_in_rest": 0,
+    "display_title": "",
+    "granola_save_location": 0,
+    "modified": 1774005087
+}

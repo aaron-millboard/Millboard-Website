@@ -1,5 +1,5 @@
 <div <?= \Granola\Helpers::build_attributes($args['attributes']); ?>>
-    <div class="hero-header__inner alignwide">
+    <div class="hero-header__inner">
         <?php if (!empty($args['image'])) { ?>
             <div class="hero-header__media">
                 <?php if (!empty($args['strapline'])) { ?>
@@ -16,13 +16,15 @@
                     </div>
                 <?php } ?>
 
-                <?= \Granola\Component::get('image', $args['image']); ?>
-
-                <?= \Granola\Component::get('button', $args['control_button']); ?>
+                <?php if (!empty($args['image'])) { ?>
+                    <div class="hero-header__image-wrapper img-fit">
+                        <?= \Granola\Component::get('image', $args['image']); ?>
+                    </div>
+                <?php } ?>
 
                 <?php if (!empty($args['embed_url'])) { ?>
                     <iframe
-                        src="<?= esc_url($args['embed_url']); ?>"
+                        src="<?= esc_attr($args['embed_url']); ?>"
                         data-embed-url="<?= esc_attr($args['embed_url']); ?>"
                         class="hero-header__iframe"
                         frameborder="0"
@@ -30,11 +32,15 @@
                         allowfullscreen
                     ></iframe>
                 <?php } ?>
+
+                <?php if (!empty($args['control_button'])) { ?>
+                    <?= \Granola\Component::get('button', $args['control_button']); ?>
+                <?php } ?>
             </div>
         <?php } ?>
 
         <?php if (!empty($args['heading']) || !empty($args['ctas'])) { ?>
-            <div class="hero-header__header">
+            <div class="hero-header__header alignwide">
                 <div class="hero-header__content">
                     <?php if (!empty($args['preheading'])) { ?>
                         <div class="hero-header__preheading is-style-typestyle-h6">

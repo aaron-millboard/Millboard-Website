@@ -120,8 +120,11 @@ function get_taxonomy_items($args): array
     ];
 
     foreach ($terms as $key => $item) {
+        $nofollow = false;
+
         // Generate URL based on preserve_url setting
         if (!empty($args['preserve_url'])) {
+            $nofollow = true; // adding query args to URL, links should be nofollowed.
             $query_arg = isset($_GET[$args['taxonomy']]) ? \sanitize_text_field($_GET[$args['taxonomy']]) : null;
 
             if (!empty($query_arg) && strpos($query_arg, $item->slug) === false) {
@@ -142,6 +145,10 @@ function get_taxonomy_items($args): array
             'url' => $item_url,
             'classes' => $button_classes,
             'li_classes' => ['taxonomy-filters__item-wrap'],
+            'attributes' => [
+                // prevent Google (etc) wasting crawl budget on query param pages.
+                'rel' => !empty($nofollow) ? 'nofollow' : null,
+            ]
         ];
 
         // Add image if show_images is enabled and term has an image

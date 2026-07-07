@@ -27,6 +27,44 @@ defined('ABSPATH') || exit;
         foreach (WC()->cart->get_cart() as $cart_item_key => $cart_item) {
             $_product = apply_filters('woocommerce_cart_item_product', $cart_item['data'], $cart_item, $cart_item_key);
 
+            // Set default unit name to item/items.
+            $unit_name_singular = __('item', 'granola');
+            $unit_name_plural = __('items', 'granola');
+
+            // get this item attribute sample size
+            // check calculator if variable
+            if ($_product->is_type('variation')) {
+                $parent_id = $_product->get_parent_id();
+                $calculator_enabled = get_field('enable_calculator', $parent_id);
+            } else {
+                $calculator_enabled = get_field('enable_calculator', $_product->get_id());
+            }
+
+            $sample_size_attribute_name = \get_field('product_sample_size_taxonomy', 'options');
+            $board_width_attribute_name = \get_field('product_board_width_taxonomy', 'options');
+
+            $sample_size_attribute = $_product->get_attribute($sample_size_attribute_name ?? 'pa_sample-size');
+            $board_width_attribute = $_product->get_attribute($board_width_attribute_name ?? 'pa_board-width');
+
+            if ($sample_size_attribute || $board_width_attribute || $calculator_enabled) {
+                // If board, we check by 3 signs: board width attribute, sample size attribute set to full or calculator enabled
+                if ($board_width_attribute || $calculator_enabled || !\Theme\WooCommerce\Utils::is_sample($_product)) {
+                    $unit_name_singular = __('board', 'granola');
+                    $unit_name_plural = __('boards', 'granola');
+                }
+
+                // override if we have any sign of sample size
+                if (\Theme\WooCommerce\Utils::is_sample($_product)) {
+                    $unit_name_singular = __('sample', 'granola');
+                    $unit_name_plural = __('samples', 'granola');
+                }
+            }
+
+            // use singular unit name if quantity is 1
+            if ($cart_item['quantity'] === 1) {
+                $unit_name_plural = $unit_name_singular;
+            }
+
             if ($_product && $_product->exists() && $cart_item['quantity'] > 0 && apply_filters('woocommerce_checkout_cart_item_visible', true, $cart_item, $cart_item_key)) {
                 ?>
 
@@ -43,57 +81,17 @@ defined('ABSPATH') || exit;
                                     <?php echo $_product->get_title(); ?>
                                 </div>
 
-                                <?php
-                                // Normalised product attribute array.
-                                // We have seen different return values for this but unclear why.
-                                // Normalise to avoid errors.
-                                $attributes = array_map(function ($attribute) {
-                                    if ($attribute instanceof \WC_Product_Attribute) {
-                                        $attr_options = $attribute->get_options();
-                                        if (empty($attr_options)) {
-                                            return [];
-                                        }
-
-                                        $term_id = $attr_options[0];
-                                        if (empty($term_id)) {
-                                            return [];
-                                        }
-
-                                        $term = get_term_by('term_id', $term_id, $attribute->get_name());
-                                        return $term->slug;
-                                    }
-
-                                    return $attribute;
-                                }, $_product->get_attributes());
-
-                                // Remove sample size.
-                                unset($attributes['pa_sample-size']);
-
-                                // Sort pa_color attribute to first place.
-                                uksort($attributes, function ($attribute_name_1, $attribute_name_2) {
-                                    if ($attribute_name_1 === 'pa_colour') {
-                                        return -1;
-                                    }
-
-                                    if ($attribute_name_2 === 'pa_colour') {
-                                        return 1;
-                                    }
-
-                                    return 0;
-                                });
-
-                                // Show other attributes
-                                foreach ($attributes as $key => $value) { ?>
-                                    <?php $term = get_term_by('slug', $value, $key); ?>
-                                    <?php if (!empty($term)) { ?>
-                                        <div class="cart__item__details__attribute cart__item__details__<?= esc_attr(str_replace('pa_', '', $value)); ?>">
-                                            <?= esc_html($term->name); ?>
-                                        </div>
+                                <?php $attributes = \Theme\WooCommerce\Utils::get_product_display_attributes($_product); ?>
+                                    <?php foreach ($attributes as $key => $attribute) { ?>
+                                        <?php if (!empty($attribute)) { ?>
+                                            <div class="cart__item__details__attribute cart__item__details__<?= esc_attr($attribute['name']); ?>">
+                                                <?= esc_html($attribute['value']); ?>
+                                            </div>
+                                        <?php } ?>
                                     <?php } ?>
-                                <?php } ?>
 
                                 <div class="product-price" data-title="<?php esc_attr_e('Price', 'woocommerce'); ?>">
-                                    <?php echo apply_filters('woocommerce_cart_item_price', WC()->cart->get_product_price($_product), $cart_item, $cart_item_key) . ' ' . esc_html__('per pack', 'granola'); ?>
+                                    <?php echo apply_filters('woocommerce_cart_item_price', WC()->cart->get_product_price($_product), $cart_item, $cart_item_key) . ' ' . esc_html__('per ', 'granola') . esc_html($unit_name_singular); ?>
                                 </div>
                             </div>
                             <div class="cart__item__details__top--right">
@@ -105,7 +103,7 @@ defined('ABSPATH') || exit;
                             <div class="cart__item__details__bottom--left">
                                 <?php
                                 // show actual quantity
-                                echo '<div class="actual-quantity">' . esc_html__('Quantity: ', 'granola') . esc_html($cart_item['quantity']) . ' packs</div>';
+                                echo '<div class="actual-quantity">' . esc_html__('Quantity: ', 'granola') . esc_html($cart_item['quantity']) . ' ' . esc_html($unit_name_plural) . '</div>';
                                 ?>
                             </div>
                         </div>
@@ -142,20 +140,20 @@ defined('ABSPATH') || exit;
         <?php endforeach; ?>
 
 
-        <div class="checkout__summary__totals__item">
-            <div class="label"><?php esc_html_e('Shipping', 'woocommerce'); ?></div>
-            <div class="value">
-                <?php
-                if (WC()->cart->needs_shipping() && WC()->cart->show_shipping()) {
-                    // get shipping total cost
-                    $shipping_total = WC()->cart->get_shipping_total();
-                    echo wc_price($shipping_total);
-                } else {
-                    esc_html_e('Free shipping', 'woocommerce');
-                }
-                ?>
+        <?php if (WC()->cart->needs_shipping()) { ?>
+            <div class="checkout__summary__totals__item">
+                <div class="label"><?php esc_html_e('Shipping', 'woocommerce'); ?></div>
+                <div class="value">
+                    <?php if (WC()->cart->show_shipping() && WC()->cart->has_calculated_shipping()) {
+                        // Get shipping total cost (incl. tax).
+                        echo WC()->cart->get_cart_shipping_total();
+                    } else {
+                        esc_html_e('Taxes will be calculated after you enter your address', 'granola');
+                    }
+                    ?>
+                </div>
             </div>
-        </div>
+        <?php } ?>
 
         <?php foreach (WC()->cart->get_fees() as $fee) : ?>
             <div class="checkout__summary__totals__item">

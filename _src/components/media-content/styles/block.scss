@@ -12,12 +12,6 @@
         z-index: 999;
     }
 
-    &__heading {
-        @include typestyle-h1;
-        line-height: 1.15;
-        letter-spacing: 0.14em;
-    }
-
     @include mq($until: medium) {
         --media-object--gap: var(--space--s);
     }
@@ -34,6 +28,17 @@
     }
 
     #{$media-object} {
+        &__heading {
+            @include typestyle-h1;
+
+            line-height: 1.15;
+            letter-spacing: 0.14em;
+
+            @include mq(medium, $until: large) {
+                @include typestyle-h2;
+            }
+        }
+
         &__buttons {
             --flex-column--gap: var(--space--s);
 
@@ -49,11 +54,11 @@
 
             @include mq($until: large) {
                 order: -1;
-                padding: 0 var(--media-object--inner-padding-x);
             }
 
             img {
                 aspect-ratio: 1 / 1;
+
                 @include mq($until: medium) {
                     position: relative;
                 }
@@ -67,7 +72,9 @@
 
     &:not(.has-background) {
         &.alignfull #{$media-object}__content {
-            padding-inline: var(--space--container-padding);
+            @include mq(medium) {
+                padding-inline: var(--space--container-padding);
+            }
         }
 
         &.aligncenter {
@@ -76,20 +83,23 @@
     }
 
     // Make it containerised on full align
-    &.alignfull #{$media-object}__inner {
-        @include align-width--l;
-        padding: var(--space--2xl) 0;
-
-        @include mq($until: large) {
-            padding: var(--space--xl) 0;
+    &.alignfull {
+        #{$media-object}__inner {
+            @include align-width--l;
         }
     }
 
     &.has-background {
-        --media-object--inner-padding-x: 0;
+        @include mq(medium) {
+            --media-object--inner-padding-x: 0;
+        }
 
-        @include mq($until: medium) {
-            --media-object--inner-padding-x: var(--space--m);
+        #{$media-object}__inner {
+            padding-block: var(--space--xl);
+
+            @include mq(large) {
+                padding-block: var(--space--2xl);
+            }
         }
 
         &[data-media-position='after'] {
@@ -122,10 +132,6 @@
         #{$media-object}__heading {
             display: flex;
             flex-flow: column;
-
-            @include mq(medium, $until: large) {
-                @include typestyle-h2;
-            }
         }
 
         #{$media-object}__heading-primary {
@@ -134,6 +140,13 @@
 
         #{$media-object}__heading-secondary {
             align-self: flex-end;
+        }
+    }
+
+    #{$media-object}__subheading {
+        a {
+            --link--text-decoration: underline;
+            --link--text-decoration--hover: none;
         }
     }
 

@@ -4,22 +4,25 @@ namespace Granola\Components\TemplateLoop;
 
 function filter_args(array $args): ?array
 {
-    // ---------------------------------------
-    // Default arguments.
-    // ---------------------------------------
     $args = array_merge([
         'items' => [],
         'object' => \Granola\WordPress\PageObject::get(),
         'items_component_args' => [],
+        'taxonomy_filters_args' => [],
         'taxonomy' => 'category',
         'filter_label' => \__('Explore and filter all articles', 'granola'),
         'post_type' => null,
     ], $args);
 
-    if (empty($args['items'])) {
-        while (\have_posts()) {
-            \the_post();
-            $args['items'][]['object'] = \get_post();
+    // Determine post type.
+    // On search pages:
+    // - if a filter is selected, use it
+    // - otherwise show all matching post types
+    if (\is_search()) {
+        if (isset($_GET['post_type']) && $_GET['post_type'] !== '') {
+            $post_type = \sanitize_key(\wp_unslash($_GET['post_type']));
+        } else {
+            $post_type = 'any';
         }
     }
 
@@ -43,15 +46,78 @@ function filter_args(array $args): ?array
     $args['items_component_args']['post_type'] = $post_type;
     $args['taxonomy_filters']['post_type'] = $post_type;
 
-    // Set limit to 12
+    $paged = \get_query_var('paged') ? \get_query_var('paged') : 1;
+    $taxonomy = $args['taxonomy'];
+
+    $query_args = [
+        'post_type' => $post_type,
+        'posts_per_page' => 12,
+        'post_status' => 'publish',
+        'paged' => $paged,
+    ];
+
+    // Preserve search term on search pages.
+    if (\is_search()) {
+        $search_term = \get_search_query();
+
+        if ($search_term !== '') {
+            $query_args['s'] = $search_term;
+        }
+    }
+
+    // Filter by taxonomy if provided in URL.
+    if (isset($_GET[$taxonomy]) && !empty($_GET[$taxonomy])) {
+        $terms = array_filter(
+            explode(' ', \sanitize_text_field(\wp_unslash($_GET[$taxonomy])))
+        );
+
+        if (!empty($terms)) {
+            $query_args['tax_query'] = [
+                'relation' => 'AND',
+            ];
+
+            foreach ($terms as $term) {
+                $query_args['tax_query'][] = [
+                    'taxonomy' => $taxonomy,
+                    'field' => 'slug',
+                    'terms' => $term,
+                ];
+            }
+        }
+    }
+
+    if (empty($args['items'])) {
+        $query = new \WP_Query($query_args);
+        $args['items'] = [];
+
+        foreach ($query->posts as $post) {
+            $args['items'][] = [
+                'object' => $post,
+            ];
+        }
+
+        $max_num_pages = $query->max_num_pages;
+    } else {
+        $max_num_pages = 1;
+    }
+
+    $args['taxonomy_filters_args'] = [
+        'label' => $args['filter_label'],
+        'taxonomy' => $args['taxonomy'],
+        'object' => $args['object'],
+        'show_images' => false,
+        'preserve_url' => true,
+    ];
+
+    $args['items_component_args']['items'] = $args['items'];
+    $args['items_component_args']['wp_query'] = false;
+    $args['items_component_args']['post_type'] = $post_type;
     $args['items_component_args']['limit'] = 12;
 
-    // Set columns to 3 if not already set
     if (!isset($args['items_component_args']['columns'])) {
         $args['items_component_args']['columns'] = 3;
     }
 
-    // Set columns to 2 for case studies
     if ($post_type === 'case-study') {
         $args['items_component_args']['columns'] = 2;
         $args['taxonomy_filters']['label'] = \__('Explore and filter all case studies', 'granola');
@@ -60,18 +126,18 @@ function filter_args(array $args): ?array
         unset($args['taxonomy_filters']);
     }
 
-    // Filterable items output component.
+    $args['pagination_args'] = [
+        'paged' => $paged,
+        'max_num_pages' => $max_num_pages,
+    ];
+
     $args['items_component'] = \apply_filters('granola/components/template-loop/items-component', 'cards-automatic');
 
-    // Filterable items output component arguments.
     $args['items_component_args'] = \apply_filters(
         'granola/components/template-loop/items-component/args',
         $args['items_component_args']
     );
 
-    // -------------------------------------------------------------------------
-    // Return the filtered args.
-    // -------------------------------------------------------------------------
     return $args;
 }
 

@@ -43,6 +43,10 @@ export default class SiteHeader {
             }, 50)
         );
 
+        // Listen to custom scroll events.
+        window.addEventListener('scrollchange', this);
+        window.addEventListener('scrolldown', this);
+
         if (this.isBurgerModeActive()) {
             this.closeHeader(true);
         }
@@ -198,7 +202,10 @@ export default class SiteHeader {
 
         this.el.classList.add('is-open');
 
-        // document.documentElement.classList.add('no-scroll');
+        if (this.isBurgerModeActive()) {
+            document.documentElement.classList.add('no-scroll');
+            this.body.classList.add('no-scroll');
+        }
 
         this.headerTogglerEls.forEach((toggle) => {
             toggle.setAttribute('aria-expanded', 'true');
@@ -216,7 +223,8 @@ export default class SiteHeader {
         // close the menu
         this.el.classList.remove('is-open');
 
-        // document.documentElement.classList.remove('no-scroll');
+        document.documentElement.classList.remove('no-scroll');
+        this.body.classList.remove('no-scroll');
 
         if (this.isBurgerModeActive()) {
             this.headerTogglerEls.forEach((toggle) => {
@@ -310,5 +318,25 @@ export default class SiteHeader {
 
     isBurgerModeActive() {
         return isElementVisible(this.burgerEl);
+    }
+
+    /**
+     * Handle events with class functions to retain class context.
+     *
+     * @link https://webreflection.medium.com/dom-handleevent-a-cross-platform-standard-since-year-2000-5bf17287fd38
+     *
+     * @param {Event} event An event object.
+     */
+    handleEvent(event) {
+        this[`on${event.type}`](event);
+    }
+
+    onscrolldown() {
+        this.body.classList.toggle('scroll-valid', document.documentElement.scrollTop > 64);
+    }
+
+    onscrollchange(event) {
+        this.body.classList.toggle('scrolling-up', event.detail.direction === 'up');
+        this.body.classList.toggle('scrolling-down', event.detail.direction === 'down');
     }
 }

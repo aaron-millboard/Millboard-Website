@@ -66,6 +66,7 @@
             --input--background-color: transparent;
 
             border-right: 0;
+            line-height: 1;
         }
 
         &__submit {
@@ -88,6 +89,7 @@
             align-items: center;
             gap: var(--space--2xs);
             justify-self: start;
+            text-align: left;
 
             @include interact {
                 text-decoration: underline;
@@ -240,6 +242,11 @@
         padding-bottom: var(--space--l);
         justify-items: start;
 
+        &.selected {
+            border-inline-start: 4px solid var(--color--brand-4);
+            padding-inline-start: var(--space--2xs);
+        }
+
         &:not(:last-child) {
             border-bottom: 1px solid var(--color--brand-1);
             margin-bottom: var(--space--l);
@@ -308,6 +315,120 @@
                 mask-image: url(#{asset-path('images/icons/chevron-right.svg')});
                 mask-size: #{px-to-rem(24)};
             }
+        }
+    }
+
+    &__filters {
+        display: flex;
+        gap: var(--space--3xs);
+        flex-wrap: wrap;
+        padding-bottom: var(--space--l);
+        margin-bottom: var(--space--l);
+        border-bottom: 1px solid var(--color--brand-1);
+        width: 100%;
+
+        &--mobile {
+            margin-top: var(--space--l);
+
+            @include mq(medium) {
+                display: none;
+            }
+        }
+
+        &--sidebar {
+            @include mq($until: medium) {
+                display: none;
+            }
+        }
+    }
+
+    &__filter {
+        @include button-reset-hard;
+        @include typestyle-small;
+
+        line-height: 1;
+        display: flex;
+        padding: var(--space--3xs) px-to-rem(12);
+        align-items: flex-start;
+        gap: px-to-rem(10);
+        border: 1px solid var(--color--brand-1);
+
+        @include interact {
+            background-color: var(--color--wenge);
+            color: var(--color--white);
+        }
+
+        &--active {
+            background-color: var(--color--wenge);
+            color: var(--color--white);
+        }
+    }
+
+    &__marker-tooltip {
+        &__title {
+            @include typestyle-xlarge;
+
+            margin: 0;
+            font-weight: var(--type--2--font-weight);
+            letter-spacing: 0;
+        }
+
+        &__meta {
+            order: -1;
+            display: flex;
+            flex-flow: row wrap;
+            align-items: center;
+            gap: var(--space--3xs);
+
+            &:not(:empty) {
+                margin-bottom: var(--space--s);
+            }
+
+            .g-tag {
+                border-color: var(--color--brand-4);
+            }
+        }
+
+        &__distance {
+            @include typestyle-small;
+
+            font-weight: var(--type--2--font-weight);
+        }
+
+        &__phone,
+        &__address {
+            @include typestyle-small;
+
+            margin-top: var(--space--3xs);
+            color: var(--link--color);
+        }
+
+        &__link {
+            @include typestyle-h6;
+            @include mask-icon;
+
+            display: inline-flex;
+            gap: var(--space--2xs);
+            align-items: center;
+            text-decoration: none;
+            margin-top: var(--space--s);
+
+            @include interact {
+                text-decoration: none;
+            }
+
+            &::after {
+                display: block;
+                width: #{px-to-rem(24)};
+                height: #{px-to-rem(24)};
+                content: '';
+                mask-image: url(#{asset-path('images/icons/chevron-right.svg')});
+                mask-size: #{px-to-rem(24)};
+            }
+        }
+
+        a {
+            color: var(--link--color);
         }
     }
 }

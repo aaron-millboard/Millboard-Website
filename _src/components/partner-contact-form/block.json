@@ -9,14 +9,18 @@
     "keywords": [
         "form",
         "installer",
-        "distributor"
+        "distributor",
+        "showroom",
+        "experience centre"
     ],
     "acf": {
         "mode": "auto",
         "renderCallback": "\\Granola\\Component::acf_render_callback",
         "postTypes": [
             "installer",
-            "distributor"
+            "distributor",
+            "showroom",
+            "experience_centre"
         ]
     },
     "supports": {

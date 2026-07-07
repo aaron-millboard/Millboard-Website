@@ -14,6 +14,7 @@ global $product;
 
 // CTA under description
 $show_calculator = \get_field('enable_calculator', $product->get_id());
+$pricing_description = \Granola\Components\WC_SingleProduct\get_pricing_description($product);
 $stock_quantity = $product->get_stock_quantity();
 
 // Bail early - stock set to 0, don't allow "add to cart" functionality for main product.
@@ -51,9 +52,15 @@ if (empty($default_product_in_stock) && empty($show_calculator)) {
     <div class="product__add-to-cart-wrapper">
         <?php woocommerce_single_variation(); // render price ?>
 
+        <?php if (!empty($pricing_description)) { ?>
+            <div class="product__pricing-description">
+                <?= wp_kses_post($pricing_description); ?>
+            </div>
+        <?php } ?>
+
         <button type="submit" class="single_add_to_cart_button button alt<?= esc_attr(wc_wp_theme_get_element_class_name('button') ? ' ' . wc_wp_theme_get_element_class_name('button') : ''); ?>"><?= esc_html($product->single_add_to_cart_text()); ?></button>
 
-        <input type="hidden" name="add-to-cart" value="<?= absint($product->get_id()); ?>" />
+        <input type="hidden" name="add-to-cart" value="<?= absint(\Theme\Utils\WooCommerce::get_default_variation_id($product)); ?>" />
         <input type="hidden" name="product_id" value="<?= absint($product->get_id()); ?>" />
         <input type="hidden" name="variation_id" class="variation_id" value="0" />
     </div>

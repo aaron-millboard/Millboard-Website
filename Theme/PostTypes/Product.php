@@ -16,8 +16,6 @@ class Product
         \add_filter('register_post_type_args', [__CLASS__, 'filter_register_post_type_args'], 10, 2);
         \add_action('init', [__CLASS__, 'add_rewrite_rules'], 10);
         \add_filter('query_vars', [__CLASS__, 'filter_query_vars']);
-        \add_action('rest_api_init', [__CLASS__, 'register_endpoints']);
-        \add_filter('granola/scripts/localization', [__CLASS__, 'add_rest_endpoint_localization']);
         \add_action('wp', [__CLASS__, 'preload_thumbnail']);
     }
 
@@ -27,6 +25,7 @@ class Product
             return $args;
         }
 
+        // Set default gutenberg template.
         $args['template'] = [
             ['acf/wc-single-product'],
         ];
@@ -50,14 +49,22 @@ class Product
      */
     public static function add_rewrite_rules()
     {
-        \add_rewrite_rule('product/([^/]+)/([^/]+)/?$', 'index.php?product=$matches[1]&attribute_pa_colour=$matches[2]', 'top');
-        \add_rewrite_rule('product/([^/]+)/([^/]+)/([^/]+)?$', 'index.php?product=$matches[1]&attribute_pa_colour=$matches[2]&sku=$matches[3]', 'top');
+        $colour_attribute_name = \get_field('product_colour_taxonomy', 'options');
+        if (!empty($colour_attribute_name)) {
+            \add_rewrite_rule('product/([^/]+)/([^/]+)/?$', 'index.php?product=$matches[1]&attribute_' . $colour_attribute_name . '=$matches[2]', 'top');
+            \add_rewrite_rule('product/([^/]+)/([^/]+)/([^/]+)?$', 'index.php?product=$matches[1]&attribute_' . $colour_attribute_name . '=$matches[2]&sku=$matches[3]', 'top');
+        }
     }
 
     public static function filter_query_vars($query_vars)
     {
         $query_vars[] = 'sku';
-        $query_vars[] = 'attribute_pa_colour';
+
+        $colour_attribute_name = \get_field('product_colour_taxonomy', 'options');
+        if (!empty($colour_attribute_name)) {
+            $query_vars[] = 'attribute_' . $colour_attribute_name;
+        }
+
         return $query_vars;
     }
 
@@ -86,7 +93,6 @@ class Product
     {
         // Retrieve full Product object.
         if (\is_int($product)) {
-            /** @var \WC_Product $product */
             $product = \wc_get_product($product);
         }
 
@@ -106,6 +112,7 @@ class Product
             return null;
         }
 
+        /** @var \WC_Product_Variable $product */
         $variations = $product->get_available_variations();
 
         // Search for matching variation, returning the first found.
@@ -127,43 +134,6 @@ class Product
         }
 
         return null;
-    }
-
-    public static function register_endpoints(): void
-    {
-        \register_rest_route('millboard/v1', '/products/get-variation-url', [
-            'methods' => \WP_REST_Server::READABLE,
-            'callback' => '\Theme\PostTypes\Product::get_variation_url',
-            'permission_callback' => '__return_true', // TODO: add comprehensive permission callback.
-        ]);
-    }
-
-    public static function add_rest_endpoint_localization($localizations)
-    {
-        $localizations['product_variation_url'] = \home_url('/wp-json/millboard/v1/products/get-variation-url');
-        return $localizations;
-    }
-
-    public static function get_variation_url(\WP_REST_Request $request): \WP_Error|string
-    {
-        $product_id = (int) $request->get_param('product_id');
-        $board_width = $request->get_param('pa_board-width');
-        $colour = $request->get_param('pa_colour');
-
-        if (empty($product_id) || empty($colour)) {
-            return '';
-        }
-
-        $variation = self::get_product_variation_by_attributes($product_id, [
-            'pa_board-width' => $board_width,
-            'pa_colour' => $colour,
-        ]);
-
-        if (empty($variation) || empty($variation['sku'])) {
-            return '';
-        }
-
-        return \trailingslashit(\get_permalink($product_id) . $colour . '/' . $variation['sku']);
     }
 
     public static function preload_thumbnail(): void

@@ -31,10 +31,17 @@ class AdviceCentre
             return;
         }
 
+        \add_rewrite_tag('%advice_category_slug%', '([^/]+)', 'advice_category_slug=');
+        \add_rewrite_rule(
+            '^advice-centre/advice-category/([^/]+)/?$',
+            'index.php?post_type=' . self::SLUG . '&name=$matches[1]',
+            'top'
+        );
+
         \register_extended_post_type(self::SLUG, [
             // Core post type configuration.
             'public' => true,
-            'has_archive' => true,
+            'has_archive' => self::SLUG,
             'hierarchical' => true,
             'show_in_rest' => true,
             'rewrite' => [

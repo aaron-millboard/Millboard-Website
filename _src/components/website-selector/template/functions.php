@@ -33,7 +33,7 @@ function filter_args(array $args): ?array
             if (!empty($column['image'])) {
                 $args['columns'][$index]['image_data'] = [
                     'attachment_id' => $column['image'],
-                    'size' => 'medium',
+                    'size' => 'granola_square_s',
                     'fetchpriority' => 'high',
                     'data-spai-eager' => true,
                     'loading' => 'eager',

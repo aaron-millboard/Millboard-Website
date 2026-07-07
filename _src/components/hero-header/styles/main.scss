@@ -14,16 +14,26 @@
         overflow: clip; // allows position: sticky.
         display: grid;
         grid-template-columns: minmax(0, 1fr);
-        aspect-ratio: 16 / 9;
+        max-width: 100%;
+
+        @media (min-aspect-ratio: 16/9) {
+            min-height: 150vh; // magic number
+        }
     }
 
-    &__image {
+    &__image-wrapper,
+    &__iframe {
+        position: sticky;
+        top: calc(var(--wp--admin-bar-height--sticky) + var(--site-header--height));
         display: block;
         grid-row: 1;
         grid-column: 1;
         aspect-ratio: 16 / 9;
         width: 100%;
-        height: 100%;
+    }
+
+    &__image {
+        width: 100%;
         object-fit: cover;
     }
 

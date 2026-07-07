@@ -4,6 +4,7 @@
             'item' => $item,
             'depth' => $args['depth'],
             'max_depth' => $args['max_depth'],
+            'parent_list_id' => $args['attributes']['id'] ?? null,
         ]); ?>
     <?php } ?>
 </ul>

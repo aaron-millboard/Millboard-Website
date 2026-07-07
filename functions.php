@@ -46,6 +46,7 @@ if (file_exists($autoloader = __DIR__ . '/vendor/autoload.php')) {
 \Theme\WordPress\Emails::init();
 \Theme\WordPress\Escaping::init();
 \Theme\WordPress\Excerpt::init();
+\Theme\WordPress\Forms::init();
 \Theme\WordPress\Menus::init();
 \Theme\WordPress\MimeTypes::init();
 \Theme\WordPress\Preloads::init();
@@ -72,6 +73,8 @@ if (file_exists($autoloader = __DIR__ . '/vendor/autoload.php')) {
 \Theme\PostTypes\Post::init();
 \Theme\PostTypes\Product::init();
 \Theme\PostTypes\Distributor::init();
+\Theme\PostTypes\Showroom::init();
+\Theme\PostTypes\ExperienceCentre::init();
 
 // ----------------------------------------------------
 // Custom Taxonomies.
@@ -88,3 +91,16 @@ if (file_exists($autoloader = __DIR__ . '/vendor/autoload.php')) {
 // ----------------------------------------------------
 \Theme\Plugins\ACF::init();
 \Theme\Plugins\YoastSEO::init();
+
+// ----------------------------------------------------
+// WooCommerce functionality.
+// ----------------------------------------------------
+
+\Theme\WooCommerce\SampleShipping::init();
+\Theme\WooCommerce\QuoteShare::init();
+\Theme\WooCommerce\Settings::init();
+
+// ----------------------------------------------------
+// Other custom functionality.
+// ----------------------------------------------------
+\Theme\Hubspot\Attribution::init();

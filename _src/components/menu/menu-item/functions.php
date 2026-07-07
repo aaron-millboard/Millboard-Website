@@ -13,6 +13,7 @@ function filter_args(array $args): ?array
         'depth' => 0,
         'max_depth' => null,
         'display_submenu' => false,
+        'parent_list_id' => null,
     ], $args);
 
     // ---------------------------------------
@@ -35,7 +36,13 @@ function filter_args(array $args): ?array
         'menu-item',
     ], $args['classes'], $item->classes);
 
-    $args['attributes']['id'] = 'menu-item-' . $item->ID;
+    $item_id = 'menu-item-' . $item->ID;
+
+    if (!empty($args['parent_list_id'])) {
+        $item_id = $args['parent_list_id'] . '-' . $item_id;
+    }
+
+    $args['attributes']['id'] = $item_id;
 
     $args['link'] = [
         'url' => $item->url,
@@ -45,6 +52,10 @@ function filter_args(array $args): ?array
             'title' => $item->attr_title ?: null,
         ],
     ];
+
+    if ($item->url === '#') {
+        $args['link']['attributes']['role'] = 'button';
+    }
 
     if (!empty($item->xfn)) {
         $args['link']['attributes']['rel'][] = $item->xfn;
@@ -81,8 +92,10 @@ function filter_args(array $args): ?array
             }
         }
 
+        $sub_menu_id = (!empty($args['parent_list_id']) ? $args['parent_list_id'] . '-' : '') . 'sub-menu-' . $item->ID;
+
         $args['sub-menu-attributes'] = [
-            'id' => 'sub-menu-' . $item->ID,
+            'id' => $sub_menu_id,
             'class' => \Granola\Helpers::build_classes($sub_menu_classes),
 
             // Initially hide sub-menus.
@@ -96,8 +109,8 @@ function filter_args(array $args): ?array
             'classes' => ['sub-menu-toggler'],
             'attributes' => [
                 'aria-expanded' => 'false',
-                'aria-controls' => 'sub-menu-' . $item->ID,
-                'id' => 'sub-menu-' . $item->ID . '-toggler',
+                'aria-controls' => $sub_menu_id,
+                'id' => $sub_menu_id . '-toggler',
             ],
         ];
     }
@@ -151,6 +164,11 @@ function build_menu_item_classes(array $classes, object $item, array $args): arr
     // Potentially confusing class: Home vs. Front Page.
     if ($item->type === 'post_type' && (int) \get_option('page_on_front') === (int) $item->object_id) {
         $classes[] = 'menu-item--home';
+    }
+
+    // Root class (similar but different to home).
+    if (!empty($item->url) && \home_url() === rtrim($item->url, '/')) {
+        $classes[] = 'menu-item--root';
     }
 
     // Current Menu Item class.

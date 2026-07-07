@@ -8,6 +8,7 @@ class ACF
     {
         \add_action('acf/init', [__CLASS__, 'option_pages']);
         \add_action('acf/init', [__CLASS__, 'set_acf_google_api_key']);
+        \add_action('acf/init', [__CLASS__, 'register_user_profile_fields']);
 
         \add_action('acf/init', [__CLASS__, 'fix_previews']);
         \add_action('acf/init', [__CLASS__, 'disable_shortcode']);
@@ -46,6 +47,9 @@ class ACF
         \add_filter('acf/location/rule_types', [__CLASS__, 'acf_location_rules_types']);
         \add_filter('acf/location/rule_values/menu_level', [__CLASS__, 'acf_location_rule_values_level']);
         \add_filter('acf/location/rule_match/menu_level', [__CLASS__, 'acf_location_rule_match_level'], 10, 4);
+
+        // Add custom field types.
+        \add_action('acf/include_field_types', [ __CLASS__, 'register_custom_field_types' ]);
     }
 
     public static function option_pages(): void
@@ -55,6 +59,8 @@ class ACF
             \_x('Header', 'ACF options page name', 'granola'),
             \_x('Integrations', 'ACF options page name', 'granola'),
             \_x('Product Calculator', 'ACF options page name', 'granola'),
+            \_x('Products', 'ACF options page name', 'granola'),
+            \_x('Quote Share', 'ACF options page name', 'granola'),
         ];
 
         if (empty($options_pages)) {
@@ -68,6 +74,49 @@ class ACF
         foreach ($options_pages as $page) {
             \acf_add_options_sub_page($page);
         }
+    }
+
+    /**
+     * Register user profile fields used across content templates.
+     */
+    public static function register_user_profile_fields(): void
+    {
+        if (!\function_exists('acf_add_local_field_group')) {
+            return;
+        }
+
+        \acf_add_local_field_group([
+            'key' => 'group_user_profile',
+            'title' => 'User Profile',
+            'fields' => [
+                [
+                    'key' => 'field_user_image',
+                    'label' => 'Profile image',
+                    'name' => 'user_image',
+                    'type' => 'image',
+                    'instructions' => 'Used as the author profile image in article headers.',
+                    'required' => 0,
+                    'return_format' => 'array',
+                    'preview_size' => 'thumbnail',
+                    'library' => 'all'
+                ],
+            ],
+            'location' => [
+                [
+                    [
+                        'param' => 'user_role',
+                        'operator' => '==',
+                        'value' => 'all',
+                    ],
+                ],
+            ],
+            'position' => 'normal',
+            'style' => 'default',
+            'label_placement' => 'top',
+            'instruction_placement' => 'label',
+            'active' => true,
+            'show_in_rest' => 0,
+        ]);
     }
 
     /**
@@ -381,5 +430,19 @@ class ACF
         }
 
         return $match;
+    }
+
+    /**
+     * Register custom taxonomy selector field.
+     *
+     * @return void
+     */
+    public static function register_custom_field_types(): void
+    {
+        new ACF\AcfFieldTaxonomySelector([
+            'version' => '1.0.0',
+            'url' => \get_theme_file_uri(__FILE__),
+            'path' => \get_theme_file_path(__FILE__)
+        ]);
     }
 }

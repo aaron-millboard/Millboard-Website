@@ -18,10 +18,13 @@
 
 defined('ABSPATH') || exit;
 
+$show_quote_share = \Theme\WooCommerce\QuoteShare::is_quote_share_enabled();
+
 // Notices here
 do_action('woocommerce_before_cart');?>
 
 <form class="cart woocommerce-cart-form" action="<?php echo esc_url(wc_get_cart_url()); ?>" method="post">
+    <?php do_action('woocommerce_before_cart_table'); ?>
 
     <div class="cart__inner">
 
@@ -31,6 +34,7 @@ do_action('woocommerce_before_cart');?>
         </div>
 
         <div class="cart__items shop_table" cellspacing="0">
+            <?php do_action('woocommerce_before_cart_contents'); ?>
 
             <?php
             foreach (WC()->cart->get_cart() as $cart_item_key => $cart_item) {
@@ -55,25 +59,26 @@ do_action('woocommerce_before_cart');?>
                 // check calculator if variable
                 if ($_product->is_type('variation')) {
                     $parent_id = $_product->get_parent_id();
-                    $parent_product = wc_get_product($parent_id);
-                    $sample_size_attribute = $parent_product->get_attribute('pa_sample-size');
-                    $board_width_attribute = $parent_product->get_attribute('pa_board-width');
                     $calculator_enabled = get_field('enable_calculator', $parent_id);
                 } else {
-                    $sample_size_attribute = $_product->get_attribute('pa_sample-size');
-                    $board_width_attribute = $_product->get_attribute('pa_board-width');
                     $calculator_enabled = get_field('enable_calculator', $_product->get_id());
                 }
 
+                $sample_size_attribute_name = \get_field('product_sample_size_taxonomy', 'options');
+                $board_width_attribute_name = \get_field('product_board_width_taxonomy', 'options');
+
+                $sample_size_attribute = $_product->get_attribute($sample_size_attribute_name ?? 'pa_sample-size');
+                $board_width_attribute = $_product->get_attribute($board_width_attribute_name ?? 'pa_board-width');
+
                 if ($sample_size_attribute || $board_width_attribute || $calculator_enabled) {
                     // If board, we check by 3 signs: board width attribute, sample size attribute set to full or calculator enabled
-                    if ($board_width_attribute || $sample_size_attribute === 'Full' || $calculator_enabled) {
+                    if ($board_width_attribute || $calculator_enabled || !\Theme\WooCommerce\Utils::is_sample($_product)) {
                         $unit_name_singular = __('board', 'granola');
                         $unit_name_plural = __('boards', 'granola');
                     }
 
                     // override if we have any sign of sample size
-                    if ($sample_size_attribute === 'Small' || $sample_size_attribute === 'Large') {
+                    if (\Theme\WooCommerce\Utils::is_sample($_product)) {
                         $unit_name_singular = __('sample', 'granola');
                         $unit_name_plural = __('samples', 'granola');
                     }
@@ -115,11 +120,8 @@ do_action('woocommerce_before_cart');?>
                         </div>
 
                         <div class="cart__item__details">
-
                             <div class="cart__item__details__top">
-
                                 <div class="cart__item__details__top--left">
-
                                     <div class="cart__item__details__name" data-title="<?php esc_attr_e('Product', 'woocommerce'); ?>">
                                         <?php
                                         if (! $product_permalink) {
@@ -130,67 +132,23 @@ do_action('woocommerce_before_cart');?>
                                         ?>
                                     </div>
 
-                                    <?php
-                                    // Normalised product attribute array.
-                                    // We have seen different return values for this but unclear why.
-                                    // Normalise to avoid errors.
-                                    $attributes = array_map(function ($attribute) {
-                                        if ($attribute instanceof \WC_Product_Attribute) {
-                                            $attr_options = $attribute->get_options();
-                                            if (empty($attr_options)) {
-                                                return [];
-                                            }
-
-                                            $term_id = $attr_options[0];
-                                            if (empty($term_id)) {
-                                                return [];
-                                            }
-
-                                            $term = get_term_by('term_id', $term_id, $attribute->get_name());
-                                            return $term->slug;
-                                        }
-
-                                        return $attribute;
-                                    }, $_product->get_attributes());
-
-                                    // Remove sample size.
-                                    unset($attributes['pa_sample-size']);
-
-                                    // Sort pa_color attribute to first place.
-                                    uksort($attributes, function ($attribute_name_1, $attribute_name_2) {
-                                        if ($attribute_name_1 === 'pa_colour') {
-                                            return -1;
-                                        }
-
-                                        if ($attribute_name_2 === 'pa_colour') {
-                                            return 1;
-                                        }
-
-                                        return 0;
-                                    });
-
-                                    // Show other attributes
-                                    foreach ($attributes as $key => $value) { ?>
-                                        <?php if (!empty($value)) { ?>
-                                            <?php $term = get_term_by('slug', $value, $key); ?>
-                                            <?php if (!empty($term)) { ?>
-                                                <div class="cart__item__details__attribute cart__item__details__<?= esc_attr(str_replace('pa_', '', $value)); ?>">
-                                                    <?= esc_html($term->name); ?>
-                                                </div>
-                                            <?php } ?>
+                                    <?php $attributes = \Theme\WooCommerce\Utils::get_product_display_attributes($_product); ?>
+                                    <?php foreach ($attributes as $key => $attribute) { ?>
+                                        <?php if (!empty($attribute)) { ?>
+                                            <div class="cart__item__details__attribute cart__item__details__<?= esc_attr($attribute['name']); ?>">
+                                                <?= esc_html($attribute['value']); ?>
+                                            </div>
                                         <?php } ?>
                                     <?php } ?>
 
                                     <div class="product-price" data-title="<?php esc_attr_e('Price', 'woocommerce'); ?>">
                                         <?php echo apply_filters('woocommerce_cart_item_price', WC()->cart->get_product_price($_product), $cart_item, $cart_item_key) . ' ' . esc_html__('per ', 'granola') . esc_html($unit_name_singular); ?>
                                     </div>
-
                                 </div>
 
                                 <div class="cart__item__details__top--right">
                                     <?php echo apply_filters('woocommerce_cart_item_subtotal', WC()->cart->get_product_subtotal($_product, $cart_item['quantity']), $cart_item, $cart_item_key); ?>
                                 </div>
-
                             </div>
 
                             <div class="cart__item__details__bottom">
@@ -360,6 +318,52 @@ do_action('woocommerce_before_cart');?>
                     </div>
                 </div>
 
+                <?php if ($show_quote_share) :
+                    $quote_form_action = esc_url(admin_url('admin-post.php'));
+                    $quote_snapshot = [
+                        'items' => [],
+                        'lines' => [],
+                        'total' => wp_strip_all_tags(html_entity_decode(WC()->cart->get_total(), ENT_QUOTES | ENT_HTML5, 'UTF-8')),
+                        'total_raw' => (string) round((float) WC()->cart->get_total('edit'), 2),
+                    ];
+
+                    foreach (WC()->cart->get_cart() as $quote_item) {
+                        if (empty($quote_item['data']) || !$quote_item['data'] instanceof \WC_Product) {
+                            continue;
+                        }
+
+                        $quote_quantity = isset($quote_item['quantity']) ? (int) $quote_item['quantity'] : 0;
+
+                        if ($quote_quantity < 1) {
+                            continue;
+                        }
+
+                        $quote_snapshot['lines'][] = sprintf('%s x %d', wp_strip_all_tags($quote_item['data']->get_name()), $quote_quantity);
+
+                        $quote_snapshot['items'][] = [
+                            'product_id' => isset($quote_item['product_id']) ? (int) $quote_item['product_id'] : 0,
+                            'variation_id' => isset($quote_item['variation_id']) ? (int) $quote_item['variation_id'] : 0,
+                            'quantity' => $quote_quantity,
+                            'variation' => isset($quote_item['variation']) && is_array($quote_item['variation']) ? $quote_item['variation'] : [],
+                        ];
+                    }
+
+                    $quote_snapshot_encoded = base64_encode(wp_json_encode($quote_snapshot));
+                    ?>
+                <section class="cart__quote-share" aria-label="<?php esc_attr_e('Share quote', 'granola'); ?>">
+                    <p class="cart__quote-share__copy"><?php esc_html_e('Want to share this quote?', 'granola'); ?></p>
+                    <button
+                        type="button"
+                        class="button cart__quote-share__open"
+                        data-quote-share-open
+                        aria-haspopup="dialog"
+                        aria-controls="quote-share-modal"
+                    >
+                        <?php esc_html_e('SHARE & SAVE QUOTE', 'granola'); ?>
+                    </button>
+                </section>
+                <?php endif; ?>
+
                 <?php do_action('woocommerce_cart_totals_after_order_total'); ?>
 
             </table>
@@ -384,13 +388,6 @@ do_action('woocommerce_before_cart');?>
     </div>
 
     <div class="cart__actions">
-
-        <div class="back-to-shop">
-            <a href="<?php echo esc_url(wc_get_page_permalink('shop')); ?>">
-                <?php esc_html_e('Back to shop', 'granola'); ?>
-            </a>
-        </div>
-
         <div class="wc-proceed-to-checkout">
             <a href="<?php echo esc_url(wc_get_checkout_url()); ?>" class="checkout-button button alt wc-forward<?php echo esc_attr(wc_wp_theme_get_element_class_name('button') ? ' ' . wc_wp_theme_get_element_class_name('button') : ''); ?>">
                 <?php esc_html_e('Proceed to checkout', 'woocommerce'); ?>
@@ -406,3 +403,148 @@ do_action('woocommerce_before_cart');?>
     </div>
 
 </form>
+
+<?php if ($show_quote_share) : ?>
+<div
+    id="quote-share-modal"
+    class="cart-quote-modal"
+    data-quote-share-modal
+    hidden
+    aria-hidden="true"
+>
+    <div class="cart-quote-modal__overlay" data-quote-share-close></div>
+    <div
+        class="cart-quote-modal__dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="quote-share-modal__title"
+    >
+            <button type="button" class="cart-quote-modal__close" data-quote-share-close aria-label="<?php esc_attr_e('Close modal', 'granola'); ?>">
+                <?= esc_html__('Close', 'granola'); ?>
+                <?= \Granola\SVG::get('icons/cross.svg'); ?>
+            </button>
+
+        <h2 class="cart-quote-modal__title" id="quote-share-modal__title"><?php esc_html_e('Generate Quote', 'granola'); ?></h2>
+
+        <h3 class="cart-quote-modal__subtitle"><?php esc_html_e('Enter details', 'granola'); ?></h3>
+
+        <form class="cart-quote-modal__form" action="<?php echo $quote_form_action; ?>" method="post">
+            <input type="hidden" name="action" value="millboard_quote_submit">
+            <input type="hidden" name="quote_snapshot" value="<?php echo esc_attr($quote_snapshot_encoded); ?>">
+            <?php wp_nonce_field('millboard_quote_submit', 'millboard_quote_nonce'); ?>
+
+            <label>
+                <?php esc_html_e('Company name', 'granola'); ?>
+                <input type="text" name="company_name" required>
+            </label>
+
+            <label>
+                <?php esc_html_e('Contact name', 'granola'); ?>
+                <input type="text" name="contact_name" required>
+            </label>
+
+            <label>
+                <?php esc_html_e('Email address', 'granola'); ?>
+                <input
+                    type="email"
+                    name="email_address"
+                    required
+                    maxlength="254"
+                    autocomplete="email"
+                    pattern="^[^\s@]+@[^\s@]+\.[^\s@]{2,}$"
+                    title="Please enter a valid email address"
+                >
+            </label>
+
+            <label>
+                <?php esc_html_e('Phone number', 'granola'); ?>
+                <input type="tel" name="phone_number" required>
+            </label>
+
+                        <label>
+                <?php esc_html_e('Rep email address', 'granola'); ?>
+                <input
+                    type="email"
+                    name="rep_email_address"
+                    maxlength="254"
+                    autocomplete="email"
+                    pattern="^[^\s@]+@[^\s@]+\.[^\s@]{2,}$"
+                    title="Please enter a valid email address"
+                >
+            </label>
+
+            <label class="cart-quote-modal__customer-reference-number">
+                <?php esc_html_e('Customer reference number', 'granola'); ?>
+                <input type="text" name="customer_reference_number" required>
+            </label>
+
+            <label>
+                <?php esc_html_e('Sales notes', 'granola'); ?>
+                <textarea name="sales_notes" rows="4"></textarea>
+            </label>
+
+            <div class="cart-quote-modal__actions">
+                <button type="submit" class="g-button" name="quote_intent" value="email"><?php esc_html_e('Email Quote', 'granola'); ?></button>
+                <button type="submit" class="g-button g-button--secondary" name="quote_intent" value="download"><?php esc_html_e('Download Quote (PDF)', 'granola'); ?></button>
+            </div>
+        </form>
+    </div>
+</div>
+<?php endif; ?>
+
+<div class="cart-collaterals">
+    <?php
+        /**
+         * Cart collaterals hook.
+         *
+         * @hooked woocommerce_cross_sell_display
+         * @hooked woocommerce_cart_totals - 10
+         */
+        do_action('woocommerce_cart_collaterals');
+    ?>
+</div>
+
+<?php do_action('woocommerce_after_cart'); ?>
+
+<?php if ($show_quote_share) : ?>
+<script>
+    (function () {
+        const modal = document.querySelector('[data-quote-share-modal]');
+        if (!modal) {
+            return;
+        }
+
+        const closeModal = function () {
+            modal.setAttribute('hidden', 'hidden');
+            modal.setAttribute('aria-hidden', 'true');
+        };
+
+        const openModal = function () {
+            modal.removeAttribute('hidden');
+            modal.setAttribute('aria-hidden', 'false');
+        };
+
+        document.addEventListener('click', function (event) {
+            const openTrigger = event.target.closest('[data-quote-share-open]');
+
+            if (openTrigger) {
+                event.preventDefault();
+                openModal();
+                return;
+            }
+
+            const closeTrigger = event.target.closest('[data-quote-share-close]');
+            if (closeTrigger && modal.contains(closeTrigger)) {
+                event.preventDefault();
+                closeModal();
+            }
+        });
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape' && !modal.hasAttribute('hidden')) {
+                closeModal();
+            }
+        });
+    })();
+</script>
+<?php endif; ?>

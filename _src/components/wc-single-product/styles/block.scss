@@ -49,11 +49,6 @@
                     display: flex;
                     gap: var(--space--3xs);
                     align-items: center;
-
-                    svg {
-                        width: 20px;
-                        height: 20px;
-                    }
                 }
             }
         }
@@ -216,6 +211,18 @@
 
             font-weight: normal;
             margin: 0;
+        }
+
+        .product__pricing-description {
+            text-align: center;
+
+            > *:first-child {
+                margin-top: 0;
+            }
+
+            > *:last-child {
+                margin-bottom: 0;
+            }
         }
 
         .woocommerce-simple-price,

@@ -12,7 +12,6 @@ class Woocommerce
     */
     public static function get_default_variation_id($product)
     {
-
         // Check if the product is variable and has a default variation set.
         if (!$product->is_type('variable') || !$product->get_default_attributes()) {
             return $product->get_id(); // Return the product ID for non-variable products or if no default variation is set.

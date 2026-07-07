@@ -24,6 +24,8 @@
             --input--border-color--focus: var(--color--foreground);
             --input--border-width--focus: 1px;
             --input--border-width: 1px;
+
+            max-width: 100%;
         }
 
         .select2-selection.select2-selection--single {
@@ -177,15 +179,24 @@
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
+                    gap: var(--space--2xs);
+
+                    .label,
+                    .value {
+                        @include typestyle-h6;
+
+                        text-decoration: uppercase;
+                        letter-spacing: 1px;
+                        font-weight: 600;
+                    }
 
                     .label {
-                        @include typestyle-h5;
-                        @include typestyle-xlarge;
+                        flex: 0 0 auto;
+                        align-self: flex-start;
                     }
 
                     .value {
-                        @include typestyle-base;
-                        font-weight: 600;
+                        text-align: end;
                     }
                 }
 

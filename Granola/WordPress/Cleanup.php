@@ -136,13 +136,7 @@ class Cleanup
      */
     public static function hide_acf_on_production(): bool
     {
-        // Explicitly allow ACF settings on '.test' URLs.
-        if (str_ends_with(\get_site_url(), '.test')) {
-            return true;
-        }
-
-        // Fallback - check against environment type and hide on production.
-        return \wp_get_environment_type() !== 'production';
+        return \current_user_can('manage_options');
     }
 
     /**

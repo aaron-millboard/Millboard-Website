@@ -51,6 +51,7 @@
 .woocommerce-NoticeGroup {
     --block--right-space: 0;
 
+    width: 100%;
     max-width: var(--block--max-width);
     margin-left: auto;
     margin-right: auto;
@@ -61,12 +62,16 @@
         margin-bottom: var(--space--l);
         padding: var(--space--s) var(--space--s);
         display: flex;
-        flex-direction: row;
-        align-items: center;
+        flex-direction: column;
         background-color: var(--color--brand-1);
         gap: var(--space--xs);
         border-top: 3px solid var(--color--brand-4);
         list-style: none;
+
+        @include mq('medium') {
+            flex-direction: row;
+            align-items: center;
+        }
 
         &::before {
             flex-shrink: 0;
@@ -78,6 +83,7 @@
             background-repeat: no-repeat;
             background-position: center;
             background-size: #{px-to-rem(24)} #{px-to-rem(24)};
+            align-self: center;
         }
 
         a {
@@ -89,7 +95,11 @@
             display: flex;
             align-items: center;
             gap: var(--space--s);
-            margin-left: auto;
+            white-space: nowrap;
+
+            @include mq('medium') {
+                margin-left: auto;
+            }
 
             &::after {
                 width: #{px-to-rem(16)};
@@ -269,15 +279,20 @@
             gap: var(--space--s);
             justify-content: space-between;
 
-            &__name,
-            &__colour {
+            &__name {
                 @include typestyle-h5;
                 @include typestyle-xlarge;
+
                 margin: 0;
+
                 a {
                     color: var(--color--black);
                     text-decoration: none;
                     text-transform: uppercase;
+
+                    @include interact {
+                        text-decoration: underline;
+                    }
                 }
             }
 
@@ -363,13 +378,14 @@
 
             .cart__item__details {
                 gap: var(--space--2xs);
+
                 &__top {
                     padding-bottom: var(--space--3xs);
                 }
 
-                &__name,
-                &__colour {
+                &__name {
                     @include typestyle-h6;
+
                     font-weight: 300;
                 }
 

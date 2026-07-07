@@ -118,3 +118,4 @@ class AdviceCategory
         return $link;
     }
 }
+

@@ -1,3 +1,6 @@
+import Player from '@vimeo/player';
+import isElementVisible from '../../../scripts/helpers/isElementVisible.js';
+
 export default class HeroHeader {
    /**
      * @param {HTMLElement} element The gallery container element.
@@ -11,113 +14,99 @@ export default class HeroHeader {
         }
 
         this.state = 'paused';
-        this.iframe = this.media.querySelector('.hero-header__iframe');
         this.controlButton = this.media.querySelector('.hero-header__controls');
-        this.videoReadyTimeout = null;
+        this.iframe = this.media.querySelector('.hero-header__iframe');
 
-        this.init();
+        if (Player && this.iframe) {
+            this.player = new Player(this.iframe);
+
+            this.player.ready().then(() => {
+                this.init();
+            });
+        }
     }
 
     /**
      * Initialize the component
      */
     init() {
-        const hasInitialVideo = this.iframe && this.iframe.getAttribute('src');
-
-        if (hasInitialVideo) {
-            this.element.classList.add('hero-header--playing');
-            this.element.classList.add('hero-header--autoplaying');
-            this.waitForIframeReady();
-            if (this.controlButton && this.controlButton.firstElementChild) {
-                this.controlButton.firstElementChild.textContent = this.controlButton.getAttribute('data-pause-label');
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                this.pauseVideo();
             }
-            this.state = 'playing';
+        });
+
+        // Device has a mouse - set up mouse interactions.
+        if (matchMedia('(hover:hover)').matches) {
+            this.media.addEventListener('mouseenter', this);
+            this.media.addEventListener('mouseleave', this);
         }
 
-        if (this.controlButton) {
+        if (this.controlButton && this.areControlsActive()) {
             this.controlButton.addEventListener('click', () => {
                 if (this.state === 'paused') {
-                    this.playVideo(true);
+                    this.playVideo();
                 } else {
                     this.pauseVideo();
                 }
             });
         }
 
-        document.addEventListener('keydown', (event) => {
-            if (event.key === 'Escape') {
-                this.pauseVideo();
-            }
-        });
+        if (this.media.matches(':hover')) {
+            this.playVideo();
+        }
     }
 
     /**
      * Play video
      */
-    playVideo(isManualPlay = false) {
-        const embedUrl = this.iframe.getAttribute('data-embed-url');
-
-        if (!embedUrl) {
-            console.warn('No embed URL found for video');
-            return;
+    playVideo() {
+        if (this.player) {
+            this.player.play().then(() => {
+                this.element.classList.add('hero-header--playing');
+                this.controlButton.firstElementChild.textContent = this.controlButton.getAttribute('data-pause-label');
+                this.state = 'playing';
+            }) ;
         }
-
-
-        this.waitForIframeReady();
-        this.iframe.src = embedUrl;
-        if (isManualPlay) {
-            this.element.classList.remove('hero-header--autoplaying');
-        }
-        this.element.classList.add('hero-header--playing');
-        this.controlButton.firstElementChild.textContent = this.controlButton.getAttribute('data-pause-label');
-        this.state = 'playing';
     }
 
     /**
      * Stop all videos
      */
     pauseVideo() {
-        if (this.iframe) {
-            this.iframe.src = '';
+        if (this.player) {
+            this.player.pause().then(() => {
+                this.element.classList.remove('hero-header--playing');
+                this.controlButton.firstElementChild.textContent = this.controlButton.getAttribute('data-play-label');
+                this.state = 'paused';
+            });
         }
+    }
 
-        if (this.videoReadyTimeout) {
-            clearTimeout(this.videoReadyTimeout);
-            this.videoReadyTimeout = null;
-        }
-
-        this.element.classList.remove('hero-header--playing');
-        this.element.classList.remove('hero-header--video-ready');
-        this.controlButton.firstElementChild.textContent = this.controlButton.getAttribute('data-play-label');
-        this.state = 'paused';
+    areControlsActive() {
+        return isElementVisible(this.controlButton);
     }
 
     /**
-     * Wait for iframe to finish loading before revealing video.
+     * Handle events with class functions to retain class context.
+     *
+     * @link https://webreflection.medium.com/dom-handleevent-a-cross-platform-standard-since-year-2000-5bf17287fd38
+     *
+     * @param {Event} event An event object.
      */
-    waitForIframeReady() {
-        this.element.classList.remove('hero-header--video-ready');
+    handleEvent(event) {
+        this[`on${event.type}`](event);
+    }
 
-        if (!this.iframe) {
-            return;
+    onmouseenter() {
+        if (this.state !== 'playing') {
+            this.playVideo();
         }
+    }
 
-        this.iframe.addEventListener('load', () => {
-            this.element.classList.add('hero-header--video-ready');
-
-            if (this.videoReadyTimeout) {
-                clearTimeout(this.videoReadyTimeout);
-                this.videoReadyTimeout = null;
-            }
-        }, { once: true });
-
-        if (this.videoReadyTimeout) {
-            clearTimeout(this.videoReadyTimeout);
+    onmouseleave() {
+        if (this.state === 'playing') {
+            this.pauseVideo();
         }
-
-        this.videoReadyTimeout = setTimeout(() => {
-            this.element.classList.add('hero-header--video-ready');
-            this.videoReadyTimeout = null;
-        }, 2000);
     }
 }

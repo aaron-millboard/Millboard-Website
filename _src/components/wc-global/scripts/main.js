@@ -62,24 +62,43 @@ window.addEventListener('load', () => {
 		initQuantityInputs(container);
 	});
 
+	// Keep cart form visibility in sync with WooCommerce empty-cart state.
+	const syncCartEmptyState = () => {
+		const cartFormElement = document.querySelector('form.woocommerce-cart-form');
+		if (!cartFormElement) return;
+
+		const hasEmptyCartMessage = Boolean(document.querySelector('.wc-empty-cart-message, .cart-empty'));
+		cartFormElement.style.display = hasEmptyCartMessage ? 'none' : '';
+	};
+
+	syncCartEmptyState();
+
+	if (window.jQuery) {
+		window.jQuery(document.body).on('updated_wc_div wc_cart_emptied', syncCartEmptyState);
+	}
+
 	// Auto-update cart when quantity changes (with debounce)
 	let timeout;
-	const cartForm = document.querySelector('form.woocommerce-cart-form');
-	if (cartForm) {
-		cartForm.addEventListener('change', function(event) {
-			if (event.target.matches('input.qty')) {
-				if (timeout !== undefined) {
-					clearTimeout(timeout);
-				}
-				timeout = setTimeout(function() {
-					const updateCartButton = document.querySelector("[name='update_cart']");
-					if (updateCartButton) {
-						updateCartButton.removeAttribute('disabled');
-						updateCartButton.click();
-					}
-				}, 1000);
+	document.addEventListener('change', function(event) {
+		if (!event.target.matches('input.qty')) {
+			return;
+		}
+
+		if (!event.target.closest('form.woocommerce-cart-form')) {
+			return;
+		}
+
+		if (timeout !== undefined) {
+			clearTimeout(timeout);
+		}
+
+		timeout = setTimeout(function() {
+			const updateCartButton = document.querySelector("[name='update_cart']");
+			if (updateCartButton) {
+				updateCartButton.removeAttribute('disabled');
+				updateCartButton.click();
 			}
-		});
-	}
+		}, 1000);
+	});
 
 });

@@ -19,7 +19,7 @@ function filter_args(array $args): ?array
         'image' => [],
         'media' => '',
         // Media Object arguments.
-        'size' => 'ml', // increase media object image size.
+        'size' => '1536', // increase media object image size.
         'orientation' => 'horizontal',
     ], $args);
 
@@ -53,7 +53,7 @@ function filter_args(array $args): ?array
     // -------------------------------------------------------------------------
     // Smaller sizes.
     // -------------------------------------------------------------------------
-    if ($args['align'] === 'center') {
+    if (!empty($args['align']) && $args['align'] === 'center') {
         $args['heading_class'] = 'is-style-typestyle-h4';
     }
 

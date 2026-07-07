@@ -5,9 +5,11 @@
 
 .gallery-loop {
 
+    --gallery--list--row-gap: 60px;
+
     .gallery__list {
         column-gap: var(--space--xl);
-        row-gap: var(--space--2xl);
+        row-gap: var(--gallery--list--row-gap);
     }
 
     .taxonomy-filters__item {

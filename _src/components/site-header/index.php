@@ -29,17 +29,15 @@
 
             <div class="site-header__buttons">
                 <?= \Granola\Component::get('link', [
-                    'url' => get_site_url(null, '/my-account'),
+                    'url' => get_the_permalink(wc_get_page_id('myaccount')),
                     'classes' => ['site-header__account-link'],
                     'content' => '<span class="visually-hidden">' . esc_html__('My account', 'granola') . '</span>',
-                    'el' => 'a'
                 ]); ?>
 
                 <?= \Granola\Component::get('link', [
-                    'url' => get_site_url(null, '/basket'),
+                    'url' => get_the_permalink(wc_get_page_id('cart')),
                     'classes' => ['site-header__basket-link'],
                     'content' => $args['content']['basket_button_content'],
-                    'el' => 'a'
                 ]); ?>
 
                 <button
@@ -76,18 +74,16 @@
 
             <div class="site-header__mobile-links">
                 <?= \Granola\Component::get('link', [
-                    'url' => get_site_url(null, '/my-account'),
+                    'url' => get_the_permalink(wc_get_page_id('myaccount')),
                     'classes' => ['site-header__mobile-links__account'],
                     'content' => esc_html__('Your account', 'granola'),
-                    'el' => 'a'
                 ]); ?>
 
-                <?php if($args['help_center_link']): ?>
+                <?php if ($args['help_center_link']) : ?>
                     <?= \Granola\Component::get('link', [
                         'url' => $args['help_center_link']['url'],
                         'classes' => ['site-header__mobile-links__help-center'],
                         'content' => esc_html__('Help center', 'granola'),
-                        'el' => 'a'
                     ]); ?>
                 <?php endif; ?>
 

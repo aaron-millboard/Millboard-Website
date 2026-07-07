@@ -37,11 +37,11 @@
         position: relative;
         display: grid;
         grid-template-columns: 1fr;
-        gap: var(--space--l);
+        row-gap: var(--space--l);
 
         @include mq(large) {
             gap: var(--space--xl);
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
         }
     }
 
@@ -50,7 +50,7 @@
         height: 100%;
         flex-direction: column;
         gap: var(--space--xs);
-        padding-bottom: var(--space--m);
+        // padding-bottom: var(--space--m);
         z-index: 2;
 
         &--first {
@@ -69,7 +69,7 @@
 
         @include mq(large) {
             display: flex;
-            padding-bottom: var(--space--xl);
+            // padding-bottom: var(--space--xl);
         }
     }
 
@@ -123,6 +123,44 @@
         width: max-content;
     }
 
+    &__author {
+        border-top: 1px solid var(--color--olivegreen);
+        margin-top: var(--space--m);
+        padding-top: var(--space--s);
+        display: flex;
+        align-items: flex-start;
+        gap: var(--space--2xs);
+
+        @include mq(large) {
+            margin-top: auto;
+        }
+    }
+
+    &__author-avatar {
+        width: px-to-rem(72);
+        height: px-to-rem(72);
+        flex: 0 0 px-to-rem(72);
+        border-radius: 0;
+        overflow: hidden;
+    }
+
+    &__author-content {
+        @include no-first-last-margin;
+        display: flex;
+        flex-direction: column;
+        gap: var(--space--5xs);
+    }
+
+    &__author-name {
+        margin: 0;
+        text-transform: uppercase;
+    }
+
+    &__author-bio {
+        @include typestyle-small;
+        margin: 0;
+    }
+
     /* PAGE */
     &--type--page {
         --page-header--image-aspect-ratio: 1 / 1;
@@ -143,12 +181,12 @@
 
             @include mq(medium) {
                 display: grid;
-                grid-template-columns: 1fr 1fr;
+                grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
                 gap: var(--space--l);
             }
 
             @include mq(large) {
-                grid-template-columns: 1fr 0.5fr 1fr;
+                grid-template-columns: minmax(0, 1fr) minmax(0, 0.5fr) minmax(0, 1fr);
                 gap: 0;
             }
         }

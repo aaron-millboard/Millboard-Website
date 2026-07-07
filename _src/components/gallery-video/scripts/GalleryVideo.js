@@ -9,6 +9,7 @@ export default class GalleryVideo {
         this.element = element;
         this.videos = Array.from(this.element.querySelectorAll('.gallery-video__video'));
         this.thumbnails = Array.from(this.element.querySelectorAll('.gallery-video__thumbnail'));
+        this.metaPanels = Array.from(this.element.querySelectorAll('.gallery-video__meta--panel'));
         this.activeVideoIndex = 0;
 
         if (!this.videos.length) return;
@@ -94,16 +95,30 @@ export default class GalleryVideo {
         this.videos.forEach((video, i) => {
             if (i === index) {
                 video.classList.add('gallery-video__video--active');
+                video.setAttribute('aria-hidden', 'false');
             } else {
                 video.classList.remove('gallery-video__video--active');
+                video.setAttribute('aria-hidden', 'true');
             }
         });
 
         this.thumbnails.forEach((thumbnail, i) => {
             if (i === index) {
                 thumbnail.classList.add('gallery-video__thumbnail--active');
+                thumbnail.setAttribute('aria-pressed', 'true');
             } else {
                 thumbnail.classList.remove('gallery-video__thumbnail--active');
+                thumbnail.setAttribute('aria-pressed', 'false');
+            }
+        });
+
+        this.metaPanels.forEach((panel) => {
+            const panelIndex = Number.parseInt(panel.dataset.videoIndex, 10);
+
+            if (panelIndex === index) {
+                panel.classList.add('gallery-video__meta--active');
+            } else {
+                panel.classList.remove('gallery-video__meta--active');
             }
         });
 

@@ -76,8 +76,8 @@ class Utils
             return null;
         }
 
-        // Return bool - if variation exists, is it the same as the passed product?
-        return $product->get_id() === $default_product->get_id();
+        // Return bool - if variation exists, is it the same as the passed product? OR is this the base product?
+        return $product->get_id() === $default_product->get_id() || $product->get_type() === 'product';
     }
 
     /**
@@ -112,5 +112,51 @@ class Utils
         }
 
         return self::is_sample($product) && empty($product->get_price());
+    }
+
+    /**
+     * Generate array of product attributes that can be displayed on the Cart, Checkout, and Thankyou page.
+     *
+     * @param \WC_Product $product
+     * @return array An array of attribute data.
+     */
+    public static function get_product_display_attributes(\WC_Product $product): array
+    {
+        $attributes = [];
+
+        // Bail early - product is not the base variable product and not a variation.
+        if (!$product->is_type('variable') && !$product->is_type('variation')) {
+            return $attributes;
+        }
+
+        // Retrieve prodiuct color data first.
+        $colour_taxonomy_name = \get_field('product_colour_taxonomy', 'options');
+        if (!empty($colour_taxonomy_name)) {
+            $colour_attribute_name = ltrim($colour_taxonomy_name, 'pa_');
+            $colour_attribute_value = $product->get_attribute($colour_taxonomy_name ?? 'pa_colour');
+
+            if (!empty($colour_attribute_value)) {
+                $attributes[$colour_taxonomy_name] = [
+                    'name' => $colour_attribute_name,
+                    'value' => $colour_attribute_value,
+                ];
+            }
+        }
+
+        // Retrieve board width data.
+        $board_width_taxonomy_name = \get_field('product_board_width_taxonomy', 'options');
+        if (!empty($board_width_taxonomy_name)) {
+            $board_width_attribute_name = ltrim($board_width_taxonomy_name, 'pa_');
+            $board_width_attribute_value = $product->get_attribute($board_width_taxonomy_name ?? 'pa_board-width');
+
+            if (!empty($board_width_attribute_value)) {
+                $attributes[$board_width_taxonomy_name] = [
+                    'name' => $board_width_attribute_name,
+                    'value' => $board_width_attribute_value,
+                ];
+            }
+        }
+
+        return $attributes;
     }
 }
