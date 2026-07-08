@@ -559,15 +559,7 @@ class OrderEssentials
             $rules = [];
         }
 
-        $json_rules = \function_exists('get_field') ? \get_field('order_essentials_matrix_json', 'option') : null;
-
-        if (\is_string($json_rules) && trim($json_rules) !== '') {
-            $decoded = json_decode($json_rules, true);
-
-            if (\is_array($decoded)) {
-                $rules = array_merge($rules, $decoded);
-            }
-        }
+        $rules = array_merge($rules, self::get_acf_repeater_rules());
 
         $normalised = [];
 
@@ -579,7 +571,7 @@ class OrderEssentials
             $source = isset($rule['source']) && \is_array($rule['source']) ? $rule['source'] : $rule;
             $source_product_ids = self::normalise_int_array($source['product_ids'] ?? $rule['source_product_ids'] ?? []);
             $source_category_slugs = self::normalise_slug_array($source['category_slugs'] ?? $rule['source_category_slugs'] ?? []);
-            $target_product_id = isset($rule['target_product_id']) ? (int) $rule['target_product_id'] : 0;
+            $target_product_id = self::normalise_int_value($rule['target_product_id'] ?? 0);
 
             if ($target_product_id < 1 || (empty($source_product_ids) && empty($source_category_slugs))) {
                 continue;
@@ -605,6 +597,51 @@ class OrderEssentials
         }
 
         return $normalised;
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private static function get_acf_repeater_rules(): array
+    {
+        if (!\function_exists('get_field')) {
+            return [];
+        }
+
+        $sources = \get_field('order_essentials_recommendation_sources', 'option');
+
+        if (!\is_array($sources)) {
+            return [];
+        }
+
+        $rules = [];
+
+        foreach ($sources as $source) {
+            if (!\is_array($source)) {
+                continue;
+            }
+
+            $recommendations = isset($source['recommendations']) && \is_array($source['recommendations'])
+                ? $source['recommendations']
+                : [];
+
+            foreach ($recommendations as $recommendation) {
+                if (!\is_array($recommendation)) {
+                    continue;
+                }
+
+                $rules[] = [
+                    'source_product_ids' => $source['source_product_ids'] ?? [],
+                    'source_category_slugs' => $source['source_category_slugs'] ?? [],
+                    'target_product_id' => $recommendation['target_product_id'] ?? 0,
+                    'residential_multiplier' => $recommendation['residential_multiplier'] ?? 0,
+                    'commercial_multiplier' => $recommendation['commercial_multiplier'] ?? 0,
+                    'reason' => $recommendation['reason'] ?? '',
+                ];
+            }
+        }
+
+        return $rules;
     }
 
     /**
@@ -786,13 +823,13 @@ class OrderEssentials
     private static function normalise_int_array($values): array
     {
         if (!\is_array($values)) {
-            return [];
+            $values = [$values];
         }
 
         $normalised = [];
 
         foreach ($values as $value) {
-            $int_value = (int) $value;
+            $int_value = self::normalise_int_value($value);
 
             if ($int_value > 0) {
                 $normalised[] = $int_value;
@@ -809,13 +846,31 @@ class OrderEssentials
     private static function normalise_slug_array($values): array
     {
         if (!\is_array($values)) {
-            return [];
+            $values = [$values];
         }
 
         $normalised = [];
 
         foreach ($values as $value) {
-            $slug = \sanitize_title((string) $value);
+            if ($value instanceof \WP_Term) {
+                $slug = (string) $value->slug;
+            } elseif (\is_array($value) && isset($value['slug'])) {
+                $slug = (string) $value['slug'];
+            } elseif (\is_array($value) && isset($value['term_id'])) {
+                $term = \get_term((int) $value['term_id'], 'product_cat');
+                $slug = $term instanceof \WP_Term ? (string) $term->slug : '';
+            } elseif (\is_numeric($value)) {
+                $term = \get_term((int) $value, 'product_cat');
+                $slug = $term instanceof \WP_Term ? (string) $term->slug : '';
+            } elseif (\is_object($value) && isset($value->slug)) {
+                $slug = (string) $value->slug;
+            } elseif (\is_scalar($value)) {
+                $slug = (string) $value;
+            } else {
+                $slug = '';
+            }
+
+            $slug = \sanitize_title($slug);
 
             if ($slug !== '') {
                 $normalised[] = $slug;
@@ -823,6 +878,42 @@ class OrderEssentials
         }
 
         return array_values(array_unique($normalised));
+    }
+
+    /**
+     * @param mixed $value
+     */
+    private static function normalise_int_value($value): int
+    {
+        if ($value instanceof \WP_Post) {
+            return (int) $value->ID;
+        }
+
+        if ($value instanceof \WC_Product) {
+            return (int) $value->get_id();
+        }
+
+        if (\is_array($value) && isset($value['ID'])) {
+            return (int) $value['ID'];
+        }
+
+        if (\is_array($value) && isset($value['id'])) {
+            return (int) $value['id'];
+        }
+
+        if (\is_object($value) && isset($value->ID)) {
+            return (int) $value->ID;
+        }
+
+        if (\is_object($value) && isset($value->id)) {
+            return (int) $value->id;
+        }
+
+        if (!\is_scalar($value)) {
+            return 0;
+        }
+
+        return (int) $value;
     }
 
     private static function allow_basket_once(): void
