@@ -85,15 +85,19 @@ export default (env, argv) => {
             }
 
             const parsed = path.parse(file);
-            let entryPath = path.join(parsed.dir, parsed.name);
+            // Normalise separators to '/' so the components-wholegrain merge below
+            // fires on Windows too (path.join returns backslashes there, so the
+            // '_src/components-' check silently missed and JS/CSS leaked into
+            // assets/components-wholegrain/ instead of merging into assets/components/).
+            let entryPath = path.join(parsed.dir, parsed.name).replace(/\\/g, '/');
 
             // Normalise to remove alternative component directories.
             if (entryPath.includes('_src/components-')) {
                 entryPath = normalizeComponentPath(entryPath);
             }
 
-            // Strip '_src'.
-            entryPath = path.relative(PATHS.src, entryPath);
+            // Strip '_src'. Normalise again as path.relative() re-introduces backslashes on Windows.
+            entryPath = path.relative(PATHS.src, entryPath).replace(/\\/g, '/');
 
             entries[entryPath] = `./${file}`;
         });
