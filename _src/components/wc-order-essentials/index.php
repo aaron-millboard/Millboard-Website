@@ -97,7 +97,7 @@ $essentials_selected_total = 0.0;
                             <div class="cart__order-essentials__item-image"><?php echo $essentials_image; ?></div>
                         <?php endif; ?>
 
-                        <div>
+                        <div class="cart__order-essentials__item-info">
                             <div class="cart__order-essentials__item-details">
                                 <div class="cart__order-essentials__item-name">
                                     <?php if ($essentials_url !== '') : ?>
@@ -125,7 +125,7 @@ $essentials_selected_total = 0.0;
                             </div>
 
                             <div class="cart__order-essentials__item-qty">
-                                <div>
+                                <div class="cart__order-essentials__item-qty-control">
                                     <label for="millboard-essentials-qty-<?php echo esc_attr($essentials_product_id); ?>"><?php esc_html_e('Recommended', 'granola'); ?></label>
                                     <div class="cart__order-essentials__qty-control" data-essentials-qty-control>
                                         <button

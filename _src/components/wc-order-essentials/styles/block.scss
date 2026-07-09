@@ -260,6 +260,18 @@
             }
         }
 
+        &__item-info {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space--s);
+            flex: 1 1 auto;
+
+            @include mq(large) {
+                flex-direction: row;
+                gap: var(--space--l);
+            }
+        }
+
         &__item-name {
             @include typestyle-h6;
 
@@ -290,6 +302,13 @@
                 display: block;
                 margin-bottom: var(--space--3xs);
             }
+        }
+
+        &__item-qty-control {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
         }
 
         &__item-action {
