@@ -7,6 +7,7 @@ $essentials_project_type = isset($essentials_context['project_type']) ? (string)
 $essentials_recommendations = isset($essentials_context['recommendations']) && is_array($essentials_context['recommendations']) ? $essentials_context['recommendations'] : [];
 $has_essentials = !empty($essentials_context['has_recommendations']);
 $has_outstanding_essentials = !empty($essentials_context['has_outstanding_recommendations']);
+$essentials_recommendation_source_label = isset($essentials_context['recommendation_source_label']) ? (string) $essentials_context['recommendation_source_label'] : '';
 $essentials_disclaimer_url = isset($essentials_context['disclaimer_url']) ? (string) $essentials_context['disclaimer_url'] : '';
 $essentials_summary_label_singular = __('selected item', 'granola');
 $essentials_summary_label_plural = __('selected items', 'granola');
@@ -51,6 +52,11 @@ $essentials_selected_total = 0.0;
             </fieldset>
 
             <div class="cart__order-essentials__items">
+                <?php if ($essentials_recommendation_source_label !== '') : ?>
+                    <p class="cart__order-essentials__recommendation-source-label"><?php esc_html_e('Recommendations based on:', 'granola'); ?></p>
+                    <p class="cart__order-essentials__recommendation-source"><?php echo esc_html($essentials_recommendation_source_label); ?></p>
+                <?php endif; ?>
+
                 <?php foreach ($essentials_recommendations as $essentials_item) :
                     $essentials_product_id = isset($essentials_item['product_id']) ? (int) $essentials_item['product_id'] : 0;
                     $essentials_name = isset($essentials_item['product_name']) ? (string) $essentials_item['product_name'] : '';
@@ -60,7 +66,6 @@ $essentials_selected_total = 0.0;
                     $essentials_in_cart_qty = isset($essentials_item['in_cart_qty']) ? (int) $essentials_item['in_cart_qty'] : 0;
                     $essentials_missing_qty = isset($essentials_item['missing_qty']) ? (int) $essentials_item['missing_qty'] : 0;
                     $essentials_default_add_qty = isset($essentials_item['default_add_qty']) ? (int) $essentials_item['default_add_qty'] : 0;
-                    $essentials_reason = isset($essentials_item['reason']) ? (string) $essentials_item['reason'] : '';
                     $essentials_unit_price = \Granola\Components\WC_OrderEssentials\resolve_unit_price($essentials_product_id);
                     $essentials_is_selected = $essentials_missing_qty > 0 || $essentials_in_cart_qty > 0;
                     $essentials_is_in_basket = $essentials_in_cart_qty > 0;
@@ -92,56 +97,74 @@ $essentials_selected_total = 0.0;
                             <div class="cart__order-essentials__item-image"><?php echo $essentials_image; ?></div>
                         <?php endif; ?>
 
-                        <div class="cart__order-essentials__item-details">
-                            <div class="cart__order-essentials__item-name">
-                                <?php if ($essentials_url !== '') : ?>
-                                    <a href="<?php echo esc_url($essentials_url); ?>"><?php echo esc_html($essentials_name); ?></a>
-                                <?php else : ?>
-                                    <?php echo esc_html($essentials_name); ?>
+                        <div>
+                            <div class="cart__order-essentials__item-details">
+                                <div class="cart__order-essentials__item-name">
+                                    <?php if ($essentials_url !== '') : ?>
+                                        <a href="<?php echo esc_url($essentials_url); ?>"><?php echo esc_html($essentials_name); ?></a>
+                                    <?php else : ?>
+                                        <?php echo esc_html($essentials_name); ?>
+                                    <?php endif; ?>
+                                </div>
+
+                                <div class="cart__order-essentials__item-meta">
+                                    <?php
+                                    echo esc_html(
+                                        sprintf(
+                                            '%1$s%2$.2f each',
+                                            get_woocommerce_currency_symbol(),
+                                            number_format($essentials_unit_price, 2)
+                                        )
+                                    );
+                                    ?>
+                                </div>
+
+                                <?php if ($essentials_missing_qty < 1) : ?>
+                                    <div class="cart__order-essentials__item-status"><?php esc_html_e('You already have the recommended quantity in your basket.', 'granola'); ?></div>
                                 <?php endif; ?>
                             </div>
 
-                            <div class="cart__order-essentials__item-meta">
-                                <?php
-                                echo esc_html(
-                                    sprintf(
-                                        '%1$s%2$.2f each',
-                                        get_woocommerce_currency_symbol(),
-                                        number_format($essentials_unit_price, 2)
-                                    )
-                                );
-                                ?>
+                            <div class="cart__order-essentials__item-qty">
+                                <div>
+                                    <label for="millboard-essentials-qty-<?php echo esc_attr($essentials_product_id); ?>"><?php esc_html_e('Recommended', 'granola'); ?></label>
+                                    <div class="cart__order-essentials__qty-control" data-essentials-qty-control>
+                                        <button
+                                            type="button"
+                                            class="cart__order-essentials__qty-button"
+                                            data-essentials-qty-adjust="decrement"
+                                            aria-label="<?php echo esc_attr(sprintf(__('Decrease quantity for %s', 'granola'), $essentials_name)); ?>"
+                                        >
+                                            -
+                                        </button>
+                                        <input
+                                            id="millboard-essentials-qty-<?php echo esc_attr($essentials_product_id); ?>"
+                                            class="cart__order-essentials__qty-input"
+                                            type="number"
+                                            min="0"
+                                            step="1"
+                                            name="millboard_essentials_qty[<?php echo esc_attr($essentials_product_id); ?>]"
+                                            value="<?php echo esc_attr($essentials_qty_to_add); ?>"
+                                            inputmode="numeric"
+                                            data-essentials-qty
+                                            data-unit-price="<?php echo esc_attr(wc_format_decimal($essentials_unit_price, 6)); ?>"
+                                        >
+                                        <button
+                                            type="button"
+                                            class="cart__order-essentials__qty-button"
+                                            data-essentials-qty-adjust="increment"
+                                            aria-label="<?php echo esc_attr(sprintf(__('Increase quantity for %s', 'granola'), $essentials_name)); ?>"
+                                        >
+                                            +
+                                        </button>
+                                    </div>
+                                </div>
+                                    
+                                <?php if ($essentials_is_in_basket) : ?>
+                                    <button type="submit" class="g-button g-button--solid cart__order-essentials__item-action" name="millboard_remove_essential_item" value="<?php echo esc_attr($essentials_product_id); ?>"><?php esc_html_e('Remove', 'granola'); ?></button>
+                                <?php else : ?>
+                                    <button type="submit" class="g-button cart__order-essentials__item-action" name="millboard_add_essential_item" value="<?php echo esc_attr($essentials_product_id); ?>"><?php esc_html_e('Add item', 'granola'); ?></button>
+                                <?php endif; ?>
                             </div>
-
-                            <?php if ($essentials_reason !== '') : ?>
-                                <div class="cart__order-essentials__item-reason"><?php echo esc_html($essentials_reason); ?></div>
-                            <?php endif; ?>
-
-                            <?php if ($essentials_missing_qty < 1) : ?>
-                                <div class="cart__order-essentials__item-status"><?php esc_html_e('You already have the recommended quantity in your basket.', 'granola'); ?></div>
-                            <?php endif; ?>
-                        </div>
-
-                        <div class="cart__order-essentials__item-qty">
-                            <div>
-                                <label for="millboard-essentials-qty-<?php echo esc_attr($essentials_product_id); ?>"><?php esc_html_e('Recommended', 'granola'); ?></label>
-                                <input
-                                    id="millboard-essentials-qty-<?php echo esc_attr($essentials_product_id); ?>"
-                                    type="number"
-                                    min="0"
-                                    step="1"
-                                    name="millboard_essentials_qty[<?php echo esc_attr($essentials_product_id); ?>]"
-                                    value="<?php echo esc_attr($essentials_qty_to_add); ?>"
-                                    data-essentials-qty
-                                    data-unit-price="<?php echo esc_attr(wc_format_decimal($essentials_unit_price, 6)); ?>"
-                                >
-                            </div>
-                                
-                            <?php if ($essentials_is_in_basket) : ?>
-                                <button type="submit" class="g-button g-button--solid cart__order-essentials__item-action" name="millboard_remove_essential_item" value="<?php echo esc_attr($essentials_product_id); ?>"><?php esc_html_e('Remove', 'granola'); ?></button>
-                            <?php else : ?>
-                                <button type="submit" class="g-button cart__order-essentials__item-action" name="millboard_add_essential_item" value="<?php echo esc_attr($essentials_product_id); ?>"><?php esc_html_e('Add item', 'granola'); ?></button>
-                            <?php endif; ?>
                         </div>
                     </article>
                 <?php endforeach; ?>

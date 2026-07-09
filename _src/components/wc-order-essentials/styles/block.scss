@@ -124,16 +124,32 @@
             outline-offset: -2px;
         }
 
+        &__recommendation-source-label {
+            @include typestyle-small;
+
+            font-weight: 700;
+            margin-top: var(--space--xl);
+            margin-bottom: 0;
+        }
+
+        &__recommendation-source {
+            @include typestyle-h5;
+
+            font-weight: 400;
+            margin-top: 0;
+            margin-bottom: var(--space--xl);
+        }
+
         &__item {
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             gap: var(--space--s);
             padding: var(--space--2xs);
             transition: background-color 0.2s ease;
             border-top: 1px solid var(--color--brand-5);
 
             &.is-selected {
-                background-color: var(--color--brand-1);
+                background-color: hsla(var(--color--brand-1--hsl), 0.3);
             }
 
             &-details {
@@ -225,19 +241,123 @@
             min-width: #{px-to-rem(300)};
         }
 
-        &__action-secondary {
+        &__item-select {
+            display: none;
+            align-self: center;
+
+            @include mq(small) {
+                display: block;
+            }
         }
 
         &__item-image {
             img {
-                max-width: #{px-to-rem(144)};
+                max-width: #{px-to-rem(72)};
+
+                @include mq(small) {
+                    max-width: #{px-to-rem(144)};
+                }
+            }
+        }
+
+        &__item-name {
+            @include typestyle-h6;
+
+            font-size: #{px-to-rem(20)};
+            font-weight: 400;
+            border-bottom: 1px solid var(--color--brand-1);
+            padding-bottom: #{px-to-rem(12)};
+            margin-bottom: #{px-to-rem(20)};
+
+            a {
+                text-decoration: none;
             }
         }
 
         &__item-qty {
             display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: var(--space--l);
+
+            @include mq(small) {
+                flex-direction: row;
+            }
+
+            label {
+                @include typestyle-small;
+
+                display: block;
+                margin-bottom: var(--space--3xs);
+            }
+        }
+
+        &__item-action {
+            @include mq(small) {
+                align-self: flex-end;
+            }
+        }
+
+        &__qty-control {
+            display: inline-grid;
+            grid-template-columns: 2rem 4.25rem 2rem;
             align-items: center;
-            gap: var(--space--2xs);
+            border: 1px solid #8f8a83;
+            background: transparent;
+            min-height: #{px-to-rem(48)};
+        }
+
+        &__qty-button,
+        &__qty-input {
+            border: 0;
+            background: transparent;
+            color: var(--color--foreground);
+            height: 100%;
+            margin: 0;
+        }
+
+        &__qty-button {
+            @include typestyle-h5;
+
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            line-height: 1;
+            width: fit-content;
+
+            &:first-child {
+                border-right: 1px solid #8f8a83;
+            }
+
+            &:last-child {
+                border-left: 1px solid #8f8a83;
+            }
+
+            &:focus-visible {
+                outline: 2px solid var(--color--foreground);
+                outline-offset: -2px;
+            }
+        }
+
+        &__qty-input {
+            @include typestyle-h6;
+
+            width: 100%;
+            text-align: center;
+            -moz-appearance: textfield;
+            appearance: textfield;
+
+            &::-webkit-outer-spin-button,
+            &::-webkit-inner-spin-button {
+                -webkit-appearance: none;
+                margin: 0;
+            }
+
+            &:focus-visible {
+                outline: 2px solid var(--color--foreground);
+                outline-offset: -2px;
+            }
         }
 
         @include mq($until: small) {

@@ -166,13 +166,6 @@ class Settings
                                     'min' => 0,
                                     'step' => 0.001,
                                 ],
-                                [
-                                    'key' => 'field_order_essentials_reason',
-                                    'label' => 'Reason',
-                                    'name' => 'reason',
-                                    'type' => 'text',
-                                    'instructions' => 'Optional note shown with the recommendation.',
-                                ],
                             ],
                         ],
                     ],
