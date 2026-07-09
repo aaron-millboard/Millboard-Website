@@ -66,6 +66,38 @@
         form.addEventListener('change', queueUpdate);
         form.addEventListener('input', queueUpdate);
         form.addEventListener('click', (event) => {
+            const adjustButton = event.target && event.target.closest('[data-essentials-qty-adjust]');
+
+            if (adjustButton) {
+                const control = adjustButton.closest('[data-essentials-qty-control]');
+                const qtyInput = control ? control.querySelector('[data-essentials-qty]') : null;
+
+                if (qtyInput) {
+                    const parsedValue = Number.parseInt(String(qtyInput.value || '0'), 10);
+                    const currentValue = Number.isNaN(parsedValue) ? 0 : parsedValue;
+                    const parsedStep = Number.parseInt(String(qtyInput.step || '1'), 10);
+                    const step = Number.isNaN(parsedStep) || parsedStep < 1 ? 1 : parsedStep;
+                    const parsedMin = Number.parseInt(String(qtyInput.min || '0'), 10);
+                    const min = Number.isNaN(parsedMin) ? 0 : parsedMin;
+                    const parsedMax = Number.parseInt(String(qtyInput.max || ''), 10);
+                    const max = Number.isNaN(parsedMax) ? null : parsedMax;
+                    const shouldIncrement = adjustButton.dataset.essentialsQtyAdjust === 'increment';
+
+                    let nextValue = shouldIncrement ? currentValue + step : currentValue - step;
+                    nextValue = Math.max(min, nextValue);
+
+                    if (max !== null) {
+                        nextValue = Math.min(max, nextValue);
+                    }
+
+                    qtyInput.value = String(nextValue);
+                    qtyInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    qtyInput.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+
+                return;
+            }
+
             if (event.target && event.target.closest('label')) {
                 queueUpdate();
             }

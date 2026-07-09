@@ -116,8 +116,117 @@ class OrderEssentials
             'recommendations' => $recommendations,
             'has_recommendations' => !empty($recommendations),
             'has_outstanding_recommendations' => $outstanding_count > 0,
+            'recommendation_source_label' => self::get_recommendation_source_label(),
             'disclaimer_url' => 'https://millboard.com/en-us/installation-guides/',
         ];
+    }
+
+    private static function get_recommendation_source_label(): string
+    {
+        if (!\function_exists('WC') || !\WC()->cart instanceof \WC_Cart || \WC()->cart->is_empty()) {
+            return '';
+        }
+
+        $matrix = self::get_matrix();
+
+        if (empty($matrix)) {
+            return '';
+        }
+
+        $target_ids = [];
+
+        foreach ($matrix as $rule) {
+            $target_id = (int) ($rule['target_product_id'] ?? 0);
+
+            if ($target_id > 0) {
+                $target_ids[$target_id] = true;
+            }
+        }
+
+        foreach (\WC()->cart->get_cart() as $cart_item) {
+            $product = $cart_item['data'] ?? null;
+
+            if (!$product instanceof \WC_Product || self::is_sample_product($product)) {
+                continue;
+            }
+
+            $source_id = self::resolve_source_product_id($product);
+
+            if ($source_id < 1 || isset($target_ids[$source_id])) {
+                continue;
+            }
+
+            $source_category_slugs = self::get_product_category_slugs($source_id);
+            $source_quantity = (int) ($cart_item['quantity'] ?? 0);
+
+            if ($source_quantity < 1) {
+                continue;
+            }
+
+            foreach ($matrix as $rule) {
+                if (!self::rule_matches_source($rule, $source_id, $source_category_slugs)) {
+                    continue;
+                }
+
+                $rule_product_ids = isset($rule['source_product_ids']) && \is_array($rule['source_product_ids'])
+                    ? $rule['source_product_ids']
+                    : [];
+
+                if (!empty($rule_product_ids) && \in_array($source_id, $rule_product_ids, true)) {
+                    $source_product = \wc_get_product($source_id);
+
+                    if ($source_product instanceof \WC_Product) {
+                        $name = trim((string) $source_product->get_name());
+
+                        if ($name !== '') {
+                            return $name;
+                        }
+                    }
+                }
+
+                $rule_category_slugs = isset($rule['source_category_slugs']) && \is_array($rule['source_category_slugs'])
+                    ? $rule['source_category_slugs']
+                    : [];
+                $matched_category_slugs = !empty($rule_category_slugs)
+                    ? array_values(array_intersect($rule_category_slugs, $source_category_slugs))
+                    : [];
+
+                if (!empty($matched_category_slugs)) {
+                    $category_name = self::get_category_name_by_slug((string) $matched_category_slugs[0]);
+
+                    if ($category_name !== '') {
+                        return $category_name;
+                    }
+                }
+
+                $fallback_name = trim((string) $product->get_name());
+
+                if ($fallback_name !== '') {
+                    return $fallback_name;
+                }
+            }
+        }
+
+        return '';
+    }
+
+    private static function get_category_name_by_slug(string $slug): string
+    {
+        if ($slug === '') {
+            return '';
+        }
+
+        $term = \get_term_by('slug', $slug, 'product_cat');
+
+        if ($term instanceof \WP_Term) {
+            $name = trim((string) $term->name);
+
+            if ($name !== '') {
+                return $name;
+            }
+        }
+
+        return ucwords(str_replace(['-', '_'], ' ', $slug));
     }
 
     public static function maybe_handle_cart_submission(): void
@@ -497,7 +606,6 @@ class OrderEssentials
                 'in_cart_qty' => $in_cart_qty,
                 'missing_qty' => $missing_qty,
                 'default_add_qty' => $missing_qty > 0 ? $missing_qty : 1,
-                'reason' => (string) ($rule['reason'] ?? ''),
             ];
         }
 
@@ -592,7 +700,6 @@ class OrderEssentials
                 'target_product_id' => $target_product_id,
                 'residential_multiplier' => $residential_multiplier,
                 'commercial_multiplier' => $commercial_multiplier,
-                'reason' => isset($rule['reason']) ? (string) $rule['reason'] : '',
             ];
         }
 
@@ -636,7 +743,6 @@ class OrderEssentials
                     'target_product_id' => $recommendation['target_product_id'] ?? 0,
                     'residential_multiplier' => $recommendation['residential_multiplier'] ?? 0,
                     'commercial_multiplier' => $recommendation['commercial_multiplier'] ?? 0,
-                    'reason' => $recommendation['reason'] ?? '',
                 ];
             }
         }
