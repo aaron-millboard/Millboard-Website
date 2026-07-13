@@ -9,6 +9,7 @@ $has_essentials = !empty($essentials_context['has_recommendations']);
 $has_outstanding_essentials = !empty($essentials_context['has_outstanding_recommendations']);
 $essentials_recommendation_source_label = isset($essentials_context['recommendation_source_label']) ? (string) $essentials_context['recommendation_source_label'] : '';
 $essentials_disclaimer_url = isset($essentials_context['disclaimer_url']) ? (string) $essentials_context['disclaimer_url'] : '';
+$essentials_show_added_modal = !empty($essentials_context['show_added_modal']);
 $essentials_summary_label_singular = __('selected item', 'granola');
 $essentials_summary_label_plural = __('selected items', 'granola');
 $essentials_selected_count = 0;
@@ -208,7 +209,71 @@ $essentials_selected_total = 0.0;
             <div class="cart__order-essentials__actions">
                 <button type="submit" class="g-button" name="millboard_add_all_essentials" value="1" <?php disabled(!$has_outstanding_essentials); ?>><?php esc_html_e('Add ALL essentials', 'granola'); ?></button>
                 <button type="submit" class="g-button g-button--solid cart__order-essentials__action-primary" name="millboard_add_selected_essentials" value="1"><?php esc_html_e('Add selected to basket', 'granola'); ?></button>
-                <button type="submit" class="g-button g-button--secondary cart__order-essentials__action-secondary" name="millboard_continue_to_basket" value="1"><?php esc_html_e('Continue without essentials', 'granola'); ?></button>
+                <button type="submit" class="g-button g-button--secondary cart__order-essentials__action-secondary" name="millboard_continue_to_basket" value="1" data-essentials-open-modal="continue"><?php esc_html_e('Continue without essentials', 'granola'); ?></button>
+            </div>
+
+            <div
+                class="cart__order-essentials-modal<?php echo $essentials_show_added_modal ? ' is-active' : ''; ?>"
+                data-essentials-modal
+                aria-hidden="<?php echo $essentials_show_added_modal ? 'false' : 'true'; ?>"
+            >
+                <div class="cart__order-essentials-modal__overlay" data-essentials-close-modal></div>
+                <div
+                    class="cart__order-essentials-modal__dialog"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="order-essentials-modal-title"
+                >
+                    <button type="button" class="cart__order-essentials-modal__close" data-essentials-close-modal>
+                        <span><?php esc_html_e('Close', 'granola'); ?></span>
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+
+                    <div data-essentials-modal-panel="added" <?php echo $essentials_show_added_modal ? '' : 'hidden'; ?>>
+                        <p class="cart__order-essentials-modal__notice">
+                            <?php esc_html_e('Essentials have been added to your basket.', 'granola'); ?>
+                        </p>
+                        <h2 class="cart__order-essentials-modal__title" id="order-essentials-modal-title">
+                            <?php esc_html_e('Essentials added to basket', 'granola'); ?>
+                        </h2>
+                    </div>
+
+                    <div data-essentials-modal-panel="continue" <?php echo $essentials_show_added_modal ? 'hidden' : ''; ?>>
+                        <h2 class="cart__order-essentials-modal__title" id="order-essentials-modal-title-continue">
+                            <?php esc_html_e('Continue without essentials?', 'granola'); ?>
+                        </h2>
+                    </div>
+
+                    <p class="cart__order-essentials-modal__intro">
+                        <?php esc_html_e('Your deck needs fixing, a sub-frame and finishing pieces to install correctly. You can carry on without adding our suggested essentials. We just want to make sure you have considered it.', 'granola'); ?>
+                    </p>
+
+                    <div class="cart__order-essentials-modal__warning">
+                        <span class="cart__order-essentials-modal__warning-icon" aria-hidden="true">!</span>
+                        <span>
+                            <strong><?php esc_html_e('Heads up.', 'granola'); ?></strong>
+                            <?php echo wp_kses_post(__('Without Durafix&reg; fixings and a Pro Joist sub-frame your order may not meet our installation guidelines and the Millboard warranty.', 'granola')); ?>
+                        </span>
+                    </div>
+
+                    <?php if ($has_outstanding_essentials) : ?>
+                        <label class="cart__order-essentials-modal__ack">
+                            <input type="checkbox" data-essentials-modal-ack>
+                            <span>
+                                <?php esc_html_e('I understand the recommended essentials have not been added to my order, and accept responsibility for sourcing the correct fixing and sub-frame for my project. This note will be saved against my order.', 'granola'); ?>
+                            </span>
+                        </label>
+                    <?php endif; ?>
+
+                    <div class="cart__order-essentials-modal__actions">
+                        <button type="submit" class="g-button g-button--solid" name="millboard_continue_to_basket" value="1" <?php disabled($has_outstanding_essentials); ?> data-essentials-modal-submit>
+                            <?php esc_html_e('Continue to basket', 'granola'); ?>
+                        </button>
+                        <button type="button" class="g-button g-button--secondary" data-essentials-close-modal>
+                            <?php esc_html_e('Back to essentials', 'granola'); ?>
+                        </button>
+                    </div>
+                </div>
             </div>
         <?php else : ?>
             <p><?php esc_html_e('No essentials are currently recommended for your basket.', 'granola'); ?></p>

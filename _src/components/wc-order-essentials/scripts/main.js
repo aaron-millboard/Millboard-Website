@@ -63,47 +63,110 @@
             window.requestAnimationFrame(updateSummary);
         };
 
-        form.addEventListener('change', queueUpdate);
-        form.addEventListener('input', queueUpdate);
-        form.addEventListener('click', (event) => {
-            const adjustButton = event.target && event.target.closest('[data-essentials-qty-adjust]');
+        const modal = form.querySelector('[data-essentials-modal]');
+        const modalPanels = modal ? modal.querySelectorAll('[data-essentials-modal-panel]') : [];
+        const modalAck = modal ? modal.querySelector('[data-essentials-modal-ack]') : null;
+        const modalSubmit = modal ? modal.querySelector('[data-essentials-modal-submit]') : null;
 
-            if (adjustButton) {
-                const control = adjustButton.closest('[data-essentials-qty-control]');
-                const qtyInput = control ? control.querySelector('[data-essentials-qty]') : null;
-
-                if (qtyInput) {
-                    const parsedValue = Number.parseInt(String(qtyInput.value || '0'), 10);
-                    const currentValue = Number.isNaN(parsedValue) ? 0 : parsedValue;
-                    const parsedStep = Number.parseInt(String(qtyInput.step || '1'), 10);
-                    const step = Number.isNaN(parsedStep) || parsedStep < 1 ? 1 : parsedStep;
-                    const parsedMin = Number.parseInt(String(qtyInput.min || '0'), 10);
-                    const min = Number.isNaN(parsedMin) ? 0 : parsedMin;
-                    const parsedMax = Number.parseInt(String(qtyInput.max || ''), 10);
-                    const max = Number.isNaN(parsedMax) ? null : parsedMax;
-                    const shouldIncrement = adjustButton.dataset.essentialsQtyAdjust === 'increment';
-
-                    let nextValue = shouldIncrement ? currentValue + step : currentValue - step;
-                    nextValue = Math.max(min, nextValue);
-
-                    if (max !== null) {
-                        nextValue = Math.min(max, nextValue);
-                    }
-
-                    qtyInput.value = String(nextValue);
-                    qtyInput.dispatchEvent(new Event('input', { bubbles: true }));
-                    qtyInput.dispatchEvent(new Event('change', { bubbles: true }));
-                }
-
+        const updateModalSubmit = () => {
+            if (!modalSubmit || !modalAck) {
                 return;
             }
 
-            if (event.target && event.target.closest('label')) {
+            modalSubmit.disabled = !modalAck.checked;
+        };
+
+        const removeAddedModalQuery = () => {
+            const url = new URL(window.location.href);
+
+            if (!url.searchParams.has('millboard_essentials_added')) {
+                return;
+            }
+
+            url.searchParams.delete('millboard_essentials_added');
+            window.history.replaceState({}, '', url.toString());
+        };
+
+        const openModal = (panelName) => {
+            if (!modal) {
+                return;
+            }
+
+            modalPanels.forEach((panel) => {
+                const isActivePanel = panel.dataset.essentialsModalPanel === panelName;
+                panel.hidden = !isActivePanel;
+
+                if (isActivePanel) {
+                    const title = panel.querySelector('.cart__order-essentials-modal__title');
+
+                    if (title && title.id) {
+                        modal.querySelector('[role="dialog"]').setAttribute('aria-labelledby', title.id);
+                    }
+                }
+            });
+
+            if (modalAck) {
+                modalAck.checked = false;
+            }
+
+            updateModalSubmit();
+            modal.classList.add('is-active');
+            modal.setAttribute('aria-hidden', 'false');
+            removeAddedModalQuery();
+        };
+
+        const closeModal = () => {
+            if (!modal) {
+                return;
+            }
+
+            modal.classList.remove('is-active');
+            modal.setAttribute('aria-hidden', 'true');
+        };
+
+        form.addEventListener('change', queueUpdate);
+        form.addEventListener('input', queueUpdate);
+        form.addEventListener('click', (event) => {
+            const target = event.target instanceof Element ? event.target : null;
+
+            if (!target) {
+                return;
+            }
+
+            const modalOpener = target.closest('[data-essentials-open-modal]');
+
+            if (modalOpener && modal) {
+                event.preventDefault();
+                openModal(modalOpener.dataset.essentialsOpenModal || 'continue');
+                return;
+            }
+
+            if (target.closest('[data-essentials-close-modal]')) {
+                event.preventDefault();
+                closeModal();
+                return;
+            }
+
+            if (target.closest('label')) {
                 queueUpdate();
             }
         });
 
+        if (modalAck) {
+            modalAck.addEventListener('change', updateModalSubmit);
+        }
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && modal && modal.classList.contains('is-active')) {
+                closeModal();
+            }
+        });
+
         updateSummary();
+
+        if (modal && modal.classList.contains('is-active')) {
+            openModal('added');
+        }
     };
 
     if (document.readyState === 'loading') {
