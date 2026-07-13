@@ -228,6 +228,138 @@
         &__action-secondary {
         }
 
+        &-modal {
+            position: fixed;
+            inset: 0;
+            z-index: var(--z-index--modal);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space--s);
+
+            &.is-active {
+                display: flex;
+            }
+
+            &__overlay {
+                position: absolute;
+                inset: 0;
+                background-color: rgba(0, 0, 0, 0.72);
+            }
+
+            &__dialog {
+                position: relative;
+                width: min(#{px-to-rem(980)}, 100%);
+                max-height: calc(100vh - var(--space--l));
+                overflow: auto;
+                padding: var(--space--l);
+                background-color: var(--color--background);
+                color: var(--color--foreground);
+                border: 1px solid var(--color--brand-5);
+            }
+
+            &__close {
+                @include typestyle-base;
+
+                position: absolute;
+                top: var(--space--2xs);
+                right: var(--space--2xs);
+                display: inline-flex;
+                align-items: center;
+                gap: var(--space--3xs);
+                border: 0;
+                padding: 0;
+                background: transparent;
+                color: inherit;
+                cursor: pointer;
+
+                span[aria-hidden='true'] {
+                    font-size: #{px-to-rem(44)};
+                    line-height: 0.7;
+                }
+            }
+
+            &__notice {
+                @include typestyle-base;
+
+                margin: var(--space--m) 0 var(--space--m);
+                padding: var(--space--s);
+                border-top: 4px solid #78920f;
+                background-color: #eef2dd;
+            }
+
+            &__title {
+                @include typestyle-h2;
+
+                margin: var(--space--m) 0 var(--space--2xs);
+                text-transform: uppercase;
+                letter-spacing: 0.12em;
+            }
+
+            &__intro {
+                @include typestyle-base;
+
+                max-width: #{px-to-rem(860)};
+                margin: 0 0 var(--space--m);
+            }
+
+            &__warning {
+                @include typestyle-base;
+
+                display: grid;
+                grid-template-columns: #{px-to-rem(32)} 1fr;
+                gap: var(--space--2xs);
+                align-items: start;
+                margin: 0 0 var(--space--m);
+                padding: var(--space--m);
+                border-left: 4px solid #6d6158;
+                background-color: #eeecea;
+            }
+
+            &__warning-icon {
+                width: #{px-to-rem(28)};
+                height: #{px-to-rem(28)};
+                border-radius: 50%;
+                background-color: #6d6158;
+                color: var(--color--background);
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 700;
+                line-height: 1;
+            }
+
+            &__ack {
+                @include typestyle-base;
+
+                display: grid;
+                grid-template-columns: #{px-to-rem(28)} 1fr;
+                gap: var(--space--2xs);
+                align-items: start;
+                margin: 0 0 var(--space--m);
+
+                input {
+                    width: #{px-to-rem(28)};
+                    height: #{px-to-rem(28)};
+                    margin-top: #{px-to-rem(4)};
+                }
+            }
+
+            &__actions {
+                display: flex;
+                flex-wrap: wrap;
+                gap: var(--space--s);
+                align-items: center;
+                padding-top: var(--space--m);
+                border-top: 1px solid var(--color--brand-1);
+
+                .g-button:disabled {
+                    opacity: 0.45;
+                    cursor: not-allowed;
+                }
+            }
+        }
+
         &__item-image {
             img {
                 max-width: #{px-to-rem(144)};
@@ -260,6 +392,21 @@
 
             &__project-type-label {
                 width: 100%;
+            }
+
+            &-modal {
+                &__dialog {
+                    padding: var(--space--m);
+                }
+
+                &__title {
+                    @include typestyle-h3;
+                }
+
+                &__actions {
+                    align-items: stretch;
+                    flex-direction: column;
+                }
             }
         }
     }

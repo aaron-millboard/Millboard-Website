@@ -8,6 +8,7 @@ class OrderEssentials
     private const SESSION_PROJECT_TYPE = 'millboard_order_essentials_project_type';
     private const SESSION_ALLOW_BASKET_ONCE = 'millboard_order_essentials_allow_basket_once';
     private const CHECKOUT_ACK_FIELD = 'millboard_order_essentials_ack';
+    private const QUERY_ADDED_ESSENTIALS = 'millboard_essentials_added';
 
     public static function init(): void
     {
@@ -74,6 +75,17 @@ class OrderEssentials
         return \wc_get_endpoint_url(self::ENDPOINT, '', \wc_get_cart_url());
     }
 
+    public static function get_order_essentials_added_url(): string
+    {
+        return \add_query_arg(self::QUERY_ADDED_ESSENTIALS, '1', self::get_order_essentials_url());
+    }
+
+    private static function should_show_added_modal(): bool
+    {
+        return isset($_GET[self::QUERY_ADDED_ESSENTIALS])
+            && (string) \wp_unslash($_GET[self::QUERY_ADDED_ESSENTIALS]) === '1';
+    }
+
     public static function maybe_redirect_cart_to_order_essentials(): void
     {
         if (!\function_exists('is_cart') || !\is_cart() || self::is_order_essentials_request()) {
@@ -117,6 +129,7 @@ class OrderEssentials
             'has_recommendations' => !empty($recommendations),
             'has_outstanding_recommendations' => $outstanding_count > 0,
             'disclaimer_url' => 'https://millboard.com/en-us/installation-guides/',
+            'show_added_modal' => self::should_show_added_modal(),
         ];
     }
 
@@ -187,11 +200,12 @@ class OrderEssentials
 
             if (self::add_product_to_cart($single_add_product_id, $quantity)) {
                 \wc_add_notice(\__('Item has been added to your basket.', 'granola'), 'success');
+                \wp_safe_redirect(self::get_order_essentials_added_url());
             } else {
                 \wc_add_notice(\__('Unable to add this item to your basket.', 'granola'), 'error');
+                \wp_safe_redirect(self::get_order_essentials_url());
             }
 
-            \wp_safe_redirect(self::get_order_essentials_url());
             exit;
         }
 
@@ -251,11 +265,12 @@ class OrderEssentials
 
         if ($items_added > 0) {
             \wc_add_notice(\__('Essentials have been added to your basket.', 'granola'), 'success');
+            \wp_safe_redirect(self::get_order_essentials_added_url());
         } else {
             \wc_add_notice(\__('No essentials were added. Please select at least one item.', 'granola'), 'notice');
+            \wp_safe_redirect(self::get_order_essentials_url());
         }
 
-        \wp_safe_redirect(self::get_order_essentials_url());
         exit;
     }
 
@@ -406,6 +421,7 @@ class OrderEssentials
         $target_requirements = [];
         $target_rules = [];
         $target_ids = [];
+        $applied_rules = [];
 
         foreach ($matrix as $rule) {
             $target_id = (int) $rule['target_product_id'];
@@ -442,7 +458,11 @@ class OrderEssentials
                 continue;
             }
 
-            foreach ($matrix as $rule) {
+            foreach ($matrix as $rule_index => $rule) {
+                if (isset($applied_rules[$rule_index])) {
+                    continue;
+                }
+
                 if (!self::rule_matches_source($rule, $source_id, $source_category_slugs)) {
                     continue;
                 }
@@ -456,7 +476,8 @@ class OrderEssentials
                     continue;
                 }
 
-                $target_requirements[$target_id] = ($target_requirements[$target_id] ?? 0) + ($source_quantity * $multiplier);
+                $target_requirements[$target_id] = ($target_requirements[$target_id] ?? 0) + $multiplier;
+                $applied_rules[$rule_index] = true;
             }
         }
 
