@@ -41,11 +41,12 @@ class Map {
         // Variables for the Leaflet Map.
         this.LMAP_ZOOM_DELTA = 1.4; // Ws 0.8
         this.LMAP_ZOOM_SNAP = this.LMAP_ZOOM_DELTA;
-        this.LMAP_INITIAL_ZOOM = 6; // Was 3.5.
+        this.LMAP_INITIAL_ZOOM = 8; // Closer default view.
+        this.LMAP_GB_INITIAL_ZOOM = 9; // Even closer view for GB/Coventry.
         this.LMAP_MIN_ZOOM = 2.4;
         this.LMAP_MAX_ZOOM = 15; // Was 7.2
-        this.LMAP_INITIAL_CENTER = [55, -5]; // Move center to UK.
-        this.LMAP_DISTANCE_CENTER = L.latLng(52.3, -1.4);
+        this.LMAP_INITIAL_CENTER = [52.4068, -1.5197]; // Center on Coventry.
+        this.LMAP_DISTANCE_CENTER = L.latLng(52.4068, -1.5197);
 
         this.localeCountryCode = this.getCountryCodeFromUrl() || 'gb';
         this.urlLocaleLatLng = this.getLatLngFromLocaleCode();
@@ -56,6 +57,10 @@ class Map {
             this.LMAP_DISTANCE_CENTER = this.urlLocaleLatLng;
         }
 
+        if (this.localeCountryCode === 'gb') {
+            this.LMAP_INITIAL_ZOOM = this.LMAP_GB_INITIAL_ZOOM;
+        }
+
         this.LMAP_MARKER_WIDTH = 31;
         this.LMAP_MARKER_HEIGHT = 40;
 
@@ -63,6 +68,8 @@ class Map {
 
         this.allMarkersGroup = new L.FeatureGroup();
         this.filteredMarkersGroup = new L.FeatureGroup();
+
+        this.activePostTypeFilter = ''; // Empty string means all post types
 
         this.googleApiKey = window.params.google_api_key;
 
@@ -77,6 +84,7 @@ class Map {
         this.initListingSelectionSync();
         this.initSearch();
         this.initDistanceFilter();
+        this.initPostTypeFilters();
         this.initTablist();
 
         this.applyLocationFromUrl();
@@ -98,7 +106,7 @@ class Map {
 
             this.lmap.addEventListener('locationfound', ({latlng}) => {
                 this.LMAP_DISTANCE_CENTER = latlng;
-                this.filterListingsByDistance();
+                this.filterByDistanceAndPostType();
             });
         }
     }
@@ -190,7 +198,7 @@ class Map {
             es: [40.4637, -3.7492],
             fi: [61.9241, 25.7482],
             fr: [46.2276, 2.2137],
-            gb: [55, -5],
+            gb: [52.4068, -1.5197],
             ie: [53.1424, -7.6921],
             it: [41.8719, 12.5674],
             nl: [52.1326, 5.2913],
@@ -316,7 +324,7 @@ class Map {
 
         const countryBounds = this.getBoundsFromCountryCode();
 
-        if (countryBounds) {
+        if (countryBounds && this.localeCountryCode !== 'gb') {
             this.lmap.fitBounds(countryBounds);
         }
 
@@ -371,10 +379,28 @@ class Map {
             );
             const listingTitle = listingData.name;
 
-            let markerHtml = `<span class="leaflet-marker-icon__icon-container" aria-hidden="true">`;
-            markerHtml += `<span class="leaflet-marker-icon__icon"></span>`;
-            markerHtml += `<span class="screen-reader-text">${listingTitle}</span>`;
-            markerHtml += ' </span>';
+            // Convert post type into filename format
+const markerType = listingData.postType
+    .toLowerCase()
+    .replace(/\s+/g, '-');
+
+// Example:
+// Installer -> installer-marker.png
+// Experience Centre -> experience-centre-marker.png
+const markerIconUrl = `/wp-content/themes/millboard/assets/images/icons/${markerType}-marker.png`;
+
+let markerHtml = `
+    <span class="leaflet-marker-icon__icon-container" aria-hidden="true">
+        <img 
+            class="leaflet-marker-icon__icon"
+            src="${markerIconUrl}"
+            alt="${listingData.postType} marker"
+            width="${this.LMAP_MARKER_WIDTH}"
+            height="${this.LMAP_MARKER_HEIGHT}"
+        />
+        <span class="screen-reader-text">${listingTitle}</span>
+    </span>
+`;
 
             // https://leafletjs.com/reference.html#marker
             const marker = L.marker(listingLatLng, {
@@ -389,8 +415,28 @@ class Map {
                 themeData: {
                     listingElement: el,
                     distanceInMiles: this.calcLatLngDistanceMilesFromMapCenter(listingLatLng),
+                    postType: listingData.postType,
                 },
             });
+
+            const markerTooltipHtml = this.getMarkerTooltipHtml(marker);
+
+            if (markerTooltipHtml) {
+                marker.bindPopup(markerTooltipHtml, {
+                    className: 'map__marker-tooltip',
+                    offset: [0, -this.LMAP_MARKER_HEIGHT],
+                    autoPan: true,
+                    closeButton: false,
+                });
+
+                // Leaflet's bindPopup auto-attaches a 'click' listener to open the
+                // popup. Remove it here (before the selection click handler below
+                // is registered) and open/close on hover instead.
+                marker.off('click');
+
+                marker.on('mouseover', () => marker.openPopup());
+                marker.on('mouseout', () => marker.closePopup());
+            }
 
             marker.addEventListener('click', () => {
                 this.selectListingByMarker(marker);
@@ -462,7 +508,36 @@ class Map {
         }
 
         this.distanceSelect.addEventListener('change', () => {
-            this.filterListingsByDistance();
+            this.filterByDistanceAndPostType();
+        });
+    }
+
+    initPostTypeFilters() {
+        const filterButtons = this.el.querySelectorAll('.map__filter');
+        if (!filterButtons || filterButtons.length === 0) {
+            return;
+        }
+
+        const initiallyActiveButton = [...filterButtons].find((button) => button.classList.contains('map__filter--active'));
+        this.setActivePostTypeFilter(initiallyActiveButton ? initiallyActiveButton.dataset.filterValue : '');
+
+        filterButtons.forEach((button) => {
+            button.addEventListener('click', () => {
+                const filterValue = button.dataset.filterValue || '';
+
+                this.setActivePostTypeFilter(filterValue);
+                this.filterByDistanceAndPostType();
+            });
+        });
+    }
+
+    setActivePostTypeFilter(filterValue = '') {
+        this.activePostTypeFilter = filterValue;
+
+        const filterButtons = this.el.querySelectorAll('.map__filter');
+        filterButtons.forEach((button) => {
+            const buttonValue = button.dataset.filterValue || '';
+            button.classList.toggle('map__filter--active', buttonValue === this.activePostTypeFilter);
         });
     }
 
@@ -589,6 +664,77 @@ class Map {
             }
 
             this.updateMarkerDistanceMeta(marker);
+
+            if (marker.getPopup() && marker.isPopupOpen()) {
+                marker.setPopupContent(this.getMarkerTooltipHtml(marker));
+            }
+        });
+
+        this.lmap.addLayer(this.filteredMarkersGroup);
+
+        const filteredLayers = this.filteredMarkersGroup.getLayers();
+        const markerCount = filteredLayers.length;
+
+        // Update listings heading content.
+        if (markerCount === 1) {
+            this.listingsHeading.textContent = `Displaying: ${markerCount} result`
+        } else {
+            this.listingsHeading.textContent = `Displaying: ${markerCount} results`
+        }
+
+        // Update no content element classes.
+        if (markerCount > 0) {
+            this.listingContainer.classList.remove('no-results');
+        } else {
+            this.listingContainer.classList.add('no-results');
+        }
+
+        if (shouldAdjustMapBounds) {
+            this.lmap.fitBounds(bounds);
+        }
+
+        this.sortlistingEls(filteredLayers);
+    }
+
+    filterByDistanceAndPostType(shouldAdjustMapBounds = true) {
+        if (!this.distanceSelect) {
+            return;
+        }
+
+        // Clean up map.
+        this.lmap.removeLayer(this.filteredMarkersGroup);
+
+        // Reset filters markers.
+        this.filteredMarkersGroup = new L.FeatureGroup();
+
+        // Start a bounded area.
+        const distance = parseFloat(this.distanceSelect.value) || 0;
+        const bounds = L.latLngBounds();
+        bounds.extend(this.LMAP_DISTANCE_CENTER);
+
+        // Process all markers.
+        this.allMarkersGroup.eachLayer((marker) => {
+            // Updating marker distance data.
+            const distanceInMiles = this.calcLatLngDistanceMilesFromMapCenter(marker.getLatLng());
+            marker.options.themeData.distanceInMiles = distanceInMiles;
+
+            // Check distance filter
+            const passesDistanceFilter = distance === 0 || distanceInMiles <= distance;
+            
+            // Check post type filter
+            const passesPostTypeFilter = this.activePostTypeFilter === '' || marker.options.themeData.postType === this.activePostTypeFilter;
+            
+            // Show/hide based on both filters
+            if (passesDistanceFilter && passesPostTypeFilter) {
+                this.filteredMarkersGroup.addLayer(marker);
+                marker.options.themeData.listingElement.removeAttribute('hidden', '');
+                marker.options.themeData.distanceInMiles = distanceInMiles;
+                bounds.extend(marker.getLatLng());
+            } else {
+                marker.options.themeData.listingElement.setAttribute('hidden', '');
+            }
+
+            this.updateMarkerDistanceMeta(marker);
         });
 
         this.lmap.addLayer(this.filteredMarkersGroup);
@@ -625,8 +771,10 @@ class Map {
     }
 
     sortlistingEls(filteredLayers) {
-        // Sort map markers by distance from central point.
-        filteredLayers.sort((a, b) => a.options.themeData.distanceInMiles - b.options.themeData.distanceInMiles);
+        // Sort purely by distance from the search location, closest first.
+        filteredLayers.sort((a, b) => {
+            return a.options.themeData.distanceInMiles - b.options.themeData.distanceInMiles;
+        });
 
         // Order listings from closest > furthest away.
         filteredLayers.forEach((layer) => {
@@ -728,6 +876,7 @@ class Map {
             }
 
             markerEl.classList.remove('leaflet-marker-icon--selected');
+            marker.closePopup();
         });
 
         if (!activeMarker) {
@@ -739,6 +888,114 @@ class Map {
         if (activeMarkerEl) {
             activeMarkerEl.classList.add('leaflet-marker-icon--selected');
         }
+
+        activeMarker.setPopupContent(this.getMarkerTooltipHtml(activeMarker));
+        activeMarker.openPopup();
+    }
+
+    getMarkerTooltipHtml(marker) {
+        if (!marker || !marker.options || !marker.options.themeData || !marker.options.themeData.listingElement) {
+            return '';
+        }
+
+        const listingEl = marker.options.themeData.listingElement;
+
+        const titleEl = listingEl.querySelector('.map__listing__title');
+        const addressEl = listingEl.querySelector('.map__listing__address');
+        const phoneEl = listingEl.querySelector('.map__listing__phone');
+        const linkEl = listingEl.querySelector('.map__listing__link');
+
+        const title = titleEl ? this.escapeHtml(titleEl.textContent.trim()) : '';
+        const address = addressEl ? this.escapeHtml(addressEl.textContent.trim()) : '';
+
+        const distanceInMiles = marker.options.themeData.distanceInMiles;
+        const distance = Number.isFinite(distanceInMiles)
+            ? `${distanceInMiles} miles away`
+            : '';
+
+        let phone = '';
+        let phoneHref = '';
+
+        if (phoneEl) {
+            if (phoneEl.matches('a')) {
+                phone = this.escapeHtml(phoneEl.textContent.trim());
+                phoneHref = this.escapeHtml(phoneEl.getAttribute('href') || '');
+            } else {
+                const phoneAnchorEl = phoneEl.querySelector('a');
+
+                if (phoneAnchorEl) {
+                    phone = this.escapeHtml(phoneAnchorEl.textContent.trim());
+                    phoneHref = this.escapeHtml(phoneAnchorEl.getAttribute('href') || '');
+                } else {
+                    phone = this.escapeHtml(phoneEl.textContent.trim());
+                }
+            }
+        }
+
+        let linkHref = '';
+        let linkText = '';
+
+        if (linkEl) {
+            if (linkEl.matches('a')) {
+                linkHref = linkEl.getAttribute('href') || '';
+                linkText = linkEl.textContent.trim();
+            } else {
+                const anchorEl = linkEl.querySelector('a');
+
+                if (anchorEl) {
+                    linkHref = anchorEl.getAttribute('href') || '';
+                    linkText = anchorEl.textContent.trim();
+                }
+            }
+        }
+
+        const safeLinkHref = this.escapeHtml(linkHref);
+        const safeLinkText = this.escapeHtml(linkText);
+
+        if (!title && !distance && !address && !phone && !safeLinkHref) {
+            return '';
+        }
+
+        let html = '<div class="map__marker-tooltip__inner">';
+
+        if (title) {
+            html += `<h4 class="map__marker-tooltip__title">${title}</h4>`;
+        }
+
+        if (distance) {
+            html += `<p class="map__marker-tooltip__distance">${distance}</p>`;
+        }
+
+        if (address) {
+            html += `<p class="map__marker-tooltip__address">${address}</p>`;
+        }
+
+        if (phone && phoneHref) {
+            html += `<a class="map__marker-tooltip__phone" href="${phoneHref}">${phone}</a>`;
+        } else if (phone) {
+            html += `<p class="map__marker-tooltip__phone">${phone}</p>`;
+        }
+
+        // if (safeLinkHref) {
+        //     html += `<a class="map__marker-tooltip__link" href="${safeLinkHref}">${safeLinkText || 'View store'}</a>`;
+        // }
+
+        html += '</div>';
+
+        return html;
+    }
+
+    escapeHtml(content) {
+        if (!content) {
+            return '';
+        }
+
+        return content
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
     }
 
     // Helpers
@@ -747,6 +1004,7 @@ class Map {
             lat: element.dataset.mapItemLat,
             lng: element.dataset.mapItemLng,
             name: element.querySelector('.map__listing__title').textContent,
+            postType: element.dataset.mapItemPostType,
         };
     }
 

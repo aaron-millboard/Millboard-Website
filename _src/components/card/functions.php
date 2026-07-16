@@ -24,6 +24,7 @@ function filter_args(array $args): ?array
         'media' => [],
         'orientation' => 'vertical',
         'hover_effect' => true,
+        'hover_effect_label' => '',
         'hover_effect_top' => \__('View', 'granola'),
         'hover_effect_bottom' => \__('Article', 'granola'),
 
@@ -59,6 +60,13 @@ function filter_args(array $args): ?array
         $args['url'] = $args['link']['url'] ?? $args['url'];
         $args['target'] = $args['link']['target'] ?? $args['target'];
         $args['config']['read_more_label'] = $args['link']['title'] ?? $args['config']['read_more_label'];
+    }
+
+    if (!empty($args['hover_effect_label'])) {
+        $hover_effect_label_parts = preg_split('/\s+/', trim($args['hover_effect_label']), 2);
+
+        $args['hover_effect_top'] = $hover_effect_label_parts[0] ?? '';
+        $args['hover_effect_bottom'] = $hover_effect_label_parts[1] ?? '';
     }
 
     // Shape.

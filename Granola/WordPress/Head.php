@@ -23,7 +23,7 @@ class Head
 
     public static function convert_experiments_script(): void
     {
-        echo '<script type="text/javascript" src="__//____cdn-4.convertexperiments.com/v1/js/10042354-100416782.js?environment=production__"></script>';
+        echo '<script type="text/javascript" src="//cdn-4.convertexperiments.com/v1/js/10042354-100416782.js?environment=production"></script>';
     }
 
     /**

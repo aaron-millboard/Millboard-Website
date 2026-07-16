@@ -48,6 +48,10 @@ export default class Modal {
             document.body.style.overflow = '';
         }
 
+        if (this.cookieSet) {
+            return;
+        }
+
         // Get number of days to set the cookie
         if (this.element.dataset.cookie) {
             const modalId = this.element.getAttribute('id');
@@ -63,21 +67,22 @@ export default class Modal {
      */
     initModalLinks() {
         const modalLinks = this.element.querySelectorAll('a[href]');
-    
+
         modalLinks.forEach((link) => {
             link.addEventListener('click', (event) => {
-                // Prevent the modal from closing for all links
-                event.stopPropagation();
-    
-                // Allow the link to work normally
-                if (!link.hasAttribute('data-close-modal')) {
-                    return;
+                const linkPath = link.pathname.replace(/\/$/, '');
+                const currentPath = window.location.pathname.replace(/\/$/, '');
+                const isCurrentPage =
+                    link.origin === window.location.origin &&
+                    linkPath === currentPath &&
+                    !link.search &&
+                    !link.hash;
+
+                if (isCurrentPage) {
+                    event.preventDefault();
                 }
-    
-                // If the link has the data-close-modal attribute, close the modal
-                event.preventDefault();
+
                 this.close();
-                window.location.href = link.href;
             });
         });
     }

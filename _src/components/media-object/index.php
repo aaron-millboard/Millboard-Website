@@ -6,15 +6,21 @@
                 <?php if ($args['media_type'] === 'video' && !empty($args['video'])) { ?>
                     <?= \Granola\Component::get('video-item', $args['video']); ?>
                 <?php } else { ?>
-                    <?php if ($args['hover_effect'] && !empty($args['hover_effect_top']) && !empty($args['hover_effect_bottom'])) { ?>
+                    <?php if ($args['hover_effect'] && (!empty($args['hover_effect_top']) || !empty($args['hover_effect_bottom']))) { ?>
                         <div class="media-object__media--hover-effect">
-                            <span class="media-object__media--hover-effect__top">
-                                <?= $args['hover_effect_top']; ?>
-                            </span>
+                            <?php if (!empty($args['hover_effect_top']) && !empty($args['hover_effect_bottom'])) { ?>
+                                <span class="media-object__media--hover-effect__top">
+                                    <?= esc_html($args['hover_effect_top']); ?>
+                                </span>
 
-                            <span class="media-object__media--hover-effect__bottom">
-                                <?= $args['hover_effect_bottom']; ?>
-                            </span>
+                                <span class="media-object__media--hover-effect__bottom">
+                                    <?= esc_html($args['hover_effect_bottom']); ?>
+                                </span>
+                            <?php } else { ?>
+                                <span class="media-object__media--hover-effect__label">
+                                    <?= esc_html($args['hover_effect_top'] ?: $args['hover_effect_bottom']); ?>
+                                </span>
+                            <?php } ?>
                         </div>
                     <?php } ?>
 

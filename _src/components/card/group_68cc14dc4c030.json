@@ -168,6 +168,27 @@
             "ui": 1
         },
         {
+            "key": "field_6855748ac5e9f",
+            "label": "Hover Effect Label",
+            "name": "hover_effect_label",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "Overrides the image hover label. Leave blank to use the default.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "allow_in_bindings": 0,
+            "placeholder": "View Article",
+            "prepend": "",
+            "append": ""
+        },
+        {
             "key": "field_68cd578511f6c",
             "label": "Orientation",
             "name": "orientation",
@@ -246,5 +267,5 @@
     "show_in_rest": 0,
     "display_title": "",
     "granola_save_location": 0,
-    "modified": 1760090189
+    "modified": 1781864645
 }

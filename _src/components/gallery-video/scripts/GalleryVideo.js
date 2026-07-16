@@ -95,16 +95,20 @@ export default class GalleryVideo {
         this.videos.forEach((video, i) => {
             if (i === index) {
                 video.classList.add('gallery-video__video--active');
+                video.setAttribute('aria-hidden', 'false');
             } else {
                 video.classList.remove('gallery-video__video--active');
+                video.setAttribute('aria-hidden', 'true');
             }
         });
 
         this.thumbnails.forEach((thumbnail, i) => {
             if (i === index) {
                 thumbnail.classList.add('gallery-video__thumbnail--active');
+                thumbnail.setAttribute('aria-pressed', 'true');
             } else {
                 thumbnail.classList.remove('gallery-video__thumbnail--active');
+                thumbnail.setAttribute('aria-pressed', 'false');
             }
         });
 

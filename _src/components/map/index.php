@@ -82,9 +82,39 @@
             ]); ?>
         </div>
 
+        <?php if (!empty($args['filters'])) { ?>
+            <div class="map__filters map__filters--mobile alignwide">
+                <?php foreach ($args['filters'] as $filter) { ?>
+                    <button
+                        type="button"
+                        class="g-button map__filter <?= $filter['active'] ? 'map__filter--active' : ''; ?>"
+                        data-filter-value="<?= esc_attr($filter['value']); ?>"
+                    >
+                        <?= esc_html($filter['label']); ?>
+                        <span class="map__filter__count"><?= esc_html($filter['count']); ?></span>
+                    </button>
+                <?php } ?>
+            </div>
+        <?php } ?>
+
         <div class="map__content alignwide">
             <div id="map-sidebar" class="map__sidebar map__tab-panel">
                 <?= \Granola\Component::get('heading', $args['sidebar_heading']) ?>
+
+                <?php if (!empty($args['filters'])) { ?>
+                    <div class="map__filters map__filters--sidebar">
+                        <?php foreach ($args['filters'] as $filter) { ?>
+                            <button 
+                                type="button"
+                                class="g-button map__filter <?= $filter['active'] ? 'map__filter--active' : ''; ?>"
+                                data-filter-value="<?= esc_attr($filter['value']); ?>"
+                            >
+                                <?= esc_html($filter['label']); ?>
+                                <span class="map__filter__count"><?= esc_html($filter['count']); ?></span>
+                            </button>
+                        <?php } ?>
+                    </div>
+                <?php } ?>
 
                 <div class="map__items">
                     <?php if (!empty($args['items'])) { ?>

@@ -157,5 +157,13 @@ function render_accordion_item_block_schema($graph, $block)
         'inLanguage' => \get_bloginfo('language'),
     ];
 
+    if (empty($graph["0"]['mainEntity'])) {
+        $graph["0"]['mainEntity'] = [];
+    }
+
+    $graph["0"]['mainEntity'][] = [
+        '@id' => $url . '#' . $id,
+    ];
+
     return $graph;
 }

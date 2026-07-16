@@ -111,7 +111,7 @@ export default class Slider {
             slide.id = slideId;
 
             // Set aria attributes
-            slide.setAttribute('role', 'tabpanel');
+            slide.setAttribute('role', 'group');
             slide.setAttribute('aria-roledescription', 'slide');
             slide.setAttribute('aria-label', `Slide ${index + 1} of ${this.totalSlides}`);
 
@@ -144,7 +144,6 @@ export default class Slider {
         if (this.pips.length > 0) {
             this.pips.forEach((dot, index) => {
                 dot.addEventListener('click', () => this.goTo(index));
-                dot.setAttribute('role', 'tab');
                 dot.setAttribute('aria-label', `Go to slide ${index + 1}`);
             });
         }
@@ -263,7 +262,7 @@ export default class Slider {
         if (this.pips.length > 0) {
             this.pips.forEach((dot, index) => {
                 const isActive = index === this.currentIndex;
-                dot.setAttribute('aria-selected', isActive);
+                dot.setAttribute('aria-current', isActive ? 'true' : 'false');
                 dot.classList.toggle('is-active', isActive);
             });
         }
@@ -279,9 +278,6 @@ export default class Slider {
 
             slide.setAttribute('aria-hidden', !isVisible);
             slide.setAttribute('tabindex', isVisible ? '0' : '-1');
-
-            // Update aria-selected for tabpanel role
-            slide.setAttribute('aria-selected', isVisible ? 'true' : 'false');
         });
 
         // Update track with current state

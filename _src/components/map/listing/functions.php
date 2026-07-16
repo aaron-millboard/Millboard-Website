@@ -27,18 +27,12 @@ function filter_args(array $args): ?array
     $args['attributes']['data-map-item-lat'] = $args['address']['lat'];
     $args['attributes']['data-map-item-lng'] = $args['address']['lng'];
 
+    if (!empty($args['advanced_installer'])) {
+        $args['attributes']['data-map-item-advanced-installer'] = '1';
+    }
+
     // Finally set address.
     $args['address'] = $args['address']['address'];
-
-    if (!empty($args['phone'])) {
-        $args['phone'] = [
-            'content' => $args['phone'],
-            'url' => 'tel:' . $args['phone'],
-            'classes' => [
-                'map__listing__phone',
-            ],
-        ];
-    }
 
     if (!empty($args['url'])) {
         $args['link'] = [

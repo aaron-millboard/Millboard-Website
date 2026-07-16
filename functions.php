@@ -73,6 +73,8 @@ if (file_exists($autoloader = __DIR__ . '/vendor/autoload.php')) {
 \Theme\PostTypes\Post::init();
 \Theme\PostTypes\Product::init();
 \Theme\PostTypes\Distributor::init();
+\Theme\PostTypes\Showroom::init();
+\Theme\PostTypes\ExperienceCentre::init();
 
 // ----------------------------------------------------
 // Custom Taxonomies.
@@ -94,7 +96,7 @@ if (file_exists($autoloader = __DIR__ . '/vendor/autoload.php')) {
 // WooCommerce functionality.
 // ----------------------------------------------------
 
-\Theme\WooCommerce\CountryRestrictions::init();
+\Theme\WooCommerce\SampleShipping::init();
 \Theme\WooCommerce\QuoteShare::init();
 \Theme\WooCommerce\Settings::init();
 

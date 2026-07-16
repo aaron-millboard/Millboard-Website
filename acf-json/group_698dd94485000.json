@@ -610,6 +610,20 @@
             {
                 "param": "post_type",
                 "operator": "==",
+                "value": "showroom"
+            }
+        ],
+        [
+            {
+                "param": "post_type",
+                "operator": "==",
+                "value": "experience_centre"
+            }
+        ],
+        [
+            {
+                "param": "post_type",
+                "operator": "==",
                 "value": "granola-template"
             }
         ]

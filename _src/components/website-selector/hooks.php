@@ -70,14 +70,9 @@ add_action('wp_footer', function () {
     $options_fields = json_encode($content_args);
     $current_hash = md5($options_fields);
 
-    // Check if we have cookie
+    // Do not show the modal while the dismissal cookie is active.
     if (!empty($_COOKIE[$modal_id])) {
-        // get hash from cookie
-        $cookie_hash = $_COOKIE[$modal_id];
-        // Look if we have the modal ID
-        if ($current_hash == $cookie_hash) {
-            return;
-        }
+        return;
     }
 
     // modal args

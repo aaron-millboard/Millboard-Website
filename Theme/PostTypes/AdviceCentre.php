@@ -19,8 +19,6 @@ class AdviceCentre
         // \add_action('acf/init', [__CLASS__, 'add_settings_page']);
         \add_filter('granola/templates/post-types', [__CLASS__, 'filter_granola_templates_post_types']);
         \add_filter('post_type_link', [__CLASS__, 'filter_post_type_link'], 10, 2);
-        \add_filter('request', [__CLASS__, 'filter_request']);
-        \add_filter('redirect_canonical', [__CLASS__, 'filter_redirect_canonical'], 10, 2);
     }
 
     /**
@@ -53,7 +51,7 @@ class AdviceCentre
             'hierarchical' => true,
             'show_in_rest' => true,
             'rewrite' => [
-                'slug' => 'advice-centre/%advice_category_slug%',
+                'slug' => self::SLUG,
                 'with_front' => false,
             ],
             'menu_position' => 25, // Below comments.
@@ -153,145 +151,40 @@ class AdviceCentre
     }
 
     /**
-     * Filters Advice Centre post permalinks to include Advice Category slug.
+     * Add rewrite rule for Advice Centre posts with taxonomy hierarchy in URL.
+     */
+    public static function add_permalink_rewrite_rule(): void
+    {
+        \add_rewrite_rule(
+            '^' . self::SLUG . '/([^/]+)/([^/]+)/?$',
+            'index.php?post_type=' . self::SLUG . '&name=$matches[2]',
+            'top'
+        );
+    }
+
+    /**
+     * Replace permalink for Advice Centre posts to include advice category hierarchy.
      *
      * @param string $post_link The post permalink.
-     * @param \WP_Post $post The post object.
-     * @return string The filtered permalink.
+     * @param \WP_Post $post    The post object.
+     * @return string
      */
     public static function filter_post_type_link(string $post_link, \WP_Post $post): string
     {
-        if ($post->post_type !== self::SLUG || strpos($post_link, '%advice_category_slug%') === false) {
+        if ($post->post_type !== self::SLUG) {
             return $post_link;
         }
 
-        $terms = \wp_get_post_terms($post->ID, 'advice_category');
+        $term = \Theme\Utils\Taxonomies::get_primary_term($post, self::TAXONOMY);
 
-        if (\is_wp_error($terms) || empty($terms)) {
-            return str_replace('/%advice_category_slug%', '', $post_link);
+        if (!$term instanceof \WP_Term) {
+            return $post_link;
         }
 
-        return str_replace('%advice_category_slug%', $terms[0]->slug, $post_link);
-    }
-
-    /**
-     * Resolves uncategorised Advice Centre posts at /advice-centre/{post-slug}.
-     *
-     * @param array $query_vars The query variables from the request.
-     * @return array The filtered query variables.
-     */
-    public static function filter_request(array $query_vars): array
-    {
-        if (!empty($query_vars['name'])) {
-            return $query_vars;
+        if ($term->slug === '') {
+            return $post_link;
         }
 
-        $slug = '';
-
-        if (!empty($query_vars['advice_category'])) {
-            $slug = (string) $query_vars['advice_category'];
-        } elseif (($query_vars['taxonomy'] ?? '') === 'advice_category' && !empty($query_vars['term'])) {
-            $slug = (string) $query_vars['term'];
-        }
-
-        if ($slug === '' || \term_exists($slug, 'advice_category')) {
-            return $query_vars;
-        }
-
-        $post = \get_page_by_path($slug, OBJECT, self::SLUG);
-
-        if (!$post instanceof \WP_Post) {
-            return $query_vars;
-        }
-
-        unset($query_vars['advice_category'], $query_vars['taxonomy'], $query_vars['term'], $query_vars['error']);
-        $query_vars['post_type'] = self::SLUG;
-        $query_vars['name'] = $post->post_name;
-
-        return $query_vars;
-    }
-
-    /**
-     * Parses incoming request path and resolves uncategorised Advice Centre posts.
-     *
-     * @param \WP $wp The WP environment instance.
-     */
-    public static function parse_request(\WP $wp): void
-    {
-        if (\is_admin() || empty($wp->request)) {
-            return;
-        }
-
-        $request_path = trim((string) $wp->request, '/');
-        $segments = array_values(array_filter(explode('/', $request_path)));
-        $slug_index = array_search(self::SLUG, $segments, true);
-
-        if ($slug_index === false) {
-            return;
-        }
-
-        $remaining_segments = array_slice($segments, $slug_index + 1);
-
-        if (count($remaining_segments) !== 1) {
-            return;
-        }
-
-        $slug = (string) $remaining_segments[0];
-
-        if ($slug === '' || \term_exists($slug, 'advice_category')) {
-            return;
-        }
-
-        $post = \get_page_by_path($slug, OBJECT, self::SLUG);
-
-        if (!$post instanceof \WP_Post) {
-            return;
-        }
-
-        unset($wp->query_vars['advice_category'], $wp->query_vars['taxonomy'], $wp->query_vars['term'], $wp->query_vars['error']);
-        $wp->query_vars['post_type'] = self::SLUG;
-        $wp->query_vars['name'] = $post->post_name;
-    }
-
-    /**
-     * Prevents canonical redirects for valid uncategorised Advice Centre post URLs.
-     *
-     * @param string|false $redirect_url The redirect URL.
-     * @param string $requested_url The requested URL.
-     * @return string|false The filtered redirect URL.
-     */
-    public static function filter_redirect_canonical($redirect_url, string $requested_url)
-    {
-        if (empty($redirect_url)) {
-            return $redirect_url;
-        }
-
-        $path = (string) \wp_parse_url($requested_url, PHP_URL_PATH);
-        $segments = array_values(array_filter(explode('/', trim($path, '/'))));
-        $slug_index = array_search(self::SLUG, $segments, true);
-
-        if ($slug_index === false) {
-            return $redirect_url;
-        }
-
-        $remaining_segments = array_slice($segments, $slug_index + 1);
-
-        if (count($remaining_segments) !== 1) {
-            return $redirect_url;
-        }
-
-        $slug = (string) $remaining_segments[0];
-
-        if ($slug === '' || \term_exists($slug, 'advice_category')) {
-            return $redirect_url;
-        }
-
-        $post = \get_page_by_path($slug, OBJECT, self::SLUG);
-
-        if (!$post instanceof \WP_Post) {
-            return $redirect_url;
-        }
-
-        return false;
+        return \home_url(\user_trailingslashit(self::SLUG . '/' . $term->slug . '/' . $post->post_name));
     }
 }

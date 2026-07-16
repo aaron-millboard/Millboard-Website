@@ -19,6 +19,9 @@
             "choices": {
                 "installer": "Installers",
                 "distributor": "Distributors",
+                "showroom": "Showrooms",
+                "experience_centre": "Experience Centres",
+                "multiple": "Multiple Sources",
                 "custom": "Custom"
             },
             "default_value": "installer",
@@ -26,6 +29,40 @@
             "allow_null": 0,
             "allow_in_bindings": 0,
             "layout": "horizontal"
+        },
+        {
+            "key": "field_698c7127a40cb",
+            "label": "Sources",
+            "name": "sources",
+            "aria-label": "",
+            "type": "checkbox",
+            "instructions": "Select the post types to include in the map data",
+            "required": 0,
+            "conditional_logic": [
+                [
+                    {
+                        "field": "field_6985133852f98",
+                        "operator": "==",
+                        "value": "multiple"
+                    }
+                ]
+            ],
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "choices": {
+                "installer": "Installers",
+                "distributor": "Distributors",
+                "showroom": "Showrooms",
+                "experience_centre": "Experience Centres"
+            },
+            "default_value": [],
+            "return_format": "value",
+            "allow_null": 0,
+            "allow_in_bindings": 0,
+            "layout": "vertical"
         },
         {
             "key": "field_698c7127a40ca",

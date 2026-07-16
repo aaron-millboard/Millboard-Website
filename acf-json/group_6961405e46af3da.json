@@ -1,29 +1,9 @@
 {
-    "key": "group_6978e235c491b",
-    "title": "Installer Details",
+    "key": "group_6961405e46af3da",
+    "title": "Showroom Details",
     "fields": [
         {
-            "key": "field_6978e235c8c97",
-            "label": "Advanced Installer",
-            "name": "advanced_installer",
-            "aria-label": "",
-            "type": "true_false",
-            "instructions": "",
-            "required": false,
-            "conditional_logic": 0,
-            "wrapper": {
-                "width": "",
-                "class": "",
-                "id": ""
-            },
-            "message": "",
-            "default_value": 0,
-            "ui": 1,
-            "ui_on_text": "",
-            "ui_off_text": ""
-        },
-        {
-            "key": "field_6978e235c8c7a",
+            "key": "field_6961405e576f1da",
             "label": "Address",
             "name": "address",
             "aria-label": "",
@@ -42,7 +22,7 @@
             "zoom": ""
         },
         {
-            "key": "field_6978e235c8c82",
+            "key": "field_696140df576f2da",
             "label": "Email",
             "name": "email",
             "aria-label": "",
@@ -61,7 +41,7 @@
             "append": ""
         },
         {
-            "key": "field_6978e235c8c89",
+            "key": "field_696140ed576f3da",
             "label": "Phone",
             "name": "phone",
             "aria-label": "",
@@ -82,7 +62,7 @@
             "append": ""
         },
         {
-            "key": "field_6978e235c8c90",
+            "key": "field_696140ff576f4da",
             "label": "Website",
             "name": "website",
             "aria-label": "",
@@ -104,7 +84,7 @@
             {
                 "param": "post_type",
                 "operator": "==",
-                "value": "installer"
+                "value": "showroom"
             }
         ]
     ],
@@ -119,5 +99,5 @@
     "show_in_rest": 0,
     "display_title": "",
     "granola_save_location": 0,
-    "modified": 1772150000
+    "modified": 1769529889
 }

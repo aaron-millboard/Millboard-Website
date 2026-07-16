@@ -54,11 +54,11 @@
 
             @include mq($until: large) {
                 order: -1;
-                padding: 0 var(--media-object--inner-padding-x);
             }
 
             img {
                 aspect-ratio: 1 / 1;
+
                 @include mq($until: medium) {
                     position: relative;
                 }
@@ -90,17 +90,15 @@
     }
 
     &.has-background {
-        --media-object--inner-padding-x: 0;
-
-        @include mq($until: medium) {
-            --media-object--inner-padding-x: var(--space--m);
+        @include mq(medium) {
+            --media-object--inner-padding-x: 0;
         }
 
         #{$media-object}__inner {
-            padding: var(--space--2xl) 0;
+            padding-block: var(--space--xl);
 
-            @include mq($until: large) {
-                padding: var(--space--xl) 0;
+            @include mq(large) {
+                padding-block: var(--space--2xl);
             }
         }
 
