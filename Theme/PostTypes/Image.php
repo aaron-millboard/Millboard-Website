@@ -9,12 +9,17 @@ namespace Theme\PostTypes;
 class Image
 {
     protected const SLUG = 'image';
+    public const ARCHIVE_POSTS_PER_PAGE = 7;
 
     public static function init(): void
     {
         \add_action('init', [__CLASS__, 'register_post_type']);
         \add_filter('granola/templates/post-types', [__CLASS__, 'filter_granola_templates_post_types']);
         \add_action('template_redirect', [__CLASS__, 'redirect_single_cpt']);
+        \add_action(
+            'pre_get_posts',
+            [__CLASS__, 'filter_gallery_archive_query']
+        );
         \add_filter('wp_robots', [__CLASS__, 'filter_gallery_robots_link']);
     }
 
@@ -126,6 +131,65 @@ class Image
     }
 
     /**
+     * Sets the main gallery archive query to match the gallery loop.
+     *
+     * @param  \WP_Query $query The query being filtered.
+     *
+     * @return void
+     */
+    public static function filter_gallery_archive_query(\WP_Query $query): void
+    {
+        if (
+            \is_admin()
+            || !$query->is_main_query()
+            || !$query->is_post_type_archive(self::SLUG)
+        ) {
+            return;
+        }
+
+        $query->set('posts_per_page', self::ARCHIVE_POSTS_PER_PAGE);
+
+        $tax_query = self::get_category_tax_query_from_request();
+
+        if (!empty($tax_query)) {
+            $query->set('tax_query', $tax_query);
+        }
+    }
+
+    /**
+     * Gets the image category query selected through the gallery filter.
+     *
+     * @return array
+     */
+    public static function get_category_tax_query_from_request(): array
+    {
+        if (!isset($_GET['image_category']) || !is_string($_GET['image_category'])) {
+            return [];
+        }
+
+        $image_category = \sanitize_text_field(\wp_unslash($_GET['image_category']));
+        $terms = array_unique(array_filter(explode(' ', $image_category)));
+
+        if (empty($terms)) {
+            return [];
+        }
+
+        $tax_query = [
+            'relation' => 'AND',
+        ];
+
+        foreach ($terms as $term) {
+            $tax_query[] = [
+                'taxonomy' => 'image_category',
+                'field' => 'slug',
+                'terms' => $term,
+            ];
+        }
+
+        return $tax_query;
+    }
+
+    /**
      * Filter the robots meta tag to add a noindex to UI filtered pages.
      *
      * @param array $robots Associative array of robots <meta> content directives.
@@ -136,7 +200,7 @@ class Image
         if (!\is_post_type_archive(self::SLUG)) {
             return $robots;
         }
-        
+
         $image_category = isset($_GET['image_category']) ? sanitize_text_field($_GET['image_category']) : '';
 
         if (!empty($image_category)) {
