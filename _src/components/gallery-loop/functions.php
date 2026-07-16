@@ -10,7 +10,7 @@ function filter_args(array $args): ?array
     $args = array_merge([
         'classes' => [],
         'taxonomy_filters_args' => [],
-        'limit' => 7,
+        'limit' => \Theme\PostTypes\Image::ARCHIVE_POSTS_PER_PAGE,
         'lightbox' => true,
     ], $args);
 
