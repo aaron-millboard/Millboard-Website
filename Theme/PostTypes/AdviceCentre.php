@@ -14,6 +14,7 @@ class AdviceCentre
     {
         \add_action('init', [__CLASS__, 'register_post_type']);
         \add_action('parse_request', [__CLASS__, 'parse_request'], 1);
+        \add_action('pre_get_posts', [__CLASS__, 'filter_archive_posts_per_page']);
         // \add_action('acf/init', [__CLASS__, 'add_settings_page']);
         \add_filter('granola/templates/post-types', [__CLASS__, 'filter_granola_templates_post_types']);
         \add_filter('post_type_link', [__CLASS__, 'filter_post_type_link'], 10, 2);
@@ -102,6 +103,22 @@ class AdviceCentre
             'plural'   => \__('Advice Articles', 'granola'),
             'slug'     => self::SLUG,
         ]);
+    }
+
+    /**
+     * Sets the archive queries to 12 posts per page to match the template-loop card grid.
+     *
+     * @param \WP_Query $query The query being run.
+     */
+    public static function filter_archive_posts_per_page(\WP_Query $query): void
+    {
+        if (\is_admin() || !$query->is_main_query()) {
+            return;
+        }
+
+        if ($query->is_post_type_archive(self::SLUG) || $query->is_tax('advice_category')) {
+            $query->set('posts_per_page', 12);
+        }
     }
 
     /**
