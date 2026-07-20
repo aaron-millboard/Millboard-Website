@@ -445,7 +445,12 @@ let markerHtml = `
                 // is registered) and open/close on hover instead.
                 marker.off('click');
 
-                marker.on('mouseover', () => marker.openPopup());
+                marker.on('mouseover', () => {
+                    // Popup content was rendered at page load; regenerate so it
+                    // reflects the current search location and road distances.
+                    marker.setPopupContent(this.getMarkerTooltipHtml(marker));
+                    marker.openPopup();
+                });
                 marker.on('mouseout', () => marker.closePopup());
             }
 
