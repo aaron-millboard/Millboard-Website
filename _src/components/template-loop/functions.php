@@ -87,16 +87,31 @@ function filter_args(array $args): ?array
     }
 
     if (empty($args['items'])) {
-        $query = new \WP_Query($query_args);
+        global $wp_query;
+
+        // On archive and search pages, mirror the main query so the items and
+        // pagination always match the URLs WordPress actually serves. A separate
+        // unconstrained query here ignored the queried term on taxonomy archives
+        // and advertised paginated URLs that 404.
+        if (
+            $wp_query instanceof \WP_Query
+            && ($wp_query->is_archive() || $wp_query->is_search() || $wp_query->is_home())
+        ) {
+            $posts = $wp_query->posts;
+            $max_num_pages = (int) $wp_query->max_num_pages;
+        } else {
+            $query = new \WP_Query($query_args);
+            $posts = $query->posts;
+            $max_num_pages = $query->max_num_pages;
+        }
+
         $args['items'] = [];
 
-        foreach ($query->posts as $post) {
+        foreach ($posts as $post) {
             $args['items'][] = [
                 'object' => $post,
             ];
         }
-
-        $max_num_pages = $query->max_num_pages;
     } else {
         $max_num_pages = 1;
     }
