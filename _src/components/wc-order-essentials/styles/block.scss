@@ -310,7 +310,7 @@
             &__notice {
                 @include typestyle-base;
 
-                margin: var(--space--m) 0 var(--space--m);
+                margin: var(--space--l) 0 var(--space--m);
                 padding: var(--space--s);
                 border-top: 4px solid #78920f;
                 background-color: #eef2dd;
