@@ -15,6 +15,28 @@ $essentials_summary_label_plural = __('selected items', 'granola');
 $essentials_selected_count = 0;
 $essentials_selected_total = 0.0;
 
+$names = [];
+
+foreach ($essentials_recommendations as $essentials_item) {
+    $essentials_name = isset($essentials_item['product_name']) ? (string) $essentials_item['product_name'] : '';
+    if ($essentials_name !== '') {
+        $names[] = $essentials_name;
+    }
+}
+
+$count = count($names);
+
+if ($count === 0) {
+    $names_array = '';
+} elseif ($count === 1) {
+    $names_array = $names[0];
+} else {
+    $last = array_pop($names);
+    $names_array = implode(', ', $names) . ' and ' . $last;
+}
+
+echo $names_array;
+
 // Notices here.
 \Granola\Components\WC_OrderEssentials\render_before_cart();
 ?>
@@ -40,14 +62,16 @@ $essentials_selected_total = 0.0;
                     <span class="cart__order-essentials__project-type-legend-label">
                         <?php esc_html_e('Select your project type', 'granola'); ?>
                     </span>
-                    <label class="cart__order-essentials__project-type-option">
-                        <input type="radio" name="millboard_order_essentials_project_type" value="residential" <?php checked($essentials_project_type, 'residential'); ?> onchange="this.form.querySelector('[name=millboard_refresh_essentials]').click()">
-                        <span class="cart__order-essentials__project-type-label"><?php esc_html_e('Residential', 'granola'); ?></span>
-                    </label>
-                    <label class="cart__order-essentials__project-type-option">
-                        <input type="radio" name="millboard_order_essentials_project_type" value="commercial" <?php checked($essentials_project_type, 'commercial'); ?> onchange="this.form.querySelector('[name=millboard_refresh_essentials]').click()">
-                        <span class="cart__order-essentials__project-type-label"><?php esc_html_e('Commercial', 'granola'); ?></span>
-                    </label>
+                    <div class="cart__order-essentials__project-type-options">
+                        <label class="cart__order-essentials__project-type-option">
+                            <input type="radio" name="millboard_order_essentials_project_type" value="residential" <?php checked($essentials_project_type, 'residential'); ?> onchange="this.form.querySelector('[name=millboard_refresh_essentials]').click()">
+                            <span class="cart__order-essentials__project-type-label"><?php esc_html_e('Residential', 'granola'); ?></span>
+                        </label>
+                        <label class="cart__order-essentials__project-type-option">
+                            <input type="radio" name="millboard_order_essentials_project_type" value="commercial" <?php checked($essentials_project_type, 'commercial'); ?> onchange="this.form.querySelector('[name=millboard_refresh_essentials]').click()">
+                            <span class="cart__order-essentials__project-type-label"><?php esc_html_e('Commercial', 'granola'); ?></span>
+                        </label>
+                    </div>
                     <button type="submit" class="button" name="millboard_refresh_essentials" value="1" hidden><?php esc_html_e('Update recommendations', 'granola'); ?></button>
                 </div>
             </fieldset>
@@ -252,7 +276,7 @@ $essentials_selected_total = 0.0;
                         <span class="cart__order-essentials-modal__warning-icon" aria-hidden="true">!</span>
                         <span>
                             <strong><?php esc_html_e('Heads up.', 'granola'); ?></strong>
-                            <?php echo wp_kses_post(__('Without Durafix&reg; fixings and a Pro Joist sub-frame your order may not meet our installation guidelines and the Millboard warranty.', 'granola')); ?>
+                            <?php echo wp_kses_post(sprintf(__('Without %s your order may not meet our installation guidelines and the Millboard warranty.', 'granola'), $names_array)); ?>
                         </span>
                     </div>
 
