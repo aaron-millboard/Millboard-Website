@@ -48,17 +48,23 @@
             margin: 0;
             padding: var(--space--3xs) var(--space--s);
             display: inline-flex;
-            gap: 0.5rem;
+            gap: 1rem;
             align-items: center;
             white-space: nowrap;
+            flex-wrap: wrap;
+            justify-content: center;
 
             &-label {
                 @include typestyle-small;
 
                 font-weight: 700;
                 text-transform: sentence-case;
-                margin-right: var(--space--s);
             }
+        }
+
+        &__project-type-options {
+            display: flex;
+            gap: 0.5rem;
         }
 
         &__project-type-option {
