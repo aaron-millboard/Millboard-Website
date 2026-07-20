@@ -300,5 +300,211 @@ function add_google_api_key_localization($localizations): array
         $localizations['google_api_key'] = $api_key;
     }
 
+    $localizations['road_distances_endpoint'] = \rest_url('millboard/v1/road-distances');
+
     return $localizations;
+}
+
+/**
+ * Registers the road-distances REST endpoint used by the map to re-rank
+ * listings by driving distance instead of straight-line distance.
+ */
+function register_road_distances_endpoint(): void
+{
+    \register_rest_route('millboard/v1', '/road-distances', [
+        'methods' => 'POST',
+        'callback' => __NAMESPACE__ . '\\handle_road_distances_request',
+        'permission_callback' => '__return_true',
+    ]);
+}
+
+/**
+ * Handles a road-distances request: returns the driving distance and duration
+ * from one origin to up to 25 destinations, in the order they were sent.
+ *
+ * Proxies the Google Routes API server-side (browser calls to it are blocked
+ * by Google, and this keeps the key out of the page). Each origin-destination
+ * pair is cached for 30 days, so radius/filter changes and repeat searches of
+ * the same location cost no billable API elements.
+ *
+ * @param \WP_REST_Request $request The REST request.
+ * @return \WP_REST_Response|\WP_Error The distances response, or an error.
+ */
+function handle_road_distances_request(\WP_REST_Request $request)
+{
+    $origin = parse_lat_lng($request['origin']);
+    $raw_destinations = $request['destinations'];
+
+    if (empty($origin) || !is_array($raw_destinations) || count($raw_destinations) < 1 || count($raw_destinations) > 25) {
+        return new \WP_Error('invalid_params', 'Expected an origin and 1-25 destinations.', ['status' => 400]);
+    }
+
+    $destinations = [];
+    foreach ($raw_destinations as $raw_destination) {
+        $destination = parse_lat_lng($raw_destination);
+        if (empty($destination)) {
+            return new \WP_Error('invalid_params', 'Invalid destination coordinates.', ['status' => 400]);
+        }
+        $destinations[] = $destination;
+    }
+
+    $api_key = get_server_google_api_key();
+
+    if (empty($api_key)) {
+        return new \WP_Error('not_configured', 'No Google API key configured.', ['status' => 501]);
+    }
+
+    // Origins within ~100m share cache entries; that imprecision is
+    // irrelevant to driving distances but lets nearby searches hit the cache.
+    $origin_cache_key = round($origin['lat'], 3) . ',' . round($origin['lng'], 3);
+
+    $results = [];
+    $uncached = [];
+
+    foreach ($destinations as $index => $destination) {
+        $cache_key = 'mb_roaddist_' . md5($origin_cache_key . '|' . $destination['lat'] . ',' . $destination['lng']);
+        $cached = \get_transient($cache_key);
+
+        if (is_array($cached)) {
+            $results[$index] = $cached;
+        } else {
+            $results[$index] = ['meters' => null, 'seconds' => null];
+            $uncached[$index] = $destination;
+        }
+    }
+
+    if (!empty($uncached)) {
+        $matrix = fetch_google_route_matrix($origin, array_values($uncached), $api_key);
+
+        if (is_array($matrix)) {
+            foreach (array_keys($uncached) as $position => $index) {
+                if (!isset($matrix[$position])) {
+                    continue;
+                }
+
+                $results[$index] = $matrix[$position];
+
+                $destination = $uncached[$index];
+                $cache_key = 'mb_roaddist_' . md5($origin_cache_key . '|' . $destination['lat'] . ',' . $destination['lng']);
+                \set_transient($cache_key, $matrix[$position], 30 * DAY_IN_SECONDS);
+            }
+        }
+    }
+
+    return \rest_ensure_response([
+        'distances' => array_values($results),
+    ]);
+}
+
+/**
+ * Validates and normalises a lat/lng pair from request data.
+ *
+ * @param mixed $value The raw request value.
+ * @return ?array ['lat' => float, 'lng' => float] or null if invalid.
+ */
+function parse_lat_lng($value): ?array
+{
+    if (!is_array($value) || !isset($value['lat']) || !isset($value['lng'])) {
+        return null;
+    }
+
+    $lat = filter_var($value['lat'], FILTER_VALIDATE_FLOAT);
+    $lng = filter_var($value['lng'], FILTER_VALIDATE_FLOAT);
+
+    if ($lat === false || $lng === false || abs($lat) > 90 || abs($lng) > 180) {
+        return null;
+    }
+
+    // 5 decimal places (~1m) is plenty and keeps cache keys stable.
+    return ['lat' => round($lat, 5), 'lng' => round($lng, 5)];
+}
+
+/**
+ * Returns the Google API key for server-side requests.
+ *
+ * The browser key (ACF option) is typically referrer-restricted, which Google
+ * rejects for server calls, so a dedicated key can be provided via the
+ * MILLBOARD_GOOGLE_SERVER_API_KEY constant (e.g. in wp-config.php).
+ *
+ * @return string The API key, or an empty string if none is configured.
+ */
+function get_server_google_api_key(): string
+{
+    if (defined('MILLBOARD_GOOGLE_SERVER_API_KEY') && MILLBOARD_GOOGLE_SERVER_API_KEY) {
+        return (string) MILLBOARD_GOOGLE_SERVER_API_KEY;
+    }
+
+    return (string) \get_field('google_api_key', 'option');
+}
+
+/**
+ * Fetches driving distances from the Google Routes API computeRouteMatrix
+ * endpoint (basic routing, no traffic, so it bills at the Essentials rate).
+ *
+ * @link https://developers.google.com/maps/documentation/routes/compute_route_matrix
+ *
+ * @param array $origin ['lat' => float, 'lng' => float].
+ * @param array $destinations Sequential array of ['lat' => float, 'lng' => float].
+ * @param string $api_key The Google API key.
+ * @return ?array Sequential array of ['meters' => ?int, 'seconds' => ?int]
+ *                aligned with $destinations, or null on failure.
+ */
+function fetch_google_route_matrix(array $origin, array $destinations, string $api_key): ?array
+{
+    $to_waypoint = function (array $lat_lng): array {
+        return [
+            'waypoint' => [
+                'location' => [
+                    'latLng' => [
+                        'latitude' => $lat_lng['lat'],
+                        'longitude' => $lat_lng['lng'],
+                    ],
+                ],
+            ],
+        ];
+    };
+
+    $response = \wp_remote_post('https://routes.googleapis.com/distanceMatrix/v2:computeRouteMatrix', [
+        'timeout' => 10,
+        'headers' => [
+            'Content-Type' => 'application/json',
+            'X-Goog-Api-Key' => $api_key,
+            'X-Goog-FieldMask' => 'originIndex,destinationIndex,distanceMeters,duration,condition',
+        ],
+        'body' => \wp_json_encode([
+            'origins' => [$to_waypoint($origin)],
+            'destinations' => array_map($to_waypoint, $destinations),
+            'travelMode' => 'DRIVE',
+        ]),
+    ]);
+
+    if (\is_wp_error($response) || \wp_remote_retrieve_response_code($response) !== 200) {
+        return null;
+    }
+
+    $elements = json_decode(\wp_remote_retrieve_body($response), true);
+
+    if (!is_array($elements)) {
+        return null;
+    }
+
+    $results = array_fill(0, count($destinations), ['meters' => null, 'seconds' => null]);
+
+    foreach ($elements as $element) {
+        if (!isset($element['destinationIndex']) || !isset($results[$element['destinationIndex']])) {
+            continue;
+        }
+
+        if (isset($element['condition']) && $element['condition'] !== 'ROUTE_EXISTS') {
+            continue;
+        }
+
+        $results[$element['destinationIndex']] = [
+            'meters' => isset($element['distanceMeters']) ? (int) $element['distanceMeters'] : null,
+            // Durations come back as strings like "1795s".
+            'seconds' => isset($element['duration']) ? (int) rtrim($element['duration'], 's') : null,
+        ];
+    }
+
+    return $results;
 }
