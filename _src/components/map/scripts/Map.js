@@ -72,6 +72,14 @@ class Map {
         this.activePostTypeFilter = ''; // Empty string means all post types
 
         this.googleApiKey = window.params.google_api_key;
+        this.roadDistancesEndpoint = window.params.road_distances_endpoint;
+
+        // Road distances are only fetched once the user has picked a real
+        // location (search, geolocate, or URL param) - never for the default
+        // locale-centred view - to keep Routes API usage down.
+        this.hasUserSearchLocation = false;
+        this.roadDistanceRequestId = 0;
+        this.ROAD_DISTANCE_LIMIT = 25; // Routes API matrix cap per request.
 
         if (typeof L === 'object') {
             this.init();
@@ -106,6 +114,7 @@ class Map {
 
             this.lmap.addEventListener('locationfound', ({latlng}) => {
                 this.LMAP_DISTANCE_CENTER = latlng;
+                this.hasUserSearchLocation = true;
                 this.filterByDistanceAndPostType();
             });
         }
@@ -267,6 +276,7 @@ class Map {
 
     async applyLocationFromUrl() {
         if (this.urlLatLng) {
+            this.hasUserSearchLocation = true;
             this.filterListingsByDistance();
             return;
         }
@@ -293,6 +303,7 @@ class Map {
         const {lat, lng} = response.results[0].geometry.location;
         this.LMAP_DISTANCE_CENTER = new L.LatLng(lat, lng);
         this.LMAP_INITIAL_CENTER = [lat, lng];
+        this.hasUserSearchLocation = true;
         this.filterListingsByDistance();
     }
 
@@ -498,6 +509,7 @@ let markerHtml = `
             const {lat, lng} = response.results[0].geometry.location;
 
             this.LMAP_DISTANCE_CENTER = new L.LatLng(lat, lng);
+            this.hasUserSearchLocation = true;
             this.filterListingsByDistance();
         });
     }
@@ -653,6 +665,7 @@ let markerHtml = `
             // Updating marker distance data.
             const distanceInMiles = this.calcLatLngDistanceMilesFromMapCenter(marker.getLatLng());
             marker.options.themeData.distanceInMiles = distanceInMiles;
+            marker.options.themeData.roadDistanceInMiles = null;
 
             if (distance === 0 || distanceInMiles <= distance) {
                 this.filteredMarkersGroup.addLayer(marker);
@@ -694,6 +707,7 @@ let markerHtml = `
         }
 
         this.sortlistingEls(filteredLayers);
+        this.updateRoadDistances(filteredLayers);
     }
 
     filterByDistanceAndPostType(shouldAdjustMapBounds = true) {
@@ -717,6 +731,7 @@ let markerHtml = `
             // Updating marker distance data.
             const distanceInMiles = this.calcLatLngDistanceMilesFromMapCenter(marker.getLatLng());
             marker.options.themeData.distanceInMiles = distanceInMiles;
+            marker.options.themeData.roadDistanceInMiles = null;
 
             // Check distance filter
             const passesDistanceFilter = distance === 0 || distanceInMiles <= distance;
@@ -761,6 +776,7 @@ let markerHtml = `
         }
 
         this.sortlistingEls(filteredLayers);
+        this.updateRoadDistances(filteredLayers);
     }
 
     calcLatLngDistanceMilesFromMapCenter(latLng) {
@@ -770,10 +786,95 @@ let markerHtml = `
         return distanceInMiles;
     }
 
+    /**
+     * Re-ranks the closest filtered listings by driving distance.
+     *
+     * The straight-line pass has already filtered and sorted everything; this
+     * fetches road distances for the nearest listings (the ones users act on)
+     * and re-sorts. On any failure the straight-line order simply remains.
+     */
+    async updateRoadDistances(filteredLayers) {
+        if (!this.roadDistancesEndpoint || !this.hasUserSearchLocation || !filteredLayers.length) {
+            return;
+        }
+
+        const requestId = ++this.roadDistanceRequestId;
+
+        const layers = [...filteredLayers]
+            .sort((a, b) => a.options.themeData.distanceInMiles - b.options.themeData.distanceInMiles)
+            .slice(0, this.ROAD_DISTANCE_LIMIT);
+
+        const destinations = layers.map((layer) => {
+            const latLng = layer.getLatLng();
+            return {lat: latLng.lat, lng: latLng.lng};
+        });
+
+        let results = null;
+
+        try {
+            const response = await fetch(this.roadDistancesEndpoint, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    origin: {
+                        lat: this.LMAP_DISTANCE_CENTER.lat,
+                        lng: this.LMAP_DISTANCE_CENTER.lng,
+                    },
+                    destinations,
+                }),
+            });
+
+            if (!response.ok) {
+                throw Error(response);
+            }
+
+            results = await response.json();
+        } catch (e) {
+            console.log(e);
+            return;
+        }
+
+        // Bail early - a newer search has superseded this request.
+        if (requestId !== this.roadDistanceRequestId) {
+            return;
+        }
+
+        if (!results || !Array.isArray(results.distances)) {
+            return;
+        }
+
+        layers.forEach((layer, index) => {
+            const result = results.distances[index];
+
+            if (result && Number.isFinite(result.meters)) {
+                layer.options.themeData.roadDistanceInMiles =
+                    Math.round(this.METERS_TO_MILES_RATIO * result.meters * 100) / 100;
+            }
+
+            this.updateMarkerDistanceMeta(layer);
+
+            if (layer.getPopup() && layer.isPopupOpen()) {
+                layer.setPopupContent(this.getMarkerTooltipHtml(layer));
+            }
+        });
+
+        this.sortlistingEls(this.filteredMarkersGroup.getLayers());
+    }
+
+    /**
+     * The distance used for ordering: road distance when known, otherwise
+     * straight-line distance.
+     */
+    getSortDistance(marker) {
+        const roadDistance = marker.options.themeData.roadDistanceInMiles;
+
+        return Number.isFinite(roadDistance) ? roadDistance : marker.options.themeData.distanceInMiles;
+    }
+
     sortlistingEls(filteredLayers) {
-        // Sort purely by distance from the search location, closest first.
+        // Sort by distance from the search location, closest first.
         filteredLayers.sort((a, b) => {
-            return a.options.themeData.distanceInMiles - b.options.themeData.distanceInMiles;
+            return this.getSortDistance(a) - this.getSortDistance(b);
         });
 
         // Order listings from closest > furthest away.
@@ -792,8 +893,11 @@ let markerHtml = `
             return;
         }
 
+        const roadMiles = marker.options.themeData.roadDistanceInMiles;
         const distMiles = marker.options.themeData.distanceInMiles
-        const distText = distMiles + ' miles'; // TODO: translate
+        const distText = Number.isFinite(roadMiles)
+            ? roadMiles + ' miles by road' // TODO: translate
+            : distMiles + ' miles'; // TODO: translate
 
         let distanceEl = listingMetaEl.querySelector('.map__listing__distance');
         if (!distanceEl) {
@@ -908,10 +1012,16 @@ let markerHtml = `
         const title = titleEl ? this.escapeHtml(titleEl.textContent.trim()) : '';
         const address = addressEl ? this.escapeHtml(addressEl.textContent.trim()) : '';
 
+        const roadDistanceInMiles = marker.options.themeData.roadDistanceInMiles;
         const distanceInMiles = marker.options.themeData.distanceInMiles;
-        const distance = Number.isFinite(distanceInMiles)
-            ? `${distanceInMiles} miles away`
-            : '';
+
+        let distance = '';
+
+        if (Number.isFinite(roadDistanceInMiles)) {
+            distance = `${roadDistanceInMiles} miles by road`;
+        } else if (Number.isFinite(distanceInMiles)) {
+            distance = `${distanceInMiles} miles away`;
+        }
 
         let phone = '';
         let phoneHref = '';
