@@ -34,16 +34,6 @@ body {
     }
 }
 
-// Scroll lock for the open mobile/tablet menu. Pinning the body with a negative
-// top (set inline to the saved scroll offset in SiteHeader.js) keeps the page
-// visually in place, avoiding the jump-to-top that plain overflow:hidden causes.
-body.is-scroll-locked {
-    position: fixed;
-    left: 0;
-    right: 0;
-    width: 100%;
-}
-
 .site-header {
     --site-header--logo-width: #{px-to-rem(120)};
 
@@ -350,6 +340,9 @@ body.is-scroll-locked {
                 max-height: calc(100dvh - var(--wp--admin-bar-height--sticky) - var(--site-header--height));
                 overflow-x: hidden;
                 overflow-y: auto;
+                // Keep scroll momentum inside the open menu from chaining to
+                // the page behind it.
+                overscroll-behavior: contain;
                 -webkit-overflow-scrolling: touch;
 
                 #{$this}__navigation {
