@@ -9,10 +9,6 @@
         </span>
     <?php } ?>
 
-    <?php if (!empty($args['phone'])) { ?>
-        <?= \Granola\Component::get('link', $args['phone']); ?>
-    <?php } ?>
-
     <?= \Granola\Component::get('element', [
         'el' => 'div',
         // nested 'element' for CSS :empty use.
