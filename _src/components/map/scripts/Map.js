@@ -528,9 +528,12 @@ let markerHtml = `
     }
 
     /**
-     * Tracks clicks on the popup "Directions" and "Contact us" buttons by
-     * pushing a custom event to the GTM dataLayer (which forwards to GA4).
-     * Delegated on the map root so it also catches dynamically-created popups.
+     * Tracks profile click-throughs by pushing a `map_listing_click` custom
+     * event to the GTM dataLayer (which forwards to GA4). Covers both the popup
+     * "Directions" / "Contact us" buttons and the equivalent "Contact <type>"
+     * link in the left sidebar, so the same action is measured wherever it is
+     * clicked. Delegated on the map root so it also catches popups created
+     * after page load.
      */
     initClickTracking() {
         if (!this.el) {
@@ -538,19 +541,43 @@ let markerHtml = `
         }
 
         this.el.addEventListener('click', (event) => {
+            // Popup buttons carry their own tracking data attributes.
             const button = event.target.closest('.map__marker-tooltip__btn');
 
-            if (!button || !this.el.contains(button)) {
+            if (button && this.el.contains(button)) {
+                this.pushListingClick(
+                    button.getAttribute('data-map-action') || '',
+                    button.getAttribute('data-map-listing-name') || '',
+                    button.getAttribute('data-map-listing-type') || ''
+                );
                 return;
             }
 
-            window.dataLayer = window.dataLayer || [];
-            window.dataLayer.push({
-                event: 'map_listing_click',
-                map_action: button.getAttribute('data-map-action') || '',
-                map_listing_name: button.getAttribute('data-map-listing-name') || '',
-                map_listing_type: button.getAttribute('data-map-listing-type') || '',
-            });
+            // Sidebar "Contact <type>" link: the same click-through as the
+            // popup "Contact us" button. Its name and type come from the
+            // listing row rather than the link itself.
+            const sidebarLink = event.target.closest('.map__listing__link');
+
+            if (sidebarLink && this.el.contains(sidebarLink)) {
+                const listingRow = sidebarLink.closest('.map__listing');
+                const titleEl = listingRow ? listingRow.querySelector('.map__listing__title') : null;
+
+                this.pushListingClick(
+                    'contact_sidebar',
+                    titleEl ? titleEl.textContent.trim() : '',
+                    listingRow ? (listingRow.dataset.mapItemPostType || '') : ''
+                );
+            }
+        });
+    }
+
+    pushListingClick(action, name, type) {
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({
+            event: 'map_listing_click',
+            map_action: action,
+            map_listing_name: name,
+            map_listing_type: type,
         });
     }
 
