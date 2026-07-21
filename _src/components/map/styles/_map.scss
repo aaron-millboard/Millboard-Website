@@ -131,6 +131,16 @@
             min-width: 0;
         }
 
+        // The grid layout for the tooltip inner is scoped to .leaflet-tooltip,
+        // which does not match this popup; lay the content out here so items
+        // stack vertically instead of flowing inline.
+        .map__marker-tooltip__inner {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: var(--space--2xs);
+        }
+
         .leaflet-popup-tip {
             background-color: var(--color--white);
         }

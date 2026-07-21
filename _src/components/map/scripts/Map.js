@@ -1055,7 +1055,6 @@ let markerHtml = `
 
         const titleEl = listingEl.querySelector('.map__listing__title');
         const addressEl = listingEl.querySelector('.map__listing__address');
-        const phoneEl = listingEl.querySelector('.map__listing__phone');
         const linkEl = listingEl.querySelector('.map__listing__link');
 
         const title = titleEl ? this.escapeHtml(titleEl.textContent.trim()) : '';
@@ -1070,25 +1069,6 @@ let markerHtml = `
             distance = `${roadDistanceInMiles} miles by road`;
         } else if (Number.isFinite(distanceInMiles)) {
             distance = `${distanceInMiles} miles away`;
-        }
-
-        let phone = '';
-        let phoneHref = '';
-
-        if (phoneEl) {
-            if (phoneEl.matches('a')) {
-                phone = this.escapeHtml(phoneEl.textContent.trim());
-                phoneHref = this.escapeHtml(phoneEl.getAttribute('href') || '');
-            } else {
-                const phoneAnchorEl = phoneEl.querySelector('a');
-
-                if (phoneAnchorEl) {
-                    phone = this.escapeHtml(phoneAnchorEl.textContent.trim());
-                    phoneHref = this.escapeHtml(phoneAnchorEl.getAttribute('href') || '');
-                } else {
-                    phone = this.escapeHtml(phoneEl.textContent.trim());
-                }
-            }
         }
 
         let linkHref = '';
@@ -1125,7 +1105,7 @@ let markerHtml = `
             }
         }
 
-        if (!title && !distance && !address && !phone && !safeLinkHref) {
+        if (!title && !distance && !address && !safeLinkHref) {
             return '';
         }
 
@@ -1143,19 +1123,19 @@ let markerHtml = `
             html += `<p class="map__marker-tooltip__address">${address}</p>`;
         }
 
-        if (phone && phoneHref) {
-            html += `<a class="map__marker-tooltip__phone" href="${phoneHref}">${phone}</a>`;
-        } else if (phone) {
-            html += `<p class="map__marker-tooltip__phone">${phone}</p>`;
+        // Actions. The phone number is intentionally not shown; "Contact us"
+        // routes visitors through the listing's own profile page instead.
+        html += '<div class="map__marker-tooltip__actions">';
+
+        if (safeLinkHref) {
+            html += `<a class="map__marker-tooltip__contact" href="${safeLinkHref}">Contact us</a>`; // TODO: translate
         }
 
         if (directionsHref) {
             html += `<a class="map__marker-tooltip__directions" href="${directionsHref}" target="_blank" rel="noopener noreferrer">Get directions</a>`; // TODO: translate
         }
 
-        // if (safeLinkHref) {
-        //     html += `<a class="map__marker-tooltip__link" href="${safeLinkHref}">${safeLinkText || 'View store'}</a>`;
-        // }
+        html += '</div>';
 
         html += '</div>';
 

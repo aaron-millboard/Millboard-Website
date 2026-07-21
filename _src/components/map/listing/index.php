@@ -9,12 +9,6 @@
         </span>
     <?php } ?>
 
-    <?php if (!empty($args['phone'])) { ?>
-        <span class="map__listing__phone">
-            <?= esc_html($args['phone']); ?>
-        </span>
-    <?php } ?>
-
     <?= \Granola\Component::get('element', [
         'el' => 'div',
         // nested 'element' for CSS :empty use.
