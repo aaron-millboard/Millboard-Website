@@ -380,6 +380,11 @@ class Map {
         });
         this.lmap.addLayer(tileLayer);
 
+        // Drop Leaflet's own "Leaflet" credit (not required). The MapTiler and
+        // OpenStreetMap credits stay, kept small and muted via CSS, because
+        // both licences require them to remain visible.
+        this.lmap.attributionControl.setPrefix(false);
+
         const lmapFullScreenControl = new FullScreen({
             position: 'topright',
         })

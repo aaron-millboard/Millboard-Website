@@ -23,8 +23,8 @@
     max-height: px-to-rem(600);
     background-color: var(--color--white);
 
-    // The CARTO Positron basemap is already brand-neutral, so no tile tinting
-    // (the old hue-rotate was compensating for the raw OpenStreetMap tiles).
+    // The MapTiler Streets v4 basemap is already brand-neutral, so no tile
+    // tinting (the old hue-rotate was compensating for the raw OSM tiles).
 
     &.leaflet-container {
         @include typestyle-base;
@@ -211,6 +211,26 @@
 
             .map__marker-tooltip__btn-prefix {
                 display: inline;
+            }
+        }
+    }
+
+    // MapTiler + OpenStreetMap credit. Both licences require it to stay
+    // visible, so it is kept but made small and muted so it does not compete
+    // with the map, markers or popups. ("Leaflet" prefix is removed in JS.)
+    .leaflet-control-attribution {
+        padding: 0 #{px-to-rem(6)};
+        background-color: rgba(255, 255, 255, 0.65);
+        color: #9a9498;
+        font-size: #{px-to-rem(10)};
+        line-height: 1.7;
+
+        a {
+            color: #8a8588;
+            text-decoration: none;
+
+            @include interact {
+                text-decoration: underline;
             }
         }
     }
