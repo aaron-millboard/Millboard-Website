@@ -102,6 +102,7 @@ class Map {
         this.initDistanceFilter();
         this.initPostTypeFilters();
         this.initTablist();
+        this.initClickTracking();
 
         this.applyLocationFromUrl();
 
@@ -507,6 +508,33 @@ let markerHtml = `
             // Leaving the box itself dismisses quickly; the longer grace only
             // applies to the marker->box hop (see the marker mouseout handler).
             popupEl.addEventListener('mouseleave', () => this.schedulePopupClose(popupMarker, 80));
+        });
+    }
+
+    /**
+     * Tracks clicks on the popup "Directions" and "Contact us" buttons by
+     * pushing a custom event to the GTM dataLayer (which forwards to GA4).
+     * Delegated on the map root so it also catches dynamically-created popups.
+     */
+    initClickTracking() {
+        if (!this.el) {
+            return;
+        }
+
+        this.el.addEventListener('click', (event) => {
+            const button = event.target.closest('.map__marker-tooltip__btn');
+
+            if (!button || !this.el.contains(button)) {
+                return;
+            }
+
+            window.dataLayer = window.dataLayer || [];
+            window.dataLayer.push({
+                event: 'map_listing_click',
+                map_action: button.getAttribute('data-map-action') || '',
+                map_listing_name: button.getAttribute('data-map-listing-name') || '',
+                map_listing_type: button.getAttribute('data-map-listing-type') || '',
+            });
         });
     }
 
@@ -1149,14 +1177,20 @@ let markerHtml = `
 
         // Actions. The phone number is intentionally not shown; "Contact us"
         // routes visitors through the listing's own profile page instead.
+        // Data attributes feed the click tracking (see initClickTracking).
+        const postType = marker.options.themeData && marker.options.themeData.postType
+            ? this.escapeHtml(marker.options.themeData.postType)
+            : '';
+        const trackAttrs = `data-map-listing-name="${title}" data-map-listing-type="${postType}"`;
+
         html += '<div class="map__marker-tooltip__actions">';
 
         if (directionsHref) {
-            html += `<a class="map__marker-tooltip__btn map__marker-tooltip__btn--primary" href="${directionsHref}" target="_blank" rel="noopener noreferrer">${TOOLTIP_ICONS.directions}<span class="map__marker-tooltip__btn-text"><span class="map__marker-tooltip__btn-prefix">Get </span>Directions</span></a>`; // TODO: translate
+            html += `<a class="map__marker-tooltip__btn map__marker-tooltip__btn--primary" href="${directionsHref}" target="_blank" rel="noopener noreferrer" data-map-action="directions" ${trackAttrs}>${TOOLTIP_ICONS.directions}<span class="map__marker-tooltip__btn-text"><span class="map__marker-tooltip__btn-prefix">Get </span>Directions</span></a>`; // TODO: translate
         }
 
         if (safeLinkHref) {
-            html += `<a class="map__marker-tooltip__btn map__marker-tooltip__btn--secondary" href="${safeLinkHref}">${TOOLTIP_ICONS.mail}<span class="map__marker-tooltip__btn-text">Contact us</span></a>`; // TODO: translate
+            html += `<a class="map__marker-tooltip__btn map__marker-tooltip__btn--secondary" href="${safeLinkHref}" data-map-action="contact" ${trackAttrs}>${TOOLTIP_ICONS.mail}<span class="map__marker-tooltip__btn-text">Contact us</span></a>`; // TODO: translate
         }
 
         html += '</div>';
