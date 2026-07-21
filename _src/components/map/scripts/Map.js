@@ -360,13 +360,13 @@ class Map {
         //     console.log(event.target.getCenter());
         // });
 
-        // MapTiler "OpenStreetMap" style: the classic OpenStreetMap (Mapnik)
-        // look, but served under a commercial licence so it is not throttled or
-        // blocked like the public openstreetmap.org tile server would be. The
-        // key below is a public client key, locked to Millboard domains in the
-        // MapTiler dashboard, so it is safe to ship in front-end code.
+        // MapTiler "Streets v4" style: a clean, modern street basemap served
+        // under a commercial licence, so it is not throttled or blocked like
+        // the public openstreetmap.org tile server would be. The key below is a
+        // public client key, locked to Millboard domains in the MapTiler
+        // dashboard, so it is safe to ship in front-end code.
         const mapTilerKey = 'WgIFVRjMxgUoVuVLE9Ep';
-        const mapTileProvider = `https://api.maptiler.com/maps/openstreetmap/{z}/{x}/{y}.jpg?key=${mapTilerKey}`;
+        const mapTileProvider = `https://api.maptiler.com/maps/streets-v4/{z}/{x}/{y}.png?key=${mapTilerKey}`;
         const tileLayer = L.tileLayer(mapTileProvider, {
             // MapTiler serves dense 512px tiles, so declare the tile size and
             // offset the zoom by one. These tiles already look crisp on
