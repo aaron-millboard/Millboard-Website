@@ -6,6 +6,11 @@
 .map {
     $this: &;
 
+    // Shared height for the search box, search button and distance dropdown so
+    // they line up at a standard form-control size instead of the oversized
+    // 66px the search used to force.
+    --map-control-height: #{px-to-rem(48)};
+
     display: grid;
     gap: var(--space--xl);
 
@@ -47,7 +52,7 @@
         &__input-wrapper {
             display: grid;
             max-width: px-to-rem(400);
-            grid-template-columns: minmax(0, 1fr) px-to-rem(66);
+            grid-template-columns: minmax(0, 1fr) var(--map-control-height);
 
             + #{$this}__distance {
                 @include mq(medium) {
@@ -65,13 +70,14 @@
             --input--border-color--focus: black;
             --input--background-color: transparent;
 
+            min-height: var(--map-control-height);
             border-right: 0;
             line-height: 1;
         }
 
         &__submit {
-            width: px-to-rem(66);
-            height: px-to-rem(66);
+            width: var(--map-control-height);
+            height: var(--map-control-height);
 
             &::after {
                 --mask-icon--size: 24px;
@@ -131,6 +137,8 @@
 
         &__input {
             --input--background-color: transparent;
+
+            min-height: var(--map-control-height);
 
             @include mq($until: medium) {
                 max-width: min-content;
