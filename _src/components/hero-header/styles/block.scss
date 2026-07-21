@@ -54,7 +54,10 @@
         justify-content: center;
         color: var(--color--white);
 
-        @media (hover: hover) {
+        // Hide only on true mouse devices. Keep it visible on touch and hybrid
+        // devices (e.g. iPads, which report `hover: hover`) where hover-to-play
+        // is unavailable or unreliable.
+        @media (hover: hover) and (pointer: fine) {
             display: none;
         }
 
