@@ -202,12 +202,6 @@ export default class SiteHeader {
 
         this.el.classList.add('is-open');
 
-        // Lock page scroll only for the mobile/tablet overlay menu. On desktop
-        // the burger just re-expands the header, so no lock is needed there.
-        if (this.isMobileMenu()) {
-            this.lockScroll();
-        }
-
         this.headerTogglerEls.forEach((toggle) => {
             toggle.setAttribute('aria-expanded', 'true');
         });
@@ -224,8 +218,6 @@ export default class SiteHeader {
 
         // close the menu
         this.el.classList.remove('is-open');
-
-        this.unlockScroll();
 
         if (this.isBurgerModeActive()) {
             this.headerTogglerEls.forEach((toggle) => {
@@ -319,38 +311,6 @@ export default class SiteHeader {
 
     isBurgerModeActive() {
         return isElementVisible(this.burgerEl);
-    }
-
-    /**
-     * True below the site-header breakpoint, where the burger opens the
-     * full-screen overlay menu (as opposed to the desktop re-expand, where the
-     * burger is also visible once the header has collapsed on scroll).
-     */
-    isMobileMenu() {
-        return !window.matchMedia('(min-width: 1150px)').matches;
-    }
-
-    /**
-     * Lock page scroll while keeping the current position. Plain overflow:hidden
-     * collapses the scroll area and snaps a scrolled page to the top, so instead
-     * we save the offset and pin the body there; unlockScroll restores it.
-     */
-    lockScroll() {
-        this.lockedScrollY = window.scrollY || 0;
-        this.body.style.top = `-${this.lockedScrollY}px`;
-        document.documentElement.classList.add('no-scroll');
-        this.body.classList.add('no-scroll', 'is-scroll-locked');
-    }
-
-    unlockScroll() {
-        document.documentElement.classList.remove('no-scroll');
-        this.body.classList.remove('no-scroll', 'is-scroll-locked');
-        this.body.style.top = '';
-
-        if (this.lockedScrollY != null) {
-            window.scrollTo(0, this.lockedScrollY);
-            this.lockedScrollY = null;
-        }
     }
 
     /**
