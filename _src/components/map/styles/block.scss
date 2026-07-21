@@ -365,110 +365,123 @@
     }
 
     &__marker-tooltip {
-        &__title {
-            @include typestyle-xlarge;
-
-            margin: 0;
-            font-weight: var(--type--2--font-weight);
-            letter-spacing: 0;
+        &__icon {
+            flex: none;
         }
 
-        &__meta {
-            order: -1;
+        // Badge, e.g. "Premier Stockist".
+        &__badge {
             display: flex;
-            flex-flow: row wrap;
             align-items: center;
-            gap: var(--space--3xs);
+            gap: #{px-to-rem(8)};
+            margin: 0 0 #{px-to-rem(16)};
+            font-weight: 700;
+            font-size: #{px-to-rem(11)};
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--color--olivegreen);
+        }
 
-            &:not(:empty) {
-                margin-bottom: var(--space--s);
-            }
+        &__badge-dot {
+            flex: none;
+            width: #{px-to-rem(6)};
+            height: #{px-to-rem(6)};
+            border-radius: 50%;
+            background: var(--color--olivegreen);
+        }
 
-            .g-tag {
-                border-color: var(--color--brand-4);
-            }
+        &__title {
+            margin: 0 0 #{px-to-rem(14)};
+            font-weight: 300;
+            font-size: #{px-to-rem(22)};
+            line-height: 1.15;
+            letter-spacing: 0.04em;
+            text-transform: none;
+            color: var(--mb-tt-ink);
+            -webkit-text-stroke: 0.2px currentColor;
         }
 
         &__distance {
-            @include typestyle-small;
+            display: flex;
+            align-items: center;
+            gap: #{px-to-rem(7)};
+            margin: 0 0 #{px-to-rem(18)};
+            font-weight: 700;
+            font-size: #{px-to-rem(11)};
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--mb-tt-ink);
 
-            font-weight: var(--type--2--font-weight);
+            .map__marker-tooltip__icon {
+                color: var(--color--olivegreen);
+            }
         }
 
-        &__phone,
-        &__address {
-            @include typestyle-small;
+        &__divider {
+            height: 1px;
+            margin: 0 0 #{px-to-rem(18)};
+            border: 0;
+            background: var(--mb-tt-rule);
+        }
 
-            margin-top: var(--space--3xs);
-            color: var(--link--color);
+        &__address {
+            margin: 0 0 #{px-to-rem(22)};
+            font-weight: 300;
+            font-size: #{px-to-rem(14)};
+            line-height: 1.65;
+            color: var(--mb-tt-muted);
         }
 
         &__actions {
             display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            gap: var(--space--xs);
-            margin-top: var(--space--2xs);
+            flex-wrap: wrap;
+            gap: #{px-to-rem(10)};
         }
 
-        &__contact {
-            @include typestyle-small;
-
-            font-weight: var(--type--2--font-weight);
-            color: var(--link--color);
-            text-decoration: underline;
-
-            @include interact {
-                text-decoration: none;
-            }
-        }
-
-        &__directions {
-            @include typestyle-small;
-
+        // Buttons flex to share the row; when the box is too narrow for both,
+        // they wrap and each grows to full width (stacked).
+        &__btn {
+            flex: 1 1 #{px-to-rem(130)};
             display: inline-flex;
             align-items: center;
-            gap: var(--space--2xs);
-            padding: var(--space--2xs) var(--space--s);
-            border-radius: var(--border-radius--m);
-            background-color: var(--color--brand-1);
-            color: var(--color--white);
-            font-weight: var(--type--2--font-weight);
+            justify-content: center;
+            gap: #{px-to-rem(7)};
+            min-height: #{px-to-rem(44)};
+            padding: 0 #{px-to-rem(12)};
+            border-radius: #{px-to-rem(2)};
+            font-weight: 700;
+            font-size: #{px-to-rem(11)};
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
             text-decoration: none;
+            transition: opacity 240ms ease, border-color 240ms ease, color 240ms ease;
+        }
+
+        &__btn--primary {
+            background: var(--mb-tt-ink);
+            color: var(--color--springwood);
+            border: 1px solid var(--mb-tt-ink);
 
             @include interact {
-                background-color: var(--color--wenge);
-                color: var(--color--white);
-                text-decoration: none;
+                opacity: 0.92;
+                color: var(--color--springwood);
             }
         }
 
-        &__link {
-            @include typestyle-h6;
-            @include mask-icon;
-
-            display: inline-flex;
-            gap: var(--space--2xs);
-            align-items: center;
-            text-decoration: none;
-            margin-top: var(--space--s);
+        &__btn--secondary {
+            background: transparent;
+            color: var(--mb-tt-ink);
+            border: 1px solid var(--mb-tt-rule-strong);
 
             @include interact {
-                text-decoration: none;
-            }
-
-            &::after {
-                display: block;
-                width: #{px-to-rem(24)};
-                height: #{px-to-rem(24)};
-                content: '';
-                mask-image: url(#{asset-path('images/icons/chevron-right.svg')});
-                mask-size: #{px-to-rem(24)};
+                border-color: var(--color--olivegreen);
+                color: var(--color--olivegreen);
             }
         }
 
-        a {
-            color: var(--link--color);
+        // "Get " prefix on the directions button: shown only on small phones.
+        &__btn-prefix {
+            display: none;
         }
     }
 }

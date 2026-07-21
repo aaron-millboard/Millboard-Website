@@ -3,6 +3,14 @@ import L from 'leaflet/dist/leaflet.js';
 import { FullScreen } from 'leaflet.fullscreen';
 import isElementVisible from '../../../scripts/helpers/isElementVisible.js';
 
+// Inline SVGs for the marker popup. Stroke uses currentColor so each icon
+// inherits the colour of the element it sits in.
+const TOOLTIP_ICONS = {
+    pin: '<svg class="map__marker-tooltip__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path><circle cx="12" cy="10" r="3"></circle></svg>',
+    directions: '<svg class="map__marker-tooltip__icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="3 11 22 2 13 21 11 13 3 11"></polygon></svg>',
+    mail: '<svg class="map__marker-tooltip__icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16"></rect><path d="m2 7 10 6 10-6"></path></svg>',
+};
+
 // https://leafletjs.com/reference.html
 class Map {
     constructor(element) {
@@ -320,7 +328,8 @@ class Map {
         // https://leafletjs.com/reference.html#map-option
         this.lmap = L.map(mapContainerNode, {
             center: this.LMAP_INITIAL_CENTER,
-            attributionControl: false,
+            // CARTO tiles require visible attribution; keep it (small, bottom-right).
+            attributionControl: true,
             intertia: false,
             maxBoundsViscosity: 1.0,
             zoom: this.LMAP_INITIAL_ZOOM,
@@ -348,10 +357,13 @@ class Map {
         //     console.log(event.target.getCenter());
         // });
 
-        const mapTileProvider = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+        // CARTO Positron: a clean, muted basemap that reads far less busy than
+        // the default OpenStreetMap tiles and sits better under the brand UI.
+        const mapTileProvider = 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
         const tileLayer = L.tileLayer(mapTileProvider, {
-            maxZoom: 19,
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxZoom: 20,
+            subdomains: 'abcd',
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
         });
         this.lmap.addLayer(tileLayer);
 
@@ -437,7 +449,7 @@ let markerHtml = `
                     className: 'map__marker-tooltip',
                     offset: [0, -this.LMAP_MARKER_HEIGHT],
                     autoPan: true,
-                    closeButton: false,
+                    closeButton: true,
                 });
 
                 // Leaflet's bindPopup auto-attaches a 'click' listener to open the
@@ -491,7 +503,9 @@ let markerHtml = `
             }
 
             popupEl.addEventListener('mouseenter', () => this.cancelScheduledPopupClose());
-            popupEl.addEventListener('mouseleave', () => this.schedulePopupClose(popupMarker));
+            // Leaving the box itself dismisses quickly; the longer grace only
+            // applies to the marker->box hop (see the marker mouseout handler).
+            popupEl.addEventListener('mouseleave', () => this.schedulePopupClose(popupMarker, 80));
         });
     }
 
@@ -502,7 +516,7 @@ let markerHtml = `
         }
     }
 
-    schedulePopupClose(marker) {
+    schedulePopupClose(marker, delay = 150) {
         this.cancelScheduledPopupClose();
 
         this._popupCloseTimer = setTimeout(() => {
@@ -511,7 +525,7 @@ let markerHtml = `
             if (marker) {
                 marker.closePopup();
             }
-        }, 250);
+        }, delay);
     }
 
     initListingSelectionSync() {
@@ -1056,9 +1070,11 @@ let markerHtml = `
         const titleEl = listingEl.querySelector('.map__listing__title');
         const addressEl = listingEl.querySelector('.map__listing__address');
         const linkEl = listingEl.querySelector('.map__listing__link');
+        const tagEl = listingEl.querySelector('.map__listing__meta .g-tag');
 
         const title = titleEl ? this.escapeHtml(titleEl.textContent.trim()) : '';
         const address = addressEl ? this.escapeHtml(addressEl.textContent.trim()) : '';
+        const tag = tagEl ? this.escapeHtml(tagEl.textContent.trim()) : '';
 
         const roadDistanceInMiles = marker.options.themeData.roadDistanceInMiles;
         const distanceInMiles = marker.options.themeData.distanceInMiles;
@@ -1111,13 +1127,20 @@ let markerHtml = `
 
         let html = '<div class="map__marker-tooltip__inner">';
 
+        // Badge (e.g. "Premier Stockist") from the listing's taxonomy tag.
+        if (tag) {
+            html += `<p class="map__marker-tooltip__badge"><span class="map__marker-tooltip__badge-dot" aria-hidden="true"></span>${tag}</p>`;
+        }
+
         if (title) {
             html += `<h4 class="map__marker-tooltip__title">${title}</h4>`;
         }
 
         if (distance) {
-            html += `<p class="map__marker-tooltip__distance">${distance}</p>`;
+            html += `<p class="map__marker-tooltip__distance">${TOOLTIP_ICONS.pin}<span>${distance}</span></p>`;
         }
+
+        html += '<hr class="map__marker-tooltip__divider" aria-hidden="true">';
 
         if (address) {
             html += `<p class="map__marker-tooltip__address">${address}</p>`;
@@ -1127,12 +1150,12 @@ let markerHtml = `
         // routes visitors through the listing's own profile page instead.
         html += '<div class="map__marker-tooltip__actions">';
 
-        if (safeLinkHref) {
-            html += `<a class="map__marker-tooltip__contact" href="${safeLinkHref}">Contact us</a>`; // TODO: translate
+        if (directionsHref) {
+            html += `<a class="map__marker-tooltip__btn map__marker-tooltip__btn--primary" href="${directionsHref}" target="_blank" rel="noopener noreferrer">${TOOLTIP_ICONS.directions}<span class="map__marker-tooltip__btn-text"><span class="map__marker-tooltip__btn-prefix">Get </span>Directions</span></a>`; // TODO: translate
         }
 
-        if (directionsHref) {
-            html += `<a class="map__marker-tooltip__directions" href="${directionsHref}" target="_blank" rel="noopener noreferrer">Get directions</a>`; // TODO: translate
+        if (safeLinkHref) {
+            html += `<a class="map__marker-tooltip__btn map__marker-tooltip__btn--secondary" href="${safeLinkHref}">${TOOLTIP_ICONS.mail}<span class="map__marker-tooltip__btn-text">Contact us</span></a>`; // TODO: translate
         }
 
         html += '</div>';

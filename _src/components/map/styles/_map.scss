@@ -1,6 +1,18 @@
 @import '../../../core';
 @import './variables.scss';
 
+@keyframes mbTooltipPop {
+    from {
+        opacity: 0;
+        transform: translateY(#{px-to-rem(7)});
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 /* stylelint-disable selector-max-compound-selectors -- We need this specificity to override the LeafletJS styles. */
 /* stylelint-disable selector-max-id -- We need this specificity to override the LeafletJS styles. */
 #leaflet-map-container {
@@ -11,9 +23,8 @@
     max-height: px-to-rem(600);
     background-color: var(--color--white);
 
-    .leaflet-tile-pane {
-        filter: hue-rotate(367deg);
-    }
+    // The CARTO Positron basemap is already brand-neutral, so no tile tinting
+    // (the old hue-rotate was compensating for the raw OpenStreetMap tiles).
 
     &.leaflet-container {
         @include typestyle-base;
@@ -112,18 +123,26 @@
     }
 
     .leaflet-popup.map__marker-tooltip {
-        margin-bottom: #{px-to-rem(8)};
+        // Brand-guide 2025 values the theme has no exact token for. Set on the
+        // popup so they cascade to the content in block.scss.
+        --mb-tt-ink: #2f292e;         // Charcoal Black — titles, body, primary button.
+        --mb-tt-muted: #6e6a6c;       // Soft secondary text (address).
+        --mb-tt-rule: rgba(47, 41, 46, 0.18);        // Hairline divider.
+        --mb-tt-rule-strong: rgba(47, 41, 46, 0.4);  // Outline-button border.
+        --mb-tt-hairline: rgba(47, 41, 46, 0.1);     // Card / tip border.
+
+        margin-bottom: #{px-to-rem(10)};
 
         .leaflet-popup-content-wrapper {
-            width: min(#{px-to-rem(320)}, calc(100vw - #{px-to-rem(48)}));
+            width: min(#{px-to-rem(360)}, calc(100vw - #{px-to-rem(48)}));
             max-width: 100%;
-            padding: var(--space--m) var(--space--m) var(--space--s);
-            border-radius: var(--border-radius--m);
-            border: 1px solid hsla(var(--color--brand-1--hsl), 16%);
-            background-color: var(--color--white);
-            box-shadow: 0 #{px-to-rem(12)} #{px-to-rem(26)} hsla(var(--color--black--hsl), 16%);
-            color: var(--color--charcoal);
-            line-height: 1.45;
+            padding: #{px-to-rem(26)} #{px-to-rem(26)} #{px-to-rem(24)};
+            border-radius: #{px-to-rem(4)};
+            border: 1px solid var(--mb-tt-hairline);
+            background-color: var(--color--springwood);
+            box-shadow: 0 #{px-to-rem(12)} #{px-to-rem(40)} rgba(47, 41, 46, 0.14);
+            color: var(--mb-tt-ink);
+            line-height: 1.55;
         }
 
         .leaflet-popup-content {
@@ -131,18 +150,49 @@
             min-width: 0;
         }
 
-        // The grid layout for the tooltip inner is scoped to .leaflet-tooltip,
-        // which does not match this popup; lay the content out here so items
-        // stack vertically instead of flowing inline.
         .map__marker-tooltip__inner {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            gap: var(--space--2xs);
+            display: block;
+            animation: mbTooltipPop 320ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
         }
 
+        // Close button (Leaflet default "x", restyled to the design).
+        .leaflet-popup-close-button {
+            top: #{px-to-rem(15)};
+            right: #{px-to-rem(15)};
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: #{px-to-rem(28)};
+            height: #{px-to-rem(28)};
+            padding: 0;
+            color: #9a9498;
+            font-size: #{px-to-rem(20)};
+            line-height: 1;
+            transition: color 240ms ease;
+
+            @include interact {
+                color: var(--mb-tt-ink);
+                background: transparent;
+            }
+        }
+
+        // The tip (pointer) below the box.
         .leaflet-popup-tip {
-            background-color: var(--color--white);
+            background-color: var(--color--springwood);
+            border: 1px solid var(--mb-tt-hairline);
+            border-top: 0;
+            border-left: 0;
+        }
+
+        // Stack the buttons full-width and show the "Get " prefix on small phones.
+        @include mq($until: xsmall) {
+            .map__marker-tooltip__btn {
+                flex-basis: 100%;
+            }
+
+            .map__marker-tooltip__btn-prefix {
+                display: inline;
+            }
         }
     }
 
