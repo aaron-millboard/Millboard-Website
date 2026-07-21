@@ -80,33 +80,30 @@
         }
     }
 
-    &__strapline-wrapper-outer {
-        z-index: $block-internal-z-index + 5;
-        background-color: black;
-        mix-blend-mode: difference;
-        pointer-events: none; // required for good ::selection styles.
-        position: relative;
-
-        & + & {
-            pointer-events: auto; // required for good ::selection styles.
-            mix-blend-mode: lighten;
-        }
+    // "Video through text" is done with an SVG luminance mask (see index.php)
+    // rather than mix-blend-mode, which produced jagged, blue-fringed edges.
+    &__strapline-wrapper {
+        z-index: $block-internal-z-index + 5; // Sit above the video / poster.
     }
 
-    &__strapline-wrapper-inner {
-        background-color: var(--color--background);
-        mix-blend-mode: difference;
+    // The cream sheet that covers the video; the mask punches the text out of
+    // it so the video shows through the letters.
+    &__strapline-cutout-fill {
+        fill: var(--color--background);
     }
 
-    &__strapline {
-        display: block;
-        margin: 0;
-        color: black;
+    // Inside the mask: white keeps the sheet, black (the text) punches a hole.
+    &__strapline-cutout-sheet {
+        fill: #fff;
+    }
 
-        &::selection {
-            color: black;
-            background-color: white;
-        }
+    &__strapline-cutout-text {
+        fill: #000;
+        font-family: var(--type--1--font-family);
+        font-weight: var(--type--1--font-weight);
+        font-size: rfs(30, 102);
+        letter-spacing: 0.015em;
+        text-transform: none;
     }
 
     &__header {
