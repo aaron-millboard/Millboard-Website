@@ -89,19 +89,25 @@ body {
             z-index: $internal-z-index * 4;
         }
 
-        .scrolling-down.scroll-valid &.is-open {
-            --site-header--height: #{px-to-rem(160)};
-            --site-header--logo-width: #{px-to-rem(210)};
+        // Opening the burger while the header is collapsed drops the nav down
+        // as an overlay below the (still-compact) header. Growing the header
+        // instead would push the page content down and cause a jump.
+        .scrolling-down.scroll-valid &.is-open #{$this}__bottom {
+            position: absolute;
+            top: var(--site-header--height);
+            left: 0;
+            right: 0;
+            z-index: $internal-z-index;
+            width: 100%;
+            padding-block: var(--space--m);
+            background-color: var(--color--white);
+            box-shadow: var(--box-shadow--1);
         }
 
-        .scrolling-down.scroll-valid &.is-open &__navigation {
+        .scrolling-down.scroll-valid &.is-open #{$this}__navigation {
             translate: 0;
             visibility: visible;
             z-index: auto;
-        }
-
-        .scrolling-down.scroll-valid &.is-open &__logo {
-            translate: 0;
         }
     }
 
