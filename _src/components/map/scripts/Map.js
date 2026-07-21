@@ -362,6 +362,8 @@ class Map {
         const tileLayer = L.tileLayer(mapTileProvider, {
             maxZoom: 20,
             subdomains: 'abcd',
+            // Load @2x tiles on high-DPI screens so the map stays crisp.
+            detectRetina: true,
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
         });
         this.lmap.addLayer(tileLayer);
