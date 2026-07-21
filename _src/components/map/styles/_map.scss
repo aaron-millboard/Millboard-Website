@@ -184,6 +184,25 @@
             border-left: 0;
         }
 
+        // Leaflet sets `.leaflet-container a { color: #0078A8 }` (blue), which
+        // outranks the button colours in block.scss and tints the text + the
+        // currentColor icons. Re-assert them here (higher specificity beats it).
+        .map__marker-tooltip__btn--primary {
+            color: var(--color--springwood);
+
+            @include interact {
+                color: var(--color--springwood);
+            }
+        }
+
+        .map__marker-tooltip__btn--secondary {
+            color: var(--mb-tt-ink);
+
+            @include interact {
+                color: var(--color--olivegreen);
+            }
+        }
+
         // Stack the buttons full-width and show the "Get " prefix on small phones.
         @include mq($until: xsmall) {
             .map__marker-tooltip__btn {
