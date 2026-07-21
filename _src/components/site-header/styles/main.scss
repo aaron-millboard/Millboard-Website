@@ -77,40 +77,6 @@ body {
         }
     }
 
-    // When the header collapses on scroll, the main nav slides out of view,
-    // leaving no obvious menu. Surface the burger as a shortcut, and let
-    // opening it bring the full header (and nav) back into view.
-    @include mq('site-header') {
-        .scrolling-down.scroll-valid &__burger {
-            display: flex;
-            position: absolute;
-            top: 0;
-            right: px-to-rem(160);
-            z-index: $internal-z-index * 4;
-        }
-
-        // Opening the burger while the header is collapsed drops the nav down
-        // as an overlay below the (still-compact) header. Growing the header
-        // instead would push the page content down and cause a jump.
-        .scrolling-down.scroll-valid &.is-open #{$this}__bottom {
-            position: absolute;
-            top: var(--site-header--height);
-            left: 0;
-            right: 0;
-            z-index: $internal-z-index;
-            width: 100%;
-            padding-block: var(--space--m);
-            background-color: var(--color--white);
-            box-shadow: var(--box-shadow--1);
-        }
-
-        .scrolling-down.scroll-valid &.is-open #{$this}__navigation {
-            translate: 0;
-            visibility: visible;
-            z-index: auto;
-        }
-    }
-
     @include mq($until: 'site-header') {
         max-width: 100%;
         background-color: var(--color--brand-2);
