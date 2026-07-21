@@ -319,8 +319,12 @@
     }
 
     &__marker-tooltip {
+        // Explicit size: the global `svg { width: 100% }` reset would otherwise
+        // blow these inline icons up to fill their flex container.
         &__icon {
             flex: none;
+            width: #{px-to-rem(15)};
+            height: #{px-to-rem(15)};
         }
 
         // Badge, e.g. "Premier Stockist".
@@ -367,6 +371,8 @@
             color: var(--mb-tt-ink);
 
             .map__marker-tooltip__icon {
+                width: #{px-to-rem(16)};
+                height: #{px-to-rem(16)};
                 color: var(--color--olivegreen);
             }
         }
