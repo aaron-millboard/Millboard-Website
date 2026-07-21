@@ -329,7 +329,10 @@ class Map {
         // https://leafletjs.com/reference.html#map-option
         this.lmap = L.map(mapContainerNode, {
             center: this.LMAP_INITIAL_CENTER,
-            attributionControl: false,
+            // MapTiler's free/commercial tier requires the MapTiler + OSM
+            // credit to stay visible, so keep Leaflet's (compact) attribution
+            // control enabled. Removing it needs a paid white-label add-on.
+            attributionControl: true,
             intertia: false,
             maxBoundsViscosity: 1.0,
             zoom: this.LMAP_INITIAL_ZOOM,
@@ -357,15 +360,23 @@ class Map {
         //     console.log(event.target.getCenter());
         // });
 
-        // CARTO Voyager: a clean but warmer, more detailed basemap than the raw
-        // OpenStreetMap tiles, without the washed-out look of Positron.
-        const mapTileProvider = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+        // MapTiler "OpenStreetMap" style: the classic OpenStreetMap (Mapnik)
+        // look, but served under a commercial licence so it is not throttled or
+        // blocked like the public openstreetmap.org tile server would be. The
+        // key below is a public client key, locked to Millboard domains in the
+        // MapTiler dashboard, so it is safe to ship in front-end code.
+        const mapTilerKey = 'WgIFVRjMxgUoVuVLE9Ep';
+        const mapTileProvider = `https://api.maptiler.com/maps/openstreetmap/{z}/{x}/{y}.jpg?key=${mapTilerKey}`;
         const tileLayer = L.tileLayer(mapTileProvider, {
+            // MapTiler serves dense 512px tiles, so declare the tile size and
+            // offset the zoom by one. These tiles already look crisp on
+            // high-DPI screens, so detectRetina is not needed.
+            tileSize: 512,
+            zoomOffset: -1,
+            minZoom: 1,
             maxZoom: 20,
-            subdomains: 'abcd',
-            // Load @2x tiles on high-DPI screens so the map stays crisp.
-            detectRetina: true,
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+            crossOrigin: true,
+            attribution: '<a href="https://www.maptiler.com/copyright/" target="_blank" rel="noopener">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">&copy; OpenStreetMap contributors</a>',
         });
         this.lmap.addLayer(tileLayer);
 
