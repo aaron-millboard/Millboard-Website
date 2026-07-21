@@ -117,7 +117,10 @@ body {
             height: var(--site-header--height);
             transition: height var(--site-header--menu--duration) 0;
             background-color: #ffffff;
-            position: fixed;
+            // Stay sticky (do not switch to fixed) on open. Going fixed removes
+            // the header's reserved space from the layout, shifting the whole
+            // page up and causing the jump when the menu is opened while
+            // scrolled. Sticky keeps it pinned to the top without that shift.
 
             #{$this}__inner {
                 height: max-content;
