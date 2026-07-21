@@ -101,6 +101,59 @@ body {
         }
     }
 
+    // Tablet (medium up to the site-header breakpoint): put the toggle, logo
+    // and buttons on a single line (toggle left, logo centred, buttons right)
+    // instead of stacking the logo under the toggle. Phones (below medium)
+    // keep the stacked layout; desktop (site-header and up) is unchanged.
+    @include mq($from: 'medium', $until: 'site-header') {
+        #{$this}__inner {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-content: center;
+            align-items: center;
+            column-gap: var(--site-header--spacing);
+            padding-right: var(--space--container-padding);
+            padding-left: var(--space--container-padding);
+        }
+
+        #{$this}__top-navigation {
+            grid-row: 1;
+            grid-column: 1;
+            justify-self: start;
+
+            .menu-list {
+                padding-right: 0;
+                padding-left: 0;
+            }
+        }
+
+        // Unwrap __top so the logo and buttons become direct grid items and can
+        // occupy their own columns.
+        #{$this}__top {
+            display: contents;
+        }
+
+        #{$this}__logo {
+            grid-row: 1;
+            grid-column: 2;
+            justify-self: center;
+            margin: 0;
+        }
+
+        #{$this}__buttons {
+            grid-row: 1;
+            grid-column: 3;
+            justify-self: end;
+            margin-left: 0;
+        }
+
+        // Keep the (hidden) mobile dropdown menu out of the single-line grid
+        // flow; it re-positions itself when opened (see the .is-open rules).
+        #{$this}__bottom {
+            position: absolute;
+        }
+    }
+
     &__inner {
         @include align-width--l;
 
