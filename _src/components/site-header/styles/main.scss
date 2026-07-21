@@ -119,6 +119,14 @@ body {
             padding-left: var(--space--container-padding);
         }
 
+        // Opening the menu applies the mobile `height: max-content` to the
+        // inner, which shrinks it and (with align-content: center) shifts the
+        // logo and toggle up ~29px. Keep the row full-height when open so the
+        // header contents stay put.
+        &.is-open #{$this}__inner {
+            height: 100%;
+        }
+
         #{$this}__top-navigation {
             grid-row: 1;
             grid-column: 1;
