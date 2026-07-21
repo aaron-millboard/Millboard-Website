@@ -202,7 +202,11 @@ export default class SiteHeader {
 
         this.el.classList.add('is-open');
 
-        if (this.isBurgerModeActive()) {
+        // Only lock page scroll for the full-screen mobile/tablet overlay menu.
+        // On desktop the burger just re-expands the header, so locking (which
+        // sets overflow:hidden on the root and snaps the page to the top) would
+        // cause a visible jump.
+        if (this.isMobileMenu()) {
             document.documentElement.classList.add('no-scroll');
             this.body.classList.add('no-scroll');
         }
@@ -213,8 +217,9 @@ export default class SiteHeader {
 
         SiteHeader.setTabIndex(this.headerTogglerEls, 0);
 
-        if (this.mainMenuEl) {
-            first.focus();
+        // preventScroll so focusing the first link never scrolls the page.
+        if (this.mainMenuEl && first) {
+            first.focus({ preventScroll: true });
         }
     }
 
@@ -238,8 +243,8 @@ export default class SiteHeader {
             // }
 
             if (initial !== true) {
-                // Focus the burger
-                this.burgerEl.focus();
+                // Focus the burger (preventScroll so it never jumps the page).
+                this.burgerEl.focus({ preventScroll: true });
             }
         }
     }
@@ -318,6 +323,15 @@ export default class SiteHeader {
 
     isBurgerModeActive() {
         return isElementVisible(this.burgerEl);
+    }
+
+    /**
+     * True below the site-header breakpoint, where the burger opens the
+     * full-screen overlay menu (as opposed to the desktop re-expand, where the
+     * burger is also visible once the header has collapsed on scroll).
+     */
+    isMobileMenu() {
+        return !window.matchMedia('(min-width: 1150px)').matches;
     }
 
     /**
