@@ -239,17 +239,30 @@
     &__listing {
         display: grid;
         gap: 0;
-        padding-bottom: var(--space--l);
+        padding: var(--space--m) var(--space--2xs);
         justify-items: start;
+        cursor: pointer;
+        // Reserve the accent-bar width up front (transparent) so the green bar
+        // that appears on hover/selected does not nudge the content sideways.
+        // Putting it on the padded box also makes the bar run the full height
+        // of the row, top to bottom, rather than just the inner content.
+        border-inline-start: 4px solid transparent;
+        transition: background-color 200ms ease, border-color 200ms ease;
+
+        // Darker cream background + full-height green accent bar when the row is
+        // hovered or its map marker is selected, so the active listing is clear.
+        @include interact {
+            background-color: var(--color--brand-1);
+            border-inline-start-color: var(--color--brand-4);
+        }
 
         &.selected {
-            border-inline-start: 4px solid var(--color--brand-4);
-            padding-inline-start: var(--space--2xs);
+            background-color: var(--color--brand-1);
+            border-inline-start-color: var(--color--brand-4);
         }
 
         &:not(:last-child) {
             border-bottom: 1px solid var(--color--brand-1);
-            margin-bottom: var(--space--l);
         }
 
         &[hidden] {
