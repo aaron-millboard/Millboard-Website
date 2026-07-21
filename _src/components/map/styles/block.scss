@@ -357,6 +357,28 @@
             color: var(--link--color);
         }
 
+        &__directions {
+            @include typestyle-small;
+
+            display: inline-flex;
+            align-items: center;
+            justify-self: start;
+            gap: var(--space--2xs);
+            margin-top: var(--space--2xs);
+            padding: var(--space--2xs) var(--space--s);
+            border-radius: var(--border-radius--m);
+            background-color: var(--color--brand-1);
+            color: var(--color--white);
+            font-weight: var(--type--2--font-weight);
+            text-decoration: none;
+
+            @include interact {
+                background-color: var(--color--wenge);
+                color: var(--color--white);
+                text-decoration: none;
+            }
+        }
+
         &__link {
             @include typestyle-h6;
             @include mask-icon;
