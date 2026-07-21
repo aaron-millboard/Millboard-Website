@@ -146,6 +146,8 @@ class OrderEssentials
             return '';
         }
 
+        $matched_source_ids = [];
+        $single_source_label = '';
         $target_ids = [];
 
         foreach ($matrix as $rule) {
@@ -181,6 +183,14 @@ class OrderEssentials
                     continue;
                 }
 
+                $matched_source_ids[$source_id] = true;
+
+                if (count($matched_source_ids) > 1) {
+                    return __('the products in your basket', 'granola');
+                }
+
+                $label = '';
+
                 $rule_product_ids = isset($rule['source_product_ids']) && \is_array($rule['source_product_ids'])
                     ? $rule['source_product_ids']
                     : [];
@@ -192,7 +202,7 @@ class OrderEssentials
                         $name = trim((string) $source_product->get_name());
 
                         if ($name !== '') {
-                            return $name;
+                            $label = $name;
                         }
                     }
                 }
@@ -204,23 +214,31 @@ class OrderEssentials
                     ? array_values(array_intersect($rule_category_slugs, $source_category_slugs))
                     : [];
 
-                if (!empty($matched_category_slugs)) {
+                if ($label === '' && !empty($matched_category_slugs)) {
                     $category_name = self::get_category_name_by_slug((string) $matched_category_slugs[0]);
 
                     if ($category_name !== '') {
-                        return $category_name;
+                        $label = $category_name;
                     }
                 }
 
-                $fallback_name = trim((string) $product->get_name());
+                if ($label === '') {
+                    $fallback_name = trim((string) $product->get_name());
 
-                if ($fallback_name !== '') {
-                    return $fallback_name;
+                    if ($fallback_name !== '') {
+                        $label = $fallback_name;
+                    }
                 }
+
+                if ($single_source_label === '' && $label !== '') {
+                    $single_source_label = $label;
+                }
+
+                break;
             }
         }
 
-        return '';
+        return $single_source_label;
     }
 
     private static function get_category_name_by_slug(string $slug): string
