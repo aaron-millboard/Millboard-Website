@@ -328,8 +328,7 @@ class Map {
         // https://leafletjs.com/reference.html#map-option
         this.lmap = L.map(mapContainerNode, {
             center: this.LMAP_INITIAL_CENTER,
-            // CARTO tiles require visible attribution; keep it (small, bottom-right).
-            attributionControl: true,
+            attributionControl: false,
             intertia: false,
             maxBoundsViscosity: 1.0,
             zoom: this.LMAP_INITIAL_ZOOM,
@@ -357,9 +356,9 @@ class Map {
         //     console.log(event.target.getCenter());
         // });
 
-        // CARTO Positron: a clean, muted basemap that reads far less busy than
-        // the default OpenStreetMap tiles and sits better under the brand UI.
-        const mapTileProvider = 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+        // CARTO Voyager: a clean but warmer, more detailed basemap than the raw
+        // OpenStreetMap tiles, without the washed-out look of Positron.
+        const mapTileProvider = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
         const tileLayer = L.tileLayer(mapTileProvider, {
             maxZoom: 20,
             subdomains: 'abcd',
