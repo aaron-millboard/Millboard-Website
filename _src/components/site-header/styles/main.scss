@@ -34,6 +34,16 @@ body {
     }
 }
 
+// Scroll lock for the open mobile/tablet menu. Pinning the body with a negative
+// top (set inline to the saved scroll offset in SiteHeader.js) keeps the page
+// visually in place, avoiding the jump-to-top that plain overflow:hidden causes.
+body.is-scroll-locked {
+    position: fixed;
+    left: 0;
+    right: 0;
+    width: 100%;
+}
+
 .site-header {
     --site-header--logo-width: #{px-to-rem(120)};
 
