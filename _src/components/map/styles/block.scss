@@ -6,10 +6,12 @@
 .map {
     $this: &;
 
-    // Shared height for the search box, search button and distance dropdown so
-    // they line up at a standard form-control size instead of the oversized
-    // 66px the search used to force.
+    // Shared height + reduced vertical padding for the search box, search
+    // button and distance dropdown, so they line up at a standard, compact
+    // form-control size instead of the oversized 66px the search used to force.
+    // (The theme's default input padding of 0.9em otherwise keeps them ~60px.)
     --map-control-height: #{px-to-rem(48)};
+    --map-control-padding-y: #{px-to-rem(9)};
 
     display: grid;
     gap: var(--space--xl);
@@ -69,8 +71,9 @@
             --input--border-color: black;
             --input--border-color--focus: black;
             --input--background-color: transparent;
+            --input--padding-y: var(--map-control-padding-y);
 
-            min-height: var(--map-control-height);
+            height: var(--map-control-height);
             border-right: 0;
             line-height: 1;
         }
@@ -137,8 +140,9 @@
 
         &__input {
             --input--background-color: transparent;
+            --input--padding-y: var(--map-control-padding-y);
 
-            min-height: var(--map-control-height);
+            height: var(--map-control-height);
 
             @include mq($until: medium) {
                 max-width: min-content;
