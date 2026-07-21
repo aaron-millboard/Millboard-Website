@@ -446,12 +446,16 @@ let markerHtml = `
                 marker.off('click');
 
                 marker.on('mouseover', () => {
+                    this.cancelScheduledPopupClose();
+
                     // Popup content was rendered at page load; regenerate so it
                     // reflects the current search location and road distances.
                     marker.setPopupContent(this.getMarkerTooltipHtml(marker));
                     marker.openPopup();
                 });
-                marker.on('mouseout', () => marker.closePopup());
+                // Delay closing so the cursor can travel from the marker into the
+                // popup (see initPopupHoverPersistence, which cancels this).
+                marker.on('mouseout', () => this.schedulePopupClose(marker));
             }
 
             marker.addEventListener('click', () => {
@@ -468,6 +472,46 @@ let markerHtml = `
 
         // Add all markers sub groups to map.
         this.lmap.addLayer(this.filteredMarkersGroup);
+
+        this.initPopupHoverPersistence();
+    }
+
+    /**
+     * Keeps a hover popup open while the cursor is inside it, so interactive
+     * content (e.g. the "Get directions" link) is clickable. Without this the
+     * marker's mouseout closes the popup before the cursor can reach it.
+     */
+    initPopupHoverPersistence() {
+        this.lmap.on('popupopen', (event) => {
+            const popupEl = event.popup.getElement();
+            const popupMarker = event.popup._source;
+
+            if (!popupEl) {
+                return;
+            }
+
+            popupEl.addEventListener('mouseenter', () => this.cancelScheduledPopupClose());
+            popupEl.addEventListener('mouseleave', () => this.schedulePopupClose(popupMarker));
+        });
+    }
+
+    cancelScheduledPopupClose() {
+        if (this._popupCloseTimer) {
+            clearTimeout(this._popupCloseTimer);
+            this._popupCloseTimer = null;
+        }
+    }
+
+    schedulePopupClose(marker) {
+        this.cancelScheduledPopupClose();
+
+        this._popupCloseTimer = setTimeout(() => {
+            this._popupCloseTimer = null;
+
+            if (marker) {
+                marker.closePopup();
+            }
+        }, 250);
     }
 
     initListingSelectionSync() {
@@ -1067,6 +1111,20 @@ let markerHtml = `
         const safeLinkHref = this.escapeHtml(linkHref);
         const safeLinkText = this.escapeHtml(linkText);
 
+        // Build a Google Maps directions link to this listing. Destination is
+        // the marker's own coordinates; when the user has searched a location,
+        // pre-fill it as the journey start so directions are ready immediately.
+        let directionsHref = '';
+        const latLng = marker.getLatLng();
+
+        if (latLng) {
+            directionsHref = `https://www.google.com/maps/dir/?api=1&destination=${latLng.lat},${latLng.lng}`;
+
+            if (this.hasUserSearchLocation && this.LMAP_DISTANCE_CENTER) {
+                directionsHref += `&origin=${this.LMAP_DISTANCE_CENTER.lat},${this.LMAP_DISTANCE_CENTER.lng}`;
+            }
+        }
+
         if (!title && !distance && !address && !phone && !safeLinkHref) {
             return '';
         }
@@ -1089,6 +1147,10 @@ let markerHtml = `
             html += `<a class="map__marker-tooltip__phone" href="${phoneHref}">${phone}</a>`;
         } else if (phone) {
             html += `<p class="map__marker-tooltip__phone">${phone}</p>`;
+        }
+
+        if (directionsHref) {
+            html += `<a class="map__marker-tooltip__directions" href="${directionsHref}" target="_blank" rel="noopener noreferrer">Get directions</a>`; // TODO: translate
         }
 
         // if (safeLinkHref) {
