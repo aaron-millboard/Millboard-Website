@@ -11,9 +11,11 @@ namespace Theme\WooCommerce;
  * ~240KB of JavaScript plus its main-thread cost, which PageSpeed flagged as
  * the single largest first-party-adjacent payload.
  *
- * NOTE: if Apple Pay / Google Pay express-checkout buttons are ever enabled on
- * product or cart pages, hook the `millboard_page_needs_stripe` filter to add
- * those conditions back in, e.g. return $needs || is_product().
+ * Stripe is kept on cart, checkout, account AND single product pages, because
+ * the Apple Pay / Google Pay express-checkout button renders on products and
+ * the cart. It is stripped from the homepage, collection/archive and content
+ * templates, where it is never used. To change what counts as a "payment"
+ * page, hook the `millboard_page_needs_stripe` filter.
  */
 class ScriptOptimisation
 {
@@ -57,11 +59,13 @@ class ScriptOptimisation
     private static function page_needs_stripe(): bool
     {
         // If WooCommerce conditional tags are unavailable, do nothing (safe).
-        if (!function_exists('is_checkout') || !function_exists('is_cart') || !function_exists('is_account_page')) {
+        if (!function_exists('is_checkout') || !function_exists('is_cart') || !function_exists('is_account_page') || !function_exists('is_product')) {
             return true;
         }
 
-        $needs = \is_checkout() || \is_cart() || \is_account_page();
+        // Product pages included: the express-checkout (Apple/Google Pay) button
+        // renders there and on the cart.
+        $needs = \is_checkout() || \is_cart() || \is_account_page() || \is_product();
 
         return (bool) \apply_filters('millboard_page_needs_stripe', $needs);
     }
