@@ -100,6 +100,7 @@ if (file_exists($autoloader = __DIR__ . '/vendor/autoload.php')) {
 \Theme\WooCommerce\QuoteShare::init();
 \Theme\WooCommerce\Settings::init();
 \Theme\WooCommerce\OrderEssentials::init();
+\Theme\WooCommerce\ScriptOptimisation::init();
 
 // ----------------------------------------------------
 // Other custom functionality.
