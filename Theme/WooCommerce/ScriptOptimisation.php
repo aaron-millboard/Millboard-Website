@@ -3,25 +3,30 @@
 namespace Theme\WooCommerce;
 
 /**
- * Performance: stop the WooCommerce Stripe gateway from loading Stripe.js (and,
- * in turn, Stripe's remote fraud/telemetry script) on pages where no payment
- * happens. Stripe is only needed on cart, checkout and account pages.
+ * Performance: Millboard does not use Apple Pay / Google Pay, so this disables
+ * the Stripe express-checkout buttons and keeps Stripe.js (and Stripe's remote
+ * fraud script) off every page except where a card is actually entered.
  *
- * On the homepage, product, collection and article templates this removes
- * ~240KB of JavaScript plus its main-thread cost, which PageSpeed flagged as
- * the single largest first-party-adjacent payload.
+ * The express-checkout element was what pulled Stripe.js (~240KB + significant
+ * main-thread cost) onto product and cart pages. With it disabled, Stripe is
+ * only needed on the checkout and account (saved cards) pages. This removes it
+ * from the homepage, products, collections and all content templates.
  *
- * Stripe is kept on cart, checkout, account AND single product pages, because
- * the Apple Pay / Google Pay express-checkout button renders on products and
- * the cart. It is stripped from the homepage, collection/archive and content
- * templates, where it is never used. To change what counts as a "payment"
- * page, hook the `millboard_page_needs_stripe` filter.
+ * To change what counts as a "payment" page, hook `millboard_page_needs_stripe`.
  */
 class ScriptOptimisation
 {
     public static function init(): void
     {
-        // Priority 100: run after the Stripe gateway has enqueued its scripts.
+        // Disable the Apple/Google Pay express-checkout buttons everywhere
+        // (unused by Millboard). These filters stop the express element from
+        // loading Stripe on product and cart pages.
+        \add_filter('wc_stripe_hide_payment_request_on_product_page', '__return_true');
+        \add_filter('wc_stripe_show_payment_request_on_cart', '__return_false');
+        \add_filter('wc_stripe_show_payment_request_on_checkout', '__return_false');
+
+        // Belt-and-braces: dequeue any Stripe scripts still enqueued on pages
+        // that do not take payment.
         \add_action('wp_enqueue_scripts', [__CLASS__, 'dequeue_stripe_off_payment_pages'], 100);
     }
 
@@ -59,13 +64,12 @@ class ScriptOptimisation
     private static function page_needs_stripe(): bool
     {
         // If WooCommerce conditional tags are unavailable, do nothing (safe).
-        if (!function_exists('is_checkout') || !function_exists('is_cart') || !function_exists('is_account_page') || !function_exists('is_product')) {
+        if (!function_exists('is_checkout') || !function_exists('is_account_page')) {
             return true;
         }
 
-        // Product pages included: the express-checkout (Apple/Google Pay) button
-        // renders there and on the cart.
-        $needs = \is_checkout() || \is_cart() || \is_account_page() || \is_product();
+        // Card entry happens at checkout; saved cards live on the account page.
+        $needs = \is_checkout() || \is_account_page();
 
         return (bool) \apply_filters('millboard_page_needs_stripe', $needs);
     }
