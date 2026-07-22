@@ -4,13 +4,14 @@ namespace Theme\WooCommerce;
 
 /**
  * Performance: Millboard does not use Apple Pay / Google Pay, so this disables
- * the Stripe express-checkout buttons and keeps Stripe.js (and Stripe's remote
- * fraud script) off every page except where a card is actually entered.
+ * the Stripe express-checkout feature and keeps Stripe.js (and Stripe's remote
+ * fraud script, js.stripe.com/clover/stripe.js) off every page except where a
+ * card is actually entered (checkout, account/saved cards).
  *
  * The express-checkout element was what pulled Stripe.js (~240KB + significant
- * main-thread cost) onto product and cart pages. With it disabled, Stripe is
- * only needed on the checkout and account (saved cards) pages. This removes it
- * from the homepage, products, collections and all content templates.
+ * main-thread cost) onto product and cart pages, and it registers Stripe as a
+ * footer script that is enqueued late (during content render), so it is
+ * removed at both wp_enqueue_scripts and footer-print time.
  *
  * To change what counts as a "payment" page, hook `millboard_page_needs_stripe`.
  */
@@ -18,16 +19,36 @@ class ScriptOptimisation
 {
     public static function init(): void
     {
-        // Disable the Apple/Google Pay express-checkout buttons everywhere
-        // (unused by Millboard). These filters stop the express element from
-        // loading Stripe on product and cart pages.
+        // Disable the express-checkout / payment-request feature at the settings
+        // level so the element never renders or enqueues Stripe on product/cart.
+        \add_filter('option_woocommerce_stripe_settings', [__CLASS__, 'disable_express_checkout']);
         \add_filter('wc_stripe_hide_payment_request_on_product_page', '__return_true');
         \add_filter('wc_stripe_show_payment_request_on_cart', '__return_false');
         \add_filter('wc_stripe_show_payment_request_on_checkout', '__return_false');
 
-        // Belt-and-braces: dequeue any Stripe scripts still enqueued on pages
-        // that do not take payment.
+        // Dequeue any Stripe scripts left on non-payment pages. Run on both
+        // hooks because the express element enqueues Stripe late (footer).
         \add_action('wp_enqueue_scripts', [__CLASS__, 'dequeue_stripe_off_payment_pages'], 100);
+        \add_action('wp_print_footer_scripts', [__CLASS__, 'dequeue_stripe_off_payment_pages'], 0);
+    }
+
+    /**
+     * @param mixed $settings
+     * @return mixed
+     */
+    public static function disable_express_checkout($settings)
+    {
+        if (!is_array($settings)) {
+            return $settings;
+        }
+
+        // Old + new keys: turn the feature off and clear all button locations.
+        $settings['payment_request'] = 'no';
+        $settings['express_checkout'] = 'no';
+        $settings['express_checkout_button_locations'] = [];
+        $settings['payment_request_button_locations'] = [];
+
+        return $settings;
     }
 
     public static function dequeue_stripe_off_payment_pages(): void
