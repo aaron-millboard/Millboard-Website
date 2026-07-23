@@ -30,7 +30,7 @@ export default class Slider {
         };
 
         // DOM Elements
-        this.slides = Array.from(this.element.querySelectorAll('.slider__track > li'));
+        this.slides = Array.from(this.element.querySelectorAll('.slider__track > .slider__slide'));
         this.track = this.element.querySelector('.slider__track') || this.element;
         this.prevBtn = this.element.querySelector('.slider__navigation--previous');
         this.nextBtn = this.element.querySelector('.slider__navigation--next');

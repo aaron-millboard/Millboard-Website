@@ -61,7 +61,9 @@ function filter_args(array $args): ?array
     foreach ($args['testimonials'] as $i => $testimonial) {
         $slides[] = [
             'card' => \Granola\Component::get('element', [
-                'el' => 'li',
+                // div, not li: the slider track is no longer a <ul>, and each slide
+                // gets role="group"/aria-roledescription="slide" at runtime (APG carousel).
+                'el' => 'div',
                 'attributes' => [
                     'id' => $args['ref'] . '-card-' . ($i + 1),
                     'class' => ['testimonials__slide'],

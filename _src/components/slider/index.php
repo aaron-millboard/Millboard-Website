@@ -25,11 +25,14 @@
         </div>
     <?php } ?>
 
-    <ul <?= \Granola\Helpers::build_attributes($args['track_attributes']); ?>>
+    <?php // Carousel track: a div, not a ul. Slides carry role="group"/aria-roledescription
+          // (added by Slider.js), which overrides listitem semantics, so ul/li here would
+          // trip WCAG 1.3.1 (list — "ul must only directly contain li"). ?>
+    <div <?= \Granola\Helpers::build_attributes($args['track_attributes']); ?>>
         <?php foreach ($args['slides'] as $slide) { ?>
             <?= $slide['card']; ?>
         <?php } ?>
-    </ul>
+    </div>
 
     <div class="slider__screen-reader-live-region visually-hidden" aria-live="polite"></div>
 </div>
