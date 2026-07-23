@@ -1,0 +1,228 @@
+// =============================================================================
+// Installer Profile Header
+// Bespoke hero for the single installer profile. Tier (Approved / Advanced) and
+// the contact details are read from the Installer Details fields; the rest come
+// from the block. Palette + type follow the Millboard brand tokens in core.
+// =============================================================================
+
+.installer-profile-header {
+    --iph--accent: var(--color--olivegreen);
+    --iph--dark: var(--color--black);
+    --iph--light: var(--color--springwood);
+    --iph--muted: #{rgba(#151716, 0.66)};
+    --iph--rule: #{rgba(#151716, 0.14)};
+
+    padding: 0 0 clamp(36px, 6vw, 64px);
+    color: var(--color--foreground);
+
+    // ---- Breadcrumbs ---------------------------------------------------------
+    &__breadcrumbs {
+        max-width: px-to-rem(1200);
+        margin: 0 auto clamp(24px, 4vw, 40px);
+        padding: px-to-rem(12) clamp(20px, 4vw, 52px);
+        border-bottom: 1px solid var(--iph--rule);
+        font-size: px-to-rem(11);
+        color: var(--iph--muted);
+
+        .breadcrumbs {
+            margin: 0;
+        }
+    }
+
+    &__inner {
+        display: flex;
+        flex-direction: column;
+        gap: clamp(24px, 4vw, 40px);
+        max-width: px-to-rem(1200);
+        margin: 0 auto;
+        padding: 0 clamp(20px, 4vw, 52px);
+
+        @include mq(large) {
+            flex-direction: row;
+            align-items: center;
+            gap: px-to-rem(44);
+        }
+    }
+
+    &__body {
+        @include mq(large) {
+            flex: 1 1 50%;
+            min-width: 0;
+        }
+    }
+
+    // ---- Eyebrow (tier label) ------------------------------------------------
+    &__eyebrow {
+        margin: 0 0 px-to-rem(14);
+        font-weight: 700;
+        font-size: px-to-rem(11);
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--iph--accent);
+    }
+
+    // ---- Title ---------------------------------------------------------------
+    &__title {
+        margin: 0 0 px-to-rem(14);
+        font-weight: 300;
+        font-size: clamp(30px, 4vw, 44px);
+        line-height: 1.1;
+        color: var(--color--foreground);
+    }
+
+    // ---- Tagline -------------------------------------------------------------
+    &__tagline {
+        margin: 0 0 px-to-rem(16);
+        max-width: 46ch;
+        font-size: px-to-rem(16);
+        line-height: 1.6;
+        color: var(--iph--muted);
+    }
+
+    // ---- Location ------------------------------------------------------------
+    &__location {
+        display: flex;
+        align-items: center;
+        gap: px-to-rem(9);
+        margin: 0 0 px-to-rem(10);
+        font-size: px-to-rem(13);
+        color: var(--iph--muted);
+    }
+
+    &__pin {
+        flex: none;
+        color: var(--iph--accent);
+    }
+
+    // ---- Rating --------------------------------------------------------------
+    &__rating {
+        display: inline-flex;
+        align-items: center;
+        gap: px-to-rem(8);
+        margin: 0 0 px-to-rem(22);
+        font-size: px-to-rem(12.5);
+        color: var(--iph--muted);
+        text-decoration: none;
+    }
+
+    a#{&}__rating:hover &__rating-value,
+    a#{&}__rating:hover {
+        color: var(--iph--accent);
+    }
+
+    &__stars {
+        display: inline-flex;
+        gap: px-to-rem(2);
+        color: var(--iph--accent);
+    }
+
+    &__rating-value {
+        font-weight: 700;
+        color: var(--color--foreground);
+    }
+
+    // ---- Actions -------------------------------------------------------------
+    &__actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: px-to-rem(10);
+    }
+
+    &__btn {
+        display: inline-flex;
+        align-items: center;
+        gap: px-to-rem(8);
+        padding: px-to-rem(14) px-to-rem(22);
+        font-weight: 700;
+        font-size: px-to-rem(11.5);
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        text-decoration: none;
+        border: 1px solid transparent;
+        transition: background-color 0.24s ease, color 0.24s ease, border-color 0.24s ease;
+
+        &--primary {
+            background: var(--iph--dark);
+            color: var(--iph--light);
+
+            &:hover,
+            &:focus-visible {
+                background: #{darken(#151716, 2%)};
+                color: var(--iph--light);
+            }
+        }
+
+        &--secondary {
+            background: transparent;
+            color: var(--color--foreground);
+            border-color: var(--iph--dark);
+
+            &:hover,
+            &:focus-visible {
+                border-color: var(--iph--accent);
+                color: var(--iph--accent);
+            }
+        }
+    }
+
+    // ---- Media ---------------------------------------------------------------
+    &__media {
+        position: relative;
+
+        @include mq(large) {
+            flex: 1 1 50%;
+            min-width: 0;
+        }
+    }
+
+    &__cover {
+        display: block;
+        width: 100%;
+        height: clamp(220px, 42vw, 340px);
+        object-fit: cover;
+    }
+
+    // ---- Badge ---------------------------------------------------------------
+    &__badge {
+        position: absolute;
+        left: px-to-rem(-14);
+        bottom: px-to-rem(-16);
+        display: inline-flex;
+        flex-direction: column;
+        gap: px-to-rem(2);
+        padding: px-to-rem(11) px-to-rem(14);
+        background: var(--iph--light);
+        border: 1px solid var(--iph--rule);
+        box-shadow: 0 12px 32px #{rgba(#151716, 0.16)};
+
+        @include mq($until: large) {
+            left: px-to-rem(12);
+            bottom: px-to-rem(12);
+        }
+    }
+
+    &__badge-brand {
+        font-weight: 700;
+        font-size: px-to-rem(13);
+        letter-spacing: 0.02em;
+        color: var(--color--foreground);
+    }
+
+    &__badge-tier {
+        font-weight: 700;
+        font-size: px-to-rem(9.5);
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: var(--iph--accent);
+    }
+
+    &__badge--image {
+        padding: px-to-rem(10);
+    }
+
+    &__badge-img {
+        display: block;
+        height: px-to-rem(72);
+        width: auto;
+    }
+}
