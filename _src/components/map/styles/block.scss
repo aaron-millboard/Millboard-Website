@@ -46,12 +46,15 @@
         max-width: 62ch;
         margin: 0;
         color: var(--mb-muted);
+    }
 
+    // Finder heading (crosshair + text) with an olive accent rule beneath.
+    &__heading {
         &::after {
             display: block;
             width: px-to-rem(56);
             height: px-to-rem(2);
-            margin-top: var(--space--s);
+            margin-top: var(--space--m);
             background: var(--mb-olive);
             content: '';
         }
@@ -125,26 +128,35 @@
             }
         }
 
+        // Now the finder heading (also the "find near me" geolocate trigger).
         &__geolocate {
             @include button-reset-hard;
-            @include typestyle-small;
             @include mask-icon(before);
 
-            display: inline-flex;
-            align-items: center;
-            gap: var(--space--2xs);
-            color: var(--mb-muted);
+            display: flex;
+            align-items: flex-start;
+            gap: var(--space--s);
+            max-width: 62ch;
+            color: var(--mb-ink);
+            font-weight: var(--fw-light, 300);
+            font-size: clamp(#{px-to-rem(15)}, 2.2vw, #{px-to-rem(26)});
+            line-height: 1.28;
+            letter-spacing: 0.12em;
+            text-align: left;
+            text-transform: uppercase;
+            cursor: pointer;
 
             @include interact {
                 color: var(--mb-olive);
             }
 
             &::before {
-                --mask-icon--size: #{px-to-rem(18)};
+                --mask-icon--size: 1.1em;
 
                 flex: 0 0 auto;
                 width: var(--mask-icon--size);
                 height: var(--mask-icon--size);
+                margin-top: 0.16em;
                 mask-image: url(#{asset-path('images/icons/crosshair.svg')});
             }
         }

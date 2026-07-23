@@ -3,6 +3,14 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet.fullscreen/dist/Control.FullScreen.css" />
 
 <div <?= \Granola\Helpers::build_attributes($args['attributes']); ?>>
+    <?php if (!empty($args['search_geolocate_text'])) { ?>
+        <div class="map__heading alignwide">
+            <button type="button" class="map__search__geolocate">
+                <span class="map__heading__text"><?= esc_html($args['search_geolocate_text']); ?></span>
+            </button>
+        </div>
+    <?php } ?>
+
     <?php if (!empty($args['subtitle'])) { ?>
         <p class="map__subtitle alignwide">
             <?= esc_html($args['subtitle']); ?>
@@ -28,15 +36,6 @@
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.5" y2="16.5"></line></svg>
                 </button>
             </div>
-
-            <?php if (!empty($args['search_geolocate_text'])) { ?>
-                <?= \Granola\Component::get('button', [
-                    'content' => $args['search_geolocate_text'],
-                    'classes' => [
-                        'map__search__geolocate',
-                    ],
-                ]); ?>
-            <?php } ?>
 
             <div class="map__distance">
                 <label class="map__distance__label" for="map-distance-select">
