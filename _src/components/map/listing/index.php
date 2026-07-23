@@ -10,7 +10,7 @@
     <?php } ?>
 
     <?php if (!empty($args['opening_today'])) { ?>
-        <span class="map__listing__hours">
+        <span class="map__listing__hours map__listing__hours--<?= esc_attr($args['opening_today_status'] ?? ''); ?>">
             <?= esc_html($args['opening_today']); ?>
         </span>
     <?php } ?>

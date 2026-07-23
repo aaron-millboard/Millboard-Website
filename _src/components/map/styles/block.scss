@@ -564,6 +564,14 @@
 
             margin-top: var(--space--3xs);
             font-weight: var(--type--2--font-weight);
+
+            &--open {
+                color: var(--color--olivegreen);
+            }
+
+            &--closed {
+                color: var(--color--error);
+            }
         }
 
         &__display-badge {

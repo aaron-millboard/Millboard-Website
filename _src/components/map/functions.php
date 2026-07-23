@@ -189,14 +189,17 @@ function get_type_label(\WP_Post $wp_post): string
 }
 
 /**
- * Builds a compact "today's opening hours" line from an opening_hours repeater,
- * e.g. "Open today 09:00–17:00" or "Closed today". Returns '' when today has no
- * matching row.
+ * Builds a compact "today's opening hours" line from an opening_hours repeater.
+ * Returns ['status' => 'open'|'closed'|'', 'text' => string]: "open" with an
+ * "Open today HH:MM–HH:MM" line, "closed" with "Closed today", or empty status
+ * and text when today has no matching row.
  */
-function get_todays_opening_hours($rows): string
+function get_todays_opening_hours($rows): array
 {
+    $none = ['status' => '', 'text' => ''];
+
     if (empty($rows) || !is_array($rows)) {
-        return '';
+        return $none;
     }
 
     $today = \current_time('l'); // Full day name, e.g. "Wednesday".
@@ -207,25 +210,28 @@ function get_todays_opening_hours($rows): string
         }
 
         if (!empty($row['closed'])) {
-            return \__('Closed today', 'granola');
+            return ['status' => 'closed', 'text' => \__('Closed today', 'granola')];
         }
 
         $open = trim((string) ($row['open'] ?? ''));
         $close = trim((string) ($row['close'] ?? ''));
 
         if ($open !== '' && $close !== '') {
-            return sprintf(
-                // translators: 1: opening time, 2: closing time.
-                \__('Open today %1$s–%2$s', 'granola'),
-                $open,
-                $close
-            );
+            return [
+                'status' => 'open',
+                'text' => sprintf(
+                    // translators: 1: opening time, 2: closing time.
+                    \__('Open today %1$s–%2$s', 'granola'),
+                    $open,
+                    $close
+                ),
+            ];
         }
 
-        return '';
+        return $none;
     }
 
-    return '';
+    return $none;
 }
 
 function get_item_data($args): array|null
@@ -264,6 +270,7 @@ function get_item_data($args): array|null
             || in_array($post_type, ['experience_centre', 'showroom'], true);
 
         $preferred = !empty(\get_field('preferred_stockist', $wp_post_id));
+        $today_hours = get_todays_opening_hours(\get_field('opening_hours', $wp_post_id));
 
         $items[] = [
             'id' => $wp_post_id,
@@ -281,7 +288,8 @@ function get_item_data($args): array|null
             'has_display' => $has_display,
             'display_collections' => \get_field('display_collections', $wp_post_id),
             'display_photo' => \get_field('display_photo', $wp_post_id),
-            'opening_today' => get_todays_opening_hours(\get_field('opening_hours', $wp_post_id)),
+            'opening_today' => $today_hours['text'],
+            'opening_today_status' => $today_hours['status'],
             'attributes' => [
                 'class' => 'map__listing',
                 'data-map-item-lat' => $lat,
