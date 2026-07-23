@@ -25,9 +25,10 @@
     box-sizing: border-box;
     padding: clamp(#{px-to-rem(20)}, 4vw, #{px-to-rem(52)});
     border: 1px solid var(--mb-rule);
-    border-radius: px-to-rem(2);
+    border-top: 0;
+    border-bottom: 0;
+    border-radius: 0;
     background: var(--mb-spring-wood);
-    box-shadow: 0 #{px-to-rem(4)} #{px-to-rem(16)} rgba(47, 41, 46, 0.08);
     color: var(--mb-ink);
 
     &.has-background {
