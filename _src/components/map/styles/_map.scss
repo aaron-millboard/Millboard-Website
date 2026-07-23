@@ -27,7 +27,7 @@
     // land, cleaner (less saturated) colours. Keeps us on lightweight raster
     // tiles (no vector library) — an approximation of Google's look.
     .leaflet-tile-pane {
-        filter: saturate(0.92) contrast(1.04) hue-rotate(-6deg);
+        filter: saturate(0.85) contrast(1.05) hue-rotate(-10deg) brightness(1.02);
     }
 
     &.leaflet-container {
