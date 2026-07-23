@@ -94,9 +94,13 @@
         }
 
         &__submit {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             flex: none;
             width: px-to-rem(54);
             height: auto;
+            padding: 0;
             border: 0;
             border-radius: 0;
             background-color: var(--mb-ink);
@@ -110,10 +114,15 @@
             &::after {
                 --mask-icon--size: #{px-to-rem(18)};
 
+                display: block;
+                flex: none;
                 width: px-to-rem(18);
                 height: px-to-rem(18);
                 background-color: currentColor;
                 mask-image: url(#{asset-path('images/icons/search.svg')});
+                mask-repeat: no-repeat;
+                mask-position: center;
+                mask-size: contain;
             }
         }
 
