@@ -27,34 +27,26 @@ function filter_args(array $args): ?array
     // ---------------------------------------
     $paged = (get_query_var('paged')) ? get_query_var('paged') : 1;
 
-    $query_args = [
-        'post_type' => 'image',
-        'posts_per_page' => $args['limit'],
-        'post_status' => 'publish',
-        'paged' => $paged,
-    ];
+    if (\is_post_type_archive('image')) {
+        global $wp_query;
+        $query = $wp_query;
+    } else {
+        $query_args = [
+            'post_type' => 'image',
+            'posts_per_page' => $args['limit'],
+            'post_status' => 'publish',
+            'paged' => $paged,
+        ];
 
-    // Filter by image_category if provided in URL
-    if (isset($_GET['image_category']) && !empty($_GET['image_category'])) {
-        $terms = explode(' ', sanitize_text_field($_GET['image_category']));
+        $tax_query = \Theme\PostTypes\Image::get_category_tax_query_from_request();
 
-        foreach ($terms as $term) {
-            $query_args['tax_query'][] = [
-                [
-                    'taxonomy' => 'image_category',
-                    'field' => 'slug',
-                    'terms' => $term,
-                ],
-            ];
+        if (!empty($tax_query)) {
+            $query_args['tax_query'] = $tax_query;
         }
 
-        if (count($terms) > 1) {
-            $query_args['tax_query'][]['relation'] = 'AND';
-        }
+        $query = new \WP_Query($query_args);
     }
 
-    // Run our query.
-    $query = new \WP_Query($query_args);
     $objects = $query->posts;
 
     // Set up our available patterns.

@@ -18,5 +18,9 @@
 
 defined('ABSPATH') || exit;
 
-// Get Granola WC Cart component
-echo \Granola\Component::get('wc-cart');
+if (\Theme\WooCommerce\OrderEssentials::is_order_essentials_request()) {
+    echo \Granola\Component::get('wc-order-essentials');
+} else {
+    // Get Granola WC Cart component.
+    echo \Granola\Component::get('wc-cart');
+}

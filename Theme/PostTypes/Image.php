@@ -14,9 +14,12 @@ class Image
     public static function init(): void
     {
         \add_action('init', [__CLASS__, 'register_post_type']);
-        \add_action('pre_get_posts', [__CLASS__, 'filter_archive_posts_per_page']);
         \add_filter('granola/templates/post-types', [__CLASS__, 'filter_granola_templates_post_types']);
         \add_action('template_redirect', [__CLASS__, 'redirect_single_cpt']);
+        \add_action(
+            'pre_get_posts',
+            [__CLASS__, 'filter_gallery_archive_query']
+        );
         \add_filter('wp_robots', [__CLASS__, 'filter_gallery_robots_link']);
     }
 
@@ -26,17 +29,6 @@ class Image
         if (is_singular(self::SLUG)) {
             wp_redirect(get_post_type_archive_link(self::SLUG), 301);
             exit;
-        }
-    }
-
-    public static function filter_archive_posts_per_page(\WP_Query $query): void
-    {
-        if (\is_admin() || !$query->is_main_query()) {
-            return;
-        }
-
-        if ($query->is_post_type_archive(self::SLUG)) {
-            $query->set('posts_per_page', self::ARCHIVE_POSTS_PER_PAGE);
         }
     }
 
@@ -136,6 +128,65 @@ class Image
     {
         $post_types[] = self::SLUG;
         return $post_types;
+    }
+
+    /**
+     * Sets the main gallery archive query to match the gallery loop.
+     *
+     * @param  \WP_Query $query The query being filtered.
+     *
+     * @return void
+     */
+    public static function filter_gallery_archive_query(\WP_Query $query): void
+    {
+        if (
+            \is_admin()
+            || !$query->is_main_query()
+            || !$query->is_post_type_archive(self::SLUG)
+        ) {
+            return;
+        }
+
+        $query->set('posts_per_page', self::ARCHIVE_POSTS_PER_PAGE);
+
+        $tax_query = self::get_category_tax_query_from_request();
+
+        if (!empty($tax_query)) {
+            $query->set('tax_query', $tax_query);
+        }
+    }
+
+    /**
+     * Gets the image category query selected through the gallery filter.
+     *
+     * @return array
+     */
+    public static function get_category_tax_query_from_request(): array
+    {
+        if (!isset($_GET['image_category']) || !is_string($_GET['image_category'])) {
+            return [];
+        }
+
+        $image_category = \sanitize_text_field(\wp_unslash($_GET['image_category']));
+        $terms = array_unique(array_filter(explode(' ', $image_category)));
+
+        if (empty($terms)) {
+            return [];
+        }
+
+        $tax_query = [
+            'relation' => 'AND',
+        ];
+
+        foreach ($terms as $term) {
+            $tax_query[] = [
+                'taxonomy' => 'image_category',
+                'field' => 'slug',
+                'terms' => $term,
+            ];
+        }
+
+        return $tax_query;
     }
 
     /**
