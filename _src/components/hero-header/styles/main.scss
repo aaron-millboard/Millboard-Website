@@ -43,33 +43,24 @@
     }
 
     &__strapline {
-        padding-top: var(--space--4sx);
-        padding-bottom: var(--space--2xs);
-        font-weight: var(--type--1--font-weight);
-        font-size: rfs(30, 102);
-        letter-spacing: 0.015em; // magic number.
-        line-height: rfs(30, 80);
-        text-transform: none;
-        text-align: center;
+        margin: 0;
+    }
 
-        @include mq(medium) {
-            padding-top: var(--space--xl);
-            padding-bottom: calc(var(--space--s) * 2);
-        }
+    &__strapline-wrapper {
+        width: 100%;
+        grid-row: 1;
+        grid-column: 1;
+        align-self: start;
+        position: sticky;
+        top: 0;
+        pointer-events: none; // Let clicks reach the video / controls behind.
+    }
 
-        &-wrapper-outer {
-            width: 100%;
-            grid-row: 1;
-            grid-column: 1;
-            align-self: start;
-            isolation: isolate;
-            position: sticky;
-            top: 0;
-            pointer-events: none; // required for good ::selection styles.
-
-            & + & {
-                pointer-events: auto; // required for good ::selection styles.
-            }
-        }
+    &__strapline-cutout {
+        display: block;
+        width: 100%;
+        // Height of the cream band, including breathing room above and below the
+        // text. Reserved up front to avoid layout shift.
+        height: rfs(96, 220);
     }
 }
