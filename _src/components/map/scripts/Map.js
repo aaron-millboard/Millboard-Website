@@ -379,28 +379,24 @@ class Map {
             );
             const listingTitle = listingData.name;
 
-            // Convert post type into filename format
-const markerType = listingData.postType
-    .toLowerCase()
-    .replace(/\s+/g, '-');
+            // Convert the post type into a marker icon filename.
+            // e.g. Installer -> installer-marker.png, Experience Centre -> experience-centre-marker.png
+            const markerType = listingData.postType
+                .toLowerCase()
+                .replace(/\s+/g, '-');
+            const markerIconUrl = `/wp-content/themes/millboard/assets/images/icons/${markerType}-marker.png`;
 
-// Example:
-// Installer -> installer-marker.png
-// Experience Centre -> experience-centre-marker.png
-const markerIconUrl = `/wp-content/themes/millboard/assets/images/icons/${markerType}-marker.png`;
+            // Escape the listing title before injecting it into the marker markup.
+            const safeTitle = String(listingTitle == null ? '' : listingTitle)
+                .replace(/[&<>"']/g, (c) => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
 
-let markerHtml = `
-    <span class="leaflet-marker-icon__icon-container" aria-hidden="true">
-        <img 
-            class="leaflet-marker-icon__icon"
-            src="${markerIconUrl}"
-            alt="${listingData.postType} marker"
-            width="${this.LMAP_MARKER_WIDTH}"
-            height="${this.LMAP_MARKER_HEIGHT}"
-        />
-        <span class="screen-reader-text">${listingTitle}</span>
-    </span>
-`;
+            // The icon container is aria-hidden, so the screen-reader label must sit
+            // OUTSIDE it. Otherwise the marker role="button" (added by Leaflet) has
+            // no accessible name (WCAG 4.1.2 / aria-command-name).
+            let markerHtml = `<span class="leaflet-marker-icon__icon-container" aria-hidden="true">`;
+            markerHtml += `<img class="leaflet-marker-icon__icon" src="${markerIconUrl}" alt="" width="${this.LMAP_MARKER_WIDTH}" height="${this.LMAP_MARKER_HEIGHT}" />`;
+            markerHtml += `</span>`;
+            markerHtml += `<span class="screen-reader-text">${safeTitle}</span>`;
 
             // https://leafletjs.com/reference.html#marker
             const marker = L.marker(listingLatLng, {

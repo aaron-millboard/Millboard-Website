@@ -223,7 +223,9 @@ function process_image(array $row, int $key, array $args, int $pattern_part, boo
             'class' => ['gallery__card__button'],
             'data-lightbox-index' => $key,
             'data-main-image-src' => $large_image_src,
-            'aria-label' => (!empty($row['caption_main']) ? sprintf('%s: "%s"', $args['aria_label_prefix'], $row['caption_main']) : ''),
+            // Always provide an accessible name — fall back to a generic label when
+            // the image has no caption (WCAG 4.1.2 — button-name).
+            'aria-label' => (!empty($row['caption_main']) ? sprintf('%s: "%s"', $args['aria_label_prefix'], $row['caption_main']) : sprintf('%s %d', __('View image', 'granola'), $key)),
             'data-caption-main' => $row['caption_main'] ?? '',
             'data-caption-secondary' => $row['caption_secondary'] ?? '',
             'data-image-orientation' => $orientation,
@@ -231,9 +233,8 @@ function process_image(array $row, int $key, array $args, int $pattern_part, boo
         ],
         'lighbox_button_attributes' => [
             'data-index' => $key,
-            'aria-label' => $row['caption_main'] ?? '',
             'aria-current' => $key === 0 ? 'true' : 'false',
-            'aria-label' => (!empty($row['caption_main']) ? sprintf('%s: "%s"', $args['aria_label_prefix'], $row['caption_main']) : ''),
+            'aria-label' => (!empty($row['caption_main']) ? sprintf('%s: "%s"', $args['aria_label_prefix'], $row['caption_main']) : sprintf('%s %d', __('View image', 'granola'), $key)),
         ],
         'image_medium' => [
             'attachment_id' => $row['image'],
