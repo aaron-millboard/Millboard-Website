@@ -89,6 +89,12 @@ class Map {
         this.roadDistanceRequestId = 0;
         this.ROAD_DISTANCE_LIMIT = 25; // Routes API matrix cap per request.
 
+        // Result grading (brief §2/§3).
+        this.EC_SURFACE_RADIUS_MILES = 30; // Experience Centres within this range surface first.
+        this.TOP_RESULTS = 3; // List view shows this many by default; the rest sit behind "Show more".
+        this.showMoreButton = null;
+        this.currentOverflowCount = 0;
+
         if (typeof L === 'object') {
             this.init();
         }
@@ -101,6 +107,7 @@ class Map {
         this.initSearch();
         this.initDistanceFilter();
         this.initPostTypeFilters();
+        this.initShowMore();
         this.initTablist();
         this.initClickTracking();
 
@@ -964,18 +971,158 @@ let markerHtml = `
     }
 
     sortlistingEls(filteredLayers) {
-        // Sort by distance from the search location, closest first.
-        filteredLayers.sort((a, b) => {
+        // Grade results (brief §2/§3): Experience Centres within range first,
+        // then preferred stockists, then everything else — each ordered by
+        // distance (road distance when known, else straight-line).
+        const ordered = [...filteredLayers].sort((a, b) => {
+            const rankDiff = this.getListingRank(a) - this.getListingRank(b);
+
+            if (rankDiff !== 0) {
+                return rankDiff;
+            }
+
             return this.getSortDistance(a) - this.getSortDistance(b);
         });
 
-        // Order listings from closest > furthest away.
-        filteredLayers.forEach((layer) => {
-            if (layer.options.themeData.listingElement) {
-                this.listingContainer.appendChild(
-                    layer.options.themeData.listingElement
-                );
+        this.renderOrderedListings(ordered);
+    }
+
+    /**
+     * Grade band for a marker's listing: 0 = Experience Centre within range,
+     * 1 = preferred stockist, 2 = everything else.
+     */
+    getListingRank(marker) {
+        const data = marker.options.themeData;
+        const listingEl = data.listingElement;
+
+        const isExperienceCentre = data.postType === 'experience_centre';
+        const isPreferred = listingEl
+            && listingEl.getAttribute('data-map-item-preferred') === '1';
+
+        if (isExperienceCentre && this.getSortDistance(marker) <= this.EC_SURFACE_RADIUS_MILES) {
+            return 0;
+        }
+
+        if (isPreferred) {
+            return 1;
+        }
+
+        return 2;
+    }
+
+    /**
+     * Re-orders the listing DOM, inserts category headings when both Experience
+     * Centres and other listings are present, and collapses everything beyond
+     * the top results behind the "Show more" toggle (list view only — the map
+     * still shows every marker within range).
+     */
+    renderOrderedListings(orderedLayers) {
+        if (!this.listingContainer) {
+            return;
+        }
+
+        // Clear category headings from the previous render.
+        this.listingContainer
+            .querySelectorAll('.map__items__category')
+            .forEach((el) => el.remove());
+
+        const hasExperienceCentre = orderedLayers
+            .some((layer) => layer.options.themeData.postType === 'experience_centre');
+        const hasOther = orderedLayers
+            .some((layer) => layer.options.themeData.postType !== 'experience_centre');
+        const showCategories = hasExperienceCentre && hasOther;
+
+        let lastCategory = null;
+        let listingIndex = 0;
+
+        orderedLayers.forEach((layer) => {
+            const listingEl = layer.options.themeData.listingElement;
+
+            if (!listingEl) {
+                return;
             }
+
+            const isOverflow = listingIndex >= this.TOP_RESULTS;
+
+            const category = layer.options.themeData.postType === 'experience_centre'
+                ? 'experience_centre'
+                : 'other';
+
+            if (showCategories && category !== lastCategory) {
+                const heading = this.createCategoryHeading(category);
+
+                if (isOverflow) {
+                    heading.classList.add('map__listing--overflow');
+                }
+
+                this.listingContainer.appendChild(heading);
+                lastCategory = category;
+            }
+
+            listingEl.classList.toggle('map__listing--overflow', isOverflow);
+            this.listingContainer.appendChild(listingEl);
+
+            listingIndex += 1;
+        });
+
+        this.updateShowMore(listingIndex);
+    }
+
+    createCategoryHeading(category) {
+        const heading = document.createElement('p');
+        heading.className = 'map__items__category';
+
+        heading.textContent = category === 'experience_centre'
+            ? 'Experience Centres'
+            : 'Stockists & showspaces';
+
+        return heading;
+    }
+
+    updateShowMore(totalVisibleCount) {
+        if (!this.showMoreButton) {
+            return;
+        }
+
+        this.currentOverflowCount = Math.max(0, totalVisibleCount - this.TOP_RESULTS);
+
+        // Reset to the collapsed state whenever the result set changes.
+        this.listingContainer.classList.remove('map__items--expanded');
+        this.showMoreButton.setAttribute('aria-expanded', 'false');
+
+        if (this.currentOverflowCount <= 0) {
+            this.showMoreButton.setAttribute('hidden', '');
+            return;
+        }
+
+        this.showMoreButton.removeAttribute('hidden');
+        this.setShowMoreLabel(false);
+    }
+
+    setShowMoreLabel(isExpanded) {
+        if (!this.showMoreButton) {
+            return;
+        }
+
+        const labelEl = this.showMoreButton.querySelector('.map__show-more__label')
+            || this.showMoreButton;
+
+        labelEl.textContent = isExpanded
+            ? 'Show fewer results'
+            : `Show ${this.currentOverflowCount} more`;
+    }
+
+    initShowMore() {
+        this.showMoreButton = this.el.querySelector('.map__show-more');
+
+        if (!this.showMoreButton) {
+            return;
+        }
+
+        this.showMoreButton.addEventListener('click', () => {
+            const isExpanded = this.listingContainer.classList.toggle('map__items--expanded');
+            this.showMoreButton.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
+            this.setShowMoreLabel(isExpanded);
         });
     }
 

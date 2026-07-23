@@ -490,6 +490,124 @@
             display: none;
         }
     }
+
+    // -------------------------------------------------------------------------
+    // Find A Distributor amends (brief v4.2)
+    // -------------------------------------------------------------------------
+
+    // Descriptive subtitle beneath the page heading (brief §9).
+    &__subtitle {
+        @include typestyle-base;
+
+        max-width: 60ch;
+        margin: 0;
+        color: var(--color--wenge);
+    }
+
+    // Smaller search box + distance dropdown (matches the installer directory).
+    &__search {
+        &__form {
+            @include mq(large) {
+                grid-template-columns: minmax(0, #{px-to-rem(320)}) minmax(0, 1fr) auto;
+            }
+        }
+
+        &__input-wrapper {
+            max-width: px-to-rem(320);
+        }
+    }
+
+    &__distance {
+        &__input {
+            max-width: px-to-rem(120);
+        }
+    }
+
+    // Pin key / legend by location type (brief §5).
+    &__legend {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--space--2xs) var(--space--s);
+
+        &__label {
+            @include typestyle-h6;
+        }
+
+        &__item {
+            @include typestyle-small;
+
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space--3xs);
+        }
+
+        &__marker {
+            width: px-to-rem(18);
+            height: auto;
+        }
+    }
+
+    &__listing {
+        &__hours {
+            @include typestyle-small;
+
+            margin-top: var(--space--3xs);
+            font-weight: var(--type--2--font-weight);
+        }
+
+        &__display-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space--3xs);
+
+            &::before {
+                width: px-to-rem(12);
+                height: px-to-rem(12);
+                border-radius: px-to-rem(2);
+                background-color: var(--color--olivegreen);
+                content: '';
+            }
+        }
+    }
+
+    // Category headings when Experience Centres are listed separately (brief §3).
+    &__items__category {
+        @include typestyle-h6;
+
+        margin: 0 0 var(--space--s);
+        padding-top: var(--space--s);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+
+        &:not(:first-child) {
+            border-top: 1px solid var(--color--brand-1);
+        }
+    }
+
+    // Top 3 shown by default; the rest collapse behind "Show more" (brief §2).
+    &__items:not(#{$this}__items--expanded) {
+        #{$this}__listing--overflow {
+            display: none;
+        }
+    }
+
+    &__show-more {
+        @include button-reset-hard;
+        @include typestyle-h6;
+
+        justify-self: start;
+        margin-top: var(--space--s);
+        text-decoration: underline;
+
+        @include interact {
+            text-decoration: none;
+        }
+
+        &[hidden] {
+            display: none;
+        }
+    }
 }
 
 :root {

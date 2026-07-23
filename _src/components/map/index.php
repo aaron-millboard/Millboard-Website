@@ -3,6 +3,12 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet.fullscreen/dist/Control.FullScreen.css" />
 
 <div <?= \Granola\Helpers::build_attributes($args['attributes']); ?>>
+    <?php if (!empty($args['subtitle'])) { ?>
+        <p class="map__subtitle alignwide">
+            <?= esc_html($args['subtitle']); ?>
+        </p>
+    <?php } ?>
+
     <div class="map__search alignwide">
         <form class="map__search__form" method="post">
             <div class="map__search__input-wrapper">
@@ -55,6 +61,29 @@
             </div>
         </form>
     </div>
+
+    <?php if (!empty($args['filters'])) { ?>
+        <div class="map__legend alignwide">
+            <span class="map__legend__label">
+                <?= esc_html_x('Key:', 'Map legend label', 'granola'); ?>
+            </span>
+
+            <?php foreach ($args['filters'] as $filter) { ?>
+                <?php if (empty($filter['value'])) { continue; } ?>
+                <span class="map__legend__item">
+                    <img
+                        class="map__legend__marker"
+                        src="<?= esc_url(\get_template_directory_uri() . '/assets/images/icons/' . $filter['value'] . '-marker.png'); ?>"
+                        alt=""
+                        width="18"
+                        height="24"
+                        loading="lazy"
+                    />
+                    <?= esc_html($filter['label']); ?>
+                </span>
+            <?php } ?>
+        </div>
+    <?php } ?>
 
     <div class="map__body">
         <div class="map__tablist">
@@ -127,6 +156,15 @@
                         <?= esc_html__('Please try removing filters or widening your search area.', 'granola'); ?>
                     </strong>
                 </div>
+
+                <button
+                    type="button"
+                    class="g-button map__show-more"
+                    aria-expanded="false"
+                    hidden
+                >
+                    <span class="map__show-more__label"></span>
+                </button>
             </div>
 
             <div id="map-container" class="map__map-container map__tab-panel">

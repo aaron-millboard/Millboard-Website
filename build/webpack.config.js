@@ -277,8 +277,11 @@ export default (env, argv) => {
                                     const resourcePath = loaderContext.resourcePath.replace(/\\/g, '/');
 
                                     // Prepend core imports for component files.
+                                    // Normalise separators so the injected path resolves on
+                                    // Windows too (sass can't import a backslashed path).
                                     if (resourcePath.includes('/components')) {
-                                        return `@import '${PATHS.src}/core.scss';\n${content}`;
+                                        const coreImportPath = `${PATHS.src}/core.scss`.replace(/\\/g, '/');
+                                        return `@import '${coreImportPath}';\n${content}`;
                                     }
 
                                     // Lookup table: which glob imports apply to which file.

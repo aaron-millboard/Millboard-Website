@@ -57,7 +57,13 @@ function filter_args(array $args): ?array
         ];
     }
 
-    if (!empty($args['post']) && $args['post'] instanceof \WP_Post) {
+    // Location-type tag (Stockist / Showspace / Experience Centre / installer
+    // type). Prefer the pre-resolved type_label from get_item_data; fall back to
+    // the installer_type term for listings not built via it (e.g. custom items).
+    // The g-tag inside .map__listing__meta is also read by the marker popup badge.
+    $type_label = trim((string) ($args['type_label'] ?? ''));
+
+    if ($type_label === '' && !empty($args['post']) && $args['post'] instanceof \WP_Post) {
         $terms = \Theme\Meta\ObjectMeta::get_object_labels($args['post'], [
             'limit' => 1,
             'taxonomies' => [
@@ -66,13 +72,17 @@ function filter_args(array $args): ?array
         ]);
 
         if (!empty($terms[0])) {
-            $args['tag'] = [
-                'content' => $terms[0]['name'],
-                'classes' => [
-                    'g-tag',
-                ],
-            ];
+            $type_label = $terms[0]['name'];
         }
+    }
+
+    if ($type_label !== '') {
+        $args['tag'] = [
+            'content' => $type_label,
+            'classes' => [
+                'g-tag',
+            ],
+        ];
     }
 
     // -------------------------------------------------------------------------
