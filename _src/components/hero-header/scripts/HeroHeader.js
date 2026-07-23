@@ -1,4 +1,5 @@
 import Player from '@vimeo/player';
+import isElementVisible from '../../../scripts/helpers/isElementVisible.js';
 
 export default class HeroHeader {
    /**
@@ -35,20 +36,13 @@ export default class HeroHeader {
             }
         });
 
-        // Hover-to-play only on true mouse devices (real hover + fine pointer).
-        // Touch and hybrid devices (including iPads, which report
-        // `hover: hover`) use the visible play button instead.
-        if (matchMedia('(hover: hover) and (pointer: fine)').matches) {
+        // Device has a mouse - set up mouse interactions.
+        if (matchMedia('(hover:hover)').matches) {
             this.media.addEventListener('mouseenter', this);
             this.media.addEventListener('mouseleave', this);
         }
 
-        // Always wire up the control button. It is only shown where hover is
-        // unavailable (see block.scss), but attaching the handler
-        // unconditionally means a tap works wherever the button is visible.
-        // The previous visibility gate could skip it on some tablets, leaving
-        // the button dead.
-        if (this.controlButton) {
+        if (this.controlButton && this.areControlsActive()) {
             this.controlButton.addEventListener('click', () => {
                 if (this.state === 'paused') {
                     this.playVideo();
@@ -67,53 +61,30 @@ export default class HeroHeader {
      * Play video
      */
     playVideo() {
-        if (!this.player) {
-            return;
+        if (this.player) {
+            this.player.play().then(() => {
+                this.element.classList.add('hero-header--playing');
+                this.controlButton.firstElementChild.textContent = this.controlButton.getAttribute('data-pause-label');
+                this.state = 'playing';
+            }) ;
         }
-
-        this.player.play().then(() => {
-            this.element.classList.add('hero-header--playing');
-            this.setControlLabel('data-pause-label');
-            this.state = 'playing';
-        }).catch(() => {
-            // Playback can be rejected by the browser (autoplay policy); keep
-            // the paused state so the button can be tapped again.
-            this.state = 'paused';
-        });
     }
 
     /**
      * Stop all videos
      */
     pauseVideo() {
-        if (!this.player) {
-            return;
+        if (this.player) {
+            this.player.pause().then(() => {
+                this.element.classList.remove('hero-header--playing');
+                this.controlButton.firstElementChild.textContent = this.controlButton.getAttribute('data-play-label');
+                this.state = 'paused';
+            });
         }
-
-        this.player.pause().then(() => {
-            this.element.classList.remove('hero-header--playing');
-            this.setControlLabel('data-play-label');
-            this.state = 'paused';
-        });
     }
 
-    /**
-     * Update the control button's visually-hidden label, guarding against a
-     * missing child node.
-     *
-     * @param {string} attribute The data attribute holding the label text.
-     */
-    setControlLabel(attribute) {
-        if (!this.controlButton) {
-            return;
-        }
-
-        const label = this.controlButton.getAttribute(attribute);
-        const target = this.controlButton.firstElementChild;
-
-        if (target && label) {
-            target.textContent = label;
-        }
+    areControlsActive() {
+        return isElementVisible(this.controlButton);
     }
 
     /**
