@@ -89,7 +89,10 @@ body {
             height: var(--site-header--height);
             transition: height var(--site-header--menu--duration) 0;
             background-color: #ffffff;
-            position: fixed;
+            // Stay sticky (do not switch to fixed) on open. Going fixed removes
+            // the header's reserved space from the layout, shifting the whole
+            // page up and causing the jump when the menu is opened while
+            // scrolled. Sticky keeps it pinned to the top without that shift.
 
             #{$this}__inner {
                 height: max-content;
@@ -98,6 +101,67 @@ body {
                     background-color: var(--color--brand-1);
                 }
             }
+        }
+    }
+
+    // Tablet (medium up to the site-header breakpoint): put the toggle, logo
+    // and buttons on a single line (toggle left, logo centred, buttons right)
+    // instead of stacking the logo under the toggle. Phones (below medium)
+    // keep the stacked layout; desktop (site-header and up) is unchanged.
+    @include mq($from: 'medium', $until: 'site-header') {
+        #{$this}__inner {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-content: center;
+            align-items: center;
+            column-gap: var(--site-header--spacing);
+            padding-right: var(--space--container-padding);
+            padding-left: var(--space--container-padding);
+        }
+
+        // Opening the menu applies the mobile `height: max-content` to the
+        // inner, which shrinks it and (with align-content: center) shifts the
+        // logo and toggle up ~29px. Keep the row full-height when open so the
+        // header contents stay put.
+        &.is-open #{$this}__inner {
+            height: 100%;
+        }
+
+        #{$this}__top-navigation {
+            grid-row: 1;
+            grid-column: 1;
+            justify-self: start;
+
+            .menu-list {
+                padding-right: 0;
+                padding-left: 0;
+            }
+        }
+
+        // Unwrap __top so the logo and buttons become direct grid items and can
+        // occupy their own columns.
+        #{$this}__top {
+            display: contents;
+        }
+
+        #{$this}__logo {
+            grid-row: 1;
+            grid-column: 2;
+            justify-self: center;
+            margin: 0;
+        }
+
+        #{$this}__buttons {
+            grid-row: 1;
+            grid-column: 3;
+            justify-self: end;
+            margin-left: 0;
+        }
+
+        // Keep the (hidden) mobile dropdown menu out of the single-line grid
+        // flow; it re-positions itself when opened (see the .is-open rules).
+        #{$this}__bottom {
+            position: absolute;
         }
     }
 
@@ -259,6 +323,9 @@ body {
                 max-height: calc(100dvh - var(--wp--admin-bar-height--sticky) - var(--site-header--height));
                 overflow-x: hidden;
                 overflow-y: auto;
+                // Keep scroll momentum inside the open menu from chaining to
+                // the page behind it.
+                overscroll-behavior: contain;
                 -webkit-overflow-scrolling: touch;
 
                 #{$this}__navigation {

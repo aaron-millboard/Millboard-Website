@@ -202,19 +202,15 @@ export default class SiteHeader {
 
         this.el.classList.add('is-open');
 
-        if (this.isBurgerModeActive()) {
-            document.documentElement.classList.add('no-scroll');
-            this.body.classList.add('no-scroll');
-        }
-
         this.headerTogglerEls.forEach((toggle) => {
             toggle.setAttribute('aria-expanded', 'true');
         });
 
         SiteHeader.setTabIndex(this.headerTogglerEls, 0);
 
-        if (this.mainMenuEl) {
-            first.focus();
+        // preventScroll so focusing the first link never scrolls the page.
+        if (this.mainMenuEl && first) {
+            first.focus({ preventScroll: true });
         }
     }
 
@@ -222,9 +218,6 @@ export default class SiteHeader {
 
         // close the menu
         this.el.classList.remove('is-open');
-
-        document.documentElement.classList.remove('no-scroll');
-        this.body.classList.remove('no-scroll');
 
         if (this.isBurgerModeActive()) {
             this.headerTogglerEls.forEach((toggle) => {
@@ -238,8 +231,8 @@ export default class SiteHeader {
             // }
 
             if (initial !== true) {
-                // Focus the burger
-                this.burgerEl.focus();
+                // Focus the burger (preventScroll so it never jumps the page).
+                this.burgerEl.focus({ preventScroll: true });
             }
         }
     }
