@@ -23,7 +23,10 @@
     display: grid;
     gap: var(--space--l);
     box-sizing: border-box;
-    padding: clamp(#{px-to-rem(20)}, 4vw, #{px-to-rem(52)});
+    // Tighten the space above the finder (theme adds a large full-width block
+    // margin); the frame is gone so the vertical padding can be modest too.
+    margin-top: clamp(#{px-to-rem(28)}, 5vw, #{px-to-rem(64)});
+    padding: var(--space--m) clamp(#{px-to-rem(20)}, 4vw, #{px-to-rem(52)});
     border: 1px solid var(--mb-rule);
     border-top: 0;
     border-bottom: 0;
