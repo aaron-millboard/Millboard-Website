@@ -11,20 +11,16 @@
 
     &__media {
         position: relative;
-        overflow: clip; // allows position: sticky.
+        overflow: clip;
         display: grid;
         grid-template-columns: minmax(0, 1fr);
         max-width: 100%;
-
-        @media (min-aspect-ratio: 16/9) {
-            min-height: 150vh; // magic number
-        }
     }
 
+    // Video, poster and strapline all share grid cell 1/1 so they stack. They
+    // are NOT sticky: the hero scrolls off the top of the viewport normally.
     &__image-wrapper,
     &__iframe {
-        position: sticky;
-        top: calc(var(--wp--admin-bar-height--sticky) + var(--site-header--height));
         display: block;
         grid-row: 1;
         grid-column: 1;
@@ -43,33 +39,22 @@
     }
 
     &__strapline {
-        padding-top: var(--space--4sx);
-        padding-bottom: var(--space--2xs);
-        font-weight: var(--type--1--font-weight);
-        font-size: rfs(30, 102);
-        letter-spacing: 0.015em; // magic number.
-        line-height: rfs(30, 80);
-        text-transform: none;
-        text-align: center;
+        margin: 0;
+    }
 
-        @include mq(medium) {
-            padding-top: var(--space--xl);
-            padding-bottom: calc(var(--space--s) * 2);
-        }
+    &__strapline-wrapper {
+        width: 100%;
+        grid-row: 1;
+        grid-column: 1;
+        align-self: start;
+        pointer-events: none; // Let clicks reach the video / controls behind.
+    }
 
-        &-wrapper-outer {
-            width: 100%;
-            grid-row: 1;
-            grid-column: 1;
-            align-self: start;
-            isolation: isolate;
-            position: sticky;
-            top: 0;
-            pointer-events: none; // required for good ::selection styles.
-
-            & + & {
-                pointer-events: auto; // required for good ::selection styles.
-            }
-        }
+    &__strapline-cutout {
+        display: block;
+        width: 100%;
+        // Height of the cream band, including breathing room above and below the
+        // text. Reserved up front to avoid layout shift.
+        height: rfs(96, 220);
     }
 }
