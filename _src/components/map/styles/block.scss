@@ -209,7 +209,7 @@
         &__heading {
             flex: none;
             margin: 0;
-            padding: var(--space--m) var(--space--m) var(--space--2xs);
+            padding: var(--space--m) px-to-rem(22) var(--space--2xs);
             font-weight: 700;
             font-size: px-to-rem(11);
             letter-spacing: 0.16em;
@@ -232,7 +232,7 @@
         flex: 1 1 auto;
         min-height: 0;
         overflow-y: auto;
-        padding: 0 var(--space--m) var(--space--2xs);
+        padding: 0 px-to-rem(22) var(--space--2xs);
         scrollbar-color: var(--mb-rule-strong) transparent;
         scrollbar-width: thin;
 
@@ -246,7 +246,7 @@
         display: flex;
         flex-wrap: wrap;
         gap: var(--space--2xs);
-        padding: 0 var(--space--m) var(--space--m);
+        padding: 0 px-to-rem(22) var(--space--m);
         border-bottom: 1px solid var(--mb-rule);
         margin-bottom: 0;
 
@@ -425,7 +425,7 @@
             display: flex;
             flex-wrap: wrap;
             align-items: center;
-            gap: var(--space--2xs);
+            gap: px-to-rem(8);
             margin-top: px-to-rem(4);
         }
 
@@ -499,7 +499,7 @@
 
     &__show-more-wrap {
         flex: none;
-        padding: var(--space--m) var(--space--m) 0;
+        padding: var(--space--m) px-to-rem(22) 0;
     }
 
     // Top 3 shown by default; the rest collapse behind "Show more".
