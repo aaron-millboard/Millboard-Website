@@ -9,7 +9,7 @@
                 'theme_location' => $args['menu_name'],
                 // Distinct id: the wrapper div above already uses $args['uid']
                 // (the button's aria-controls target), so the menu list must not
-                // reuse it or the id is duplicated (WCAG 4.1.2 — duplicate-id-aria).
+                // reuse it or the id is duplicated (WCAG 4.1.2 - duplicate-id-aria).
                 'menu_id' => $args['uid'] . '-menu',
                 'aria_label' => _x('Language', 'Language switcher nav landmark', 'granola'),
                 'classes' => ['language-switcher__menu'],

@@ -3,7 +3,7 @@
  * Build accessibility attributes for a logo link.
  *
  * Logo links wrap an image only, so if that image has no alt text the link has
- * no accessible name (WCAG 2.4.4 / 4.1.2 — link-name). Provide a fallback name
+ * no accessible name (WCAG 2.4.4 / 4.1.2 - link-name). Provide a fallback name
  * ONLY when the image genuinely has no alt, so a proper alt added later is never
  * overridden.
  */
@@ -21,7 +21,7 @@ $logo_link_a11y_attributes = function ($item): array {
         ? trim((string) \get_post_meta($attachment_id, '_wp_attachment_image_alt', true))
         : '';
 
-    // Image already has a meaningful alt — let it name the link.
+    // Image already has a meaningful alt - let it name the link.
     if ($existing_alt !== '') {
         return [];
     }
