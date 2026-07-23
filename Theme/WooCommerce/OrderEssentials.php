@@ -6,7 +6,7 @@ class OrderEssentials
 {
     private const ENDPOINT = 'order-essentials';
     private const SESSION_PROJECT_TYPE = 'millboard_order_essentials_project_type';
-    private const SESSION_ALLOW_BASKET_ONCE = 'millboard_order_essentials_allow_basket_once';
+    private const SESSION_ESSENTIALS_DECLINED = 'millboard_order_essentials_declined';
     private const CHECKOUT_ACK_FIELD = 'millboard_order_essentials_ack';
     private const QUERY_ADDED_ESSENTIALS = 'millboard_essentials_added';
 
@@ -21,6 +21,9 @@ class OrderEssentials
         \add_action('woocommerce_checkout_process', [__CLASS__, 'validate_checkout_acknowledgement']);
         \add_action('woocommerce_checkout_create_order', [__CLASS__, 'capture_order_essentials_meta'], 20, 2);
         \add_action('woocommerce_admin_order_data_after_order_details', [__CLASS__, 'render_admin_order_essentials_meta']);
+        \add_action('woocommerce_add_to_cart', [__CLASS__, 'clear_declined_essentials_on_add']);
+        \add_action('woocommerce_cart_item_removed', [__CLASS__, 'clear_declined_essentials_if_cart_empty']);
+        \add_action('woocommerce_cart_emptied', [__CLASS__, 'clear_declined_essentials']);
     }
 
     /**
@@ -96,7 +99,7 @@ class OrderEssentials
             return;
         }
 
-        if (self::consume_allow_basket_once()) {
+        if (self::has_declined_essentials()) {
             return;
         }
 
@@ -290,7 +293,7 @@ class OrderEssentials
         }
 
         if ($continue_without_essentials) {
-            self::allow_basket_once();
+            self::mark_essentials_declined();
             \wp_safe_redirect(\wc_get_cart_url());
             exit;
         }
@@ -1061,27 +1064,60 @@ class OrderEssentials
         return (int) $value;
     }
 
-    private static function allow_basket_once(): void
+    /**
+     * Remember that the shopper explicitly chose to continue without the
+     * recommended essentials. This persists for the life of the cart/session
+     * (it is NOT a one-shot flag) so that simply reloading the basket, or
+     * removing an item, doesn't re-trigger the prompt they already dismissed.
+     */
+    private static function mark_essentials_declined(): void
     {
         if (!\function_exists('WC') || !\WC()->session instanceof \WC_Session) {
             return;
         }
 
-        \WC()->session->set(self::SESSION_ALLOW_BASKET_ONCE, true);
+        \WC()->session->set(self::SESSION_ESSENTIALS_DECLINED, true);
     }
 
-    private static function consume_allow_basket_once(): bool
+    private static function has_declined_essentials(): bool
     {
         if (!\function_exists('WC') || !\WC()->session instanceof \WC_Session) {
             return false;
         }
 
-        $allowed = (bool) \WC()->session->get(self::SESSION_ALLOW_BASKET_ONCE, false);
+        return (bool) \WC()->session->get(self::SESSION_ESSENTIALS_DECLINED, false);
+    }
 
-        if ($allowed) {
-            \WC()->session->set(self::SESSION_ALLOW_BASKET_ONCE, false);
+    private static function clear_declined_essentials(): void
+    {
+        if (!\function_exists('WC') || !\WC()->session instanceof \WC_Session) {
+            return;
         }
 
-        return $allowed;
+        \WC()->session->set(self::SESSION_ESSENTIALS_DECLINED, false);
+    }
+
+    /**
+     * Adding something new to the cart can change what's recommended, so
+     * the "I don't want essentials" decision no longer applies - let the
+     * prompt resurface next time the shopper hits the cart page.
+     */
+    public static function clear_declined_essentials_on_add(): void
+    {
+        self::clear_declined_essentials();
+    }
+
+    /**
+     * If removing an item empties the cart entirely, reset the decline flag
+     * so a fresh shopping session starts clean rather than carrying over a
+     * decision from a completely different basket.
+     */
+    public static function clear_declined_essentials_if_cart_empty(): void
+    {
+        if (!\function_exists('WC') || !\WC()->cart instanceof \WC_Cart || !\WC()->cart->is_empty()) {
+            return;
+        }
+
+        self::clear_declined_essentials();
     }
 }
