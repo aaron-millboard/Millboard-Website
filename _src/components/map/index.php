@@ -159,7 +159,7 @@
 
                 <button
                     type="button"
-                    class="g-button map__show-more"
+                    class="map__show-more"
                     aria-expanded="false"
                     hidden
                 >

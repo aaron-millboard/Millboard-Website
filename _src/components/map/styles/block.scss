@@ -549,6 +549,16 @@
     }
 
     &__listing {
+        // Whole tile highlights on hover, consistent with the installer list.
+        cursor: pointer;
+        transition: background-color 200ms ease;
+        padding-inline: var(--space--2xs);
+        margin-inline: calc(var(--space--2xs) * -1);
+
+        @include interact {
+            background-color: var(--color--springwood);
+        }
+
         &__hours {
             @include typestyle-small;
 
@@ -594,13 +604,29 @@
 
     &__show-more {
         @include button-reset-hard;
-        @include typestyle-h6;
 
-        justify-self: start;
-        margin-top: var(--space--s);
-        text-decoration: underline;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        justify-self: center;
+        min-height: px-to-rem(44);
+        margin-top: var(--space--m);
+        padding: 0 var(--space--l);
+        border: 1px solid var(--mb-tt-rule-strong, var(--color--brand-4));
+        border-radius: px-to-rem(2);
+        background-color: transparent;
+        color: var(--mb-tt-ink, var(--color--wenge));
+        font-weight: 700;
+        font-size: #{px-to-rem(11)};
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        text-decoration: none;
+        transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease;
 
         @include interact {
+            background-color: var(--color--wenge);
+            border-color: var(--color--wenge);
+            color: var(--color--white);
             text-decoration: none;
         }
 

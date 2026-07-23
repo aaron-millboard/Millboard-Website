@@ -45,11 +45,19 @@ function filter_args(array $args): ?array
     }
 
     if (!empty($args['url'])) {
+        // Use the post type's readable singular label (e.g. "Experience Centre"),
+        // not the raw slug ("experience_centre").
+        $post_type_object = !empty($args['post']->post_type)
+            ? \get_post_type_object($args['post']->post_type)
+            : null;
+        $contact_label = $post_type_object && !empty($post_type_object->labels->singular_name)
+            ? $post_type_object->labels->singular_name
+            : '';
+
         $args['link'] = [
-            'content' => !empty($args['post']->post_type) ? sprintf(
-                \__('Contact %s', 'granola'),
-                $args['post']->post_type,
-            ) : \_x('Contact', 'Map listing link text', 'granola'),
+            'content' => $contact_label !== ''
+                ? sprintf(\__('Contact %s', 'granola'), $contact_label)
+                : \_x('Contact', 'Map listing link text', 'granola'),
             'url' => $args['url'],
             'classes' => [
                 'map__listing__link',
