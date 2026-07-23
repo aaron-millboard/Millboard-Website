@@ -69,7 +69,12 @@ export default (env, argv) => {
     // ----------------------------------------------
 
     // normalize component paths (components-wholegrain -> components).
-    const normalizeComponentPath = (filePath) => filePath.replace('components-wholegrain/', 'components/');
+    // Force forward slashes first so this works on Windows too, where the paths
+    // passed in (from path.relative) use backslashes and the replace would
+    // otherwise silently no-op — leaving files under assets/components-wholegrain.
+    const normalizeComponentPath = (filePath) => filePath
+        .replace(/\\/g, '/')
+        .replace('components-wholegrain/', 'components/');
 
     // build webpack entries from glob pattern.
     const buildEntries = (globPattern, filterFn = null) => {
@@ -83,7 +88,9 @@ export default (env, argv) => {
             }
 
             const parsed = path.parse(file);
-            let entryPath = path.join(parsed.dir, parsed.name);
+            // Normalise separators so component matching + entry keys are stable
+            // across platforms (path.join yields backslashes on Windows).
+            let entryPath = path.join(parsed.dir, parsed.name).replace(/\\/g, '/');
 
             // Normalise to remove alternative component directories.
             if (entryPath.includes('_src/components-')) {
@@ -91,7 +98,7 @@ export default (env, argv) => {
             }
 
             // Strip '_src'.
-            entryPath = path.relative(PATHS.src, entryPath);
+            entryPath = path.relative(PATHS.src, entryPath).replace(/\\/g, '/');
 
             entries[entryPath] = `./${file}`;
         });
