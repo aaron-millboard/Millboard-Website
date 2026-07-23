@@ -5,6 +5,7 @@
             <?= \Granola\Component::get('menu', [
                 'theme_location' => 'top',
                 'menu_id' => 'top-menu', // Required for 'aria-controls' in burger component.
+                'aria_label' => __('Secondary', 'granola'),
                 'classes' => [
                     'site-header__navigation site-header__navigation--top',
                 ],
@@ -67,6 +68,7 @@
             <?= \Granola\Component::get('menu', [
                 'theme_location' => 'header',
                 'menu_id' => 'main-menu', // Required for 'aria-controls' in burger component.
+                'aria_label' => __('Primary', 'granola'),
                 'classes' => [
                     'site-header__navigation',
                 ],

@@ -17,6 +17,8 @@ function filter_args(array $args): ?array
         'theme_location' => null,
         'heading_button' => false,
         'expandable_element_attributes' => [],
+        'attributes' => [],
+        'aria_label' => null,
     ], $args);
 
     // ---------------------------------------
@@ -107,6 +109,18 @@ function filter_args(array $args): ?array
     // Set menu heading from theme_location.
     if ($args['heading'] === true) {
         $args['heading'] = \wp_get_nav_menu_name($args['theme_location']);
+    }
+
+    // Give the <nav> landmark an accessible name so multiple navs on a page are
+    // distinguishable (WCAG technique H97/ARIA11). Priority: an explicit
+    // aria_label, otherwise the menu heading. The role ("navigation") is
+    // announced by assistive tech, so the label must not include the word.
+    if (empty($args['attributes']['aria-label']) && empty($args['attributes']['aria-labelledby'])) {
+        if (!empty($args['aria_label'])) {
+            $args['attributes']['aria-label'] = $args['aria_label'];
+        } elseif (!empty($args['heading']) && is_string($args['heading'])) {
+            $args['attributes']['aria-label'] = \wp_strip_all_tags($args['heading']);
+        }
     }
 
     // -------------------------------------------------------------------------

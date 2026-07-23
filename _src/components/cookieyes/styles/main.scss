@@ -1,0 +1,36 @@
+// -----------------------------------------------------------------------------
+// CookieYes consent UI — accessibility override
+// -----------------------------------------------------------------------------
+// The third-party CookieYes plugin ships its interactive controls with
+// `outline: none` and provides no :focus-visible alternative, so keyboard
+// users get no visible focus indicator (WCAG 2.4.7 Focus Visible). This is
+// especially serious because the consent banner is the first thing keyboard
+// and screen-reader users encounter on the page.
+//
+// We restore a high-contrast, theme-agnostic focus ring (dark ring + light
+// halo so it stays visible on both the light banner and the dark buttons).
+// !important is required to override CookieYes's own reset.
+//
+// Scoped to CookieYes containers so it never affects the rest of the site.
+
+.cky-consent-container,
+.cky-consent-bar,
+.cky-preference-center,
+.cky-modal,
+.cky-btn-revisit-wrapper {
+    .cky-btn:focus-visible,
+    .cky-iab-dec-btn:focus-visible,
+    .cky-accordion-btn:focus-visible,
+    .cky-policy:focus-visible,
+    .cky-btn-revisit:focus-visible,
+    button:focus-visible,
+    a[href]:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    [tabindex]:focus-visible {
+        outline: 3px solid #111111 !important;
+        outline-offset: 1px !important;
+        box-shadow: 0 0 0 5px #ffffff !important;
+        border-radius: 3px;
+    }
+}
