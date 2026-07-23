@@ -11,20 +11,16 @@
 
     &__media {
         position: relative;
-        overflow: clip; // allows position: sticky.
+        overflow: clip;
         display: grid;
         grid-template-columns: minmax(0, 1fr);
         max-width: 100%;
-
-        @media (min-aspect-ratio: 16/9) {
-            min-height: 150vh; // magic number
-        }
     }
 
+    // Video, poster and strapline all share grid cell 1/1 so they stack. They
+    // are NOT sticky: the hero scrolls off the top of the viewport normally.
     &__image-wrapper,
     &__iframe {
-        position: sticky;
-        top: calc(var(--wp--admin-bar-height--sticky) + var(--site-header--height));
         display: block;
         grid-row: 1;
         grid-column: 1;
@@ -51,8 +47,6 @@
         grid-row: 1;
         grid-column: 1;
         align-self: start;
-        position: sticky;
-        top: 0;
         pointer-events: none; // Let clicks reach the video / controls behind.
     }
 
