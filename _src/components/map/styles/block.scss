@@ -195,12 +195,10 @@
         width: 100%;
         gap: var(--space--l);
 
-        @include mq(medium) {
-            height: px-to-rem(620);
-            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-        }
-
+        // Single column (panel above map) up to desktop; two columns only at
+        // large so tablet stacks like the designs.
         @include mq(large) {
+            height: px-to-rem(620);
             grid-template-columns: px-to-rem(400) minmax(0, 1fr);
         }
     }
@@ -244,7 +242,9 @@
         scrollbar-color: var(--mb-rule-strong) transparent;
         scrollbar-width: thin;
 
-        @include mq($until: medium) {
+        // When stacked (below desktop) the panel has no fixed height, so cap the
+        // list so a long (expanded) list scrolls instead of dominating the page.
+        @include mq($until: large) {
             max-height: px-to-rem(520);
         }
     }
@@ -258,19 +258,9 @@
         border-bottom: 1px solid var(--mb-rule);
         margin-bottom: 0;
 
+        // Filters live inside the panel header at every width now (no tabs).
         &--mobile {
-            padding: var(--space--m) 0 0;
-            border-bottom: 0;
-
-            @include mq(medium) {
-                display: none;
-            }
-        }
-
-        &--sidebar {
-            @include mq($until: medium) {
-                display: none;
-            }
+            display: none;
         }
     }
 
@@ -583,18 +573,9 @@
     // -------------------------------------------------------------------------
     // Mobile list / map tabs (unchanged behaviour)
     // -------------------------------------------------------------------------
+    // The List/Map toggle is not in the designs — the list and map always stack.
     &__tablist {
-        display: grid;
-        width: 100%;
-        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-        margin-bottom: var(--space--s);
-        border: 1px solid var(--mb-rule);
-        border-radius: px-to-rem(2);
-        overflow: hidden;
-
-        @include mq(medium) {
-            display: none;
-        }
+        display: none;
     }
 
     &__tab {
