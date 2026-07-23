@@ -21,10 +21,14 @@
     width: 100%;
     height: 80vh;
     max-height: px-to-rem(600);
-    background-color: var(--color--white);
+    background-color: #e8eaed; // Google-like map background behind tiles.
 
-    // The CARTO Positron basemap is already brand-neutral, so no tile tinting
-    // (the old hue-rotate was compensating for the raw OpenStreetMap tiles).
+    // Nudge the raster basemap toward the Google Maps palette: lighter, cooler
+    // land, cleaner (less saturated) colours. Keeps us on lightweight raster
+    // tiles (no vector library) — an approximation of Google's look.
+    .leaflet-tile-pane {
+        filter: saturate(0.82) brightness(1.06) contrast(0.95) hue-rotate(-8deg);
+    }
 
     &.leaflet-container {
         @include typestyle-base;
