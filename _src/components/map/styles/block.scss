@@ -552,8 +552,6 @@
         // Whole tile highlights on hover, consistent with the installer list.
         cursor: pointer;
         transition: background-color 200ms ease;
-        padding-inline: var(--space--2xs);
-        margin-inline: calc(var(--space--2xs) * -1);
 
         @include interact {
             background-color: var(--color--springwood);
