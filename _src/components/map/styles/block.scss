@@ -95,35 +95,30 @@
         }
 
         &__submit {
+            @include button-reset-hard;
+
             display: inline-flex;
             align-items: center;
             justify-content: center;
             flex: none;
             width: px-to-rem(54);
-            height: auto;
+            min-height: 100%;
             padding: 0;
             border: 0;
             border-radius: 0;
             background-color: var(--mb-ink);
             color: var(--mb-spring-wood);
+            cursor: pointer;
             transition: background-color var(--dur--base, 240ms) ease;
 
             @include interact {
                 background-color: #1f1a1d;
             }
 
-            &::after {
-                --mask-icon--size: #{px-to-rem(18)};
-
-                display: block;
+            svg {
                 flex: none;
                 width: px-to-rem(18);
                 height: px-to-rem(18);
-                background-color: currentColor;
-                mask-image: url(#{asset-path('images/icons/search.svg')});
-                mask-repeat: no-repeat;
-                mask-position: center;
-                mask-size: contain;
             }
         }
 
