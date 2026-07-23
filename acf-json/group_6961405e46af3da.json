@@ -1,4 +1,4 @@
-{
+﻿{
     "key": "group_6961405e46af3da",
     "title": "Showroom Details",
     "fields": [
@@ -77,6 +77,26 @@
             },
             "default_value": "",
             "placeholder": ""
+        },
+        {
+            "key": "field_6961405e5a020sh",
+            "label": "Holds stock",
+            "name": "holds_stock",
+            "aria-label": "",
+            "type": "true_false",
+            "instructions": "Tick if this location holds sellable Millboard stock. Shows a \"Stock available\" line on the listing card and the map popup.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "message": "This location holds stock",
+            "default_value": 0,
+            "ui": 1,
+            "ui_on_text": "",
+            "ui_off_text": ""
         },
         {
             "key": "field_6961405e5a003sh",
@@ -365,5 +385,5 @@
     "show_in_rest": 0,
     "display_title": "",
     "granola_save_location": 0,
-    "modified": 1784817227
+    "modified": 1784836988
 }
