@@ -1,0 +1,85 @@
+# Millboard theme CI/CD — build, then deploy to Kinsta.
+#   staging branch -> Staging environment (auto)
+#   main branch    -> Live environment (manual button)
+#
+# Required CI/CD variable (Settings > CI/CD > Variables):
+#   SSH_DEPLOY_KEY : type = File, value = the PRIVATE half of the gitlab-ci-deploy key.
+#                    Mark it Protected. (The public half is registered in Kinsta.)
+#
+# SAFETY: DRYRUN defaults to "--dry-run" so the first pipelines transfer NOTHING.
+#         Change it to "" (empty) once a dry run looks correct, to deploy for real.
+
+stages:
+  - build
+  - deploy
+
+variables:
+  SSH_HOST: "130.162.162.23"
+  SSH_USER: "mbwctest"
+  REMOTE_THEME_PATH: "/www/mbwctest_659/public/wp-content/themes/millboard"
+  DRYRUN: "--dry-run"
+
+# Only ever run for the two deploy branches — feature-branch pushes create no pipeline.
+workflow:
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "staging"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+
+build:
+  stage: build
+  image: node:20-bookworm   # official Node + npm; PHP 8.2 + Composer installed below (Debian Bookworm ships PHP 8.2)
+  before_script:
+    - apt-get update -qq
+    - DEBIAN_FRONTEND=noninteractive apt-get install -y -qq php-cli php-mbstring php-xml php-curl php-zip php-gd unzip git rsync > /dev/null
+    - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+    - php -v && composer --version && node -v
+  script:
+    - composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+    - npm ci
+    # Equivalent of `npm run build`, but pass --allow-root to pot (CI runs as root) so wp-cli doesn't bail.
+    - npm run pot -- --allow-root
+    - npx webpack --config build/webpack.config.js --mode=production
+    # Assemble a clean deploy tree honouring .deployignore (ships vendor/ + assets/, not _src/ etc.)
+    - rsync -a --exclude-from='.deployignore' --exclude='.git' --exclude='.deploy' ./ .deploy/
+  artifacts:
+    paths:
+      - .deploy/
+    expire_in: 1 day
+
+# Shared deploy logic. rsync the built theme over SSH to the target env.
+.deploy:
+  stage: deploy
+  image: alpine:3.20
+  before_script:
+    - apk add --no-cache openssh-client rsync
+    # Normalise the pasted key: strip CR (Windows) and guarantee a trailing newline (OpenSSH requires one).
+    - tr -d '\r' < "$SSH_DEPLOY_KEY" > /tmp/deploy_key
+    - printf '\n' >> /tmp/deploy_key
+    - chmod 600 /tmp/deploy_key
+    - ssh-keygen -y -f /tmp/deploy_key > /dev/null && echo "KEY OK" || echo "KEY STILL INVALID"
+  script:
+    - >
+      rsync -rlptvz $DRYRUN
+      -e "ssh -i /tmp/deploy_key -p $PORT -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=/dev/null"
+      .deploy/ "$SSH_USER@$SSH_HOST:$REMOTE_THEME_PATH/"
+
+deploy:staging:
+  extends: .deploy
+  variables:
+    PORT: "19646"
+  environment:
+    name: staging
+    url: https://stg-mbwctest-staging.kinsta.cloud
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "staging"'
+
+deploy:production:
+  extends: .deploy
+  variables:
+    PORT: "37154"
+  environment:
+    name: production
+    url: https://www.millboard.com
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+      when: manual
