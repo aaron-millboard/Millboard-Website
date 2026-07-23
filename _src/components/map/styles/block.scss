@@ -454,8 +454,12 @@
                 text-decoration: none;
             }
 
+            // The global `svg { width: 100% }` reset would otherwise stretch
+            // these inline icons to fill the button.
             svg {
                 flex: none;
+                width: px-to-rem(15);
+                height: px-to-rem(15);
             }
 
             &--icon {
