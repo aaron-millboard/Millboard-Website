@@ -3,108 +3,136 @@
 @import './map.scss';
 @import './icons.scss';
 
+// =============================================================================
+// Directory finder — cleaner layout (mockup: "Directory Finder – All Views")
+// Tokens map the mockup's --mb-* / --fg-* / --border-rule to the theme's
+// existing map tokens so installer + distributor finders share one look.
+// =============================================================================
 .map {
     $this: &;
 
+    // Local design tokens (bridge mockup names to theme values).
+    --mb-olive: var(--color--olivegreen);
+    --mb-spring-wood: var(--color--springwood);
+    --mb-ink: var(--mb-tt-ink, #2f292e);
+    --mb-wenge: var(--color--wenge);
+    --mb-muted: var(--mb-tt-muted, #6e6a6c);
+    --mb-rule: var(--mb-tt-rule, rgba(47, 41, 46, 0.18));
+    --mb-rule-strong: var(--mb-tt-rule-strong, rgba(47, 41, 46, 0.32));
+
     display: grid;
-    gap: var(--space--xl);
+    gap: var(--space--l);
+    box-sizing: border-box;
+    padding: clamp(#{px-to-rem(20)}, 4vw, #{px-to-rem(52)});
+    border: 1px solid var(--mb-rule);
+    border-radius: px-to-rem(2);
+    background: var(--mb-spring-wood);
+    box-shadow: 0 #{px-to-rem(4)} #{px-to-rem(16)} rgba(47, 41, 46, 0.08);
+    color: var(--mb-ink);
 
     &.has-background {
-        padding-right: 0;
-        padding-left: 0;
+        padding-right: clamp(#{px-to-rem(20)}, 4vw, #{px-to-rem(52)});
+        padding-left: clamp(#{px-to-rem(20)}, 4vw, #{px-to-rem(52)});
     }
 
-    &__map-container,
-    &__table-container {
-        overflow: hidden;
-        border: 0;
-        isolation: isolate;
+    // ---- Optional subtitle + olive accent rule (heading stays page-level) ----
+    &__subtitle {
+        @include typestyle-base;
 
-        // Hide and show the table or the map.
-        &[aria-hidden='true'] {
-            display: none;
-            visibility: hidden;
+        max-width: 62ch;
+        margin: 0;
+        color: var(--mb-muted);
+
+        &::after {
+            display: block;
+            width: px-to-rem(56);
+            height: px-to-rem(2);
+            margin-top: var(--space--s);
+            background: var(--mb-olive);
+            content: '';
         }
     }
 
+    // -------------------------------------------------------------------------
+    // Search + distance controls
+    // -------------------------------------------------------------------------
     &__search {
         width: 100%;
 
         &__form {
-            display: grid;
+            display: flex;
+            flex-wrap: wrap;
             align-items: center;
-            gap: var(--space--l);
-
-            @include mq(medium) {
-                grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-            }
-
-            @include mq(large) {
-                grid-template-columns: minmax(0, px-to-rem(400)) minmax(0, 1fr) auto;
-            }
+            justify-content: space-between;
+            gap: var(--space--s) var(--space--l);
         }
 
         &__input-wrapper {
-            display: grid;
-            max-width: px-to-rem(400);
-            grid-template-columns: minmax(0, 1fr) px-to-rem(66);
-
-            + #{$this}__distance {
-                @include mq(medium) {
-                    grid-column-start: 3;
-                }
-            }
-        }
-
-        &__label {
-            margin: 0;
+            display: flex;
+            align-items: stretch;
+            flex: 1 1 px-to-rem(320);
+            max-width: px-to-rem(560);
+            min-width: px-to-rem(220);
+            height: px-to-rem(44);
+            overflow: hidden;
+            border: 1px solid var(--mb-rule);
+            border-radius: px-to-rem(2);
+            background: var(--mb-spring-wood);
         }
 
         &__input {
-            --input--border-color: black;
-            --input--border-color--focus: black;
+            --input--border-color: transparent;
+            --input--border-color--focus: transparent;
             --input--background-color: transparent;
 
-            border-right: 0;
+            flex: 1;
+            min-width: 0;
+            border: 0;
+            padding: 0 px-to-rem(16);
+            font-weight: var(--fw-light, 300);
             line-height: 1;
         }
 
         &__submit {
-            width: px-to-rem(66);
-            height: px-to-rem(66);
+            flex: none;
+            width: px-to-rem(54);
+            height: auto;
+            border: 0;
+            border-radius: 0;
+            background-color: var(--mb-ink);
+            color: var(--mb-spring-wood);
+            transition: background-color var(--dur--base, 240ms) ease;
+
+            @include interact {
+                background-color: #1f1a1d;
+            }
 
             &::after {
-                --mask-icon--size: 24px;
+                --mask-icon--size: #{px-to-rem(18)};
 
+                width: px-to-rem(18);
+                height: px-to-rem(18);
+                background-color: currentColor;
                 mask-image: url(#{asset-path('images/icons/search.svg')});
             }
         }
 
         &__geolocate {
             @include button-reset-hard;
-            @include typestyle-h6;
+            @include typestyle-small;
             @include mask-icon(before);
 
             display: inline-flex;
             align-items: center;
             gap: var(--space--2xs);
-            justify-self: start;
-            text-align: left;
+            color: var(--mb-muted);
 
             @include interact {
-                text-decoration: underline;
-            }
-
-            @include mq($from: medium, $until: large) {
-                grid-column-end: span 2;
-            }
-
-            @include mq($until: large) {
-                order: -1;
+                color: var(--mb-olive);
             }
 
             &::before {
-                --mask-icon--size: 24px;
+                --mask-icon--size: #{px-to-rem(18)};
 
                 flex: 0 0 auto;
                 width: var(--mask-icon--size);
@@ -116,84 +144,51 @@
 
     &__distance {
         display: flex;
-        gap: px-to-rem(10);
+        flex: none;
         align-items: center;
-
-        @include mq(medium) {
-            justify-content: flex-end;
-        }
+        gap: var(--space--2xs);
 
         &__label {
             flex: 0 0 auto;
             margin: 0;
-            font-size: var(--type--font-size--base);
+            color: var(--mb-muted);
+            font-size: px-to-rem(14);
+            font-weight: var(--fw-light, 300);
         }
 
         &__input {
-            --input--background-color: transparent;
+            --input--background-color: var(--mb-spring-wood);
 
-            @include mq($until: medium) {
-                max-width: min-content;
-            }
+            height: px-to-rem(44);
+            box-sizing: border-box;
+            padding: 0 px-to-rem(42) 0 px-to-rem(16);
+            border: 1px solid var(--mb-rule);
+            border-radius: px-to-rem(2);
+            background-color: var(--mb-spring-wood);
+            background-image: url(#{asset-path('images/icons/chevron-down.svg')});
+            background-repeat: no-repeat;
+            background-position: right px-to-rem(14) center;
+            background-size: px-to-rem(14);
+            font-size: px-to-rem(14);
+            font-weight: var(--fw-light, 300);
+            appearance: none;
         }
     }
 
-    &__tablist {
-        display: grid;
-        width: 100%;
-        background-color: var(--color--brand-1);
-        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-
-        @include mq(medium) {
-            display: none;
-        }
-    }
-
-    &__tab {
-        @include typestyle-h6;
-
-        padding: var(--space--2xs) var(--space--3xs);
-        background-color: var(--color--brand-1);
-        border-top: 1px solid var(--color--brand-1);
-        border-bottom: 1px solid var(--color--brand-4);
-
-        &--active {
-            border-top-color: var(--color--brand-4);
-            border-bottom-color: transparent;
-            background-color: var(--color--brand-2);
-
-            &:first-child {
-                border-inline-end: 1px solid var(--color--brand-4);
-            }
-
-            &:last-child {
-                border-inline-start: 1px solid var(--color--brand-4);
-            }
-        }
-    }
-    &__tab-panel {
-        &[hidden] {
-            @include mq($until: medium) {
-                display: none;
-            }
-        }
-    }
-
+    // -------------------------------------------------------------------------
+    // Body layout: results panel + map
+    // -------------------------------------------------------------------------
     &__body {
         display: grid;
     }
 
     &__content {
-        width: 100%;
         display: grid;
-        gap: var(--space--xl);
-
-        @include mq($until: medium) {
-            padding-top: var(--space--m);
-        }
+        width: 100%;
+        gap: var(--space--l);
 
         @include mq(medium) {
-            height: px-to-rem(600);
+            height: px-to-rem(620);
             grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
         }
 
@@ -202,133 +197,62 @@
         }
     }
 
-    &__map-container {
-        @include mq($until: medium) {
-            height: px-to-rem(500);
-        }
-    }
-
+    // ---- Results panel (bordered card: header / scroll body / footer) ----
     &__sidebar {
-        display: grid;
+        display: flex;
+        flex-direction: column;
         overflow: hidden;
-        align-content: start;
+        border: 1px solid var(--mb-rule);
+        border-radius: px-to-rem(2);
+        background: var(--mb-spring-wood);
 
         &__heading {
-            @include typestyle-h6;
+            flex: none;
+            margin: 0;
+            padding: var(--space--m) var(--space--m) var(--space--2xs);
+            font-weight: 700;
+            font-size: px-to-rem(11);
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--mb-ink);
         }
 
         &__no-content {
             display: none;
             padding-top: var(--space--m);
-            border-top: 1px solid var(--color--brand-1);
-            font-weight: var(--type--2--font-weight);
+            font-weight: 700;
 
-            .no-content > & {
+            .no-results & {
                 display: block;
             }
         }
     }
 
     &__items {
-        overflow: auto;
-        -ms-overflow-style: none;
-        scrollbar-color: var(--color--brand-4) transparent;
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        padding: 0 var(--space--m) var(--space--2xs);
+        scrollbar-color: var(--mb-rule-strong) transparent;
         scrollbar-width: thin;
-    }
 
-    &__listing {
-        display: grid;
-        gap: 0;
-        padding-bottom: var(--space--l);
-        justify-items: start;
-
-        &.selected {
-            border-inline-start: 4px solid var(--color--brand-4);
-            padding-inline-start: var(--space--2xs);
-        }
-
-        &:not(:last-child) {
-            border-bottom: 1px solid var(--color--brand-1);
-            margin-bottom: var(--space--l);
-        }
-
-        &[hidden] {
-            display: none;
-        }
-
-        &__title {
-            @include typestyle-xlarge;
-
-            margin: 0;
-            font-weight: var(--type--2--font-weight);
-            letter-spacing: 0;
-        }
-
-        &__meta {
-            order: -1;
-            display: flex;
-            flex-flow: row wrap;
-            align-items: center;
-            gap: var(--space--3xs);
-
-            &:not(:empty) {
-                margin-bottom: var(--space--s);
-            }
-
-            .g-tag {
-                border-color: var(--color--brand-4);
-            }
-        }
-
-        &__distance {
-            @include typestyle-small;
-
-            font-weight: var(--type--2--font-weight);
-        }
-
-        &__phone,
-        &__address {
-            @include typestyle-small;
-
-            margin-top: var(--space--3xs);
-        }
-
-        &__link {
-            @include typestyle-h6;
-            @include mask-icon;
-
-            display: inline-flex;
-            gap: var(--space--2xs);
-            align-items: center;
-            text-decoration: none;
-            margin-top: var(--space--s);
-
-            @include interact {
-                text-decoration: none;
-            }
-
-            &::after {
-                display: block;
-                width: #{px-to-rem(24)};
-                height: #{px-to-rem(24)};
-                content: '';
-                mask-image: url(#{asset-path('images/icons/chevron-right.svg')});
-                mask-size: #{px-to-rem(24)};
-            }
+        @include mq($until: medium) {
+            max-height: px-to-rem(520);
         }
     }
 
+    // ---- Filter chips ----
     &__filters {
         display: flex;
-        gap: var(--space--3xs);
         flex-wrap: wrap;
-        padding-bottom: var(--space--l);
-        margin-bottom: var(--space--l);
-        border-bottom: 1px solid var(--color--brand-1);
-        width: 100%;
+        gap: var(--space--2xs);
+        padding: 0 var(--space--m) var(--space--m);
+        border-bottom: 1px solid var(--mb-rule);
+        margin-bottom: 0;
 
         &--mobile {
-            margin-top: var(--space--l);
+            padding: var(--space--m) 0 0;
+            border-bottom: 0;
 
             @include mq(medium) {
                 display: none;
@@ -344,36 +268,358 @@
 
     &__filter {
         @include button-reset-hard;
-        @include typestyle-small;
 
-        line-height: 1;
-        display: flex;
-        padding: var(--space--3xs) px-to-rem(12);
-        align-items: flex-start;
-        gap: px-to-rem(10);
-        border: 1px solid var(--color--brand-1);
+        display: inline-flex;
+        align-items: center;
+        gap: px-to-rem(7);
+        padding: px-to-rem(8) px-to-rem(12);
+        border: 1px solid var(--mb-rule);
+        border-radius: px-to-rem(2);
+        background: transparent;
+        color: var(--mb-ink);
+        font-weight: 700;
+        font-size: px-to-rem(10.5);
+        letter-spacing: 0.11em;
+        text-transform: uppercase;
+        transition: color var(--dur--base, 240ms) ease, border-color var(--dur--base, 240ms) ease, background-color var(--dur--base, 240ms) ease;
 
         @include interact {
-            background-color: var(--color--wenge);
-            color: var(--color--white);
+            border-color: var(--mb-olive);
+            color: var(--mb-olive);
+        }
+
+        &__count {
+            font-weight: var(--fw-light, 300);
+            color: var(--mb-muted);
         }
 
         &--active {
-            background-color: var(--color--wenge);
-            color: var(--color--white);
+            border-color: var(--mb-ink);
+            background: var(--mb-ink);
+            color: var(--mb-spring-wood);
+
+            @include interact {
+                border-color: var(--mb-ink);
+                color: var(--mb-spring-wood);
+            }
+
+            #{$this}__filter__count {
+                color: var(--mb-spring-wood);
+                opacity: 0.72;
+            }
         }
     }
 
+    // ---- Category section headers (label + trailing hairline) ----
+    &__items__category {
+        display: flex;
+        align-items: center;
+        gap: var(--space--2xs);
+        margin: 0;
+        padding-top: var(--space--m);
+        font-weight: 700;
+        font-size: px-to-rem(11);
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--mb-ink);
+
+        &::after {
+            flex: 1;
+            height: 1px;
+            background: var(--mb-rule);
+            content: '';
+        }
+    }
+
+    // ---- Listing cards ----
+    &__listing {
+        display: flex;
+        flex-direction: column;
+        gap: px-to-rem(9);
+        padding: var(--space--m) 0;
+        border-top: 1px solid var(--mb-rule);
+        cursor: pointer;
+
+        &[hidden] {
+            display: none;
+        }
+
+        &.selected {
+            box-shadow: inset px-to-rem(3) 0 0 var(--mb-olive);
+            padding-left: var(--space--2xs);
+        }
+
+        &__meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--space--2xs);
+        }
+
+        // Type badge, coloured by location type.
+        &__type {
+            display: inline-flex;
+            align-items: center;
+            gap: px-to-rem(6);
+            padding: px-to-rem(5) px-to-rem(9);
+            border: 1px solid var(--mb-wenge);
+            border-radius: px-to-rem(2);
+            background: var(--mb-wenge);
+            color: var(--mb-spring-wood);
+            font-weight: 700;
+            font-size: px-to-rem(9.5);
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        &__badge-icon {
+            flex: none;
+            width: px-to-rem(12);
+            height: px-to-rem(12);
+        }
+
+        &[data-map-item-post-type='experience_centre'] #{$this}__listing__type {
+            border-color: var(--mb-olive);
+            background: var(--mb-olive);
+        }
+
+        &__distance {
+            flex: none;
+            font-size: px-to-rem(12.5);
+            color: var(--mb-muted);
+            white-space: nowrap;
+        }
+
+        &__title {
+            margin: 0;
+            font-weight: var(--fw-light, 300);
+            font-size: px-to-rem(18);
+            line-height: 1.25;
+            letter-spacing: 0;
+            color: var(--mb-ink);
+        }
+
+        &__address {
+            margin: 0;
+            font-size: px-to-rem(13);
+            line-height: 1.55;
+            color: var(--mb-muted);
+        }
+
+        &__hours {
+            margin: 0;
+            font-size: px-to-rem(12.5);
+            font-weight: var(--fw-light, 300);
+            color: var(--mb-muted);
+
+            &--open {
+                color: var(--mb-olive);
+            }
+
+            &--closed {
+                color: var(--color--error, #b3261e);
+            }
+        }
+
+        &__actions {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: var(--space--2xs);
+            margin-top: px-to-rem(4);
+        }
+
+        &__action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: px-to-rem(6);
+            box-sizing: border-box;
+            height: px-to-rem(34);
+            padding: 0 px-to-rem(12);
+            border: 1px solid var(--mb-rule);
+            border-radius: px-to-rem(2);
+            background: transparent;
+            color: var(--mb-ink);
+            font-weight: 700;
+            font-size: px-to-rem(9.5);
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            text-decoration: none;
+            transition: color var(--dur--base, 240ms) ease, border-color var(--dur--base, 240ms) ease;
+
+            @include interact {
+                border-color: var(--mb-olive);
+                color: var(--mb-olive);
+                text-decoration: none;
+            }
+
+            svg {
+                flex: none;
+            }
+
+            &--icon {
+                width: px-to-rem(34);
+                padding: 0;
+            }
+        }
+    }
+
+    // ---- Show more (full-width) ----
+    &__show-more {
+        @include button-reset-hard;
+
+        flex: none;
+        width: 100%;
+        margin: 0;
+        padding: var(--space--s);
+        border: 1px solid var(--mb-ink);
+        border-radius: px-to-rem(2);
+        background: transparent;
+        color: var(--mb-ink);
+        font-weight: 700;
+        font-size: px-to-rem(11);
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        transition: color var(--dur--base, 240ms) ease, border-color var(--dur--base, 240ms) ease;
+
+        @include interact {
+            border-color: var(--mb-olive);
+            color: var(--mb-olive);
+        }
+
+        &[hidden] {
+            display: none;
+        }
+    }
+
+    &__show-more-wrap {
+        flex: none;
+        padding: var(--space--m) var(--space--m) 0;
+    }
+
+    // Top 3 shown by default; the rest collapse behind "Show more".
+    &__items:not(#{$this}__items--expanded) {
+        #{$this}__listing--overflow {
+            display: none;
+        }
+    }
+
+    // ---- Map panel + Key header ----
+    &__map-panel {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        border: 1px solid var(--mb-rule);
+        border-radius: px-to-rem(2);
+        background: var(--mb-spring-wood);
+
+        #leaflet-map-container {
+            flex: 1 1 auto;
+            height: auto;
+            min-height: px-to-rem(440);
+            max-height: none;
+        }
+    }
+
+    &__legend {
+        display: flex;
+        flex: none;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--space--2xs) var(--space--m);
+        padding: var(--space--2xs) var(--space--m);
+        border-bottom: 1px solid var(--mb-rule);
+
+        &__label {
+            font-weight: 700;
+            font-size: px-to-rem(11);
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--mb-muted);
+        }
+
+        &__item {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space--3xs);
+            font-size: px-to-rem(13);
+            color: var(--mb-ink);
+        }
+
+        &__marker {
+            flex: none;
+            width: px-to-rem(17);
+            height: auto;
+        }
+    }
+
+    &__map-container,
+    &__table-container {
+        overflow: hidden;
+        border: 0;
+        isolation: isolate;
+        flex: 1 1 auto;
+        min-height: px-to-rem(520);
+
+        &[aria-hidden='true'] {
+            display: none;
+            visibility: hidden;
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Mobile list / map tabs (unchanged behaviour)
+    // -------------------------------------------------------------------------
+    &__tablist {
+        display: grid;
+        width: 100%;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        margin-bottom: var(--space--s);
+        border: 1px solid var(--mb-rule);
+        border-radius: px-to-rem(2);
+        overflow: hidden;
+
+        @include mq(medium) {
+            display: none;
+        }
+    }
+
+    &__tab {
+        @include button-reset-hard;
+
+        padding: var(--space--2xs) var(--space--3xs);
+        background-color: transparent;
+        color: var(--mb-ink);
+        font-weight: 700;
+        font-size: px-to-rem(11);
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+
+        &--active {
+            background-color: var(--mb-ink);
+            color: var(--mb-spring-wood);
+        }
+    }
+
+    &__tab-panel {
+        &[hidden] {
+            @include mq($until: medium) {
+                display: none;
+            }
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Marker popup (unchanged — already brand-spec)
+    // -------------------------------------------------------------------------
     &__marker-tooltip {
-        // Explicit size: the global `svg { width: 100% }` reset would otherwise
-        // blow these inline icons up to fill their flex container.
         &__icon {
             flex: none;
             width: #{px-to-rem(15)};
             height: #{px-to-rem(15)};
         }
 
-        // Badge, e.g. "Premier Stockist".
         &__badge {
             display: flex;
             align-items: center;
@@ -444,8 +690,6 @@
             gap: #{px-to-rem(10)};
         }
 
-        // Buttons flex to share the row; when the box is too narrow for both,
-        // they wrap and each grows to full width (stacked).
         &__btn {
             flex: 1 1 #{px-to-rem(130)};
             display: inline-flex;
@@ -485,155 +729,7 @@
             }
         }
 
-        // "Get " prefix on the directions button: shown only on small phones.
         &__btn-prefix {
-            display: none;
-        }
-    }
-
-    // -------------------------------------------------------------------------
-    // Find A Distributor amends (brief v4.2)
-    // -------------------------------------------------------------------------
-
-    // Descriptive subtitle beneath the page heading (brief §9).
-    &__subtitle {
-        @include typestyle-base;
-
-        max-width: 60ch;
-        margin: 0;
-        color: var(--color--wenge);
-    }
-
-    // Smaller search box + distance dropdown (matches the installer directory).
-    &__search {
-        &__form {
-            @include mq(large) {
-                grid-template-columns: minmax(0, #{px-to-rem(320)}) minmax(0, 1fr) auto;
-            }
-        }
-
-        &__input-wrapper {
-            max-width: px-to-rem(320);
-        }
-    }
-
-    &__distance {
-        &__input {
-            max-width: px-to-rem(120);
-        }
-    }
-
-    // Pin key / legend by location type (brief §5).
-    &__legend {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: var(--space--2xs) var(--space--s);
-
-        &__label {
-            @include typestyle-h6;
-        }
-
-        &__item {
-            @include typestyle-small;
-
-            display: inline-flex;
-            align-items: center;
-            gap: var(--space--3xs);
-        }
-
-        &__marker {
-            width: px-to-rem(18);
-            height: auto;
-        }
-    }
-
-    &__listing {
-        // Whole tile highlights on hover, consistent with the installer list.
-        cursor: pointer;
-        transition: background-color 200ms ease;
-
-        @include interact {
-            background-color: var(--color--springwood);
-        }
-
-        &__hours {
-            @include typestyle-small;
-
-            margin-top: var(--space--3xs);
-            font-weight: var(--type--2--font-weight);
-
-            &--open {
-                color: var(--color--olivegreen);
-            }
-
-            &--closed {
-                color: var(--color--error);
-            }
-        }
-
-        &__display-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: var(--space--3xs);
-
-            &::before {
-                width: px-to-rem(12);
-                height: px-to-rem(12);
-                border-radius: px-to-rem(2);
-                background-color: var(--color--olivegreen);
-                content: '';
-            }
-        }
-    }
-
-    // Category headings when Experience Centres are listed separately (brief §3).
-    // No border — the filters divider above and the spacing/label below are
-    // enough; a border here doubled up with the filters line.
-    &__items__category {
-        @include typestyle-h6;
-
-        margin: 0 0 var(--space--s);
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-    }
-
-    // Top 3 shown by default; the rest collapse behind "Show more" (brief §2).
-    &__items:not(#{$this}__items--expanded) {
-        #{$this}__listing--overflow {
-            display: none;
-        }
-    }
-
-    &__show-more {
-        @include button-reset-hard;
-
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        justify-self: center;
-        min-height: px-to-rem(44);
-        margin-top: var(--space--m);
-        padding: 0 var(--space--l);
-        border: 1px solid var(--mb-tt-rule-strong, var(--color--brand-4));
-        border-radius: px-to-rem(2);
-        background-color: transparent;
-        color: var(--mb-tt-ink, var(--color--wenge));
-        font-weight: 700;
-        font-size: #{px-to-rem(11)};
-        letter-spacing: 0.14em;
-        text-transform: uppercase;
-        text-decoration: none;
-        transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease;
-
-        @include interact {
-            background-color: var(--color--wenge);
-            border-color: var(--color--wenge);
-            color: var(--color--white);
-            text-decoration: none;
-        }
-
-        &[hidden] {
             display: none;
         }
     }

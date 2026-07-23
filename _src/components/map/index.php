@@ -62,29 +62,6 @@
         </form>
     </div>
 
-    <?php if (!empty($args['filters'])) { ?>
-        <div class="map__legend alignwide">
-            <span class="map__legend__label">
-                <?= esc_html_x('Key:', 'Map legend label', 'granola'); ?>
-            </span>
-
-            <?php foreach ($args['filters'] as $filter) { ?>
-                <?php if (empty($filter['value'])) { continue; } ?>
-                <span class="map__legend__item">
-                    <img
-                        class="map__legend__marker"
-                        src="<?= esc_url(\get_template_directory_uri() . '/assets/images/icons/' . $filter['value'] . '-marker.png'); ?>"
-                        alt=""
-                        width="18"
-                        height="24"
-                        loading="lazy"
-                    />
-                    <?= esc_html($filter['label']); ?>
-                </span>
-            <?php } ?>
-        </div>
-    <?php } ?>
-
     <div class="map__body">
         <div class="map__tablist">
             <?= \Granola\Component::get('button', [
@@ -157,17 +134,42 @@
                     </strong>
                 </div>
 
-                <button
-                    type="button"
-                    class="map__show-more"
-                    aria-expanded="false"
-                    hidden
-                >
-                    <span class="map__show-more__label"></span>
-                </button>
+                <div class="map__show-more-wrap">
+                    <button
+                        type="button"
+                        class="map__show-more"
+                        aria-expanded="false"
+                        hidden
+                    >
+                        <span class="map__show-more__label"></span>
+                    </button>
+                </div>
             </div>
 
-            <div id="map-container" class="map__map-container map__tab-panel">
+            <div id="map-container" class="map__map-panel map__map-container map__tab-panel">
+                <?php if (!empty($args['filters'])) { ?>
+                    <div class="map__legend">
+                        <span class="map__legend__label">
+                            <?= esc_html_x('Key', 'Map legend label', 'granola'); ?>
+                        </span>
+
+                        <?php foreach ($args['filters'] as $filter) { ?>
+                            <?php if (empty($filter['value'])) { continue; } ?>
+                            <span class="map__legend__item">
+                                <img
+                                    class="map__legend__marker"
+                                    src="<?= esc_url(\get_template_directory_uri() . '/assets/images/icons/' . $filter['value'] . '-marker.png'); ?>"
+                                    alt=""
+                                    width="17"
+                                    height="21"
+                                    loading="lazy"
+                                />
+                                <?= esc_html($filter['label']); ?>
+                            </span>
+                        <?php } ?>
+                    </div>
+                <?php } ?>
+
                 <div id="leaflet-map-container"></div>
             </div>
         </div>

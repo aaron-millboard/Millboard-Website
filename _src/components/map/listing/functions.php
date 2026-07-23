@@ -11,6 +11,8 @@ function filter_args(array $args): ?array
         'classes' => [],
         'link' => [],
         'tag' => [],
+        'email' => '',
+        'phone' => '',
     ], $args);
 
     // ---------------------------------------
@@ -24,40 +26,29 @@ function filter_args(array $args): ?array
         return null;
     }
 
-    $args['attributes']['data-map-item-lat'] = $args['address']['lat'];
-    $args['attributes']['data-map-item-lng'] = $args['address']['lng'];
+    $lat = $args['address']['lat'] ?? '';
+    $lng = $args['address']['lng'] ?? '';
+
+    $args['attributes']['data-map-item-lat'] = $lat;
+    $args['attributes']['data-map-item-lng'] = $lng;
 
     if (!empty($args['advanced_installer'])) {
         $args['attributes']['data-map-item-advanced-installer'] = '1';
     }
 
-    // Finally set address.
-    $args['address'] = $args['address']['address'];
+    // Finally set address (the google_map field returns an array).
+    $args['address'] = $args['address']['address'] ?? '';
 
-    if (!empty($args['phone'])) {
-        $args['phone'] = [
-            'content' => $args['phone'],
-            'url' => 'tel:' . $args['phone'],
-            'classes' => [
-                'map__listing__phone',
-            ],
-        ];
-    }
+    // Directions link to the listing's coordinates (card action).
+    $args['directions_url'] = ($lat !== '' && $lng !== '')
+        ? 'https://www.google.com/maps/dir/?api=1&destination=' . rawurlencode($lat . ',' . $lng)
+        : '';
 
+    // Detail-page link (the "More info" card action). Kept in $args['link'] too
+    // for the marker popup, which reads .map__listing__link for the detail href.
     if (!empty($args['url'])) {
-        // Use the post type's readable singular label (e.g. "Experience Centre"),
-        // not the raw slug ("experience_centre").
-        $post_type_object = !empty($args['post']->post_type)
-            ? \get_post_type_object($args['post']->post_type)
-            : null;
-        $contact_label = $post_type_object && !empty($post_type_object->labels->singular_name)
-            ? $post_type_object->labels->singular_name
-            : '';
-
         $args['link'] = [
-            'content' => $contact_label !== ''
-                ? sprintf(\__('Contact %s', 'granola'), $contact_label)
-                : \_x('Contact', 'Map listing link text', 'granola'),
+            'content' => \_x('More info', 'Map listing detail link', 'granola'),
             'url' => $args['url'],
             'classes' => [
                 'map__listing__link',
@@ -89,6 +80,7 @@ function filter_args(array $args): ?array
             'content' => $type_label,
             'classes' => [
                 'g-tag',
+                'map__listing__type',
             ],
         ];
     }
