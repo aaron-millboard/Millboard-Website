@@ -588,17 +588,14 @@
     }
 
     // Category headings when Experience Centres are listed separately (brief §3).
+    // No border — the filters divider above and the spacing/label below are
+    // enough; a border here doubled up with the filters line.
     &__items__category {
         @include typestyle-h6;
 
         margin: 0 0 var(--space--s);
-        padding-top: var(--space--s);
         text-transform: uppercase;
         letter-spacing: 0.04em;
-
-        &:not(:first-child) {
-            border-top: 1px solid var(--color--brand-1);
-        }
     }
 
     // Top 3 shown by default; the rest collapse behind "Show more" (brief §2).
