@@ -1252,6 +1252,9 @@ let markerHtml = `
         const address = addressEl ? this.escapeHtml(addressEl.textContent.trim()) : '';
         const tag = tagEl ? this.escapeHtml(tagEl.textContent.trim()) : '';
 
+        const stockEl = listingEl.querySelector('.map__listing__stock');
+        const stock = stockEl ? this.escapeHtml(stockEl.textContent.trim()) : '';
+
         const roadDistanceInMiles = marker.options.themeData.roadDistanceInMiles;
         const distanceInMiles = marker.options.themeData.distanceInMiles;
 
@@ -1322,7 +1325,11 @@ let markerHtml = `
             html += `<p class="map__marker-tooltip__address">${address}</p>`;
         }
 
-        // Actions. The phone number is intentionally not shown; "Contact us"
+        if (stock) {
+            html += `<p class="map__marker-tooltip__stock">${stock}</p>`;
+        }
+
+        // Actions. The phone number is intentionally not shown; "More info"
         // routes visitors through the listing's own profile page instead.
         // Data attributes feed the click tracking (see initClickTracking).
         const postType = marker.options.themeData && marker.options.themeData.postType
@@ -1337,7 +1344,7 @@ let markerHtml = `
         }
 
         if (safeLinkHref) {
-            html += `<a class="map__marker-tooltip__btn map__marker-tooltip__btn--secondary" href="${safeLinkHref}" data-map-action="contact" ${trackAttrs}>${TOOLTIP_ICONS.mail}<span class="map__marker-tooltip__btn-text">Contact us</span></a>`; // TODO: translate
+            html += `<a class="map__marker-tooltip__btn map__marker-tooltip__btn--secondary" href="${safeLinkHref}" data-map-action="contact" ${trackAttrs}><span class="map__marker-tooltip__btn-text">More info</span></a>`; // TODO: translate
         }
 
         html += '</div>';

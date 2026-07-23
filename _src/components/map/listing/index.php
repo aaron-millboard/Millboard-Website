@@ -29,6 +29,12 @@ $listing_type_icon = '<svg class="map__listing__badge-icon" width="12" height="1
         </p>
     <?php } ?>
 
+    <?php if (!empty($args['holds_stock'])) { ?>
+        <p class="map__listing__stock">
+            <?= esc_html_x('Stock available', 'Map listing stock line', 'granola'); ?>
+        </p>
+    <?php } ?>
+
     <div class="map__listing__actions">
         <?php if (!empty($args['email'])) { ?>
             <a class="map__listing__action map__listing__action--icon" href="mailto:<?= esc_attr($args['email']); ?>" aria-label="<?= esc_attr__('Email', 'granola'); ?>" title="<?= esc_attr__('Email', 'granola'); ?>">

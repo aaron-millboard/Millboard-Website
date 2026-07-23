@@ -270,6 +270,7 @@ function get_item_data($args): array|null
             || in_array($post_type, ['experience_centre', 'showroom'], true);
 
         $preferred = !empty(\get_field('preferred_stockist', $wp_post_id));
+        $holds_stock = !empty(\get_field('holds_stock', $wp_post_id));
         $today_hours = get_todays_opening_hours(\get_field('opening_hours', $wp_post_id));
 
         $items[] = [
@@ -286,6 +287,7 @@ function get_item_data($args): array|null
             'type_label' => get_type_label($wp_post),
             'preferred' => $preferred,
             'has_display' => $has_display,
+            'holds_stock' => $holds_stock,
             'display_collections' => \get_field('display_collections', $wp_post_id),
             'display_photo' => \get_field('display_photo', $wp_post_id),
             'opening_today' => $today_hours['text'],
