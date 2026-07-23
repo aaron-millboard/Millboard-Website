@@ -126,9 +126,9 @@ if (!$checkout->is_registration_enabled() && $checkout->is_registration_required
     <div class="checkout__summary">
         <?php do_action('woocommerce_checkout_before_order_review_heading'); ?>
 
-        <div class="woocommerce__section-header" id="order_review_heading">
+        <h2 class="woocommerce__section-header" id="order_review_heading">
             <?php esc_html_e('Order summary', 'granola'); ?>
-        </div>
+        </h2>
 
         <?php do_action('woocommerce_checkout_before_order_review'); ?>
 

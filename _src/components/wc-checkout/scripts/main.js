@@ -1,6 +1,12 @@
  // Change position of WC AJAX notices
 jQuery(document.body).on('checkout_error', function() {
-    jQuery('.woocommerce-NoticeGroup-checkout').insertAfter('#checkout__notices');
+    // Reposition the error notices and expose them as an alert so screen
+    // readers announce checkout validation errors (WCAG 4.1.3 Status Messages).
+    // #checkout__notices is display:none (a positioning anchor only), so the
+    // live-region role must go on the visible notice group itself.
+    jQuery('.woocommerce-NoticeGroup-checkout')
+        .attr('role', 'alert')
+        .insertAfter('#checkout__notices');
 });
 
 jQuery(document.body).on('click', 'a.woocommerce-terms-and-conditions-link', function(event) {
