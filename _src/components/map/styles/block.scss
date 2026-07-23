@@ -519,8 +519,12 @@
         #leaflet-map-container {
             flex: 1 1 auto;
             height: auto;
-            min-height: px-to-rem(440);
+            min-height: px-to-rem(320);
             max-height: none;
+
+            @include mq(medium) {
+                min-height: px-to-rem(400);
+            }
         }
     }
 
@@ -562,7 +566,11 @@
         border: 0;
         isolation: isolate;
         flex: 1 1 auto;
-        min-height: px-to-rem(520);
+
+        // Stacked (below desktop): map sits ABOVE the list, per the designs.
+        @include mq($until: large) {
+            order: -1;
+        }
 
         &[aria-hidden='true'] {
             display: none;
