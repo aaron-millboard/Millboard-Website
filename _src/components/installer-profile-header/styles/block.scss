@@ -91,6 +91,10 @@
 
     &__pin {
         flex: none;
+        // The theme applies a global `svg { width: 100% }` reset, so inline
+        // icons MUST be given explicit dimensions or they blow up to full width.
+        width: px-to-rem(15);
+        height: px-to-rem(15);
         color: var(--iph--accent);
     }
 
@@ -114,6 +118,13 @@
         display: inline-flex;
         gap: px-to-rem(2);
         color: var(--iph--accent);
+
+        // Constrain against the global `svg { width: 100% }` reset.
+        svg {
+            flex: none;
+            width: px-to-rem(14);
+            height: px-to-rem(14);
+        }
     }
 
     &__rating-value {
