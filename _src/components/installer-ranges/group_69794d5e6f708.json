@@ -1,0 +1,126 @@
+{
+    "key": "group_69794d5e6f708",
+    "title": "Block - Installer Ranges",
+    "fields": [
+        {
+            "key": "field_69794d5e0001",
+            "label": "Heading",
+            "name": "heading",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "Section heading.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": { "width": "", "class": "", "id": "" },
+            "default_value": "Millboard ranges we install",
+            "maxlength": "",
+            "placeholder": "",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_69794d5e0002",
+            "label": "Link",
+            "name": "link",
+            "aria-label": "",
+            "type": "link",
+            "instructions": "Optional link shown top-right, e.g. \"Order samples\".",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": { "width": "", "class": "", "id": "" },
+            "return_format": "array"
+        },
+        {
+            "key": "field_69794d5e0003",
+            "label": "Ranges",
+            "name": "ranges",
+            "aria-label": "",
+            "type": "repeater",
+            "instructions": "One card per Millboard range installed.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": { "width": "", "class": "", "id": "" },
+            "layout": "table",
+            "pagination": 0,
+            "min": 0,
+            "max": 0,
+            "collapsed": "field_69794d5e0005",
+            "button_label": "Add range",
+            "rows_per_page": 50,
+            "sub_fields": [
+                {
+                    "key": "field_69794d5e0004",
+                    "label": "Image",
+                    "name": "image",
+                    "aria-label": "",
+                    "type": "image",
+                    "instructions": "",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": { "width": "34", "class": "", "id": "" },
+                    "return_format": "id",
+                    "preview_size": "thumbnail",
+                    "library": "all",
+                    "min_width": "",
+                    "min_height": "",
+                    "min_size": "",
+                    "max_width": "",
+                    "max_height": "",
+                    "max_size": "",
+                    "mime_types": ""
+                },
+                {
+                    "key": "field_69794d5e0005",
+                    "label": "Name",
+                    "name": "name",
+                    "aria-label": "",
+                    "type": "text",
+                    "instructions": "",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": { "width": "33", "class": "", "id": "" },
+                    "default_value": "",
+                    "maxlength": "",
+                    "placeholder": "Enhanced Grain",
+                    "prepend": "",
+                    "append": ""
+                },
+                {
+                    "key": "field_69794d5e0006",
+                    "label": "Category",
+                    "name": "category",
+                    "aria-label": "",
+                    "type": "text",
+                    "instructions": "",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": { "width": "33", "class": "", "id": "" },
+                    "default_value": "",
+                    "maxlength": "",
+                    "placeholder": "Decking",
+                    "prepend": "",
+                    "append": ""
+                }
+            ]
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "block",
+                "operator": "==",
+                "value": "acf/installer-ranges"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "",
+    "show_in_rest": 0,
+    "modified": 1785462000
+}
