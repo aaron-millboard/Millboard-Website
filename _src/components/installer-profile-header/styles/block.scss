@@ -67,6 +67,7 @@
         font-weight: 300;
         font-size: clamp(30px, 4.5vw, 48px);
         line-height: 1.1;
+        overflow-wrap: break-word;
         color: var(--color--foreground);
     }
 
@@ -343,7 +344,11 @@
 
     &__card-badge {
         flex: none;
-        align-self: center;
+        align-self: flex-start;
+
+        @include mq(large) {
+            align-self: center;
+        }
 
         .installer-profile-header__badge {
             box-shadow: none;
@@ -351,39 +356,54 @@
         }
 
         .installer-profile-header__badge-img {
-            height: px-to-rem(150);
+            height: px-to-rem(120);
+
+            @include mq(large) {
+                height: px-to-rem(150);
+            }
         }
     }
 
     // ---- Stats bar (advanced only) ------------------------------------------
+    // CSS grid with minmax(0, 1fr) so cells shrink instead of forcing the card
+    // wider than the viewport (which was cutting off the title and squeezing
+    // the badge over the buttons). 2-up on mobile, 4-up from tablet.
     &__stats {
-        display: flex;
-        flex-wrap: wrap;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         border-top: 1px solid var(--iph--rule);
         border-bottom: 1px solid var(--iph--rule);
         margin: 0 0 px-to-rem(24);
+
+        @include mq(medium) {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
     }
 
     &__stat {
-        flex: 1 1 50%;
+        min-width: 0;
         padding: px-to-rem(14) px-to-rem(20);
+        border-top: 1px solid var(--iph--rule);
+        border-left: 1px solid var(--iph--rule);
 
-        &:not(:first-child) {
-            border-left: 1px solid var(--iph--rule);
-        }
-
-        @include mq(medium) {
-            flex: 1 1 0;
-        }
-
-        // On narrow screens the cells wrap 2-up; drop the stray left borders.
+        // Mobile (2-up): no left border on the first column, no top border on
+        // the first row.
         @include mq($until: medium) {
             &:nth-child(odd) {
                 border-left: 0;
             }
 
-            &:nth-child(n + 3) {
-                border-top: 1px solid var(--iph--rule);
+            &:nth-child(-n + 2) {
+                border-top: 0;
+            }
+        }
+
+        // Tablet+ (4-up, single row): only vertical dividers.
+        @include mq(medium) {
+            border-top: 0;
+
+            &:first-child {
+                border-left: 0;
             }
         }
     }
