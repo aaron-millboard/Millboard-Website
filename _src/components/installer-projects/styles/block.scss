@@ -1,0 +1,168 @@
+// =============================================================================
+// Installer Projects
+// Header (rule + heading + optional link), a featured hero tile with a caption
+// overlay, and a grid of smaller project tiles. 2-up mobile, 4-up desktop.
+// =============================================================================
+
+.installer-projects {
+    --ip--accent: var(--color--olivegreen);
+    --ip--rule: #{rgba(#151716, 0.14)};
+    --ip--dark: #{rgba(#2f292e, 0.6)};
+    --ip--light: var(--color--springwood);
+
+    padding: clamp(40px, 6vw, 60px) 0;
+    background: var(--color--mist);
+    color: var(--color--foreground);
+
+    &__inner {
+        max-width: px-to-rem(1200);
+        margin: 0 auto;
+        padding: 0 clamp(20px, 4vw, 40px);
+    }
+
+    // ---- Header --------------------------------------------------------------
+    &__head {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: px-to-rem(20);
+        margin: 0 0 px-to-rem(28);
+    }
+
+    &__rule {
+        display: block;
+        width: px-to-rem(48);
+        height: 2px;
+        margin-bottom: px-to-rem(20);
+        background: var(--ip--accent);
+    }
+
+    &__heading {
+        margin: 0;
+        font-weight: 300;
+        font-size: clamp(24px, 3.4vw, 32px);
+        line-height: 1.15;
+        color: var(--color--foreground);
+    }
+
+    &__link {
+        display: inline-flex;
+        align-items: center;
+        gap: px-to-rem(7);
+        padding-bottom: px-to-rem(4);
+        font-size: px-to-rem(11);
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        text-decoration: none;
+        color: var(--color--foreground);
+        border-bottom: 1px solid var(--ip--rule);
+        transition: color 0.24s ease, border-color 0.24s ease;
+
+        &:hover,
+        &:focus-visible {
+            color: var(--ip--accent);
+            border-color: var(--ip--accent);
+        }
+    }
+
+    &__arrow {
+        flex: none;
+        width: px-to-rem(13);
+        height: px-to-rem(13);
+    }
+
+    // ---- Tiles (shared) ------------------------------------------------------
+    &__featured,
+    &__tile {
+        position: relative;
+        margin: 0;
+        overflow: hidden;
+
+        img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        // Darken the lower portion so the caption is legible.
+        &::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, #{rgba(#2f292e, 0.6)}, transparent 55%);
+            pointer-events: none;
+        }
+    }
+
+    &__featured {
+        height: clamp(240px, 40vw, 340px);
+        margin-bottom: px-to-rem(16);
+    }
+
+    &__tile {
+        height: clamp(150px, 30vw, 180px);
+    }
+
+    &__caption {
+        position: absolute;
+        left: px-to-rem(14);
+        bottom: px-to-rem(12);
+        right: px-to-rem(14);
+        z-index: 1;
+        display: flex;
+        flex-direction: column;
+        color: var(--ip--light);
+
+        &--featured {
+            left: clamp(14px, 2vw, 26px);
+            bottom: clamp(12px, 2vw, 22px);
+        }
+    }
+
+    &__eyebrow {
+        margin-bottom: px-to-rem(8);
+        font-size: px-to-rem(10);
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--color--apple, #a0cd4f);
+    }
+
+    &__featured-title {
+        font-weight: 300;
+        font-size: clamp(18px, 2.4vw, 22px);
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+    }
+
+    &__featured-subtitle {
+        margin-top: px-to-rem(6);
+        font-size: px-to-rem(12.5);
+        color: #{rgba(#f8f4f0, 0.85)};
+    }
+
+    &__tile-title {
+        font-size: px-to-rem(13);
+        font-weight: 700;
+    }
+
+    &__tile-subtitle {
+        margin-top: px-to-rem(2);
+        font-size: px-to-rem(11);
+        color: #{rgba(#f8f4f0, 0.82)};
+    }
+
+    // ---- Grid ----------------------------------------------------------------
+    &__grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: px-to-rem(16);
+
+        @include mq(large) {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+    }
+}
