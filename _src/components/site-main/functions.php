@@ -34,12 +34,12 @@ function filter_args(array $args): ?array
         $template_page = \Granola\WordPress\TemplatePage::get_template_page($args['object']);
 
         if (!\is_single() && !empty($template_page)) {
-            if (!\has_block('acf/page-header', $template_page) && !\has_block('acf/hero-header', $template_page)) {
+            if (!\has_block('acf/page-header', $template_page) && !\has_block('acf/hero-header', $template_page) && !\has_block('acf/installer-profile-header', $template_page)) {
                 $args['header'] = \Granola\Component::get('page-header', [
                     'object' => $args['object'],
                 ]);
             }
-        } elseif (!\has_block('acf/page-header') && !\has_block('acf/hero-header')) {
+        } elseif (!\has_block('acf/page-header') && !\has_block('acf/hero-header') && !\has_block('acf/installer-profile-header')) {
             $args['header'] = \Granola\Component::get('page-header', [
                 'object' => $args['object'],
             ]);
