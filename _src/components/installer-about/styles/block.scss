@@ -1,0 +1,130 @@
+// =============================================================================
+// Installer About
+// Left column: olive rule, heading, body copy, optional capability chips.
+// Right column: a key-facts table (Approved) OR an image (Advanced). The facts
+// table takes priority when both are set.
+// =============================================================================
+
+.installer-about {
+    --ia--accent: var(--color--olivegreen);
+    --ia--muted: #{rgba(#151716, 0.66)};
+    --ia--rule: #{rgba(#151716, 0.16)};
+
+    padding: clamp(40px, 6vw, 64px) 0;
+    border-top: 1px solid var(--ia--rule);
+    color: var(--color--foreground);
+
+    &__inner {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: clamp(28px, 4vw, 52px);
+        max-width: px-to-rem(1200);
+        margin: 0 auto;
+        padding: 0 clamp(20px, 4vw, 40px);
+
+        @include mq(large) {
+            grid-template-columns: 1.3fr 1fr;
+            align-items: start;
+            gap: px-to-rem(56);
+        }
+    }
+
+    // Advanced variant (image aside) centres the columns and widens the text.
+    &--image &__inner {
+        @include mq(large) {
+            grid-template-columns: 1.25fr 1fr;
+            align-items: center;
+        }
+    }
+
+    &__body {
+        min-width: 0;
+    }
+
+    &__rule {
+        display: block;
+        width: px-to-rem(48);
+        height: 2px;
+        margin-bottom: px-to-rem(22);
+        background: var(--ia--accent);
+    }
+
+    &__heading {
+        margin: 0 0 px-to-rem(22);
+        font-weight: 300;
+        font-size: clamp(24px, 3.2vw, 32px);
+        line-height: 1.15;
+        color: var(--color--foreground);
+    }
+
+    &__text {
+        font-size: px-to-rem(16);
+        line-height: 1.75;
+        color: var(--ia--muted);
+
+        p {
+            margin: 0 0 px-to-rem(16);
+
+            &:last-child {
+                margin-bottom: 0;
+            }
+        }
+    }
+
+    // ---- Capability chips ----------------------------------------------------
+    &__tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: px-to-rem(10);
+        margin-top: px-to-rem(22);
+    }
+
+    &__tag {
+        padding: px-to-rem(7) px-to-rem(13);
+        font-size: px-to-rem(11);
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        border: 1px solid var(--ia--rule);
+    }
+
+    // ---- Facts table ---------------------------------------------------------
+    &__facts {
+        margin: 0;
+        border-top: 1px solid var(--ia--rule);
+    }
+
+    &__fact {
+        display: flex;
+        justify-content: space-between;
+        gap: px-to-rem(16);
+        padding: px-to-rem(15) 0;
+        border-bottom: 1px solid var(--ia--rule);
+
+        &:last-child {
+            border-bottom: 0;
+        }
+    }
+
+    &__fact-label {
+        font-size: px-to-rem(11);
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--ia--muted);
+    }
+
+    &__fact-value {
+        margin: 0;
+        font-size: px-to-rem(15);
+        text-align: right;
+    }
+
+    // ---- Image ---------------------------------------------------------------
+    &__image {
+        display: block;
+        width: 100%;
+        height: clamp(260px, 40vw, 400px);
+        object-fit: cover;
+    }
+}

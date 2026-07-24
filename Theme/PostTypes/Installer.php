@@ -59,6 +59,7 @@ class Installer
                         ]
                     ]
                 ],
+                ['acf/installer-about'],
                 ['acf/partner-contact-form'],
                 [
                     'core/paragraph',
