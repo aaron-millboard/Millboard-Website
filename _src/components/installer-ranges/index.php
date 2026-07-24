@@ -21,8 +21,19 @@ if (!empty($link) && !empty($link['url'])) {
         </div>
 
         <div class="installer-ranges__grid">
-            <?php foreach ($args['ranges'] as $range) { ?>
-                <div class="installer-ranges__card">
+            <?php foreach ($args['ranges'] as $range) {
+                $rl = $range['link'] ?? null;
+                $is_link = !empty($rl) && !empty($rl['url']);
+                $tag = $is_link ? 'a' : 'div';
+                $attrs = 'class="installer-ranges__card' . ($is_link ? ' installer-ranges__card--linked' : '') . '"';
+                if ($is_link) {
+                    $attrs .= ' href="' . esc_url($rl['url']) . '"';
+                    if (!empty($rl['target'])) {
+                        $attrs .= ' target="' . esc_attr($rl['target']) . '" rel="noopener"';
+                    }
+                }
+                ?>
+                <<?= $tag; ?> <?= $attrs; ?>>
                     <?php if (!empty($range['image'])) { ?>
                         <div class="installer-ranges__card-media">
                             <?= wp_get_attachment_image($range['image'], 'medium', false, ['class' => 'installer-ranges__card-image']); ?>
@@ -36,7 +47,7 @@ if (!empty($link) && !empty($link['url'])) {
                             <span class="installer-ranges__card-category"><?= esc_html($range['category']); ?></span>
                         <?php } ?>
                     </div>
-                </div>
+                </<?= $tag; ?>>
             <?php } ?>
         </div>
 

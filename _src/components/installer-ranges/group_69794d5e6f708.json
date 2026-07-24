@@ -40,7 +40,7 @@
             "required": 0,
             "conditional_logic": 0,
             "wrapper": { "width": "", "class": "", "id": "" },
-            "layout": "table",
+            "layout": "block",
             "pagination": 0,
             "min": 0,
             "max": 0,
@@ -57,7 +57,7 @@
                     "instructions": "",
                     "required": 0,
                     "conditional_logic": 0,
-                    "wrapper": { "width": "34", "class": "", "id": "" },
+                    "wrapper": { "width": "25", "class": "", "id": "" },
                     "return_format": "id",
                     "preview_size": "thumbnail",
                     "library": "all",
@@ -78,7 +78,7 @@
                     "instructions": "",
                     "required": 0,
                     "conditional_logic": 0,
-                    "wrapper": { "width": "33", "class": "", "id": "" },
+                    "wrapper": { "width": "25", "class": "", "id": "" },
                     "default_value": "",
                     "maxlength": "",
                     "placeholder": "Enhanced Grain",
@@ -94,12 +94,24 @@
                     "instructions": "",
                     "required": 0,
                     "conditional_logic": 0,
-                    "wrapper": { "width": "33", "class": "", "id": "" },
+                    "wrapper": { "width": "20", "class": "", "id": "" },
                     "default_value": "",
                     "maxlength": "",
                     "placeholder": "Decking",
                     "prepend": "",
                     "append": ""
+                },
+                {
+                    "key": "field_69794d5e0007",
+                    "label": "Link",
+                    "name": "link",
+                    "aria-label": "",
+                    "type": "link",
+                    "instructions": "Optional. Link the card through to the decking or cladding collection.",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": { "width": "30", "class": "", "id": "" },
+                    "return_format": "array"
                 }
             ]
         }
@@ -122,5 +134,5 @@
     "active": true,
     "description": "",
     "show_in_rest": 0,
-    "modified": 1785462000
+    "modified": 1785463000
 }
