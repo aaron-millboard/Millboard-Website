@@ -1,0 +1,187 @@
+// =============================================================================
+// Installer Services
+// Intro (rule + heading + lead), a responsive card grid (1 / 2 / 3-up), and an
+// optional trailing call-to-action tile (light or dark).
+// =============================================================================
+
+.installer-services {
+    --is--accent: var(--color--olivegreen);
+    --is--muted: #{rgba(#151716, 0.66)};
+    --is--rule: #{rgba(#151716, 0.16)};
+    --is--dark: var(--color--black);
+    --is--light: var(--color--springwood);
+
+    padding: clamp(40px, 6vw, 64px) 0;
+    background: var(--color--mist);
+    color: var(--color--foreground);
+
+    &__inner {
+        max-width: px-to-rem(1200);
+        margin: 0 auto;
+        padding: 0 clamp(20px, 4vw, 40px);
+    }
+
+    &__intro {
+        max-width: 46ch;
+        margin: 0 0 clamp(24px, 4vw, 34px);
+    }
+
+    &__rule {
+        display: block;
+        width: px-to-rem(48);
+        height: 2px;
+        margin-bottom: px-to-rem(20);
+        background: var(--is--accent);
+    }
+
+    &__heading {
+        margin: 0 0 px-to-rem(10);
+        font-weight: 300;
+        font-size: clamp(24px, 3.2vw, 32px);
+        line-height: 1.15;
+        color: var(--color--foreground);
+    }
+
+    &__lead {
+        margin: 0;
+        font-size: px-to-rem(15);
+        line-height: 1.7;
+        color: var(--is--muted);
+    }
+
+    // ---- Grid ----------------------------------------------------------------
+    &__grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: px-to-rem(18);
+
+        @include mq(medium) {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        @include mq(large) {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: px-to-rem(22);
+        }
+    }
+
+    // ---- Service card --------------------------------------------------------
+    &__card {
+        display: flex;
+        flex-direction: column;
+        background: var(--is--light);
+        border: 1px solid var(--is--rule);
+    }
+
+    &__card-media {
+        height: px-to-rem(150);
+    }
+
+    &__card-image {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    &__card-body {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        padding: px-to-rem(20) px-to-rem(20) px-to-rem(22);
+    }
+
+    &__card-title {
+        margin: 0 0 px-to-rem(8);
+        font-size: px-to-rem(16);
+        font-weight: 700;
+    }
+
+    &__card-text {
+        margin: 0;
+        font-size: px-to-rem(13.5);
+        line-height: 1.65;
+        color: var(--is--muted);
+    }
+
+    &__card-link {
+        display: inline-flex;
+        align-self: flex-start;
+        align-items: center;
+        gap: px-to-rem(7);
+        margin-top: px-to-rem(14);
+        padding-bottom: px-to-rem(3);
+        font-size: px-to-rem(10.5);
+        font-weight: 700;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        text-decoration: none;
+        color: var(--color--foreground);
+        border-bottom: 1px solid var(--is--rule);
+        transition: color 0.24s ease, border-color 0.24s ease;
+
+        &:hover,
+        &:focus-visible {
+            color: var(--is--accent);
+            border-color: var(--is--accent);
+        }
+    }
+
+    // Constrain the inline arrow against the global `svg { width: 100% }` reset.
+    &__arrow {
+        flex: none;
+        width: px-to-rem(13);
+        height: px-to-rem(13);
+    }
+
+    // ---- Call-to-action tile -------------------------------------------------
+    &__cta {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: px-to-rem(12);
+        padding: px-to-rem(24);
+        border: 1px solid var(--is--rule);
+
+        &--light {
+            background: var(--is--light);
+        }
+
+        &--dark {
+            background: var(--is--dark);
+            border-color: var(--is--dark);
+
+            .installer-services__cta-title {
+                color: var(--is--light);
+            }
+
+            .installer-services__cta-text {
+                color: #{rgba(#f9f7f1, 0.8)};
+            }
+
+            .installer-services__card-link {
+                color: var(--is--light);
+                border-color: #{rgba(#f9f7f1, 0.35)};
+
+                &:hover,
+                &:focus-visible {
+                    color: var(--color--apple, #a0cd4f);
+                    border-color: var(--color--apple, #a0cd4f);
+                }
+            }
+        }
+    }
+
+    &__cta-title {
+        margin: 0;
+        font-size: px-to-rem(16);
+        font-weight: 700;
+    }
+
+    &__cta-text {
+        margin: 0;
+        font-size: px-to-rem(13.5);
+        line-height: 1.65;
+        color: var(--is--muted);
+    }
+}

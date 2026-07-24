@@ -60,6 +60,7 @@ class Installer
                     ]
                 ],
                 ['acf/installer-about'],
+                ['acf/installer-services'],
                 ['acf/partner-contact-form'],
                 [
                     'core/paragraph',
