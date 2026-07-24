@@ -66,8 +66,13 @@ if (!empty($args['badge_image'])) {
 
         <div class="installer-profile-header__card-wrap<?= $has_cover ? ' installer-profile-header__card-wrap--overlap' : ''; ?>">
             <div class="installer-profile-header__card">
-                <div class="installer-profile-header__card-body">
-                    <p class="installer-profile-header__eyebrow"><?= esc_html($args['tier_label']); ?></p>
+                <p class="installer-profile-header__eyebrow"><?= esc_html($args['tier_label']); ?></p>
+
+                <div class="installer-profile-header__card-badge">
+                    <?= $badge_html; ?>
+                </div>
+
+                <div class="installer-profile-header__card-main">
                     <h1 class="installer-profile-header__title"><?= esc_html($args['title']); ?></h1>
                     <?php if (!empty($args['tagline'])) { ?>
                         <p class="installer-profile-header__tagline"><?= esc_html($args['tagline']); ?></p>
@@ -91,10 +96,6 @@ if (!empty($args['badge_image'])) {
                     <?php } ?>
 
                     <?= $buttons_html; ?>
-                </div>
-
-                <div class="installer-profile-header__card-badge">
-                    <?= $badge_html; ?>
                 </div>
             </div>
         </div>

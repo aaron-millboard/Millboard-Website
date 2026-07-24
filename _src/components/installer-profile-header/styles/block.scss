@@ -319,32 +319,44 @@
         }
     }
 
+    // Grid so the badge sits top-right on mobile/tablet (in a row with the
+    // eyebrow) and becomes a full-height, centred column on desktop.
     &__card {
-        display: flex;
-        flex-direction: column;
-        gap: clamp(24px, 4vw, 46px);
+        display: grid;
+        grid-template-columns: 1fr auto;
+        grid-template-areas:
+            "eyebrow badge"
+            "main    main";
+        column-gap: clamp(16px, 3vw, 46px);
+        row-gap: px-to-rem(14);
         padding: clamp(24px, 4vw, 42px);
         background: var(--iph--light);
         border: 1px solid #{rgba(#151716, 0.1)};
         box-shadow: 0 20px 54px #{rgba(#151716, 0.2)};
 
         @include mq(large) {
-            flex-direction: row;
-            align-items: center;
+            grid-template-areas:
+                "eyebrow badge"
+                "main    badge";
+            align-items: start;
+        }
+
+        > .installer-profile-header__eyebrow {
+            grid-area: eyebrow;
+            align-self: start;
+            margin: 0;
         }
     }
 
-    &__card-body {
+    &__card-main {
+        grid-area: main;
         min-width: 0;
-
-        @include mq(large) {
-            flex: 1 1 auto;
-        }
     }
 
     &__card-badge {
-        flex: none;
-        align-self: flex-start;
+        grid-area: badge;
+        justify-self: end;
+        align-self: start;
 
         @include mq(large) {
             align-self: center;
@@ -352,11 +364,15 @@
 
         .installer-profile-header__badge {
             box-shadow: none;
-            padding: px-to-rem(12);
+            padding: px-to-rem(10);
         }
 
         .installer-profile-header__badge-img {
-            height: px-to-rem(120);
+            height: px-to-rem(58);
+
+            @include mq(medium) {
+                height: px-to-rem(96);
+            }
 
             @include mq(large) {
                 height: px-to-rem(150);
