@@ -65,7 +65,7 @@
     &__title {
         margin: 0 0 px-to-rem(14);
         font-weight: 300;
-        font-size: clamp(30px, 4vw, 44px);
+        font-size: clamp(30px, 4.5vw, 48px);
         line-height: 1.1;
         color: var(--color--foreground);
     }
@@ -176,6 +176,13 @@
         }
     }
 
+    // Constrain button icons against the global `svg { width: 100% }` reset.
+    &__btn-icon {
+        flex: none;
+        width: px-to-rem(15);
+        height: px-to-rem(15);
+    }
+
     // ---- Media ---------------------------------------------------------------
     &__media {
         position: relative;
@@ -195,9 +202,6 @@
 
     // ---- Badge ---------------------------------------------------------------
     &__badge {
-        position: absolute;
-        left: px-to-rem(-14);
-        bottom: px-to-rem(-16);
         display: inline-flex;
         flex-direction: column;
         gap: px-to-rem(2);
@@ -205,6 +209,13 @@
         background: var(--iph--light);
         border: 1px solid var(--iph--rule);
         box-shadow: 0 12px 32px #{rgba(#151716, 0.16)};
+    }
+
+    // Approved: badge overlaps the bottom-left corner of the cover image.
+    &__media &__badge {
+        position: absolute;
+        left: px-to-rem(-14);
+        bottom: px-to-rem(-16);
 
         @include mq($until: large) {
             left: px-to-rem(12);
@@ -235,5 +246,166 @@
         display: block;
         height: px-to-rem(72);
         width: auto;
+    }
+
+    // =========================================================================
+    // Advanced tier — full-bleed hero image + overlapping stats card.
+    // =========================================================================
+    &__hero-media {
+        position: relative;
+        max-width: px-to-rem(1200);
+        margin: 0 auto;
+        height: clamp(260px, 44vw, 480px);
+        overflow: hidden;
+    }
+
+    &__hero-img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    &__hero-scrim {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+            to bottom,
+            #{rgba(#2f292e, 0.28)} 0%,
+            transparent 30%,
+            transparent 60%,
+            #{rgba(#2f292e, 0.34)} 100%
+        );
+    }
+
+    &__verified {
+        position: absolute;
+        top: px-to-rem(22);
+        left: clamp(20px, 4vw, 40px);
+        display: inline-flex;
+        align-items: center;
+        gap: px-to-rem(8);
+        padding: px-to-rem(9) px-to-rem(15);
+        background: #{rgba(#2f292e, 0.55)};
+        color: var(--iph--light);
+        font-weight: 700;
+        font-size: px-to-rem(10.5);
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+
+        svg {
+            flex: none;
+            width: px-to-rem(14);
+            height: px-to-rem(14);
+            color: var(--color--apple, #a0cd4f);
+        }
+    }
+
+    &__card-wrap {
+        max-width: px-to-rem(1200);
+        margin: 0 auto;
+        padding: 0 clamp(20px, 4vw, 40px);
+
+        &--overlap {
+            position: relative;
+            z-index: 2;
+            margin-top: clamp(-140px, -12vw, -60px);
+
+            @include mq($until: medium) {
+                margin-top: px-to-rem(-48);
+            }
+        }
+    }
+
+    &__card {
+        display: flex;
+        flex-direction: column;
+        gap: clamp(24px, 4vw, 46px);
+        padding: clamp(24px, 4vw, 42px);
+        background: var(--iph--light);
+        border: 1px solid #{rgba(#151716, 0.1)};
+        box-shadow: 0 20px 54px #{rgba(#151716, 0.2)};
+
+        @include mq(large) {
+            flex-direction: row;
+            align-items: center;
+        }
+    }
+
+    &__card-body {
+        min-width: 0;
+
+        @include mq(large) {
+            flex: 1 1 auto;
+        }
+    }
+
+    &__card-badge {
+        flex: none;
+        align-self: center;
+
+        .installer-profile-header__badge {
+            box-shadow: none;
+            padding: px-to-rem(12);
+        }
+
+        .installer-profile-header__badge-img {
+            height: px-to-rem(150);
+        }
+    }
+
+    // ---- Stats bar (advanced only) ------------------------------------------
+    &__stats {
+        display: flex;
+        flex-wrap: wrap;
+        border-top: 1px solid var(--iph--rule);
+        border-bottom: 1px solid var(--iph--rule);
+        margin: 0 0 px-to-rem(24);
+    }
+
+    &__stat {
+        flex: 1 1 50%;
+        padding: px-to-rem(14) px-to-rem(20);
+
+        &:not(:first-child) {
+            border-left: 1px solid var(--iph--rule);
+        }
+
+        @include mq(medium) {
+            flex: 1 1 0;
+        }
+
+        // On narrow screens the cells wrap 2-up; drop the stray left borders.
+        @include mq($until: medium) {
+            &:nth-child(odd) {
+                border-left: 0;
+            }
+
+            &:nth-child(n + 3) {
+                border-top: 1px solid var(--iph--rule);
+            }
+        }
+    }
+
+    &__stat-value {
+        display: block;
+        font-size: px-to-rem(29);
+        font-weight: 300;
+        line-height: 1;
+    }
+
+    &__stat-label {
+        display: block;
+        margin-top: px-to-rem(5);
+        font-size: px-to-rem(10);
+        font-weight: 700;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: #{rgba(#151716, 0.55)};
+    }
+
+    &__stat-sublabel {
+        display: block;
     }
 }

@@ -146,6 +146,68 @@
             "placeholder": ""
         },
         {
+            "key": "field_69791a2b0008",
+            "label": "Years established",
+            "name": "years_established",
+            "aria-label": "",
+            "type": "number",
+            "instructions": "Advanced installers only. Shown in the hero stats bar, e.g. 12.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "33",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "min": 0,
+            "max": "",
+            "placeholder": "12",
+            "step": "",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_69791a2b0009",
+            "label": "Projects completed",
+            "name": "projects_completed",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "Advanced installers only. Shown in the hero stats bar, e.g. \"180+\".",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "33",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "10",
+            "placeholder": "180+",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_69791a2b000a",
+            "label": "Counties covered",
+            "name": "counties_covered",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "Advanced installers only. Shown in the hero stats bar, e.g. 3.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "33",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "10",
+            "placeholder": "3",
+            "prepend": "",
+            "append": ""
+        },
+        {
             "key": "field_69791a2b0007",
             "label": "Request a quote link",
             "name": "quote_url",
