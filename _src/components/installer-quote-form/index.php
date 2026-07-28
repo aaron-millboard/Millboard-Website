@@ -33,15 +33,13 @@ $icon_mail = '<svg class="installer-quote-form__contact-icon" width="18" height=
         </div>
 
         <div class="installer-quote-form__panel">
-            <?php if (!empty($args['has_form'])) {
-                $region = esc_attr($args['hs_region']);
-                $portal = esc_attr($args['hs_portal_id']);
-                $form = esc_attr($args['hs_form_id']);
-                ?>
+            <?php if (!empty($args['has_form'])) { ?>
                 <div class="installer-quote-form__hs">
-                    <div class="hs-form-html" data-region="<?= $region; ?>" data-form-id="<?= $form; ?>" data-portal-id="<?= $portal; ?>"></div>
-                    <script src="https://js-<?= $region; ?>.hsforms.net/forms/embed/developer/<?= $portal; ?>.js" defer></script>
+                    <div class="hs-form-html" data-region="<?= esc_attr($args['hs_region']); ?>" data-form-id="<?= esc_attr($args['hs_form_id']); ?>" data-portal-id="<?= esc_attr($args['hs_portal_id']); ?>"></div>
                 </div>
+                <?php if (!empty($args['is_preview'])) { ?>
+                    <p class="installer-quote-form__note"><?= esc_html__('HubSpot enquiry form — displays on the published page.', 'granola'); ?></p>
+                <?php } ?>
             <?php } elseif (!empty($args['is_preview'])) { ?>
                 <p class="installer-quote-form__placeholder"><?= esc_html__('Add a HubSpot form ID to embed the enquiry form.', 'granola'); ?></p>
             <?php } ?>
