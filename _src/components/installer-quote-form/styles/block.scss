@@ -126,11 +126,15 @@
         --hsf-field-textarea__padding: #{px-to-rem(13)} #{px-to-rem(15)};
 
         // Checkbox — visible border + brand tick (matches the checkout).
+        // Needs its own padding, otherwise it inherits the input's large padding
+        // (HubSpot sizes the box from its padding) and balloons.
         --hsf-field-checkbox__background-color: #ffffff;
         --hsf-field-checkbox__border-color: #{rgba(#151716, 0.55)};
         --hsf-field-checkbox__border-style: solid;
         --hsf-field-checkbox__border-width: 1px;
         --hsf-field-checkbox__color: var(--color--olivegreen);
+        --hsf-field-checkbox__padding: #{px-to-rem(9)};
+        --hsf-field-radio__padding: #{px-to-rem(9)};
 
         // Labels → sentence case, small (like the checkout).
         --hsf-field-label__font-size: #{px-to-rem(14)};
