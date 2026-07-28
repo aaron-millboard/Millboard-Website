@@ -99,6 +99,26 @@
             "placeholder": "2:14",
             "prepend": "",
             "append": ""
+        },
+        {
+            "key": "field_69796182b007",
+            "label": "Aspect ratio",
+            "name": "aspect",
+            "aria-label": "",
+            "type": "button_group",
+            "instructions": "Match this to the video so it fills the frame with no black bars. Most videos are 16:9.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": { "width": "", "class": "", "id": "" },
+            "choices": {
+                "16:9": "16:9",
+                "4:3": "4:3",
+                "21:9": "21:9 (cinematic)",
+                "1:1": "1:1 (square)"
+            },
+            "default_value": "16:9",
+            "return_format": "value",
+            "allow_null": 0
         }
     ],
     "location": [
@@ -119,5 +139,5 @@
     "active": true,
     "description": "",
     "show_in_rest": 0,
-    "modified": 1785467000
+    "modified": 1785470000
 }

@@ -21,6 +21,7 @@ $has_cover = !empty($args['cover_image']);
             <?php
             $tag = $has_video ? 'button' : 'div';
             $attrs = 'class="installer-video__media' . ($has_video ? ' installer-video__media--playable' : '') . '"';
+            $attrs .= ' style="aspect-ratio: ' . esc_attr($args['aspect_css']) . '"';
             if ($has_video) {
                 $attrs .= ' type="button" data-video="' . esc_url($args['video_url']) . '" aria-label="' . esc_attr(sprintf(\__('Play video: %s', 'granola'), $args['heading'])) . '"';
             }
