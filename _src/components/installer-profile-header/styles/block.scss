@@ -284,7 +284,9 @@
     &__verified {
         position: absolute;
         top: px-to-rem(22);
-        left: clamp(20px, 4vw, 40px);
+        // Align the pill's left edge with the content column (the hero image is
+        // full-bleed, so offset by the same gutter the content uses).
+        left: calc((100% - var(--width--responsive--l)) / 2);
         display: inline-flex;
         align-items: center;
         gap: px-to-rem(8);
