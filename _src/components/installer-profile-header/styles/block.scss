@@ -12,12 +12,13 @@
     --iph--muted: #{rgba(#151716, 0.66)};
     --iph--rule: #{rgba(#151716, 0.14)};
 
-    padding: 0 0 clamp(36px, 6vw, 64px);
+    margin-block: 0;
+    padding: 0 0 clamp(32px, 5vw, 52px);
     color: var(--color--foreground);
 
     // ---- Breadcrumbs ---------------------------------------------------------
     &__breadcrumbs {
-        max-width: px-to-rem(1200);
+        max-width: var(--width--l);
         margin: 0 auto clamp(24px, 4vw, 40px);
         padding: px-to-rem(12) clamp(20px, 4vw, 52px);
         border-bottom: 1px solid var(--iph--rule);
@@ -33,7 +34,7 @@
         display: flex;
         flex-direction: column;
         gap: clamp(24px, 4vw, 40px);
-        max-width: px-to-rem(1200);
+        max-width: var(--width--l);
         margin: 0 auto;
         padding: 0 clamp(20px, 4vw, 52px);
 
@@ -243,9 +244,10 @@
         padding: px-to-rem(10);
     }
 
+    // Approved-tier badge (official image, sits on the cover image corner).
     &__badge-img {
         display: block;
-        height: px-to-rem(72);
+        height: px-to-rem(112);
         width: auto;
     }
 
@@ -254,7 +256,7 @@
     // =========================================================================
     &__hero-media {
         position: relative;
-        max-width: px-to-rem(1200);
+        max-width: var(--width--l);
         margin: 0 auto;
         height: clamp(260px, 44vw, 480px);
         overflow: hidden;
@@ -304,7 +306,7 @@
     }
 
     &__card-wrap {
-        max-width: px-to-rem(1200);
+        max-width: var(--width--l);
         margin: 0 auto;
         padding: 0 clamp(20px, 4vw, 40px);
 
