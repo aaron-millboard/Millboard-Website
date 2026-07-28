@@ -1,0 +1,211 @@
+{
+    "key": "group_697963a4bd6e3",
+    "title": "Block - Installer Coverage",
+    "fields": [
+        {
+            "key": "field_697963a4d001",
+            "label": "Heading",
+            "name": "heading",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": { "width": "", "class": "", "id": "" },
+            "default_value": "Where we work",
+            "maxlength": "",
+            "placeholder": "",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_697963a4d002",
+            "label": "Intro",
+            "name": "intro",
+            "aria-label": "",
+            "type": "textarea",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": { "width": "", "class": "", "id": "" },
+            "default_value": "",
+            "maxlength": "",
+            "rows": 3,
+            "placeholder": "",
+            "new_lines": ""
+        },
+        {
+            "key": "field_697963a4d003",
+            "label": "Map type",
+            "name": "map_type",
+            "aria-label": "",
+            "type": "button_group",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": { "width": "50", "class": "", "id": "" },
+            "choices": { "embed": "Google Maps embed", "image": "Image" },
+            "default_value": "embed",
+            "return_format": "value",
+            "allow_null": 0
+        },
+        {
+            "key": "field_697963a4d004",
+            "label": "Map side",
+            "name": "map_side",
+            "aria-label": "",
+            "type": "button_group",
+            "instructions": "Which side the map sits on (desktop).",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": { "width": "50", "class": "", "id": "" },
+            "choices": { "left": "Left", "right": "Right" },
+            "default_value": "left",
+            "return_format": "value",
+            "allow_null": 0
+        },
+        {
+            "key": "field_697963a4d005",
+            "label": "Map embed code",
+            "name": "map_embed",
+            "aria-label": "",
+            "type": "textarea",
+            "instructions": "Paste the Google Maps \"Embed a map\" <iframe> code here.",
+            "required": 0,
+            "conditional_logic": [
+                [
+                    { "field": "field_697963a4d003", "operator": "==", "value": "embed" }
+                ]
+            ],
+            "wrapper": { "width": "", "class": "", "id": "" },
+            "default_value": "",
+            "maxlength": "",
+            "rows": 3,
+            "placeholder": "<iframe src=\"https://www.google.com/maps/embed?...\"></iframe>",
+            "new_lines": ""
+        },
+        {
+            "key": "field_697963a4d006",
+            "label": "Map image",
+            "name": "map_image",
+            "aria-label": "",
+            "type": "image",
+            "instructions": "Used when Map type is Image.",
+            "required": 0,
+            "conditional_logic": [
+                [
+                    { "field": "field_697963a4d003", "operator": "==", "value": "image" }
+                ]
+            ],
+            "wrapper": { "width": "", "class": "", "id": "" },
+            "return_format": "id",
+            "preview_size": "medium",
+            "library": "all",
+            "min_width": "",
+            "min_height": "",
+            "min_size": "",
+            "max_width": "",
+            "max_height": "",
+            "max_size": "",
+            "mime_types": ""
+        },
+        {
+            "key": "field_697963a4d007",
+            "label": "Coverage display",
+            "name": "display",
+            "aria-label": "",
+            "type": "button_group",
+            "instructions": "Rows (county + towns line) or grouped town chips.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": { "width": "", "class": "", "id": "" },
+            "choices": { "rows": "Rows", "chips": "Chips" },
+            "default_value": "rows",
+            "return_format": "value",
+            "allow_null": 0
+        },
+        {
+            "key": "field_697963a4d008",
+            "label": "Coverage",
+            "name": "coverage",
+            "aria-label": "",
+            "type": "repeater",
+            "instructions": "One row per county / area.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": { "width": "", "class": "", "id": "" },
+            "layout": "table",
+            "pagination": 0,
+            "min": 0,
+            "max": 0,
+            "collapsed": "",
+            "button_label": "Add area",
+            "rows_per_page": 20,
+            "sub_fields": [
+                {
+                    "key": "field_697963a4d009",
+                    "label": "County / area",
+                    "name": "county",
+                    "aria-label": "",
+                    "type": "text",
+                    "instructions": "",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": { "width": "30", "class": "", "id": "" },
+                    "default_value": "",
+                    "maxlength": "",
+                    "placeholder": "Dorset",
+                    "prepend": "",
+                    "append": ""
+                },
+                {
+                    "key": "field_697963a4d00a",
+                    "label": "Towns",
+                    "name": "towns",
+                    "aria-label": "",
+                    "type": "text",
+                    "instructions": "Comma-separated, e.g. Bournemouth, Poole, Christchurch.",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": { "width": "70", "class": "", "id": "" },
+                    "default_value": "",
+                    "maxlength": "",
+                    "placeholder": "Bournemouth, Poole, Christchurch",
+                    "prepend": "",
+                    "append": ""
+                }
+            ]
+        },
+        {
+            "key": "field_697963a4d00b",
+            "label": "Button",
+            "name": "button",
+            "aria-label": "",
+            "type": "link",
+            "instructions": "Optional, e.g. \"Book a site visit\".",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": { "width": "", "class": "", "id": "" },
+            "return_format": "array"
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "block",
+                "operator": "==",
+                "value": "acf/installer-coverage"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "",
+    "show_in_rest": 0,
+    "modified": 1785469000
+}
