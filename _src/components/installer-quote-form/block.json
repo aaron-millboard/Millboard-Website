@@ -1,0 +1,30 @@
+{
+    "$schema": "https://raw.githubusercontent.com/AdvancedCustomFields/schemas/main/json/block.json",
+    "apiVersion": 2,
+    "name": "acf/installer-quote-form",
+    "title": "Installer Quote Form",
+    "category": "granola-blocks",
+    "icon": "email-alt",
+    "keywords": [ "installer", "quote", "enquiry", "contact", "form", "hubspot" ],
+    "acf": {
+        "mode": "auto",
+        "renderCallback": "\\Granola\\Component::acf_render_callback",
+        "postTypes": [
+            "installer"
+        ]
+    },
+    "supports": {
+        "anchor": true,
+        "align": false,
+        "color": {
+            "text": false
+        },
+        "mode": false
+    },
+    "attributes": {
+        "align": {
+            "type": "string",
+            "default": "full"
+        }
+    }
+}
