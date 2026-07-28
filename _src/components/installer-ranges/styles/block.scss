@@ -10,7 +10,7 @@
     --ir--rule: #{rgba(#151716, 0.14)};
 
     margin-block: 0;
-    padding: clamp(32px, 4.5vw, 52px) 0;
+    padding: clamp(40px, 5vw, 60px) 0;
     color: var(--color--foreground);
 
     &__inner {
@@ -37,12 +37,9 @@
         background: var(--ir--accent);
     }
 
+    // Inherits the site h2 hierarchy.
     &__heading {
         margin: 0;
-        font-weight: 300;
-        font-size: clamp(24px, 3.2vw, 30px);
-        line-height: 1.15;
-        color: var(--color--foreground);
     }
 
     &__link {
@@ -50,7 +47,7 @@
         align-items: center;
         gap: px-to-rem(7);
         padding-bottom: px-to-rem(4);
-        font-size: px-to-rem(11);
+        font-size: px-to-rem(13);
         font-weight: 700;
         letter-spacing: 0.16em;
         text-transform: uppercase;
@@ -132,14 +129,14 @@
 
     &__card-name {
         display: block;
-        margin-bottom: px-to-rem(4);
-        font-size: px-to-rem(13.5);
+        margin-bottom: px-to-rem(5);
+        font-size: px-to-rem(16);
         font-weight: 700;
     }
 
     &__card-category {
         display: block;
-        font-size: px-to-rem(10.5);
+        font-size: px-to-rem(12);
         letter-spacing: 0.1em;
         text-transform: uppercase;
         color: var(--ir--muted);

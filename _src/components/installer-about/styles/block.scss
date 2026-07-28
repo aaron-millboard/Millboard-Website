@@ -11,7 +11,7 @@
     --ia--rule: #{rgba(#151716, 0.16)};
 
     margin-block: 0;
-    padding: clamp(32px, 4.5vw, 52px) 0;
+    padding: clamp(40px, 5vw, 60px) 0;
     border-top: 1px solid var(--ia--rule);
     color: var(--color--foreground);
 
@@ -50,17 +50,13 @@
         background: var(--ia--accent);
     }
 
+    // Inherits the site h2 hierarchy.
     &__heading {
         margin: 0 0 px-to-rem(22);
-        font-weight: 300;
-        font-size: clamp(24px, 3.2vw, 32px);
-        line-height: 1.15;
-        color: var(--color--foreground);
     }
 
     &__text {
-        font-size: px-to-rem(16);
-        line-height: 1.75;
+        line-height: 1.7;
         color: var(--ia--muted);
 
         p {
@@ -82,7 +78,7 @@
 
     &__tag {
         padding: px-to-rem(7) px-to-rem(13);
-        font-size: px-to-rem(11);
+        font-size: px-to-rem(13);
         font-weight: 700;
         letter-spacing: 0.14em;
         text-transform: uppercase;
@@ -108,7 +104,7 @@
     }
 
     &__fact-label {
-        font-size: px-to-rem(11);
+        font-size: px-to-rem(13);
         font-weight: 700;
         letter-spacing: 0.16em;
         text-transform: uppercase;
@@ -117,7 +113,7 @@
 
     &__fact-value {
         margin: 0;
-        font-size: px-to-rem(15);
+        font-size: px-to-rem(17);
         text-align: right;
     }
 

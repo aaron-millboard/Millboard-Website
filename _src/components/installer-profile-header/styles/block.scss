@@ -13,16 +13,15 @@
     --iph--rule: #{rgba(#151716, 0.14)};
 
     margin-block: 0;
-    padding: 0 0 clamp(32px, 5vw, 52px);
+    padding: 0 0 clamp(40px, 5vw, 60px);
     color: var(--color--foreground);
 
     // ---- Breadcrumbs ---------------------------------------------------------
+    // Inherit the site's breadcrumb colour + size (no overrides here).
     &__breadcrumbs {
         max-width: var(--width--responsive--l);
         margin: 0 auto clamp(24px, 4vw, 40px);
         padding: px-to-rem(14) 0 0;
-        font-size: px-to-rem(11);
-        color: var(--iph--muted);
 
         .breadcrumbs {
             margin: 0;
@@ -55,28 +54,22 @@
     &__eyebrow {
         margin: 0 0 px-to-rem(14);
         font-weight: 700;
-        font-size: px-to-rem(11);
+        font-size: px-to-rem(13);
         letter-spacing: 0.22em;
         text-transform: uppercase;
         color: var(--iph--accent);
     }
 
-    // ---- Title ---------------------------------------------------------------
+    // ---- Title (inherits the site h1 hierarchy) ------------------------------
     &__title {
         margin: 0 0 px-to-rem(14);
-        font-weight: 300;
-        font-size: clamp(30px, 4.5vw, 48px);
-        line-height: 1.1;
         overflow-wrap: break-word;
-        color: var(--color--foreground);
     }
 
-    // ---- Tagline -------------------------------------------------------------
+    // ---- Tagline (site body size) --------------------------------------------
     &__tagline {
         margin: 0 0 px-to-rem(16);
         max-width: 46ch;
-        font-size: px-to-rem(16);
-        line-height: 1.6;
         color: var(--iph--muted);
     }
 
@@ -85,8 +78,8 @@
         display: flex;
         align-items: center;
         gap: px-to-rem(9);
-        margin: 0 0 px-to-rem(10);
-        font-size: px-to-rem(13);
+        margin: 0 0 px-to-rem(12);
+        font-size: px-to-rem(16);
         color: var(--iph--muted);
     }
 
@@ -105,7 +98,7 @@
         align-items: center;
         gap: px-to-rem(8);
         margin: 0 0 px-to-rem(22);
-        font-size: px-to-rem(12.5);
+        font-size: px-to-rem(14);
         color: var(--iph--muted);
         text-decoration: none;
     }
@@ -146,7 +139,7 @@
         gap: px-to-rem(8);
         padding: px-to-rem(14) px-to-rem(22);
         font-weight: 700;
-        font-size: px-to-rem(11.5);
+        font-size: px-to-rem(13);
         letter-spacing: 0.15em;
         text-transform: uppercase;
         text-decoration: none;
@@ -233,7 +226,7 @@
 
     &__badge-tier {
         font-weight: 700;
-        font-size: px-to-rem(9.5);
+        font-size: px-to-rem(11);
         letter-spacing: 0.15em;
         text-transform: uppercase;
         color: var(--iph--accent);
@@ -294,7 +287,7 @@
         background: #{rgba(#2f292e, 0.55)};
         color: var(--iph--light);
         font-weight: 700;
-        font-size: px-to-rem(10.5);
+        font-size: px-to-rem(12);
         letter-spacing: 0.18em;
         text-transform: uppercase;
 
@@ -437,7 +430,7 @@
     &__stat-label {
         display: block;
         margin-top: px-to-rem(5);
-        font-size: px-to-rem(10);
+        font-size: px-to-rem(12);
         font-weight: 700;
         letter-spacing: 0.15em;
         text-transform: uppercase;

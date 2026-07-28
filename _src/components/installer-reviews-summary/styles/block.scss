@@ -10,7 +10,7 @@
     --irs--rule: #{rgba(#151716, 0.14)};
 
     margin-block: 0;
-    padding: clamp(18px, 3vw, 24px) 0;
+    padding: clamp(24px, 3vw, 34px) 0;
     background: var(--color--mist);
     color: var(--color--foreground);
 
@@ -65,7 +65,7 @@
 
     &__summary {
         margin: 0;
-        font-size: px-to-rem(12.5);
+        font-size: px-to-rem(16);
         color: var(--irs--muted);
 
         strong {
@@ -97,11 +97,11 @@
 
     &__source-name {
         font-weight: 700;
-        font-size: px-to-rem(13);
+        font-size: px-to-rem(16);
     }
 
     &__source-score {
-        font-size: px-to-rem(12);
+        font-size: px-to-rem(14);
         color: var(--irs--muted);
     }
 
@@ -119,7 +119,7 @@
     }
 
     &__source-count {
-        font-size: px-to-rem(11);
+        font-size: px-to-rem(13);
         color: var(--irs--muted);
     }
 }

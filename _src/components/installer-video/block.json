@@ -1,0 +1,30 @@
+{
+    "$schema": "https://raw.githubusercontent.com/AdvancedCustomFields/schemas/main/json/block.json",
+    "apiVersion": 2,
+    "name": "acf/installer-video",
+    "title": "Installer Video",
+    "category": "granola-blocks",
+    "icon": "video-alt3",
+    "keywords": [ "installer", "video", "profile" ],
+    "acf": {
+        "mode": "auto",
+        "renderCallback": "\\Granola\\Component::acf_render_callback",
+        "postTypes": [
+            "installer"
+        ]
+    },
+    "supports": {
+        "anchor": true,
+        "align": false,
+        "color": {
+            "text": false
+        },
+        "mode": false
+    },
+    "attributes": {
+        "align": {
+            "type": "string",
+            "default": "full"
+        }
+    }
+}
