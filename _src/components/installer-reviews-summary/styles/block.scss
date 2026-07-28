@@ -22,6 +22,12 @@
         gap: px-to-rem(20);
         max-width: var(--width--responsive--l);
         margin: 0 auto;
+
+        // Centre the whole strip on narrow screens rather than leaving it left.
+        @include mq($until: medium) {
+            justify-content: center;
+            text-align: center;
+        }
     }
 
     // ---- Left: score ---------------------------------------------------------
@@ -29,6 +35,10 @@
         display: flex;
         align-items: center;
         gap: px-to-rem(16);
+
+        @include mq($until: medium) {
+            justify-content: center;
+        }
     }
 
     &__rating {
@@ -42,6 +52,10 @@
         gap: px-to-rem(2);
         margin-bottom: px-to-rem(5);
         color: var(--irs--accent);
+
+        @include mq($until: medium) {
+            justify-content: center;
+        }
     }
 
     &__star {
@@ -65,6 +79,11 @@
         display: flex;
         flex-wrap: wrap;
         gap: px-to-rem(12);
+
+        @include mq($until: medium) {
+            justify-content: center;
+            width: 100%;
+        }
     }
 
     &__source {
