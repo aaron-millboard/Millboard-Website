@@ -106,27 +106,34 @@
         --hsf-global__font-family: var(--type--1--font-family, "F37 Ginger", Helvetica, Arial, sans-serif);
         --hsf-global__font-size: #{px-to-rem(16)};
 
-        // Text inputs → underline style on the light panel.
+        // Boxed inputs to match the site checkout (visible border all sides).
         --hsf-field-input__font-size: #{px-to-rem(16)};
         --hsf-field-input__color: var(--color--foreground);
         --hsf-field-input__background-color: transparent;
-        --hsf-field-input__border-color: #{rgba(#151716, 0.25)};
+        --hsf-field-input__border-color: #{rgba(#151716, 0.45)};
         --hsf-field-input__border-style: solid;
-        --hsf-field-input__border-width: 0 0 1px 0;
+        --hsf-field-input__border-width: 1px;
         --hsf-field-input__border-radius: 0;
-        --hsf-field-input__padding: #{px-to-rem(10)} 0;
+        --hsf-field-input__padding: #{px-to-rem(13)} #{px-to-rem(15)};
 
         --hsf-field-textarea__font-size: #{px-to-rem(16)};
         --hsf-field-textarea__color: var(--color--foreground);
         --hsf-field-textarea__background-color: transparent;
-        --hsf-field-textarea__border-color: #{rgba(#151716, 0.25)};
+        --hsf-field-textarea__border-color: #{rgba(#151716, 0.45)};
         --hsf-field-textarea__border-style: solid;
-        --hsf-field-textarea__border-width: 0 0 1px 0;
+        --hsf-field-textarea__border-width: 1px;
         --hsf-field-textarea__border-radius: 0;
-        --hsf-field-textarea__padding: #{px-to-rem(10)} 0;
+        --hsf-field-textarea__padding: #{px-to-rem(13)} #{px-to-rem(15)};
 
-        // Labels → small, tracked (uppercase applied via rule below).
-        --hsf-field-label__font-size: #{px-to-rem(12)};
+        // Checkbox — visible border + brand tick (matches the checkout).
+        --hsf-field-checkbox__background-color: #ffffff;
+        --hsf-field-checkbox__border-color: #{rgba(#151716, 0.55)};
+        --hsf-field-checkbox__border-style: solid;
+        --hsf-field-checkbox__border-width: 1px;
+        --hsf-field-checkbox__color: var(--color--olivegreen);
+
+        // Labels → sentence case, small (like the checkout).
+        --hsf-field-label__font-size: #{px-to-rem(14)};
         --hsf-field-label__color: var(--color--foreground);
 
         // Submit button → theme dark, full width.
@@ -141,25 +148,16 @@
         // Reduce HubSpot's default 40px form padding (we already pad the panel).
         --hsf-background__padding: 0;
 
-        // Properties HubSpot doesn't expose as variables.
+        // Field labels: keep the checkout's sentence case, just weight them.
         .hsfc-FieldLabel {
             font-weight: 700;
-            letter-spacing: 0.14em;
-            text-transform: uppercase;
         }
 
+        // Submit button: uppercase + tracked to match the theme's buttons.
         .hsfc-Button {
             font-weight: 700;
             letter-spacing: 0.15em;
             text-transform: uppercase;
-        }
-
-        // Consent copy reads as body text, not a field label.
-        .hsfc-CheckboxField label,
-        .hsfc-FieldDescription {
-            text-transform: none;
-            letter-spacing: 0;
-            font-weight: 300;
         }
     }
 }
