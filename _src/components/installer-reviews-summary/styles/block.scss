@@ -1,0 +1,106 @@
+// =============================================================================
+// Installer Reviews Summary
+// A slim rating strip: overall score + stars + summary line on the left,
+// per-platform badges (Google, Trustpilot) on the right.
+// =============================================================================
+
+.installer-reviews-summary {
+    --irs--accent: var(--color--olivegreen);
+    --irs--muted: #{rgba(#151716, 0.66)};
+    --irs--rule: #{rgba(#151716, 0.14)};
+
+    margin-block: 0;
+    padding: clamp(18px, 3vw, 24px) 0;
+    background: var(--color--mist);
+    color: var(--color--foreground);
+
+    &__inner {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: px-to-rem(20);
+        max-width: var(--width--responsive--l);
+        margin: 0 auto;
+    }
+
+    // ---- Left: score ---------------------------------------------------------
+    &__score {
+        display: flex;
+        align-items: center;
+        gap: px-to-rem(16);
+    }
+
+    &__rating {
+        font-size: px-to-rem(40);
+        font-weight: 300;
+        line-height: 1;
+    }
+
+    &__stars {
+        display: flex;
+        gap: px-to-rem(2);
+        margin-bottom: px-to-rem(5);
+        color: var(--irs--accent);
+    }
+
+    &__star {
+        width: px-to-rem(16);
+        height: px-to-rem(16);
+    }
+
+    &__summary {
+        margin: 0;
+        font-size: px-to-rem(12.5);
+        color: var(--irs--muted);
+
+        strong {
+            font-weight: 700;
+            color: var(--color--foreground);
+        }
+    }
+
+    // ---- Right: source badges ------------------------------------------------
+    &__sources {
+        display: flex;
+        flex-wrap: wrap;
+        gap: px-to-rem(12);
+    }
+
+    &__source {
+        display: flex;
+        align-items: center;
+        gap: px-to-rem(9);
+        padding: px-to-rem(9) px-to-rem(15);
+        background: var(--color--springwood);
+        border: 1px solid var(--irs--rule);
+    }
+
+    &__source-name {
+        font-weight: 700;
+        font-size: px-to-rem(13);
+    }
+
+    &__source-score {
+        font-size: px-to-rem(12);
+        color: var(--irs--muted);
+    }
+
+    &__source-star {
+        width: px-to-rem(13);
+        height: px-to-rem(13);
+
+        &--olivegreen {
+            color: var(--color--olivegreen);
+        }
+
+        &--apple {
+            color: var(--color--apple, #a0cd4f);
+        }
+    }
+
+    &__source-count {
+        font-size: px-to-rem(11);
+        color: var(--irs--muted);
+    }
+}
