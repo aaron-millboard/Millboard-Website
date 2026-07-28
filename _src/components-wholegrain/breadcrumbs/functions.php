@@ -140,6 +140,41 @@ function granola_yoast_breadcrumb_variable_product($link, $index)
 }
 
 /**
+ * Insert a "Find an Installer" step into the breadcrumb trail on single
+ * installer profiles. The installer post type has no archive, so the step is
+ * linked to the Find an Installer finder page (resolved per site/locale).
+ *
+ * @param array $links The breadcrumb links array.
+ *
+ * @return array
+ */
+function add_installer_breadcrumb_step(array $links): array
+{
+    if (!\is_singular('installer')) {
+        return $links;
+    }
+
+    $finder = \get_page_by_path('find-an-installer');
+    $url = $finder ? \get_permalink($finder) : \home_url('/find-an-installer/');
+
+    $crumb = [
+        'text' => \__('Find an Installer', 'granola'),
+        'url' => $url,
+    ];
+
+    // Insert the step just before the current-page (final) crumb.
+    if (count($links) > 1) {
+        $last = array_pop($links);
+        $links[] = $crumb;
+        $links[] = $last;
+    } else {
+        $links[] = $crumb;
+    }
+
+    return $links;
+}
+
+/**
  * Remove duplicate Yoast breadcrumb links.
  *
  * Also removes earlier duplicates when the current page breadcrumb text appears more than once.
