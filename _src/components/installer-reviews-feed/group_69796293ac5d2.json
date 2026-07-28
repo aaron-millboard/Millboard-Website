@@ -104,7 +104,7 @@
                     "name": "stars",
                     "aria-label": "",
                     "type": "number",
-                    "instructions": "1-5",
+                    "instructions": "",
                     "required": 0,
                     "conditional_logic": 0,
                     "wrapper": { "width": "20", "class": "", "id": "" },
@@ -201,5 +201,5 @@
     "active": true,
     "description": "",
     "show_in_rest": 0,
-    "modified": 1785468000
+    "modified": 1785468100
 }
