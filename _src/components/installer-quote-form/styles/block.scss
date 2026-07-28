@@ -97,105 +97,69 @@
     }
 
     // -------------------------------------------------------------------------
-    // HubSpot form — restyle the generic fields to blend with the theme.
-    // Targeted by element within the form wrapper so it works regardless of
-    // HubSpot's class names; refine to specific classes if needed.
+    // HubSpot form — themed via HubSpot's own CSS variables (--hsf-*), which the
+    // embed reads directly. This avoids fighting HubSpot's injected <style> on
+    // specificity. Its fields default to font-size:1em, which resolves against
+    // the site's 20px body (hence the huge text) — we set explicit sizes here.
     // -------------------------------------------------------------------------
     &__hs {
-        input[type="text"],
-        input[type="email"],
-        input[type="tel"],
-        input[type="number"],
-        input[type="url"],
-        textarea,
-        select {
-            width: 100%;
-            padding: px-to-rem(11) 0;
-            font-family: var(--type--1--font-family, inherit);
-            font-weight: 300;
-            font-size: px-to-rem(16);
-            color: var(--color--foreground);
-            background: transparent;
-            border: 0;
-            border-bottom: 1px solid var(--iqf--rule);
-            border-radius: 0;
-            outline: none;
-            box-shadow: none;
-            transition: border-color 0.24s ease;
+        --hsf-global__font-family: var(--type--1--font-family, "F37 Ginger", Helvetica, Arial, sans-serif);
+        --hsf-global__font-size: #{px-to-rem(16)};
 
-            &:focus {
-                border-bottom-color: var(--iqf--accent);
-            }
-        }
+        // Text inputs → underline style on the light panel.
+        --hsf-field-input__font-size: #{px-to-rem(16)};
+        --hsf-field-input__color: var(--color--foreground);
+        --hsf-field-input__background-color: transparent;
+        --hsf-field-input__border-color: #{rgba(#151716, 0.25)};
+        --hsf-field-input__border-style: solid;
+        --hsf-field-input__border-width: 0 0 1px 0;
+        --hsf-field-input__border-radius: 0;
+        --hsf-field-input__padding: #{px-to-rem(10)} 0;
 
-        textarea {
-            min-height: px-to-rem(96);
-            resize: vertical;
-        }
+        --hsf-field-textarea__font-size: #{px-to-rem(16)};
+        --hsf-field-textarea__color: var(--color--foreground);
+        --hsf-field-textarea__background-color: transparent;
+        --hsf-field-textarea__border-color: #{rgba(#151716, 0.25)};
+        --hsf-field-textarea__border-style: solid;
+        --hsf-field-textarea__border-width: 0 0 1px 0;
+        --hsf-field-textarea__border-radius: 0;
+        --hsf-field-textarea__padding: #{px-to-rem(10)} 0;
 
-        label {
-            display: block;
-            margin-bottom: px-to-rem(6);
-            font-size: px-to-rem(11);
+        // Labels → small, tracked (uppercase applied via rule below).
+        --hsf-field-label__font-size: #{px-to-rem(12)};
+        --hsf-field-label__color: var(--color--foreground);
+
+        // Submit button → theme dark, full width.
+        --hsf-button__background-color: var(--color--black);
+        --hsf-button--hover__background-color: #{darken(#151716, 2%)};
+        --hsf-button__color: var(--color--springwood);
+        --hsf-button__font-size: #{px-to-rem(13)};
+        --hsf-button__border-radius: 0;
+        --hsf-button__padding: #{px-to-rem(16)} #{px-to-rem(28)};
+        --hsf-button__width: 100%;
+
+        // Reduce HubSpot's default 40px form padding (we already pad the panel).
+        --hsf-background__padding: 0;
+
+        // Properties HubSpot doesn't expose as variables.
+        .hsfc-FieldLabel {
             font-weight: 700;
-            letter-spacing: 0.16em;
+            letter-spacing: 0.14em;
             text-transform: uppercase;
-            color: var(--color--foreground);
         }
 
-        // Checkboxes / radios keep native controls, brand-tinted.
-        input[type="checkbox"],
-        input[type="radio"] {
-            width: auto;
-            accent-color: var(--iqf--accent);
-        }
-
-        // Consent / checkbox labels read as body text, not field labels.
-        .hs-form-booleancheckbox label,
-        .legal-consent-container label,
-        [class*="checkbox"] label {
-            display: inline;
-            margin: 0;
-            font-size: px-to-rem(13);
-            font-weight: 300;
-            letter-spacing: 0;
-            text-transform: none;
-            color: #{rgba(#151716, 0.7)};
-        }
-
-        // Submit button — dark, full width, uppercase.
-        input[type="submit"],
-        button[type="submit"],
-        .hs-button,
         .hsfc-Button {
-            width: 100%;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: px-to-rem(16) px-to-rem(28);
-            font-family: var(--type--1--font-family, inherit);
             font-weight: 700;
-            font-size: px-to-rem(13);
-            letter-spacing: 0.16em;
+            letter-spacing: 0.15em;
             text-transform: uppercase;
-            color: var(--iqf--light);
-            background: var(--color--black);
-            border: 0;
-            border-radius: 0;
-            cursor: pointer;
-            transition: background-color 0.24s ease;
-
-            &:hover,
-            &:focus-visible {
-                background: #{darken(#151716, 2%)};
-            }
         }
 
-        // Validation errors in the brand error colour.
-        .hs-error-msg,
-        [class*="error"] {
-            font-size: px-to-rem(13);
-            color: var(--color--red, #a50d09);
+        // Consent copy reads as body text, not a field label.
+        .hsfc-CheckboxField label,
+        .hsfc-FieldDescription {
+            text-transform: none;
+            letter-spacing: 0;
+            font-weight: 300;
         }
     }
 }
