@@ -7,6 +7,9 @@
 
 .installer-profile-header {
     --iph--accent: var(--color--olivegreen);
+    // Darker olive for small accent TEXT — #799513 only hits 3.2:1 on the light
+    // background (fails WCAG AA); this passes at ~5.2:1.
+    --iph--accent-text: #5c7010;
     --iph--dark: var(--color--black);
     --iph--light: var(--color--springwood);
     --iph--muted: #{rgba(#151716, 0.66)};
@@ -56,7 +59,7 @@
         font-size: px-to-rem(13);
         letter-spacing: 0.22em;
         text-transform: uppercase;
-        color: var(--iph--accent);
+        color: var(--iph--accent-text);
     }
 
     // ---- Title (inherits the site h1 hierarchy) ------------------------------
@@ -228,7 +231,7 @@
         font-size: px-to-rem(11);
         letter-spacing: 0.15em;
         text-transform: uppercase;
-        color: var(--iph--accent);
+        color: var(--iph--accent-text);
     }
 
     &__badge--image {
@@ -433,7 +436,7 @@
         font-weight: 700;
         letter-spacing: 0.15em;
         text-transform: uppercase;
-        color: #{rgba(#151716, 0.55)};
+        color: #{rgba(#151716, 0.66)};
     }
 
     &__stat-sublabel {
