@@ -18,10 +18,9 @@
 
     // ---- Breadcrumbs ---------------------------------------------------------
     &__breadcrumbs {
-        max-width: var(--width--l);
+        max-width: var(--width--responsive--l);
         margin: 0 auto clamp(24px, 4vw, 40px);
-        padding: px-to-rem(12) clamp(20px, 4vw, 52px);
-        border-bottom: 1px solid var(--iph--rule);
+        padding: px-to-rem(14) 0 0;
         font-size: px-to-rem(11);
         color: var(--iph--muted);
 
@@ -34,9 +33,9 @@
         display: flex;
         flex-direction: column;
         gap: clamp(24px, 4vw, 40px);
-        max-width: var(--width--l);
+        max-width: var(--width--responsive--l);
         margin: 0 auto;
-        padding: 0 clamp(20px, 4vw, 52px);
+        padding: 0;
 
         @include mq(large) {
             flex-direction: row;
@@ -254,10 +253,10 @@
     // =========================================================================
     // Advanced tier — full-bleed hero image + overlapping stats card.
     // =========================================================================
+    // Full-bleed to the viewport (the section is alignfull).
     &__hero-media {
         position: relative;
-        max-width: var(--width--l);
-        margin: 0 auto;
+        width: 100%;
         height: clamp(260px, 44vw, 480px);
         overflow: hidden;
     }
@@ -306,9 +305,9 @@
     }
 
     &__card-wrap {
-        max-width: var(--width--l);
+        max-width: var(--width--responsive--l);
         margin: 0 auto;
-        padding: 0 clamp(20px, 4vw, 40px);
+        padding: 0;
 
         &--overlap {
             position: relative;
