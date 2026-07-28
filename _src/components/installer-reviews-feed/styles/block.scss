@@ -1,0 +1,171 @@
+// =============================================================================
+// Installer Reviews Feed
+// Centred header (rule + heading + rating line) over a grid of review cards
+// (stars + source, quote, name + date). 1-up mobile, 2-up tablet, 3-up desktop.
+// =============================================================================
+
+.installer-reviews-feed {
+    --irf--accent: var(--color--olivegreen);
+    --irf--muted: #{rgba(#151716, 0.66)};
+    --irf--rule: #{rgba(#151716, 0.14)};
+
+    padding: clamp(40px, 5vw, 60px) 0;
+    color: var(--color--foreground);
+
+    &__inner {
+        max-width: var(--width--responsive--l);
+        margin: 0 auto;
+    }
+
+    // ---- Header --------------------------------------------------------------
+    &__head {
+        max-width: 56ch;
+        margin: 0 auto clamp(28px, 4vw, 36px);
+        text-align: center;
+    }
+
+    &__rule {
+        display: block;
+        width: px-to-rem(48);
+        height: 2px;
+        margin: 0 auto px-to-rem(20);
+        background: var(--irf--accent);
+    }
+
+    // Inherits the site h2 hierarchy.
+    &__heading {
+        margin: 0 0 px-to-rem(14);
+    }
+
+    &__summary {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: px-to-rem(10);
+        font-size: px-to-rem(15);
+        color: var(--irf--muted);
+
+        strong {
+            font-weight: 700;
+            color: var(--color--foreground);
+        }
+    }
+
+    &__summary-stars {
+        display: inline-flex;
+        gap: px-to-rem(2);
+        color: var(--irf--accent);
+
+        svg {
+            width: px-to-rem(16);
+            height: px-to-rem(16);
+        }
+    }
+
+    // ---- Grid ----------------------------------------------------------------
+    &__grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: px-to-rem(18);
+
+        @include mq(medium) {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        @include mq(large) {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+    }
+
+    // ---- Card ----------------------------------------------------------------
+    &__card {
+        display: flex;
+        flex-direction: column;
+        gap: px-to-rem(14);
+        margin: 0;
+        padding: px-to-rem(24) px-to-rem(24) px-to-rem(20);
+        border: 1px solid var(--irf--rule);
+    }
+
+    &__card-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: px-to-rem(10);
+    }
+
+    &__card-stars {
+        display: inline-flex;
+        gap: px-to-rem(2);
+        color: var(--irf--accent);
+
+        svg {
+            width: px-to-rem(14);
+            height: px-to-rem(14);
+        }
+    }
+
+    &__card-source {
+        font-size: px-to-rem(12);
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--irf--muted);
+    }
+
+    &__card-quote {
+        flex: 1;
+        margin: 0;
+        font-size: px-to-rem(16);
+        line-height: 1.7;
+        color: #{rgba(#151716, 0.85)};
+    }
+
+    &__card-meta {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: px-to-rem(10);
+        font-size: px-to-rem(13);
+        color: var(--irf--muted);
+    }
+
+    &__card-name {
+        font-weight: 700;
+        color: var(--color--foreground);
+    }
+
+    // ---- Footer link ---------------------------------------------------------
+    &__footer {
+        margin-top: clamp(22px, 3vw, 30px);
+        text-align: center;
+    }
+
+    &__link {
+        display: inline-flex;
+        align-items: center;
+        gap: px-to-rem(7);
+        padding-bottom: px-to-rem(4);
+        font-size: px-to-rem(13);
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        text-decoration: none;
+        color: var(--color--foreground);
+        border-bottom: 1px solid var(--irf--rule);
+        transition: color 0.24s ease, border-color 0.24s ease;
+
+        &:hover,
+        &:focus-visible {
+            color: var(--irf--accent);
+            border-color: var(--irf--accent);
+            text-decoration: none;
+        }
+    }
+
+    &__arrow {
+        flex: none;
+        width: px-to-rem(13);
+        height: px-to-rem(13);
+    }
+}

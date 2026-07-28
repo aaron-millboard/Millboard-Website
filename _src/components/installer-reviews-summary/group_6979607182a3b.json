@@ -1,0 +1,163 @@
+{
+    "key": "group_6979607182a3b",
+    "title": "Block - Installer Reviews Summary",
+    "fields": [
+        {
+            "key": "field_69796071a001",
+            "label": "Overall rating",
+            "name": "overall_rating",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "Combined average score, e.g. \"4.9\".",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": { "width": "50", "class": "", "id": "" },
+            "default_value": "",
+            "maxlength": "4",
+            "placeholder": "4.9",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_69796071a002",
+            "label": "Review count",
+            "name": "review_count",
+            "aria-label": "",
+            "type": "number",
+            "instructions": "Total number of reviews.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": { "width": "50", "class": "", "id": "" },
+            "default_value": "",
+            "min": 0,
+            "max": "",
+            "placeholder": "63",
+            "step": "",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_69796071a003",
+            "label": "Sources label",
+            "name": "sources_label",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "Shown in the summary line: \"Rated by N verified clients across [this].\"",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": { "width": "", "class": "", "id": "" },
+            "default_value": "Google & Trustpilot",
+            "maxlength": "",
+            "placeholder": "",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_69796071a004",
+            "label": "Sources",
+            "name": "sources",
+            "aria-label": "",
+            "type": "repeater",
+            "instructions": "Individual review-platform badges shown on the right, e.g. Google, Trustpilot.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": { "width": "", "class": "", "id": "" },
+            "layout": "table",
+            "pagination": 0,
+            "min": 0,
+            "max": 0,
+            "collapsed": "",
+            "button_label": "Add source",
+            "rows_per_page": 20,
+            "sub_fields": [
+                {
+                    "key": "field_69796071a005",
+                    "label": "Name",
+                    "name": "name",
+                    "aria-label": "",
+                    "type": "text",
+                    "instructions": "",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": { "width": "30", "class": "", "id": "" },
+                    "default_value": "",
+                    "maxlength": "",
+                    "placeholder": "Google",
+                    "prepend": "",
+                    "append": ""
+                },
+                {
+                    "key": "field_69796071a006",
+                    "label": "Score",
+                    "name": "score",
+                    "aria-label": "",
+                    "type": "text",
+                    "instructions": "",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": { "width": "20", "class": "", "id": "" },
+                    "default_value": "",
+                    "maxlength": "4",
+                    "placeholder": "4.9",
+                    "prepend": "",
+                    "append": ""
+                },
+                {
+                    "key": "field_69796071a007",
+                    "label": "Count",
+                    "name": "count",
+                    "aria-label": "",
+                    "type": "number",
+                    "instructions": "",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": { "width": "20", "class": "", "id": "" },
+                    "default_value": "",
+                    "min": 0,
+                    "max": "",
+                    "placeholder": "48",
+                    "step": "",
+                    "prepend": "",
+                    "append": ""
+                },
+                {
+                    "key": "field_69796071a008",
+                    "label": "Star colour",
+                    "name": "accent",
+                    "aria-label": "",
+                    "type": "button_group",
+                    "instructions": "",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": { "width": "30", "class": "", "id": "" },
+                    "choices": {
+                        "olivegreen": "Olive",
+                        "apple": "Apple"
+                    },
+                    "default_value": "olivegreen",
+                    "return_format": "value",
+                    "allow_null": 0
+                }
+            ]
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "block",
+                "operator": "==",
+                "value": "acf/installer-reviews-summary"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "",
+    "show_in_rest": 0,
+    "modified": 1785466000
+}

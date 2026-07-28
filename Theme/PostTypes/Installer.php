@@ -51,7 +51,7 @@ class Installer
             ],
             'template' => [
                 [
-                    'acf/page-header',
+                    'acf/installer-profile-header',
                     [
                         'lock' => [
                             'remove' => true,
@@ -59,6 +59,8 @@ class Installer
                         ]
                     ]
                 ],
+                ['acf/installer-about'],
+                ['acf/installer-services'],
                 ['acf/partner-contact-form'],
                 [
                     'core/paragraph',
