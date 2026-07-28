@@ -100,6 +100,18 @@
             "append": ""
         },
         {
+            "key": "field_69795e6f000b",
+            "label": "Featured link",
+            "name": "featured_link",
+            "aria-label": "",
+            "type": "link",
+            "instructions": "Optional. Link the featured tile through to the project on the installer's website.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": { "width": "", "class": "", "id": "" },
+            "return_format": "array"
+        },
+        {
             "key": "field_69795e6f0007",
             "label": "Projects",
             "name": "projects",
@@ -169,6 +181,18 @@
                     "placeholder": "Winchester · Golden Oak",
                     "prepend": "",
                     "append": ""
+                },
+                {
+                    "key": "field_69795e6f000c",
+                    "label": "Link",
+                    "name": "link",
+                    "aria-label": "",
+                    "type": "link",
+                    "instructions": "Optional link to this project on the installer's website.",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": { "width": "25", "class": "", "id": "" },
+                    "return_format": "array"
                 }
             ]
         }
@@ -191,5 +215,5 @@
     "active": true,
     "description": "",
     "show_in_rest": 0,
-    "modified": 1785464000
+    "modified": 1785465000
 }

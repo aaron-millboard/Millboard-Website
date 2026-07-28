@@ -95,6 +95,8 @@
         margin: 0 0 px-to-rem(8);
         font-size: px-to-rem(16);
         font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
     }
 
     &__card-text {

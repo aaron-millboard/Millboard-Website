@@ -85,6 +85,7 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+            transition: transform 0.5s var(--ease-quiet, ease);
         }
 
         // Darken the lower portion so the caption is legible.
@@ -104,6 +105,25 @@
 
     &__tile {
         height: clamp(150px, 30vw, 180px);
+    }
+
+    // ---- Clickable tiles -----------------------------------------------------
+    // A transparent stretched link covers the whole tile.
+    &__cover-link {
+        position: absolute;
+        inset: 0;
+        z-index: 2;
+    }
+
+    &__featured--linked:hover &__featured-image,
+    &__tile--linked:hover &__tile-image {
+        transform: scale(1.04);
+    }
+
+    &__featured--linked:focus-within,
+    &__tile--linked:focus-within {
+        outline: 2px solid var(--ip--accent);
+        outline-offset: 2px;
     }
 
     &__caption {
