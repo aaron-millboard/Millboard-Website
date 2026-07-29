@@ -154,6 +154,26 @@ function get_type_label(\WP_Post $wp_post, bool $is_advanced_installer = false):
 }
 
 /**
+ * Converts a "HH:MM" time to minutes past midnight, or null if unparseable.
+ * Accepts a single-digit hour ("9:00") and tolerates stray whitespace.
+ */
+function time_to_minutes(string $time): ?int
+{
+    if (!preg_match('/^\s*(\d{1,2}):(\d{2})\s*$/', $time, $matches)) {
+        return null;
+    }
+
+    $hours = (int) $matches[1];
+    $minutes = (int) $matches[2];
+
+    if ($hours > 23 || $minutes > 59) {
+        return null;
+    }
+
+    return ($hours * 60) + $minutes;
+}
+
+/**
  * Builds a compact "today's opening hours" line from an opening_hours repeater.
  * Returns ['status' => 'open'|'closed'|'', 'text' => string]: "open" with an
  * "Open today HH:MM–HH:MM" line, "closed" with "Closed today", or empty status
@@ -181,19 +201,44 @@ function get_todays_opening_hours($rows): array
         $open = trim((string) ($row['open'] ?? ''));
         $close = trim((string) ($row['close'] ?? ''));
 
-        if ($open !== '' && $close !== '') {
+        if ($open === '' || $close === '') {
+            return $none;
+        }
+
+        // "Open" has to mean open right now, not merely open at some point
+        // today, otherwise the line reads green at 9pm. Compare against site
+        // local time in minutes.
+        $open_minutes = time_to_minutes($open);
+        $close_minutes = time_to_minutes($close);
+        $now_minutes = time_to_minutes((string) \current_time('H:i'));
+
+        if ($open_minutes === null || $close_minutes === null || $now_minutes === null) {
+            return $none;
+        }
+
+        if ($now_minutes < $open_minutes) {
             return [
-                'status' => 'open',
+                'status' => 'closed',
                 'text' => sprintf(
-                    // translators: 1: opening time, 2: closing time.
-                    \__('Open today %1$s–%2$s', 'granola'),
-                    $open,
-                    $close
+                    // translators: %s: opening time, e.g. "08:30".
+                    \__('Closed now, opens %s', 'granola'),
+                    $open
                 ),
             ];
         }
 
-        return $none;
+        if ($now_minutes >= $close_minutes) {
+            return ['status' => 'closed', 'text' => \__('Closed now', 'granola')];
+        }
+
+        return [
+            'status' => 'open',
+            'text' => sprintf(
+                // translators: %s: closing time, e.g. "17:00".
+                \__('Open now until %s', 'granola'),
+                $close
+            ),
+        ];
     }
 
     return $none;
