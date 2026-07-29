@@ -421,8 +421,8 @@
         }
 
         &[data-map-item-post-type='distributor'] #{$this}__listing__type {
-            border-color: var(--color--wenge);
-            background: var(--color--wenge);
+            border-color: var(--color--sustainabilitygreen);
+            background: var(--color--sustainabilitygreen);
             color: var(--mb-spring-wood);
         }
 
@@ -433,8 +433,8 @@
         }
 
         &[data-map-item-post-type='showroom'] #{$this}__listing__type {
-            border-color: var(--color--sustainabilitygreen);
-            background: var(--color--sustainabilitygreen);
+            border-color: var(--color--wenge);
+            background: var(--color--wenge);
             color: var(--mb-spring-wood);
         }
 
