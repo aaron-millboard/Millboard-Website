@@ -25,27 +25,6 @@ function get_selected_post_types(array $args): array
     return array_values(array_unique(array_filter(array_map('sanitize_key', $post_types))));
 }
 
-function format_post_type_labels(array $labels): string
-{
-    $labels = array_values(array_filter($labels));
-    $label_count = count($labels);
-
-    if ($label_count <= 1) {
-        return $labels[0] ?? '';
-    }
-
-    if ($label_count === 2) {
-        return $labels[0] . _x(' and ', 'Map post type list final separator', 'granola') . $labels[1];
-    }
-
-    $all_but_last = array_slice($labels, 0, -1);
-    $last_label = $labels[$label_count - 1];
-
-    return implode(_x(', ', 'Map post type list separator', 'granola'), $all_but_last)
-        . _x(' and ', 'Map post type list final separator', 'granola')
-        . $last_label;
-}
-
 function filter_args(array $args): ?array
 {
     // ---------------------------------------
@@ -72,37 +51,11 @@ function filter_args(array $args): ?array
     if ($args['content_type'] !== 'custom' && empty($args['items'])) {
         $args['items'] = get_item_data($args);
 
-        // Determine post types for label
-        $post_types_for_label = get_selected_post_types($args);
-
-        if (!empty($post_types_for_label)) {
-            // Handle multiple post types
-            if (count($post_types_for_label) > 1) {
-                $labels = [];
-                foreach ($post_types_for_label as $post_type) {
-                    $post_type_object = \get_post_type_object($post_type);
-                    if (!empty($post_type_object)) {
-                        $labels[] = $post_type_object->label;
-                    }
-                }
-                if (!empty($labels)) {
-                    $args['search_geolocate_text'] = sprintf(
-                        // translators: Content type(s), e.g. "installers" or "installers and distributors".
-                        \__('Find %s near me', 'granola'),
-                        format_post_type_labels($labels)
-                    );
-                }
-            } else {
-                $post_type_object = \get_post_type_object($post_types_for_label[0]);
-                if (!empty($post_type_object)) {
-                    $args['search_geolocate_text'] = sprintf(
-                        // translators: Content type plural, e.g. "installers".
-                        \__('Find %s near me', 'granola'),
-                        $post_type_object->label
-                    );
-                }
-            }
-        }
+        // This used to name the content types, which on the distributor finder
+        // now reads "Find Distributors, Experience Centres and Showrooms near
+        // me" and dwarfs the controls beside it. The button sits inside the
+        // directory it applies to, so a short fixed label is clearer.
+        $args['search_geolocate_text'] = \__('Search near me', 'granola');
     }
 
     $results_count = count($args['items']);

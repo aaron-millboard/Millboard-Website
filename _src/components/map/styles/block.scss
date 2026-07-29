@@ -367,6 +367,14 @@
         border-top: 1px solid var(--mb-rule);
         cursor: pointer;
 
+        // The panel header / filter bar already ends in a rule, so the first
+        // card's own top border would double it up. Same after a category
+        // heading, which carries its own hairline.
+        &:first-child,
+        #{$this}__items__category + & {
+            border-top: 0;
+        }
+
         &[hidden] {
             display: none;
         }
