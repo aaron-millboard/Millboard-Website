@@ -161,7 +161,7 @@ function filter_args(array $args): ?array
  * term (with a sensible default); Experience Centres and Showrooms use a fixed
  * label so customers can tell location types apart at a glance.
  */
-function get_type_label(\WP_Post $wp_post): string
+function get_type_label(\WP_Post $wp_post, bool $is_advanced_installer = false): string
 {
     switch ($wp_post->post_type) {
         case 'distributor':
@@ -173,10 +173,22 @@ function get_type_label(\WP_Post $wp_post): string
 
         case 'installer':
             $terms = \get_the_terms($wp_post->ID, 'installer_type');
-            if (!empty($terms) && !\is_wp_error($terms)) {
-                return $terms[0]->name;
+            $label = (!empty($terms) && !\is_wp_error($terms)) ? $terms[0]->name : '';
+
+            // The installer_type taxonomy only describes the specialism, and
+            // every term is worded "Approved ...", so an advanced installer would
+            // otherwise be badged "Approved" on the card and in the map popup.
+            // Promote the tier while keeping the specialism, e.g.
+            // "Approved Decking Installer" -> "Advanced Decking Installer".
+            if ($is_advanced_installer) {
+                if ($label === '') {
+                    return \_x('Advanced Installer', 'Map listing type label', 'granola');
+                }
+
+                return preg_replace('/^Approved\b/i', \_x('Advanced', 'Installer tier', 'granola'), $label, 1);
             }
-            return '';
+
+            return $label;
 
         case 'experience_centre':
             return \_x('Experience Centre', 'Map listing type label', 'granola');
@@ -284,7 +296,7 @@ function get_item_data($args): array|null
             'url' => \get_permalink($wp_post),
             'post' => $wp_post,
             'post_type' => $post_type,
-            'type_label' => get_type_label($wp_post),
+            'type_label' => get_type_label($wp_post, $advanced_installer),
             'preferred' => $preferred,
             'has_display' => $has_display,
             'holds_stock' => $holds_stock,
