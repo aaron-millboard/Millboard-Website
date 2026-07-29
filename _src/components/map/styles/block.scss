@@ -3,127 +3,162 @@
 @import './map.scss';
 @import './icons.scss';
 
+// =============================================================================
+// Directory finder â€” cleaner layout (mockup: "Directory Finder â€“ All Views")
+// Tokens map the mockup's --mb-* / --fg-* / --border-rule to the theme's
+// existing map tokens so installer + distributor finders share one look.
+// =============================================================================
 .map {
     $this: &;
 
-    // Shared height + reduced vertical padding for the search box, search
-    // button and distance dropdown, so they line up at a standard, compact
-    // form-control size instead of the oversized 66px the search used to force.
-    // (The theme's default input padding of 0.9em otherwise keeps them ~60px.)
-    --map-control-height: #{px-to-rem(48)};
-    --map-control-padding-y: #{px-to-rem(9)};
+    // Local design tokens (bridge mockup names to theme values).
+    --mb-olive: var(--color--olivegreen);
+    --mb-spring-wood: var(--color--springwood);
+    --mb-ink: var(--mb-tt-ink, #2f292e);
+    --mb-wenge: var(--color--wenge);
+    --mb-muted: var(--mb-tt-muted, #6e6a6c);
+    --mb-rule: var(--mb-tt-rule, rgba(47, 41, 46, 0.18));
+    --mb-rule-strong: var(--mb-tt-rule-strong, rgba(47, 41, 46, 0.32));
 
     display: grid;
-    gap: var(--space--xl);
+    gap: var(--space--l);
+    box-sizing: border-box;
+    // Tighten the space above the finder (theme adds a large full-width block
+    // margin); the frame is gone so the vertical padding can be modest too.
+    margin-top: clamp(#{px-to-rem(28)}, 5vw, #{px-to-rem(64)});
+    padding: var(--space--m) clamp(#{px-to-rem(20)}, 4vw, #{px-to-rem(52)});
+    border: 1px solid var(--mb-rule);
+    border-top: 0;
+    border-bottom: 0;
+    border-radius: 0;
+    background: var(--mb-spring-wood);
+    color: var(--mb-ink);
 
     &.has-background {
-        padding-right: 0;
-        padding-left: 0;
+        padding-right: clamp(#{px-to-rem(20)}, 4vw, #{px-to-rem(52)});
+        padding-left: clamp(#{px-to-rem(20)}, 4vw, #{px-to-rem(52)});
     }
 
-    // Optional intro line under the page heading, above the search.
+    // ---- Optional subtitle + olive accent rule (heading stays page-level) ----
     &__subtitle {
+        @include typestyle-base;
+
         max-width: 62ch;
         margin: 0;
+        color: var(--mb-muted);
     }
 
-    &__map-container,
-    &__table-container {
-        overflow: hidden;
-        border: 0;
-        isolation: isolate;
-
-        // Hide and show the table or the map.
-        &[aria-hidden='true'] {
-            display: none;
-            visibility: hidden;
+    // Finder heading (crosshair + text) with an olive accent rule beneath.
+    &__heading {
+        &::after {
+            display: block;
+            width: px-to-rem(56);
+            height: px-to-rem(2);
+            margin-top: var(--space--m);
+            background: var(--mb-olive);
+            content: '';
         }
     }
 
+    // -------------------------------------------------------------------------
+    // Search + distance controls
+    // -------------------------------------------------------------------------
     &__search {
         width: 100%;
 
         &__form {
-            display: grid;
+            display: flex;
+            flex-wrap: wrap;
             align-items: center;
-            gap: var(--space--l);
-
-            @include mq(medium) {
-                grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-            }
-
-            @include mq(large) {
-                grid-template-columns: minmax(0, px-to-rem(400)) minmax(0, 1fr) auto;
-            }
+            justify-content: space-between;
+            gap: var(--space--s) var(--space--l);
         }
 
         &__input-wrapper {
-            display: grid;
-            max-width: px-to-rem(400);
-            grid-template-columns: minmax(0, 1fr) var(--map-control-height);
-
-            + #{$this}__distance {
-                @include mq(medium) {
-                    grid-column-start: 3;
-                }
-            }
-        }
-
-        &__label {
-            margin: 0;
+            display: flex;
+            align-items: stretch;
+            flex: 1 1 px-to-rem(320);
+            max-width: px-to-rem(560);
+            min-width: px-to-rem(220);
+            height: px-to-rem(44);
+            overflow: hidden;
+            border: 1px solid var(--mb-rule);
+            border-radius: px-to-rem(2);
+            background: var(--mb-spring-wood);
         }
 
         &__input {
-            --input--border-color: black;
-            --input--border-color--focus: black;
+            --input--border-color: transparent;
+            --input--border-color--focus: transparent;
             --input--background-color: transparent;
-            --input--padding-y: var(--map-control-padding-y);
 
-            height: var(--map-control-height);
-            border-right: 0;
+            flex: 1;
+            min-width: 0;
+            border: 0;
+            padding: 0 px-to-rem(16);
+            font-weight: var(--fw-light, 300);
             line-height: 1;
         }
 
         &__submit {
-            width: var(--map-control-height);
-            height: var(--map-control-height);
-
-            &::after {
-                --mask-icon--size: 24px;
-
-                mask-image: url(#{asset-path('images/icons/search.svg')});
-            }
-        }
-
-        &__geolocate {
             @include button-reset-hard;
-            @include typestyle-h6;
-            @include mask-icon(before);
 
             display: inline-flex;
             align-items: center;
-            gap: var(--space--2xs);
-            justify-self: start;
-            text-align: left;
+            justify-content: center;
+            flex: none;
+            width: px-to-rem(54);
+            min-height: 100%;
+            padding: 0;
+            border: 0;
+            border-radius: 0;
+            background-color: var(--mb-ink);
+            color: var(--mb-spring-wood);
+            cursor: pointer;
+            transition: background-color var(--dur--base, 240ms) ease;
 
             @include interact {
-                text-decoration: underline;
+                background-color: #1f1a1d;
             }
 
-            @include mq($from: medium, $until: large) {
-                grid-column-end: span 2;
+            svg {
+                flex: none;
+                width: px-to-rem(18);
+                height: px-to-rem(18);
             }
+        }
 
-            @include mq($until: large) {
-                order: -1;
+        // Now the finder heading (also the "find near me" geolocate trigger).
+        &__geolocate {
+            @include button-reset-hard;
+            @include mask-icon(before);
+
+            display: flex;
+            align-items: flex-start;
+            gap: var(--space--s);
+            max-width: 62ch;
+            color: var(--mb-ink);
+            font-weight: var(--fw-light, 300);
+            // Brand modular scale (step 3: 22.78 -> 35.16) instead of a bespoke
+            // clamp, so the finder heading sits on the site's type hierarchy.
+            @include typestyle-h3; // brand type scale
+            line-height: 1.28;
+            letter-spacing: 0.12em;
+            text-align: left;
+            text-transform: uppercase;
+            cursor: pointer;
+
+            @include interact {
+                color: var(--mb-olive);
             }
 
             &::before {
-                --mask-icon--size: 24px;
+                --mask-icon--size: 1.1em;
 
                 flex: 0 0 auto;
                 width: var(--mask-icon--size);
                 height: var(--mask-icon--size);
+                margin-top: 0.16em;
                 mask-image: url(#{asset-path('images/icons/crosshair.svg')});
             }
         }
@@ -131,64 +166,481 @@
 
     &__distance {
         display: flex;
-        gap: px-to-rem(10);
+        flex: none;
         align-items: center;
-
-        @include mq(medium) {
-            justify-content: flex-end;
-        }
+        gap: var(--space--2xs);
 
         &__label {
             flex: 0 0 auto;
             margin: 0;
-            font-size: var(--type--font-size--base);
+            color: var(--mb-muted);
+            font-size: px-to-rem(14);
+            font-weight: var(--fw-light, 300);
         }
 
         &__input {
-            --input--background-color: transparent;
-            --input--padding-y: var(--map-control-padding-y);
+            --input--background-color: var(--mb-spring-wood);
 
-            height: var(--map-control-height);
+            height: px-to-rem(44);
+            box-sizing: border-box;
+            padding: 0 px-to-rem(42) 0 px-to-rem(16);
+            border: 1px solid var(--mb-rule);
+            border-radius: px-to-rem(2);
+            background-color: var(--mb-spring-wood);
+            background-image: url(#{asset-path('images/icons/chevron-down.svg')});
+            background-repeat: no-repeat;
+            background-position: right px-to-rem(14) center;
+            background-size: px-to-rem(14);
+            font-size: px-to-rem(14);
+            font-weight: var(--fw-light, 300);
+            appearance: none;
+        }
+    }
 
-            @include mq($until: medium) {
-                max-width: min-content;
+    // -------------------------------------------------------------------------
+    // Body layout: results panel + map
+    // -------------------------------------------------------------------------
+    &__body {
+        display: grid;
+    }
+
+    &__content {
+        display: grid;
+        width: 100%;
+        gap: var(--space--l);
+
+        // Single column (panel above map) up to desktop; two columns only at
+        // large so tablet stacks like the designs.
+        @include mq(large) {
+            height: px-to-rem(620);
+            grid-template-columns: px-to-rem(400) minmax(0, 1fr);
+        }
+    }
+
+    // ---- Results panel (bordered card: header / scroll body / footer) ----
+    &__sidebar {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        border: 1px solid var(--mb-rule);
+        border-radius: px-to-rem(2);
+        background: var(--mb-spring-wood);
+
+        &__heading {
+            flex: none;
+            margin: 0;
+            padding: var(--space--m) px-to-rem(22) var(--space--2xs);
+            font-weight: 700;
+            font-size: #{px-to-rem(13)}; // label floor for legibility
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--mb-ink);
+        }
+
+        &__no-content {
+            display: none;
+            padding-top: var(--space--m);
+            font-weight: 700;
+
+            .no-results & {
+                display: block;
             }
         }
     }
 
-    &__tablist {
-        display: grid;
-        width: 100%;
-        background-color: var(--color--brand-1);
-        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    &__items {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        padding: 0 px-to-rem(22) var(--space--2xs);
+        scrollbar-color: var(--mb-rule-strong) transparent;
+        scrollbar-width: thin;
 
-        @include mq(medium) {
+        // When stacked (below desktop) the panel has no fixed height, so cap the
+        // list so a long (expanded) list scrolls instead of dominating the page.
+        @include mq($until: large) {
+            max-height: px-to-rem(520);
+        }
+    }
+
+    // ---- Filter chips ----
+    &__filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space--2xs);
+        padding: 0 px-to-rem(22) var(--space--m);
+        border-bottom: 1px solid var(--mb-rule);
+        margin-bottom: 0;
+
+        // Filters live inside the panel header at every width now (no tabs).
+        &--mobile {
             display: none;
         }
     }
 
-    &__tab {
-        @include typestyle-h6;
+    &__filter {
+        @include button-reset-hard;
 
-        padding: var(--space--2xs) var(--space--3xs);
-        background-color: var(--color--brand-1);
-        border-top: 1px solid var(--color--brand-1);
-        border-bottom: 1px solid var(--color--brand-4);
+        display: inline-flex;
+        align-items: center;
+        gap: px-to-rem(7);
+        padding: px-to-rem(8) px-to-rem(12);
+        border: 1px solid var(--mb-rule);
+        border-radius: px-to-rem(2);
+        background: transparent;
+        color: var(--mb-ink);
+        font-weight: 700;
+        font-size: #{px-to-rem(12)}; // dense control label
+        letter-spacing: 0.11em;
+        text-transform: uppercase;
+        transition: color var(--dur--base, 240ms) ease, border-color var(--dur--base, 240ms) ease, background-color var(--dur--base, 240ms) ease;
+
+        @include interact {
+            border-color: var(--mb-olive);
+            color: var(--mb-olive);
+        }
+
+        &__count {
+            font-weight: var(--fw-light, 300);
+            color: var(--mb-muted);
+        }
 
         &--active {
-            border-top-color: var(--color--brand-4);
-            border-bottom-color: transparent;
-            background-color: var(--color--brand-2);
+            border-color: var(--mb-ink);
+            background: var(--mb-ink);
+            color: var(--mb-spring-wood);
 
-            &:first-child {
-                border-inline-end: 1px solid var(--color--brand-4);
+            @include interact {
+                border-color: var(--mb-ink);
+                color: var(--mb-spring-wood);
             }
 
-            &:last-child {
-                border-inline-start: 1px solid var(--color--brand-4);
+            #{$this}__filter__count {
+                color: var(--mb-spring-wood);
+                opacity: 0.72;
             }
         }
     }
+
+    // ---- Category section headers (label + trailing hairline) ----
+    &__items__category {
+        display: flex;
+        align-items: center;
+        gap: var(--space--2xs);
+        margin: 0;
+        padding-top: var(--space--m);
+        font-weight: 700;
+        font-size: #{px-to-rem(13)}; // label floor for legibility
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--mb-ink);
+
+        &::after {
+            flex: 1;
+            height: 1px;
+            background: var(--mb-rule);
+            content: '';
+        }
+    }
+
+    // ---- Listing cards ----
+    &__listing {
+        display: flex;
+        flex-direction: column;
+        gap: px-to-rem(9);
+        padding: var(--space--m) 0;
+        border-top: 1px solid var(--mb-rule);
+        cursor: pointer;
+
+        &[hidden] {
+            display: none;
+        }
+
+        &.selected {
+            box-shadow: inset px-to-rem(3) 0 0 var(--mb-olive);
+            padding-left: var(--space--2xs);
+        }
+
+        &__meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--space--2xs);
+        }
+
+        // Type badge, coloured by location type.
+        &__type {
+            display: inline-flex;
+            align-items: center;
+            gap: px-to-rem(6);
+            padding: px-to-rem(5) px-to-rem(9);
+            border: 1px solid var(--mb-wenge);
+            border-radius: px-to-rem(2);
+            background: var(--mb-wenge);
+            color: var(--mb-spring-wood);
+            font-weight: 700;
+            // 9.5px was below the readable/WCAG-comfortable floor; match the
+            // popup badge at 11px (the smallest label size used site-wide).
+            font-size: #{px-to-rem(13)}; // label floor for legibility
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        &__badge-icon {
+            flex: none;
+            width: px-to-rem(12);
+            height: px-to-rem(12);
+        }
+
+        &[data-map-item-post-type='experience_centre'] #{$this}__listing__type {
+            border-color: var(--mb-olive);
+            background: var(--mb-olive);
+        }
+
+        &__distance {
+            flex: none;
+            font-size: #{px-to-rem(13)}; // label floor for legibility
+            color: var(--mb-muted);
+            white-space: nowrap;
+        }
+
+        &__title {
+            margin: 0;
+            font-weight: var(--fw-light, 300);
+            // Brand modular scale (step 1: 18 -> 22.5) rather than a fixed px, so
+            // the installer name tracks the type hierarchy but stays card-compact.
+            @include typestyle-xlarge; // brand type scale
+            line-height: 1.25;
+            letter-spacing: 0;
+            color: var(--mb-ink);
+        }
+
+        &__address {
+            margin: 0;
+            font-size: px-to-rem(13);
+            line-height: 1.55;
+            color: var(--mb-muted);
+        }
+
+        &__hours {
+            margin: 0;
+            font-size: #{px-to-rem(13)}; // label floor for legibility
+            font-weight: var(--fw-light, 300);
+            color: var(--mb-muted);
+
+            &--open {
+                color: var(--mb-olive);
+            }
+
+            &--closed {
+                color: var(--color--error, #b3261e);
+            }
+        }
+
+        &__stock {
+            display: inline-flex;
+            align-items: center;
+            gap: px-to-rem(6);
+            margin: 0;
+            font-weight: 700;
+            font-size: #{px-to-rem(13)}; // label floor for legibility
+            letter-spacing: 0.04em;
+            color: var(--mb-olive);
+
+            &::before {
+                flex: none;
+                width: px-to-rem(7);
+                height: px-to-rem(7);
+                border-radius: 50%;
+                background: var(--mb-olive);
+                content: '';
+            }
+        }
+
+        &__actions {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: px-to-rem(8);
+            margin-top: px-to-rem(4);
+        }
+
+        &__action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: px-to-rem(6);
+            box-sizing: border-box;
+            height: px-to-rem(34);
+            padding: 0 px-to-rem(12);
+            border: 1px solid var(--mb-rule);
+            border-radius: px-to-rem(2);
+            background: transparent;
+            color: var(--mb-ink);
+            font-weight: 700;
+            font-size: #{px-to-rem(12)}; // dense control label
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            text-decoration: none;
+            transition: color var(--dur--base, 240ms) ease, border-color var(--dur--base, 240ms) ease;
+
+            @include interact {
+                border-color: var(--mb-olive);
+                color: var(--mb-olive);
+                text-decoration: none;
+            }
+
+            // The global `svg { width: 100% }` reset would otherwise stretch
+            // these inline icons to fill the button.
+            svg {
+                flex: none;
+                width: px-to-rem(15);
+                height: px-to-rem(15);
+            }
+
+            &--icon {
+                width: px-to-rem(34);
+                padding: 0;
+            }
+        }
+    }
+
+    // ---- Show more (full-width) ----
+    &__show-more {
+        @include button-reset-hard;
+
+        flex: none;
+        width: 100%;
+        margin: 0;
+        padding: var(--space--s);
+        border: 1px solid var(--mb-ink);
+        border-radius: px-to-rem(2);
+        background: transparent;
+        color: var(--mb-ink);
+        font-weight: 700;
+        font-size: #{px-to-rem(13)}; // label floor for legibility
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        transition: color var(--dur--base, 240ms) ease, border-color var(--dur--base, 240ms) ease;
+
+        @include interact {
+            border-color: var(--mb-olive);
+            color: var(--mb-olive);
+        }
+
+        &[hidden] {
+            display: none;
+        }
+    }
+
+    &__show-more-wrap {
+        flex: none;
+        padding: var(--space--m) px-to-rem(22) 0;
+    }
+
+    // Top 3 shown by default; the rest collapse behind "Show more".
+    &__items:not(#{$this}__items--expanded) {
+        #{$this}__listing--overflow {
+            display: none;
+        }
+    }
+
+    // ---- Map panel + Key header ----
+    &__map-panel {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        border: 1px solid var(--mb-rule);
+        border-radius: px-to-rem(2);
+        background: var(--mb-spring-wood);
+
+        #leaflet-map-container {
+            flex: 1 1 auto;
+            height: auto;
+            min-height: px-to-rem(320);
+            max-height: none;
+
+            @include mq(medium) {
+                min-height: px-to-rem(400);
+            }
+        }
+    }
+
+    &__legend {
+        display: flex;
+        flex: none;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--space--2xs) var(--space--m);
+        padding: var(--space--2xs) var(--space--m);
+        border-bottom: 1px solid var(--mb-rule);
+
+        &__label {
+            font-weight: 700;
+            font-size: #{px-to-rem(13)}; // label floor for legibility
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--mb-muted);
+        }
+
+        &__item {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space--3xs);
+            font-size: px-to-rem(13);
+            color: var(--mb-ink);
+        }
+
+        &__marker {
+            flex: none;
+            width: px-to-rem(17);
+            height: auto;
+        }
+    }
+
+    &__map-container,
+    &__table-container {
+        overflow: hidden;
+        border: 0;
+        isolation: isolate;
+        flex: 1 1 auto;
+
+        // Stacked (below desktop): map sits ABOVE the list, per the designs.
+        @include mq($until: large) {
+            order: -1;
+        }
+
+        &[aria-hidden='true'] {
+            display: none;
+            visibility: hidden;
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Mobile list / map tabs (unchanged behaviour)
+    // -------------------------------------------------------------------------
+    // The List/Map toggle is not in the designs â€” the list and map always stack.
+    &__tablist {
+        display: none;
+    }
+
+    &__tab {
+        @include button-reset-hard;
+
+        padding: var(--space--2xs) var(--space--3xs);
+        background-color: transparent;
+        color: var(--mb-ink);
+        font-weight: 700;
+        font-size: #{px-to-rem(13)}; // label floor for legibility
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+
+        &--active {
+            background-color: var(--mb-ink);
+            color: var(--mb-spring-wood);
+        }
+    }
+
     &__tab-panel {
         &[hidden] {
             @include mq($until: medium) {
@@ -197,285 +649,23 @@
         }
     }
 
-    &__body {
-        display: grid;
-    }
-
-    &__content {
-        width: 100%;
-        display: grid;
-        gap: var(--space--xl);
-
-        @include mq($until: medium) {
-            padding-top: var(--space--m);
-        }
-
-        @include mq(medium) {
-            height: px-to-rem(600);
-            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-        }
-
-        @include mq(large) {
-            grid-template-columns: px-to-rem(400) minmax(0, 1fr);
-        }
-    }
-
-    &__map-container {
-        @include mq($until: medium) {
-            height: px-to-rem(500);
-        }
-    }
-
-    &__sidebar {
-        display: grid;
-        overflow: hidden;
-        align-content: start;
-
-        &__heading {
-            @include typestyle-h6;
-        }
-
-        &__no-content {
-            display: none;
-            padding-top: var(--space--m);
-            border-top: 1px solid var(--color--brand-1);
-            font-weight: var(--type--2--font-weight);
-
-            .no-content > & {
-                display: block;
-            }
-        }
-    }
-
-    &__items {
-        overflow: auto;
-        -ms-overflow-style: none;
-        scrollbar-color: var(--color--brand-4) transparent;
-        scrollbar-width: thin;
-    }
-
-    &__listing {
-        display: grid;
-        gap: 0;
-        padding: var(--space--m) var(--space--2xs);
-        justify-items: start;
-        cursor: pointer;
-        // Reserve the accent-bar width up front (transparent) so the green bar
-        // that appears on hover/selected does not nudge the content sideways.
-        // Putting it on the padded box also makes the bar run the full height
-        // of the row, top to bottom, rather than just the inner content.
-        border-inline-start: 4px solid transparent;
-        transition: background-color 200ms ease, border-color 200ms ease;
-
-        // Darker cream background + full-height green accent bar when the row is
-        // hovered or its map marker is selected, so the active listing is clear.
-        @include interact {
-            background-color: var(--color--brand-1);
-            border-inline-start-color: var(--color--brand-4);
-        }
-
-        &.selected {
-            background-color: var(--color--brand-1);
-            border-inline-start-color: var(--color--brand-4);
-        }
-
-        &:not(:last-child) {
-            border-bottom: 1px solid var(--color--brand-1);
-        }
-
-        &[hidden] {
-            display: none;
-        }
-
-        &__title {
-            @include typestyle-xlarge;
-
-            margin: 0;
-            font-weight: var(--type--2--font-weight);
-            letter-spacing: 0;
-        }
-
-        &__meta {
-            order: -1;
-            display: flex;
-            flex-flow: row wrap;
-            align-items: center;
-            gap: var(--space--3xs);
-
-            &:not(:empty) {
-                margin-bottom: var(--space--s);
-            }
-
-            .g-tag {
-                border-color: var(--color--brand-4);
-            }
-        }
-
-        &__distance {
-            @include typestyle-small;
-
-            font-weight: var(--type--2--font-weight);
-        }
-
-        &__phone,
-        &__address {
-            @include typestyle-small;
-
-            margin-top: var(--space--3xs);
-        }
-
-        &__link {
-            @include typestyle-h6;
-            @include mask-icon;
-
-            display: inline-flex;
-            gap: var(--space--2xs);
-            align-items: center;
-            text-decoration: none;
-            margin-top: var(--space--s);
-
-            @include interact {
-                text-decoration: none;
-            }
-
-            &::after {
-                display: block;
-                width: #{px-to-rem(24)};
-                height: #{px-to-rem(24)};
-                content: '';
-                mask-image: url(#{asset-path('images/icons/chevron-right.svg')});
-                mask-size: #{px-to-rem(24)};
-            }
-        }
-
-        // ---- Location-type badge (Stockist / Showspace / Experience Centre) ----
-        &__type {
-            display: inline-flex;
-            align-items: center;
-            gap: var(--space--3xs);
-            // Small tracked label: 13px is the site's label floor for legibility.
-            font-size: #{px-to-rem(13)};
-            font-weight: var(--type--2--font-weight);
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
-        }
-
-        // Explicit size: the global `svg { width: 100% }` reset would otherwise
-        // stretch this inline pin icon to fill the badge.
-        &__badge-icon {
-            flex: none;
-            width: #{px-to-rem(12)};
-            height: #{px-to-rem(12)};
-        }
-
-        // ---- Today's opening hours ----
-        &__hours {
-            @include typestyle-small;
-
-            margin-top: var(--space--3xs);
-
-            &--open {
-                color: var(--color--olivegreen);
-            }
-
-            &--closed {
-                color: var(--color--error, #b3261e);
-            }
-        }
-
-        // ---- "Stock available" ----
-        &__stock {
-            @include typestyle-small;
-
-            display: inline-flex;
-            align-items: center;
-            gap: var(--space--3xs);
-            margin-top: var(--space--3xs);
-            font-weight: var(--type--2--font-weight);
-            color: var(--color--olivegreen);
-
-            &::before {
-                flex: none;
-                width: #{px-to-rem(7)};
-                height: #{px-to-rem(7)};
-                border-radius: 50%;
-                background: currentColor;
-                content: '';
-            }
-        }
-
-        // ---- Card actions (email / phone / more info / directions) ----
-        &__actions {
-            display: flex;
-            flex-flow: row wrap;
-            align-items: center;
-            gap: var(--space--2xs);
-            margin-top: var(--space--s);
-
-            // The detail link sits in this row, so drop its stacked spacing and
-            // trailing chevron here.
-            .map__listing__link {
-                margin-top: 0;
-
-                &::after {
-                    display: none;
-                }
-            }
-        }
-
-        &__action {
-            @include typestyle-h6;
-
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: var(--space--3xs);
-            min-height: #{px-to-rem(36)};
-            padding: 0 var(--space--2xs);
-            border: 1px solid var(--color--brand-1);
-            text-decoration: none;
-            transition: border-color 200ms ease, color 200ms ease;
-
-            @include interact {
-                border-color: var(--color--brand-4);
-                color: var(--color--olivegreen);
-                text-decoration: none;
-            }
-
-            // Constrain inline action icons against the global svg reset.
-            svg {
-                flex: none;
-                width: #{px-to-rem(15)};
-                height: #{px-to-rem(15)};
-            }
-
-            // Icon-only actions (email / phone) stay square.
-            &--icon {
-                width: #{px-to-rem(36)};
-                padding: 0;
-            }
-        }
-    }
-
+    // -------------------------------------------------------------------------
+    // Marker popup (unchanged â€” already brand-spec)
+    // -------------------------------------------------------------------------
     &__marker-tooltip {
-        // Explicit size: the global `svg { width: 100% }` reset would otherwise
-        // blow these inline icons up to fill their flex container.
         &__icon {
             flex: none;
             width: #{px-to-rem(15)};
             height: #{px-to-rem(15)};
         }
 
-        // Badge, e.g. "Premier Stockist".
         &__badge {
             display: flex;
             align-items: center;
             gap: #{px-to-rem(8)};
             margin: 0 0 #{px-to-rem(16)};
             font-weight: 700;
-            // 13px is the small-label floor used across the site (11px failed
-            // legibility/WCAG comfort).
-            font-size: #{px-to-rem(13)};
+            font-size: #{px-to-rem(13)}; // label floor for legibility
             letter-spacing: 0.2em;
             text-transform: uppercase;
             color: var(--color--olivegreen);
@@ -490,12 +680,11 @@
         }
 
         &__title {
-            // Brand type scale (20 -> 24), matching the sidebar listing title,
-            // instead of a bespoke pixel size.
-            @include typestyle-xlarge;
-
             margin: 0 0 #{px-to-rem(14)};
             font-weight: 300;
+            // Brand modular scale (step 2: 20.25 -> 28.13) â€” a step up from the
+            // list card, since the popup title is the focal heading there.
+            @include typestyle-xlarge; // brand type scale
             line-height: 1.15;
             letter-spacing: 0.04em;
             text-transform: none;
@@ -509,7 +698,7 @@
             gap: #{px-to-rem(7)};
             margin: 0 0 #{px-to-rem(18)};
             font-weight: 700;
-            font-size: #{px-to-rem(13)};
+            font-size: #{px-to-rem(13)}; // label floor for legibility
             letter-spacing: 0.16em;
             text-transform: uppercase;
             color: var(--mb-tt-ink);
@@ -536,14 +725,32 @@
             color: var(--mb-tt-muted);
         }
 
+        &__stock {
+            display: flex;
+            align-items: center;
+            gap: #{px-to-rem(8)};
+            margin: 0 0 #{px-to-rem(20)};
+            font-weight: 700;
+            font-size: #{px-to-rem(13)}; // label floor for legibility
+            letter-spacing: 0.04em;
+            color: var(--color--olivegreen);
+
+            &::before {
+                flex: none;
+                width: #{px-to-rem(7)};
+                height: #{px-to-rem(7)};
+                border-radius: 50%;
+                background: var(--color--olivegreen);
+                content: '';
+            }
+        }
+
         &__actions {
             display: flex;
             flex-wrap: wrap;
             gap: #{px-to-rem(10)};
         }
 
-        // Buttons flex to share the row; when the box is too narrow for both,
-        // they wrap and each grows to full width (stacked).
         &__btn {
             flex: 1 1 #{px-to-rem(130)};
             display: inline-flex;
@@ -554,7 +761,7 @@
             padding: 0 #{px-to-rem(12)};
             border-radius: #{px-to-rem(2)};
             font-weight: 700;
-            font-size: #{px-to-rem(13)};
+            font-size: #{px-to-rem(13)}; // label floor for legibility
             letter-spacing: 0.14em;
             text-transform: uppercase;
             text-decoration: none;
@@ -583,55 +790,8 @@
             }
         }
 
-        // "Get " prefix on the directions button: shown only on small phones.
         &__btn-prefix {
             display: none;
-        }
-    }
-    
-    &__filters {
-        display: flex;
-        gap: var(--space--3xs);
-        flex-wrap: wrap;
-        padding-bottom: var(--space--l);
-        margin-bottom: var(--space--l);
-        border-bottom: 1px solid var(--color--brand-1);
-        width: 100%;
-
-        &--mobile {
-            margin-top: var(--space--l);
-
-            @include mq(medium) {
-                display: none;
-            }
-        }
-
-        &--sidebar {
-            @include mq($until: medium) {
-                display: none;
-            }
-        }
-    }
-
-    &__filter {
-        @include button-reset-hard;
-        @include typestyle-small;
-
-        line-height: 1;
-        display: flex;
-        padding: var(--space--3xs) px-to-rem(12);
-        align-items: flex-start;
-        gap: px-to-rem(10);
-        border: 1px solid var(--color--brand-1);
-
-        @include interact {
-            background-color: var(--color--wenge);
-            color: var(--color--white);
-        }
-
-        &--active {
-            background-color: var(--color--wenge);
-            color: var(--color--white);
         }
     }
 }

@@ -89,6 +89,12 @@ class Map {
         this.roadDistanceRequestId = 0;
         this.ROAD_DISTANCE_LIMIT = 25; // Routes API matrix cap per request.
 
+        // Result grading (brief §2/§3).
+        this.EC_SURFACE_RADIUS_MILES = 30; // Experience Centres within this range surface first.
+        this.TOP_RESULTS = 3; // List view shows this many by default; the rest sit behind "Show more".
+        this.showMoreButton = null;
+        this.currentOverflowCount = 0;
+
         if (typeof L === 'object') {
             this.init();
         }
@@ -101,6 +107,7 @@ class Map {
         this.initSearch();
         this.initDistanceFilter();
         this.initPostTypeFilters();
+        this.initShowMore();
         this.initTablist();
         this.initClickTracking();
 
@@ -329,10 +336,7 @@ class Map {
         // https://leafletjs.com/reference.html#map-option
         this.lmap = L.map(mapContainerNode, {
             center: this.LMAP_INITIAL_CENTER,
-            // MapTiler's free/commercial tier requires the MapTiler + OSM
-            // credit to stay visible, so keep Leaflet's (compact) attribution
-            // control enabled. Removing it needs a paid white-label add-on.
-            attributionControl: true,
+            attributionControl: false,
             intertia: false,
             maxBoundsViscosity: 1.0,
             zoom: this.LMAP_INITIAL_ZOOM,
@@ -360,30 +364,17 @@ class Map {
         //     console.log(event.target.getCenter());
         // });
 
-        // MapTiler "Streets v4" style: a clean, modern street basemap served
-        // under a commercial licence, so it is not throttled or blocked like
-        // the public openstreetmap.org tile server would be. The key below is a
-        // public client key, locked to Millboard domains in the MapTiler
-        // dashboard, so it is safe to ship in front-end code.
-        const mapTilerKey = 'WgIFVRjMxgUoVuVLE9Ep';
-        const mapTileProvider = `https://api.maptiler.com/maps/streets-v4/{z}/{x}/{y}.png?key=${mapTilerKey}`;
+        // CARTO Voyager: a clean but warmer, more detailed basemap than the raw
+        // OpenStreetMap tiles, without the washed-out look of Positron.
+        const mapTileProvider = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
         const tileLayer = L.tileLayer(mapTileProvider, {
-            // MapTiler serves dense 512px tiles, so declare the tile size and
-            // offset the zoom by one. These tiles already look crisp on
-            // high-DPI screens, so detectRetina is not needed.
-            tileSize: 512,
-            zoomOffset: -1,
-            minZoom: 1,
             maxZoom: 20,
-            crossOrigin: true,
-            attribution: '<a href="https://www.maptiler.com/copyright/" target="_blank" rel="noopener">&copy; MapTiler</a> <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">&copy; OpenStreetMap contributors</a>',
+            subdomains: 'abcd',
+            // Load @2x tiles on high-DPI screens so the map stays crisp.
+            detectRetina: true,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
         });
         this.lmap.addLayer(tileLayer);
-
-        // Drop Leaflet's own "Leaflet" credit (not required). The MapTiler and
-        // OpenStreetMap credits stay, kept small and muted via CSS, because
-        // both licences require them to remain visible.
-        this.lmap.attributionControl.setPrefix(false);
 
         const lmapFullScreenControl = new FullScreen({
             position: 'topright',
@@ -530,10 +521,9 @@ let markerHtml = `
     /**
      * Tracks profile click-throughs by pushing a `map_listing_click` custom
      * event to the GTM dataLayer (which forwards to GA4). Covers both the popup
-     * "Directions" / "Contact us" buttons and the equivalent "Contact <type>"
-     * link in the left sidebar, so the same action is measured wherever it is
-     * clicked. Delegated on the map root so it also catches popups created
-     * after page load.
+     * "Directions" / "Contact us" buttons and the equivalent "More info" link in
+     * the left sidebar, so the same action is measured wherever it is clicked.
+     * Delegated on the map root so it also catches popups created after load.
      */
     initClickTracking() {
         if (!this.el) {
@@ -553,9 +543,9 @@ let markerHtml = `
                 return;
             }
 
-            // Sidebar "Contact <type>" link: the same click-through as the
-            // popup "Contact us" button. Its name and type come from the
-            // listing row rather than the link itself.
+            // Sidebar "More info" link: the same click-through as the popup
+            // button. Its name and type come from the listing row rather than
+            // the link itself.
             const sidebarLink = event.target.closest('.map__listing__link');
 
             if (sidebarLink && this.el.contains(sidebarLink)) {
@@ -1007,18 +997,158 @@ let markerHtml = `
     }
 
     sortlistingEls(filteredLayers) {
-        // Sort by distance from the search location, closest first.
-        filteredLayers.sort((a, b) => {
+        // Grade results (brief §2/§3): Experience Centres within range first,
+        // then preferred stockists, then everything else — each ordered by
+        // distance (road distance when known, else straight-line).
+        const ordered = [...filteredLayers].sort((a, b) => {
+            const rankDiff = this.getListingRank(a) - this.getListingRank(b);
+
+            if (rankDiff !== 0) {
+                return rankDiff;
+            }
+
             return this.getSortDistance(a) - this.getSortDistance(b);
         });
 
-        // Order listings from closest > furthest away.
-        filteredLayers.forEach((layer) => {
-            if (layer.options.themeData.listingElement) {
-                this.listingContainer.appendChild(
-                    layer.options.themeData.listingElement
-                );
+        this.renderOrderedListings(ordered);
+    }
+
+    /**
+     * Grade band for a marker's listing: 0 = Experience Centre within range,
+     * 1 = preferred stockist, 2 = everything else.
+     */
+    getListingRank(marker) {
+        const data = marker.options.themeData;
+        const listingEl = data.listingElement;
+
+        const isExperienceCentre = data.postType === 'experience_centre';
+        const isPreferred = listingEl
+            && listingEl.getAttribute('data-map-item-preferred') === '1';
+
+        if (isExperienceCentre && this.getSortDistance(marker) <= this.EC_SURFACE_RADIUS_MILES) {
+            return 0;
+        }
+
+        if (isPreferred) {
+            return 1;
+        }
+
+        return 2;
+    }
+
+    /**
+     * Re-orders the listing DOM, inserts category headings when both Experience
+     * Centres and other listings are present, and collapses everything beyond
+     * the top results behind the "Show more" toggle (list view only — the map
+     * still shows every marker within range).
+     */
+    renderOrderedListings(orderedLayers) {
+        if (!this.listingContainer) {
+            return;
+        }
+
+        // Clear category headings from the previous render.
+        this.listingContainer
+            .querySelectorAll('.map__items__category')
+            .forEach((el) => el.remove());
+
+        const hasExperienceCentre = orderedLayers
+            .some((layer) => layer.options.themeData.postType === 'experience_centre');
+        const hasOther = orderedLayers
+            .some((layer) => layer.options.themeData.postType !== 'experience_centre');
+        const showCategories = hasExperienceCentre && hasOther;
+
+        let lastCategory = null;
+        let listingIndex = 0;
+
+        orderedLayers.forEach((layer) => {
+            const listingEl = layer.options.themeData.listingElement;
+
+            if (!listingEl) {
+                return;
             }
+
+            const isOverflow = listingIndex >= this.TOP_RESULTS;
+
+            const category = layer.options.themeData.postType === 'experience_centre'
+                ? 'experience_centre'
+                : 'other';
+
+            if (showCategories && category !== lastCategory) {
+                const heading = this.createCategoryHeading(category);
+
+                if (isOverflow) {
+                    heading.classList.add('map__listing--overflow');
+                }
+
+                this.listingContainer.appendChild(heading);
+                lastCategory = category;
+            }
+
+            listingEl.classList.toggle('map__listing--overflow', isOverflow);
+            this.listingContainer.appendChild(listingEl);
+
+            listingIndex += 1;
+        });
+
+        this.updateShowMore(listingIndex);
+    }
+
+    createCategoryHeading(category) {
+        const heading = document.createElement('p');
+        heading.className = 'map__items__category';
+
+        heading.textContent = category === 'experience_centre'
+            ? 'Experience Centres'
+            : 'Stockists & showspaces';
+
+        return heading;
+    }
+
+    updateShowMore(totalVisibleCount) {
+        if (!this.showMoreButton) {
+            return;
+        }
+
+        this.currentOverflowCount = Math.max(0, totalVisibleCount - this.TOP_RESULTS);
+
+        // Reset to the collapsed state whenever the result set changes.
+        this.listingContainer.classList.remove('map__items--expanded');
+        this.showMoreButton.setAttribute('aria-expanded', 'false');
+
+        if (this.currentOverflowCount <= 0) {
+            this.showMoreButton.setAttribute('hidden', '');
+            return;
+        }
+
+        this.showMoreButton.removeAttribute('hidden');
+        this.setShowMoreLabel(false);
+    }
+
+    setShowMoreLabel(isExpanded) {
+        if (!this.showMoreButton) {
+            return;
+        }
+
+        const labelEl = this.showMoreButton.querySelector('.map__show-more__label')
+            || this.showMoreButton;
+
+        labelEl.textContent = isExpanded
+            ? 'Show fewer results'
+            : `Show ${this.currentOverflowCount} more`;
+    }
+
+    initShowMore() {
+        this.showMoreButton = this.el.querySelector('.map__show-more');
+
+        if (!this.showMoreButton) {
+            return;
+        }
+
+        this.showMoreButton.addEventListener('click', () => {
+            const isExpanded = this.listingContainer.classList.toggle('map__items--expanded');
+            this.showMoreButton.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
+            this.setShowMoreLabel(isExpanded);
         });
     }
 
@@ -1032,7 +1162,7 @@ let markerHtml = `
         const distMiles = marker.options.themeData.distanceInMiles
         const distText = Number.isFinite(roadMiles)
             ? roadMiles + ' miles by road' // TODO: translate
-            : distMiles + ' miles'; // TODO: translate
+            : distMiles + ' miles away'; // TODO: translate
 
         let distanceEl = listingMetaEl.querySelector('.map__listing__distance');
         if (!distanceEl) {
@@ -1148,6 +1278,9 @@ let markerHtml = `
         const address = addressEl ? this.escapeHtml(addressEl.textContent.trim()) : '';
         const tag = tagEl ? this.escapeHtml(tagEl.textContent.trim()) : '';
 
+        const stockEl = listingEl.querySelector('.map__listing__stock');
+        const stock = stockEl ? this.escapeHtml(stockEl.textContent.trim()) : '';
+
         const roadDistanceInMiles = marker.options.themeData.roadDistanceInMiles;
         const distanceInMiles = marker.options.themeData.distanceInMiles;
 
@@ -1218,7 +1351,11 @@ let markerHtml = `
             html += `<p class="map__marker-tooltip__address">${address}</p>`;
         }
 
-        // Actions. The phone number is intentionally not shown; "Contact us"
+        if (stock) {
+            html += `<p class="map__marker-tooltip__stock">${stock}</p>`;
+        }
+
+        // Actions. The phone number is intentionally not shown; "More info"
         // routes visitors through the listing's own profile page instead.
         // Data attributes feed the click tracking (see initClickTracking).
         const postType = marker.options.themeData && marker.options.themeData.postType
@@ -1233,7 +1370,7 @@ let markerHtml = `
         }
 
         if (safeLinkHref) {
-            html += `<a class="map__marker-tooltip__btn map__marker-tooltip__btn--secondary" href="${safeLinkHref}" data-map-action="contact" ${trackAttrs}>${TOOLTIP_ICONS.mail}<span class="map__marker-tooltip__btn-text">Contact us</span></a>`; // TODO: translate
+            html += `<a class="map__marker-tooltip__btn map__marker-tooltip__btn--secondary" href="${safeLinkHref}" data-map-action="contact" ${trackAttrs}><span class="map__marker-tooltip__btn-text">More info</span></a>`; // TODO: translate
         }
 
         html += '</div>';
