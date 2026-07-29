@@ -163,5 +163,17 @@
             letter-spacing: 0.15em;
             text-transform: uppercase;
         }
+
+        // Responsive paired fields. HubSpot lays two side-by-side fields (set up
+        // in the form editor, e.g. first/last name, phone/email) in a .hsfc-Row
+        // grid: repeat(auto-fit, minmax(0, 1fr)). The minmax(0, ...) means the
+        // columns never wrap, so a phone keeps them 50/50 and the inputs get
+        // cramped. Collapse to one field per line below the tablet breakpoint;
+        // tablet and up keep the 50/50 pairing.
+        @include mq($until: medium) {
+            .hsfc-Row {
+                grid-template-columns: 1fr;
+            }
+        }
     }
 }
