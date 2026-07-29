@@ -359,7 +359,9 @@
             gap: #{px-to-rem(8)};
             margin: 0 0 #{px-to-rem(16)};
             font-weight: 700;
-            font-size: #{px-to-rem(11)};
+            // 13px is the small-label floor used across the site (11px failed
+            // legibility/WCAG comfort).
+            font-size: #{px-to-rem(13)};
             letter-spacing: 0.2em;
             text-transform: uppercase;
             color: var(--color--olivegreen);
@@ -374,9 +376,12 @@
         }
 
         &__title {
+            // Brand type scale (20 -> 24), matching the sidebar listing title,
+            // instead of a bespoke pixel size.
+            @include typestyle-xlarge;
+
             margin: 0 0 #{px-to-rem(14)};
             font-weight: 300;
-            font-size: #{px-to-rem(22)};
             line-height: 1.15;
             letter-spacing: 0.04em;
             text-transform: none;
@@ -390,7 +395,7 @@
             gap: #{px-to-rem(7)};
             margin: 0 0 #{px-to-rem(18)};
             font-weight: 700;
-            font-size: #{px-to-rem(11)};
+            font-size: #{px-to-rem(13)};
             letter-spacing: 0.16em;
             text-transform: uppercase;
             color: var(--mb-tt-ink);
@@ -435,7 +440,7 @@
             padding: 0 #{px-to-rem(12)};
             border-radius: #{px-to-rem(2)};
             font-weight: 700;
-            font-size: #{px-to-rem(11)};
+            font-size: #{px-to-rem(13)};
             letter-spacing: 0.14em;
             text-transform: uppercase;
             text-decoration: none;
