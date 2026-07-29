@@ -271,7 +271,11 @@ export default (env, argv) => {
 
                                     // Prepend core imports for component files.
                                     if (resourcePath.includes('/components')) {
-                                        return `@import '${PATHS.src}/core.scss';\n${content}`;
+                                        // Normalise to forward slashes so the import resolves on
+                                        // Windows (PATHS.src is a backslash path there, which Sass
+                                        // can't resolve). No-op on Linux/CI.
+                                        const coreImportPath = `${PATHS.src}/core.scss`.replace(/\\/g, '/');
+                                        return `@import '${coreImportPath}';\n${content}`;
                                     }
 
                                     // Lookup table: which glob imports apply to which file.
