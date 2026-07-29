@@ -441,8 +441,7 @@ function generate_installer_tier_filters($args): array
             'value' => 'installer-advanced',
             'count' => $advanced,
             'active' => false,
-            'marker' => 'installer',
-            'marker_class' => 'map__legend__marker--advanced',
+            'marker' => 'installer-advanced',
         ],
     ];
 }

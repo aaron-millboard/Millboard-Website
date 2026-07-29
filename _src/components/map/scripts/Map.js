@@ -419,19 +419,16 @@ const markerType = listingData.postType
 // Example:
 // Installer -> installer-marker.png
 // Experience Centre -> experience-centre-marker.png
-const markerIconUrl = `/wp-content/themes/millboard/assets/images/icons/${markerType}-marker.png`;
-
-// Advanced installers share the installer pin but are tinted, so the map
-// matches the "Approved / Advanced" key the same way distributor types do.
+// Advanced installers get their own gold "AI" pin, so the map matches the
+// "Approved / Advanced" key the same way the distributor types do.
 const isAdvancedInstaller = el.dataset.mapItemAdvancedInstaller === '1';
-const markerIconClass = isAdvancedInstaller
-    ? 'leaflet-marker-icon__icon leaflet-marker-icon__icon--advanced'
-    : 'leaflet-marker-icon__icon';
+const markerFile = isAdvancedInstaller ? 'installer-advanced' : markerType;
+const markerIconUrl = `/wp-content/themes/millboard/assets/images/icons/${markerFile}-marker.png`;
 
 let markerHtml = `
     <span class="leaflet-marker-icon__icon-container" aria-hidden="true">
         <img
-            class="${markerIconClass}"
+            class="leaflet-marker-icon__icon"
             src="${markerIconUrl}"
             alt="${listingData.postType} marker"
             width="${this.LMAP_MARKER_WIDTH}"

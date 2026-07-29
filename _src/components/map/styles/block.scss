@@ -595,18 +595,7 @@
             flex: none;
             width: px-to-rem(17);
             height: auto;
-
-            // Advanced installers reuse the installer pin, tinted, so the key
-            // reads as two distinct categories the way distributor types do.
-            &--advanced {
-                filter: saturate(0.35) brightness(0.62);
-            }
         }
-    }
-
-    // Same tint on the map pins themselves, so they match the key.
-    .leaflet-marker-icon__icon--advanced {
-        filter: saturate(0.35) brightness(0.62);
     }
 
     &__map-container,
