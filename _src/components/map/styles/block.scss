@@ -19,6 +19,9 @@
     --mb-muted: var(--mb-tt-muted, #6e6a6c);
     --mb-rule: var(--mb-tt-rule, rgba(47, 41, 46, 0.18));
     --mb-rule-strong: var(--mb-tt-rule-strong, rgba(47, 41, 46, 0.32));
+    // Experience Centre accent. There is no brand token for apple, so this is
+    // the value used by the pin artwork.
+    --mb-apple: #a0cd4f;
 
     // Width of the results panel column. The search box is capped to the same
     // value so the two align down the left edge, instead of the search running
@@ -375,7 +378,10 @@
             gap: var(--space--3xs);
         }
 
-        // Type badge, coloured by location type.
+        // Type badge. Filled with the same colour as the location's map pin (see
+        // the per-type rules below), so card and map read as one system. Text
+        // colour follows each colour's brand foreground so the label stays
+        // legible: white on the dark greens and wenge, dark on olive and apple.
         &__type {
             display: inline-flex;
             align-items: center;
@@ -386,8 +392,6 @@
             background: var(--mb-wenge);
             color: var(--mb-spring-wood);
             font-weight: 700;
-            // 9.5px was below the readable/WCAG-comfortable floor; match the
-            // popup badge at 11px (the smallest label size used site-wide).
             font-size: #{px-to-rem(13)}; // label floor for legibility
             letter-spacing: 0.12em;
             text-transform: uppercase;
@@ -399,9 +403,33 @@
             height: px-to-rem(12);
         }
 
+        // ---- Badge colour per location type (matches the map pins) ----
+        // Approved installers: olive pin. Brand pairs olive with dark text.
+        &[data-map-item-post-type='installer'] #{$this}__listing__type {
+            border-color: var(--color--olivegreen);
+            background: var(--color--olivegreen);
+            color: var(--color--black);
+        }
+
+        // Advanced installers: dark-olive pin. Must come after the rule above.
+        &[data-map-item-advanced-installer='1'] #{$this}__listing__type {
+            border-color: var(--color--sustainabilitygreen);
+            background: var(--color--sustainabilitygreen);
+            color: var(--mb-spring-wood);
+        }
+
+        &[data-map-item-post-type='distributor'] #{$this}__listing__type {
+            border-color: var(--color--wenge);
+            background: var(--color--wenge);
+            color: var(--mb-spring-wood);
+        }
+
+        // Experience Centres: apple pin. No brand token for apple, so the pin's
+        // own value is used, with dark text as the artwork does.
         &[data-map-item-post-type='experience_centre'] #{$this}__listing__type {
-            border-color: var(--mb-olive);
-            background: var(--mb-olive);
+            border-color: var(--mb-apple);
+            background: var(--mb-apple);
+            color: var(--color--sustainabilitygreen);
         }
 
         &__distance {

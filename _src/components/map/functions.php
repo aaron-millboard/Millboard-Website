@@ -423,9 +423,16 @@ function marker_icon_url(string $marker, string $variant = 'marker'): string
 
     // Only the SVG set has badge glyphs; fall back to the pin otherwise.
     if ($variant === 'badge') {
-        return $has_svg
-            ? \get_template_directory_uri() . '/assets/images/icons/' . $marker . '-badge.svg'
-            : '';
+        if (!$has_svg) {
+            return '';
+        }
+
+        // The badge is filled with the pin's colour, so the glyph has to flip to
+        // the dark variant on the light fills (olive and apple) to stay visible.
+        $dark_glyph = in_array($marker, ['installer', 'experience_centre'], true);
+        $suffix = $dark_glyph ? '-badge-dark.svg' : '-badge.svg';
+
+        return \get_template_directory_uri() . '/assets/images/icons/' . $marker . $suffix;
     }
 
     $extension = $has_svg ? 'svg' : 'png';
