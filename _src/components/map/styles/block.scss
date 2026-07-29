@@ -305,6 +305,11 @@
         transition: color var(--dur--base, 240ms) ease, border-color var(--dur--base, 240ms) ease, background-color var(--dur--base, 240ms) ease;
 
         @include interact {
+            // The chip is also a .g-button, whose hover paints a dark fill that
+            // button-reset-hard doesn't cover (it only resets the base state).
+            // Hold the background so hover stays a light chip with an olive
+            // outline, rather than imitating the active state.
+            background: transparent;
             border-color: var(--mb-olive);
             color: var(--mb-olive);
         }
@@ -321,6 +326,7 @@
 
             @include interact {
                 border-color: var(--mb-ink);
+                background: var(--mb-ink);
                 color: var(--mb-spring-wood);
             }
 
