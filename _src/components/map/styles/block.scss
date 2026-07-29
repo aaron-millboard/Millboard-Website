@@ -20,6 +20,11 @@
     --mb-rule: var(--mb-tt-rule, rgba(47, 41, 46, 0.18));
     --mb-rule-strong: var(--mb-tt-rule-strong, rgba(47, 41, 46, 0.32));
 
+    // Width of the results panel column. The search box is capped to the same
+    // value so the two align down the left edge, instead of the search running
+    // far wider than the cards beneath it.
+    --map-panel-width: #{px-to-rem(400)};
+
     display: grid;
     gap: var(--space--l);
     box-sizing: border-box;
@@ -78,7 +83,8 @@
             display: flex;
             align-items: stretch;
             flex: 1 1 px-to-rem(320);
-            max-width: px-to-rem(560);
+            // Match the results panel so the search lines up with the cards.
+            max-width: var(--map-panel-width);
             min-width: px-to-rem(220);
             height: px-to-rem(44);
             overflow: hidden;
@@ -213,7 +219,7 @@
         // large so tablet stacks like the designs.
         @include mq(large) {
             height: px-to-rem(620);
-            grid-template-columns: px-to-rem(400) minmax(0, 1fr);
+            grid-template-columns: var(--map-panel-width) minmax(0, 1fr);
         }
     }
 
