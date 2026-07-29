@@ -158,8 +158,8 @@
                             <?php $marker = !empty($filter['marker']) ? $filter['marker'] : $filter['value']; ?>
                             <span class="map__legend__item">
                                 <img
-                                    class="map__legend__marker <?= esc_attr($filter['marker_class'] ?? ''); ?>"
-                                    src="<?= esc_url(\get_template_directory_uri() . '/assets/images/icons/' . $marker . '-marker.png'); ?>"
+                                    class="map__legend__marker"
+                                    src="<?= esc_url(\Granola\Components\Map\marker_icon_url($marker)); ?>"
                                     alt=""
                                     width="17"
                                     height="21"

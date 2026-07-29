@@ -13,6 +13,7 @@ function filter_args(array $args): ?array
         'tag' => [],
         'email' => '',
         'phone' => '',
+        'marker' => '',
     ], $args);
 
     // ---------------------------------------

@@ -297,6 +297,9 @@ function get_item_data($args): array|null
             'post' => $wp_post,
             'post_type' => $post_type,
             'type_label' => get_type_label($wp_post, $advanced_installer),
+            // One key drives the map pin, the key swatch and the card badge icon
+            // so all three always agree.
+            'marker' => ($post_type === 'installer' && $advanced_installer) ? 'installer-advanced' : $post_type,
             'preferred' => $preferred,
             'has_display' => $has_display,
             'holds_stock' => $holds_stock,
@@ -401,6 +404,33 @@ function generate_filters($args): array
     }
 
     return $filters;
+}
+
+/**
+ * URL for a location-type icon.
+ *
+ * $variant 'marker' is the full map pin (used on the map and for the key
+ * swatch); 'badge' is the small white glyph used inside the card's type badge.
+ * Types with SVG artwork use it; anything else falls back to the legacy PNG pin.
+ */
+function marker_icon_url(string $marker, string $variant = 'marker'): string
+{
+    if ($marker === '') {
+        return '';
+    }
+
+    $has_svg = in_array($marker, ['installer', 'installer-advanced', 'distributor', 'experience_centre'], true);
+
+    // Only the SVG set has badge glyphs; fall back to the pin otherwise.
+    if ($variant === 'badge') {
+        return $has_svg
+            ? \get_template_directory_uri() . '/assets/images/icons/' . $marker . '-badge.svg'
+            : '';
+    }
+
+    $extension = $has_svg ? 'svg' : 'png';
+
+    return \get_template_directory_uri() . '/assets/images/icons/' . $marker . '-marker.' . $extension;
 }
 
 /**
