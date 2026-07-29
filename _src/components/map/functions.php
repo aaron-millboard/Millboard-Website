@@ -58,6 +58,7 @@ function filter_args(array $args): ?array
         'content_type' => 'installer',
         'items' => [],
         'sidebar_heading' => [],
+        'subtitle' => '',
     ], $args);
 
     // ---------------------------------------
@@ -154,6 +155,85 @@ function filter_args(array $args): ?array
     return $args;
 }
 
+/**
+ * Returns a human-readable "location type" label for a map listing, used for
+ * the listing tag / popup badge. Distributors and installers use their taxonomy
+ * term (with a sensible default); Experience Centres and Showrooms use a fixed
+ * label so customers can tell location types apart at a glance.
+ */
+function get_type_label(\WP_Post $wp_post): string
+{
+    switch ($wp_post->post_type) {
+        case 'distributor':
+            $terms = \get_the_terms($wp_post->ID, 'distributor_type');
+            if (!empty($terms) && !\is_wp_error($terms)) {
+                return $terms[0]->name;
+            }
+            return \_x('Stockist', 'Map listing type label', 'granola');
+
+        case 'installer':
+            $terms = \get_the_terms($wp_post->ID, 'installer_type');
+            if (!empty($terms) && !\is_wp_error($terms)) {
+                return $terms[0]->name;
+            }
+            return '';
+
+        case 'experience_centre':
+            return \_x('Experience Centre', 'Map listing type label', 'granola');
+
+        case 'showroom':
+            return \_x('Showspace', 'Map listing type label', 'granola');
+    }
+
+    return '';
+}
+
+/**
+ * Builds a compact "today's opening hours" line from an opening_hours repeater.
+ * Returns ['status' => 'open'|'closed'|'', 'text' => string]: "open" with an
+ * "Open today HH:MM–HH:MM" line, "closed" with "Closed today", or empty status
+ * and text when today has no matching row.
+ */
+function get_todays_opening_hours($rows): array
+{
+    $none = ['status' => '', 'text' => ''];
+
+    if (empty($rows) || !is_array($rows)) {
+        return $none;
+    }
+
+    $today = \current_time('l'); // Full day name, e.g. "Wednesday".
+
+    foreach ($rows as $row) {
+        if (!is_array($row) || ($row['day'] ?? '') !== $today) {
+            continue;
+        }
+
+        if (!empty($row['closed'])) {
+            return ['status' => 'closed', 'text' => \__('Closed today', 'granola')];
+        }
+
+        $open = trim((string) ($row['open'] ?? ''));
+        $close = trim((string) ($row['close'] ?? ''));
+
+        if ($open !== '' && $close !== '') {
+            return [
+                'status' => 'open',
+                'text' => sprintf(
+                    // translators: 1: opening time, 2: closing time.
+                    \__('Open today %1$s–%2$s', 'granola'),
+                    $open,
+                    $close
+                ),
+            ];
+        }
+
+        return $none;
+    }
+
+    return $none;
+}
+
 function get_item_data($args): array|null
 {
     $items = [];
@@ -178,26 +258,47 @@ function get_item_data($args): array|null
 
     foreach ($post_query->posts as $wp_post) {
         $wp_post_id = $wp_post->ID;
+        $post_type = $wp_post->post_type;
         $address = \get_field('address', $wp_post_id);
         $lat = \get_field('address_lat', $wp_post_id);
         $lng = \get_field('address_lng', $wp_post_id);
+        $advanced_installer = !empty(\get_field('advanced_installer', $wp_post_id));
+
+        // Experience Centres and Showrooms are display venues by nature, so they
+        // always hold a display regardless of the (distributor-only) flag.
+        $has_display = !empty(\get_field('has_display', $wp_post_id))
+            || in_array($post_type, ['experience_centre', 'showroom'], true);
+
+        $preferred = !empty(\get_field('preferred_stockist', $wp_post_id));
+        $holds_stock = !empty(\get_field('holds_stock', $wp_post_id));
+        $today_hours = get_todays_opening_hours(\get_field('opening_hours', $wp_post_id));
 
         $items[] = [
             'id' => $wp_post_id,
             'title' => $wp_post->post_title,
-            'advanced_installer' => !empty(\get_field('advanced_installer', $wp_post_id)),
             'address' => $address,
+            'advanced_installer' => $advanced_installer,
             'phone' => \get_field('phone', $wp_post_id),
             'email' => \get_field('email', $wp_post_id),
             'website' => \get_field('website', $wp_post_id),
             'url' => \get_permalink($wp_post),
             'post' => $wp_post,
-            'post_type' => $wp_post->post_type,
+            'post_type' => $post_type,
+            'type_label' => get_type_label($wp_post),
+            'preferred' => $preferred,
+            'has_display' => $has_display,
+            'holds_stock' => $holds_stock,
+            'display_collections' => \get_field('display_collections', $wp_post_id),
+            'display_photo' => \get_field('display_photo', $wp_post_id),
+            'opening_today' => $today_hours['text'],
+            'opening_today_status' => $today_hours['status'],
             'attributes' => [
                 'class' => 'map__listing',
                 'data-map-item-lat' => $lat,
                 'data-map-item-lng' => $lng,
-                'data-map-item-post-type' => $wp_post->post_type,
+                'data-map-item-post-type' => $post_type,
+                'data-map-item-preferred' => $preferred ? '1' : null,
+                'data-map-item-has-display' => $has_display ? '1' : null,
             ],
         ];
     }

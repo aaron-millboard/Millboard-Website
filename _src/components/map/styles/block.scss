@@ -21,6 +21,12 @@
         padding-left: 0;
     }
 
+    // Optional intro line under the page heading, above the search.
+    &__subtitle {
+        max-width: 62ch;
+        margin: 0;
+    }
+
     &__map-container,
     &__table-container {
         overflow: hidden;
@@ -339,6 +345,114 @@
                 content: '';
                 mask-image: url(#{asset-path('images/icons/chevron-right.svg')});
                 mask-size: #{px-to-rem(24)};
+            }
+        }
+
+        // ---- Location-type badge (Stockist / Showspace / Experience Centre) ----
+        &__type {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space--3xs);
+            // Small tracked label: 13px is the site's label floor for legibility.
+            font-size: #{px-to-rem(13)};
+            font-weight: var(--type--2--font-weight);
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        // Explicit size: the global `svg { width: 100% }` reset would otherwise
+        // stretch this inline pin icon to fill the badge.
+        &__badge-icon {
+            flex: none;
+            width: #{px-to-rem(12)};
+            height: #{px-to-rem(12)};
+        }
+
+        // ---- Today's opening hours ----
+        &__hours {
+            @include typestyle-small;
+
+            margin-top: var(--space--3xs);
+
+            &--open {
+                color: var(--color--olivegreen);
+            }
+
+            &--closed {
+                color: var(--color--error, #b3261e);
+            }
+        }
+
+        // ---- "Stock available" ----
+        &__stock {
+            @include typestyle-small;
+
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space--3xs);
+            margin-top: var(--space--3xs);
+            font-weight: var(--type--2--font-weight);
+            color: var(--color--olivegreen);
+
+            &::before {
+                flex: none;
+                width: #{px-to-rem(7)};
+                height: #{px-to-rem(7)};
+                border-radius: 50%;
+                background: currentColor;
+                content: '';
+            }
+        }
+
+        // ---- Card actions (email / phone / more info / directions) ----
+        &__actions {
+            display: flex;
+            flex-flow: row wrap;
+            align-items: center;
+            gap: var(--space--2xs);
+            margin-top: var(--space--s);
+
+            // The detail link sits in this row, so drop its stacked spacing and
+            // trailing chevron here.
+            .map__listing__link {
+                margin-top: 0;
+
+                &::after {
+                    display: none;
+                }
+            }
+        }
+
+        &__action {
+            @include typestyle-h6;
+
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space--3xs);
+            min-height: #{px-to-rem(36)};
+            padding: 0 var(--space--2xs);
+            border: 1px solid var(--color--brand-1);
+            text-decoration: none;
+            transition: border-color 200ms ease, color 200ms ease;
+
+            @include interact {
+                border-color: var(--color--brand-4);
+                color: var(--color--olivegreen);
+                text-decoration: none;
+            }
+
+            // Constrain inline action icons against the global svg reset.
+            svg {
+                flex: none;
+                width: #{px-to-rem(15)};
+                height: #{px-to-rem(15)};
+            }
+
+            // Icon-only actions (email / phone) stay square.
+            &--icon {
+                width: #{px-to-rem(36)};
+                padding: 0;
             }
         }
     }
