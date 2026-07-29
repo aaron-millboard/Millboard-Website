@@ -421,8 +421,19 @@ function marker_icon_url(string $marker, string $variant = 'marker'): string
 
     $has_svg = in_array($marker, ['installer', 'installer-advanced', 'distributor', 'experience_centre', 'showroom'], true);
     $extension = $has_svg ? 'svg' : 'png';
+    $file = $marker . '-marker.' . $extension;
+    $url = \get_template_directory_uri() . '/assets/images/icons/' . $file;
 
-    return \get_template_directory_uri() . '/assets/images/icons/' . $marker . '-marker.' . $extension;
+    // Image assets aren't content-hashed like the CSS/JS bundles are, so a
+    // recoloured pin would otherwise stay cached in browsers and at the edge.
+    // Version by file mtime so new artwork actually shows up.
+    $path = \get_template_directory() . '/assets/images/icons/' . $file;
+
+    if (file_exists($path)) {
+        $url = \add_query_arg('v', (string) filemtime($path), $url);
+    }
+
+    return $url;
 }
 
 /**

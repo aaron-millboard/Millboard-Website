@@ -37,6 +37,12 @@ function filter_args(array $args): ?array
         $args['attributes']['data-map-item-advanced-installer'] = '1';
     }
 
+    // Resolve the map pin here so PHP owns the path (and its cache-busting
+    // version) rather than the script rebuilding it from a hardcoded theme URL.
+    if (!empty($args['marker'])) {
+        $args['attributes']['data-map-item-marker-url'] = \Granola\Components\Map\marker_icon_url($args['marker']);
+    }
+
     // Finally set address (the google_map field returns an array).
     $args['address'] = $args['address']['address'] ?? '';
 

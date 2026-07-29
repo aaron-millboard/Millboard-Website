@@ -422,11 +422,13 @@ const markerType = listingData.postType
 // Advanced installers get their own gold "AI" pin, so the map matches the
 // "Approved / Advanced" key the same way the distributor types do.
 const isAdvancedInstaller = el.dataset.mapItemAdvancedInstaller === '1';
+// PHP resolves the pin (including its cache-busting version), so prefer that.
+// The fallback keeps older markup working if the attribute is ever absent.
 const markerFile = isAdvancedInstaller ? 'installer-advanced' : markerType;
-// Types with SVG pins use them; anything else keeps the legacy PNG.
 const SVG_PIN_TYPES = ['installer', 'installer-advanced', 'distributor', 'experience_centre', 'showroom'];
 const markerExtension = SVG_PIN_TYPES.includes(markerFile) ? 'svg' : 'png';
-const markerIconUrl = `/wp-content/themes/millboard/assets/images/icons/${markerFile}-marker.${markerExtension}`;
+const markerIconUrl = el.dataset.mapItemMarkerUrl
+    || `/wp-content/themes/millboard/assets/images/icons/${markerFile}-marker.${markerExtension}`;
 
 let markerHtml = `
     <span class="leaflet-marker-icon__icon-container" aria-hidden="true">
