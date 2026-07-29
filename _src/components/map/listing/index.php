@@ -57,7 +57,7 @@ $listing_type_icon = '<svg class="map__listing__badge-icon" width="12" height="1
         <?php if (!empty($args['directions_url'])) { ?>
             <a class="map__listing__action" href="<?= esc_url($args['directions_url']); ?>" target="_blank" rel="noopener noreferrer">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="3 11 22 2 13 21 11 13 3 11"></polygon></svg>
-                <?= esc_html_x('Get directions', 'Map listing directions link', 'granola'); ?>
+                <?= esc_html_x('Directions', 'Map listing directions link', 'granola'); ?>
             </a>
         <?php } ?>
     </div>

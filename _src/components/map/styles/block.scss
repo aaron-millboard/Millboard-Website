@@ -140,18 +140,15 @@
         &__geolocate {
             @include button-reset-hard;
             @include mask-icon(before);
+            // Theme's small tracked label step (uppercase, type-3), so this
+            // control matches the "Distance" label beside it.
+            @include typestyle-h6;
 
             display: inline-flex;
             flex: none;
             align-items: center;
             gap: var(--space--3xs);
-            // Small tracked control label, matching the distance label beside it.
-            font-size: #{px-to-rem(13)};
-            font-weight: var(--type--2--font-weight);
-            line-height: 1.2;
-            letter-spacing: 0.1em;
             text-align: left;
-            text-transform: uppercase;
             color: var(--mb-ink);
             cursor: pointer;
 
@@ -177,11 +174,13 @@
         gap: var(--space--2xs);
 
         &__label {
+            // Theme's small tracked label step, matching the geolocate control
+            // beside it, rather than a bespoke size.
+            @include typestyle-h6;
+
             flex: 0 0 auto;
             margin: 0;
             color: var(--mb-muted);
-            font-size: px-to-rem(14);
-            font-weight: var(--fw-light, 300);
         }
 
         &__input {
@@ -197,7 +196,7 @@
             background-repeat: no-repeat;
             background-position: right px-to-rem(14) center;
             background-size: px-to-rem(14);
-            font-size: px-to-rem(14);
+            // No font-size override: inherit the theme's input type.
             font-weight: var(--fw-light, 300);
             appearance: none;
         }
@@ -367,11 +366,13 @@
             padding-left: var(--space--2xs);
         }
 
+        // Badge and distance stack, so the badge gets the full card width and
+        // stops wrapping onto two lines.
         &__meta {
             display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: var(--space--2xs);
+            flex-direction: column;
+            align-items: flex-start;
+            gap: var(--space--3xs);
         }
 
         // Type badge, coloured by location type.
@@ -422,8 +423,10 @@
         }
 
         &__address {
+            // Normal body copy, not a small label.
+            @include typestyle-base;
+
             margin: 0;
-            font-size: px-to-rem(13);
             line-height: 1.55;
             color: var(--mb-muted);
         }
@@ -541,7 +544,9 @@
 
     &__show-more-wrap {
         flex: none;
-        padding: var(--space--m) px-to-rem(22) 0;
+        // Pad the bottom as well, so the button isn't flush against the panel's
+        // bottom border.
+        padding: var(--space--m) px-to-rem(22);
     }
 
     // Top 3 shown by default; the rest collapse behind "Show more".
