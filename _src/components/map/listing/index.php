@@ -1,14 +1,10 @@
 <?php
-// Badge glyph matching the location type's map pin, so card and map agree.
-// Falls back to a generic pin for types without SVG artwork (e.g. showrooms).
-$badge_icon_url = \Granola\Components\Map\marker_icon_url($args['marker'] ?? '', 'badge');
-
-$listing_type_icon = $badge_icon_url
-    ? sprintf(
-        '<img class="map__listing__badge-icon" src="%s" alt="" width="12" height="12" loading="lazy" />',
-        esc_url($badge_icon_url)
-    )
-    : '<svg class="map__listing__badge-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>';
+// Partner mark for this location type, matching its map pin so the card and the
+// map read as one system. Inline so it inherits the badge's text colour.
+$listing_type_icon = \Granola\Components\Map\marker_icon_svg(
+    $args['marker'] ?? '',
+    'map__listing__badge-icon'
+);
 ?>
 <div <?= \Granola\Helpers::build_attributes($args['attributes']); ?>>
 

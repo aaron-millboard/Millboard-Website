@@ -419,25 +419,37 @@ function marker_icon_url(string $marker, string $variant = 'marker'): string
         return '';
     }
 
-    $has_svg = in_array($marker, ['installer', 'installer-advanced', 'distributor', 'experience_centre'], true);
-
-    // Only the SVG set has badge glyphs; fall back to the pin otherwise.
-    if ($variant === 'badge') {
-        if (!$has_svg) {
-            return '';
-        }
-
-        // The badge is filled with the pin's colour, so the glyph has to flip to
-        // the dark variant on the light fills (olive and apple) to stay visible.
-        $dark_glyph = in_array($marker, ['installer', 'experience_centre'], true);
-        $suffix = $dark_glyph ? '-badge-dark.svg' : '-badge.svg';
-
-        return \get_template_directory_uri() . '/assets/images/icons/' . $marker . $suffix;
-    }
-
+    $has_svg = in_array($marker, ['installer', 'installer-advanced', 'distributor', 'experience_centre', 'showroom'], true);
     $extension = $has_svg ? 'svg' : 'png';
 
     return \get_template_directory_uri() . '/assets/images/icons/' . $marker . '-marker.' . $extension;
+}
+
+/**
+ * Inline partner mark for a location type (brand guide p.27: 24x24, line-based,
+ * borderless). Drawn with currentColor so it takes the colour of whatever it
+ * sits in — the card's type badge flips between light and dark fills, and the
+ * glyph follows automatically rather than needing light/dark copies.
+ */
+function marker_icon_svg(string $marker, string $class = ''): string
+{
+    $glyphs = [
+        'installer' => '<path d="M4 6.8L12 12L20 6.8" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M4 12L12 17.2L20 12" fill="none" stroke="currentColor" stroke-width="2.2"/>',
+        'installer-advanced' => '<path d="M4.4 5L12 9.4L19.6 5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4.4 9.8L12 14.2L19.6 9.8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4.4 14.6L12 19L19.6 14.6" fill="none" stroke="currentColor" stroke-width="2"/>',
+        'distributor' => '<rect x="3" y="5.5" width="18" height="3" fill="currentColor"/><rect x="3" y="10.5" width="18" height="3" fill="currentColor"/><rect x="3" y="15.5" width="18" height="3" fill="currentColor"/>',
+        'experience_centre' => '<path d="M3 13.2L12 6L21 13.2" fill="none" stroke="currentColor" stroke-width="2.2"/><rect x="3" y="16.6" width="18" height="3" fill="currentColor"/>',
+        'showroom' => '<rect x="4.2" y="5.4" width="15.6" height="13.2" fill="none" stroke="currentColor" stroke-width="2.2"/>',
+    ];
+
+    if (empty($glyphs[$marker])) {
+        return '';
+    }
+
+    return sprintf(
+        '<svg class="%s" width="12" height="12" viewBox="0 0 24 24" aria-hidden="true" focusable="false">%s</svg>',
+        \esc_attr($class),
+        $glyphs[$marker]
+    );
 }
 
 /**

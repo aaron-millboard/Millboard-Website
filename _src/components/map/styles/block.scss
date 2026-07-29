@@ -19,9 +19,10 @@
     --mb-muted: var(--mb-tt-muted, #6e6a6c);
     --mb-rule: var(--mb-tt-rule, rgba(47, 41, 46, 0.18));
     --mb-rule-strong: var(--mb-tt-rule-strong, rgba(47, 41, 46, 0.32));
-    // Experience Centre accent. There is no brand token for apple, so this is
-    // the value used by the pin artwork.
-    --mb-apple: #a0cd4f;
+    // Accents with no brand token, taken from the pin artwork so the map pins
+    // and the card badges stay in step.
+    --mb-apple: #a0cd4f; // Experience Centres
+    --mb-gold: #c9a227; // Advanced installers
 
     // Width of the results panel column. The search box is capped to the same
     // value so the two align down the left edge, instead of the search running
@@ -392,7 +393,7 @@
             background: var(--mb-wenge);
             color: var(--mb-spring-wood);
             font-weight: 700;
-            font-size: #{px-to-rem(13)}; // label floor for legibility
+            font-size: #{px-to-rem(12)}; // dense control label
             letter-spacing: 0.12em;
             text-transform: uppercase;
         }
@@ -404,18 +405,19 @@
         }
 
         // ---- Badge colour per location type (matches the map pins) ----
-        // Approved installers: olive pin. Brand pairs olive with dark text.
+        // Light fills take dark text, dark fills take Spring Wood, so the label
+        // keeps AA contrast either way (white on olive is only ~3.5:1).
         &[data-map-item-post-type='installer'] #{$this}__listing__type {
             border-color: var(--color--olivegreen);
             background: var(--color--olivegreen);
             color: var(--color--black);
         }
 
-        // Advanced installers: dark-olive pin. Must come after the rule above.
+        // Advanced installers: gold. Must come after the installer rule above.
         &[data-map-item-advanced-installer='1'] #{$this}__listing__type {
-            border-color: var(--color--sustainabilitygreen);
-            background: var(--color--sustainabilitygreen);
-            color: var(--mb-spring-wood);
+            border-color: var(--mb-gold);
+            background: var(--mb-gold);
+            color: var(--color--black);
         }
 
         &[data-map-item-post-type='distributor'] #{$this}__listing__type {
@@ -424,12 +426,16 @@
             color: var(--mb-spring-wood);
         }
 
-        // Experience Centres: apple pin. No brand token for apple, so the pin's
-        // own value is used, with dark text as the artwork does.
         &[data-map-item-post-type='experience_centre'] #{$this}__listing__type {
             border-color: var(--mb-apple);
             background: var(--mb-apple);
             color: var(--color--sustainabilitygreen);
+        }
+
+        &[data-map-item-post-type='showroom'] #{$this}__listing__type {
+            border-color: var(--color--sustainabilitygreen);
+            background: var(--color--sustainabilitygreen);
+            color: var(--mb-spring-wood);
         }
 
         &__distance {
@@ -451,8 +457,9 @@
         }
 
         &__address {
-            // Normal body copy, not a small label.
-            @include typestyle-base;
+            // Theme's small text step: a clear step down from the title so the
+            // two don't blend, without dropping to label size.
+            @include typestyle-small;
 
             margin: 0;
             line-height: 1.55;
