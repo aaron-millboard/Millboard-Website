@@ -4,7 +4,7 @@
 @import './icons.scss';
 
 // =============================================================================
-// Directory finder â€” cleaner layout (mockup: "Directory Finder â€“ All Views")
+// Directory finder Ã¢â‚¬â€ cleaner layout (mockup: "Directory Finder Ã¢â‚¬â€œ All Views")
 // Tokens map the mockup's --mb-* / --fg-* / --border-rule to the theme's
 // existing map tokens so installer + distributor finders share one look.
 // =============================================================================
@@ -28,6 +28,10 @@
     // value so the two align down the left edge, instead of the search running
     // far wider than the cards beneath it.
     --map-panel-width: #{px-to-rem(400)};
+
+    // Shared height for the controls on the search row (search box, geolocate
+    // square, distance dropdown) so they line up.
+    --map-control-height: #{px-to-rem(44)};
 
     display: grid;
     gap: var(--space--l);
@@ -98,15 +102,17 @@
             // Match the results panel so the search lines up with the cards.
             max-width: var(--map-panel-width);
             min-width: px-to-rem(220);
-
-            @include mq(large) {
-                flex: 0 0 var(--map-panel-width);
-            }
-            height: px-to-rem(44);
+            height: var(--map-control-height);
             overflow: hidden;
             border: 1px solid var(--mb-rule);
             border-radius: px-to-rem(2);
             background: var(--mb-spring-wood);
+
+            // Fixed at the panel width on desktop, so the control beside it
+            // starts exactly on the map's left edge.
+            @include mq(large) {
+                flex: 0 0 var(--map-panel-width);
+            }
         }
 
         &__input {
@@ -206,7 +212,7 @@
         &__input {
             --input--background-color: var(--mb-spring-wood);
 
-            height: px-to-rem(44);
+            height: var(--map-control-height);
             box-sizing: border-box;
             padding: 0 px-to-rem(42) 0 px-to-rem(16);
             border: 1px solid var(--mb-rule);
@@ -696,7 +702,7 @@
     // -------------------------------------------------------------------------
     // Mobile list / map tabs (unchanged behaviour)
     // -------------------------------------------------------------------------
-    // The List/Map toggle is not in the designs â€” the list and map always stack.
+    // The List/Map toggle is not in the designs Ã¢â‚¬â€ the list and map always stack.
     &__tablist {
         display: none;
     }
@@ -727,7 +733,7 @@
     }
 
     // -------------------------------------------------------------------------
-    // Marker popup (unchanged â€” already brand-spec)
+    // Marker popup (unchanged Ã¢â‚¬â€ already brand-spec)
     // -------------------------------------------------------------------------
     &__marker-tooltip {
         &__icon {
@@ -759,7 +765,7 @@
         &__title {
             margin: 0 0 #{px-to-rem(14)};
             font-weight: 300;
-            // Brand modular scale (step 2: 20.25 -> 28.13) â€” a step up from the
+            // Brand modular scale (step 2: 20.25 -> 28.13) Ã¢â‚¬â€ a step up from the
             // list card, since the popup title is the focal heading there.
             @include typestyle-xlarge; // brand type scale
             line-height: 1.15;
