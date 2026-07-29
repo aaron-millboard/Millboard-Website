@@ -22,7 +22,6 @@
     }
 
     &__intro {
-        max-width: 46ch;
         margin: 0 0 clamp(24px, 4vw, 34px);
     }
 
@@ -41,6 +40,9 @@
 
     &__lead {
         margin: 0;
+        // Readable line length for the paragraph only — NOT the heading, which
+        // sat in the intro wrapper and got squeezed into a two-line wrap.
+        max-width: 46ch;
         line-height: 1.7;
         color: var(--is--muted);
     }
