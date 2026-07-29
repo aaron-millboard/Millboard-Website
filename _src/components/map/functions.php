@@ -338,6 +338,14 @@ function generate_filters($args): array
     // Only generate filters if there are multiple post types
     $post_types = get_selected_post_types($args);
 
+    // A single-post-type installer map has no post types to split on, but the
+    // two installer tiers are the equivalent categories, so it gets the same
+    // filter bar and key as the distributor map (same markup, styles and JS —
+    // the values just describe a tier instead of a post type).
+    if (is_array($post_types) && $post_types === ['installer']) {
+        return generate_installer_tier_filters($args);
+    }
+
     // Check if we have multiple post types
     if (!is_array($post_types) || count($post_types) <= 1) {
         return $filters;
@@ -381,6 +389,62 @@ function generate_filters($args): array
     }
 
     return $filters;
+}
+
+/**
+ * Filter bar + key for the installer map, split by tier rather than post type.
+ *
+ * Mirrors generate_filters() exactly so the shared markup, styles and filtering
+ * script need no special-casing: each entry still has label / value / count /
+ * active, plus a 'marker' for the key swatch (both tiers share the installer
+ * pin, with the advanced one tinted via its own class).
+ */
+function generate_installer_tier_filters($args): array
+{
+    if (empty($args['items'])) {
+        return [];
+    }
+
+    $advanced = 0;
+
+    foreach ($args['items'] as $item) {
+        if (!empty($item['advanced_installer'])) {
+            $advanced++;
+        }
+    }
+
+    $total = count($args['items']);
+    $approved = $total - $advanced;
+
+    // Nothing to split on if every installer sits in the same tier.
+    if ($advanced === 0 || $approved === 0) {
+        return [];
+    }
+
+    return [
+        [
+            'label' => \esc_html__('All', 'granola'),
+            'value' => '',
+            'count' => $total,
+            'active' => true,
+            'marker' => '',
+        ],
+        [
+            'label' => \esc_html__('Approved Installer', 'granola'),
+            'value' => 'installer-approved',
+            'count' => $approved,
+            'active' => false,
+            'marker' => 'installer',
+        ],
+        [
+            'label' => \esc_html__('Advanced Installer', 'granola'),
+            'value' => 'installer-advanced',
+            'count' => $advanced,
+            'active' => false,
+            'marker' => 'installer',
+            'marker_class' => 'map__legend__marker--advanced',
+        ],
+    ];
 }
 
 /**

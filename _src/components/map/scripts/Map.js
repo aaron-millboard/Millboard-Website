@@ -421,10 +421,17 @@ const markerType = listingData.postType
 // Experience Centre -> experience-centre-marker.png
 const markerIconUrl = `/wp-content/themes/millboard/assets/images/icons/${markerType}-marker.png`;
 
+// Advanced installers share the installer pin but are tinted, so the map
+// matches the "Approved / Advanced" key the same way distributor types do.
+const isAdvancedInstaller = el.dataset.mapItemAdvancedInstaller === '1';
+const markerIconClass = isAdvancedInstaller
+    ? 'leaflet-marker-icon__icon leaflet-marker-icon__icon--advanced'
+    : 'leaflet-marker-icon__icon';
+
 let markerHtml = `
     <span class="leaflet-marker-icon__icon-container" aria-hidden="true">
-        <img 
-            class="leaflet-marker-icon__icon"
+        <img
+            class="${markerIconClass}"
             src="${markerIconUrl}"
             alt="${listingData.postType} marker"
             width="${this.LMAP_MARKER_WIDTH}"
@@ -448,6 +455,7 @@ let markerHtml = `
                     listingElement: el,
                     distanceInMiles: this.calcLatLngDistanceMilesFromMapCenter(listingLatLng),
                     postType: listingData.postType,
+                    advancedInstaller: isAdvancedInstaller,
                 },
             });
 
@@ -678,6 +686,32 @@ let markerHtml = `
         });
     }
 
+    /**
+     * Does a marker pass the active category filter?
+     *
+     * The distributor map filters by post type; the installer map has a single
+     * post type and filters by tier instead ("installer-approved" /
+     * "installer-advanced"). Both go through here so the filter bar, the key and
+     * the listing/marker filtering stay one mechanism.
+     */
+    matchesCategoryFilter(marker) {
+        const active = this.activePostTypeFilter;
+
+        if (active === '') {
+            return true;
+        }
+
+        if (active === 'installer-advanced') {
+            return marker.options.themeData.advancedInstaller === true;
+        }
+
+        if (active === 'installer-approved') {
+            return marker.options.themeData.advancedInstaller !== true;
+        }
+
+        return marker.options.themeData.postType === active;
+    }
+
     initTablist() {
         if (!this.tablist) {
             return;
@@ -860,10 +894,10 @@ let markerHtml = `
 
             // Check distance filter
             const passesDistanceFilter = distance === 0 || distanceInMiles <= distance;
-            
-            // Check post type filter
-            const passesPostTypeFilter = this.activePostTypeFilter === '' || marker.options.themeData.postType === this.activePostTypeFilter;
-            
+
+            // Check category filter (post type, or installer tier)
+            const passesPostTypeFilter = this.matchesCategoryFilter(marker);
+
             // Show/hide based on both filters
             if (passesDistanceFilter && passesPostTypeFilter) {
                 this.filteredMarkersGroup.addLayer(marker);

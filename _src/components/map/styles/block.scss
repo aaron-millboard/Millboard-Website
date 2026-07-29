@@ -128,24 +128,25 @@
             }
         }
 
-        // Now the finder heading (also the "find near me" geolocate trigger).
+        // "Find installers near me" geolocate trigger. A compact inline control
+        // that sits in the search row between the input and the distance
+        // dropdown, not a page heading.
         &__geolocate {
             @include button-reset-hard;
             @include mask-icon(before);
 
-            display: flex;
-            align-items: flex-start;
-            gap: var(--space--s);
-            max-width: 62ch;
-            color: var(--mb-ink);
-            font-weight: var(--fw-light, 300);
-            // Brand modular scale (step 3: 22.78 -> 35.16) instead of a bespoke
-            // clamp, so the finder heading sits on the site's type hierarchy.
-            @include typestyle-h3; // brand type scale
-            line-height: 1.28;
-            letter-spacing: 0.12em;
+            display: inline-flex;
+            flex: none;
+            align-items: center;
+            gap: var(--space--3xs);
+            // Small tracked control label, matching the distance label beside it.
+            font-size: #{px-to-rem(13)};
+            font-weight: var(--type--2--font-weight);
+            line-height: 1.2;
+            letter-spacing: 0.1em;
             text-align: left;
             text-transform: uppercase;
+            color: var(--mb-ink);
             cursor: pointer;
 
             @include interact {
@@ -153,12 +154,11 @@
             }
 
             &::before {
-                --mask-icon--size: 1.1em;
+                --mask-icon--size: #{px-to-rem(15)};
 
                 flex: 0 0 auto;
                 width: var(--mask-icon--size);
                 height: var(--mask-icon--size);
-                margin-top: 0.16em;
                 mask-image: url(#{asset-path('images/icons/crosshair.svg')});
             }
         }
@@ -595,7 +595,18 @@
             flex: none;
             width: px-to-rem(17);
             height: auto;
+
+            // Advanced installers reuse the installer pin, tinted, so the key
+            // reads as two distinct categories the way distributor types do.
+            &--advanced {
+                filter: saturate(0.35) brightness(0.62);
+            }
         }
+    }
+
+    // Same tint on the map pins themselves, so they match the key.
+    .leaflet-marker-icon__icon--advanced {
+        filter: saturate(0.35) brightness(0.62);
     }
 
     &__map-container,

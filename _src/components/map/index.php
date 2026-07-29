@@ -3,14 +3,6 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet.fullscreen/dist/Control.FullScreen.css" />
 
 <div <?= \Granola\Helpers::build_attributes($args['attributes']); ?>>
-    <?php if (!empty($args['search_geolocate_text'])) { ?>
-        <div class="map__heading alignwide">
-            <button type="button" class="map__search__geolocate">
-                <span class="map__heading__text"><?= esc_html($args['search_geolocate_text']); ?></span>
-            </button>
-        </div>
-    <?php } ?>
-
     <?php if (!empty($args['subtitle'])) { ?>
         <p class="map__subtitle alignwide">
             <?= esc_html($args['subtitle']); ?>
@@ -36,6 +28,12 @@
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.5" y2="16.5"></line></svg>
                 </button>
             </div>
+
+            <?php if (!empty($args['search_geolocate_text'])) { ?>
+                <button type="button" class="map__search__geolocate">
+                    <span class="map__search__geolocate__text"><?= esc_html($args['search_geolocate_text']); ?></span>
+                </button>
+            <?php } ?>
 
             <div class="map__distance">
                 <label class="map__distance__label" for="map-distance-select">
@@ -156,10 +154,12 @@
 
                         <?php foreach ($args['filters'] as $filter) { ?>
                             <?php if (empty($filter['value'])) { continue; } ?>
+                            <?php // Tier filters share one pin, so they name their marker explicitly. ?>
+                            <?php $marker = !empty($filter['marker']) ? $filter['marker'] : $filter['value']; ?>
                             <span class="map__legend__item">
                                 <img
-                                    class="map__legend__marker"
-                                    src="<?= esc_url(\get_template_directory_uri() . '/assets/images/icons/' . $filter['value'] . '-marker.png'); ?>"
+                                    class="map__legend__marker <?= esc_attr($filter['marker_class'] ?? ''); ?>"
+                                    src="<?= esc_url(\get_template_directory_uri() . '/assets/images/icons/' . $marker . '-marker.png'); ?>"
                                     alt=""
                                     width="17"
                                     height="21"
