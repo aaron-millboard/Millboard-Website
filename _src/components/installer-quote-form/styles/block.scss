@@ -14,6 +14,9 @@
     padding: clamp(40px, 5vw, 60px) 0;
     background: var(--color--sustainabilitygreen);
     color: var(--iqf--light);
+    // This block is the #installer-enquiry anchor target; offset the scroll so
+    // the heading isn't hidden behind the sticky site header.
+    scroll-margin-top: px-to-rem(100);
 
     &__inner {
         display: grid;

@@ -19,6 +19,13 @@ function filter_args(array $args): ?array
         'wp-block',
     ], $args['classes']);
 
+    // Anchor target for the "Request a quote" buttons in the profile header and
+    // the services CTA, which link to #installer-enquiry. Without this id those
+    // links resolve to nothing and jump to the top of the page.
+    if (empty($args['attributes']['id'])) {
+        $args['attributes']['id'] = 'installer-enquiry';
+    }
+
     // Contact buttons come from the installer's own phone + email fields.
     $post_id = !empty($args['post_id']) ? (int) $args['post_id'] : \get_the_ID();
     $args['phone'] = \get_field('phone', $post_id);
