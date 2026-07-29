@@ -164,15 +164,33 @@
             text-transform: uppercase;
         }
 
-        // Responsive paired fields. HubSpot lays two side-by-side fields (set up
-        // in the form editor, e.g. first/last name, phone/email) in a .hsfc-Row
-        // grid: repeat(auto-fit, minmax(0, 1fr)). The minmax(0, ...) means the
-        // columns never wrap, so a phone keeps them 50/50 and the inputs get
-        // cramped. Collapse to one field per line below the tablet breakpoint;
-        // tablet and up keep the 50/50 pairing.
-        @include mq($until: medium) {
-            .hsfc-Row {
-                grid-template-columns: 1fr;
+        // Pair fields into two columns from tablet up (stacked one-per-line on
+        // mobile). Done here in CSS, not per-form in the HubSpot editor, so it
+        // applies to every installer's embedded form at once. Each field renders
+        // in its own full-width .hsfc-Row, so we turn the row container into a
+        // 2-col grid and pair just name (first/last) and email/phone; everything
+        // else spans the full width. Below the tablet breakpoint the container is
+        // a normal single column (HubSpot default), so fields stack.
+        @include mq(medium) {
+            // The direct parent of the field rows — matched via :has() so we
+            // don't depend on HubSpot's container class name.
+            *:has(> .hsfc-Row) {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                column-gap: px-to-rem(16);
+            }
+
+            // Full width by default...
+            *:has(> .hsfc-Row) > * {
+                grid-column: 1 / -1;
+            }
+
+            // ...except first/last name and email/phone, which sit 50/50.
+            .hsfc-Row:has(input[name$="/firstname"]),
+            .hsfc-Row:has(input[name$="/lastname"]),
+            .hsfc-Row:has(input[type="email"]),
+            .hsfc-Row:has(input[type="tel"]) {
+                grid-column: auto;
             }
         }
     }
