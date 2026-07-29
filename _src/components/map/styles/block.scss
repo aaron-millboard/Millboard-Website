@@ -79,8 +79,16 @@
             display: flex;
             flex-wrap: wrap;
             align-items: center;
-            justify-content: space-between;
             gap: var(--space--s) var(--space--l);
+
+            // Desktop: search / geolocate / key / distance on one line. The
+            // search takes exactly the results-panel width and the form gap
+            // matches the body grid gap, so the geolocate box starts on the
+            // map's left edge. The key then absorbs the slack, pushing the
+            // distance control to the right.
+            @include mq(large) {
+                flex-wrap: nowrap;
+            }
         }
 
         &__input-wrapper {
@@ -90,6 +98,10 @@
             // Match the results panel so the search lines up with the cards.
             max-width: var(--map-panel-width);
             min-width: px-to-rem(220);
+
+            @include mq(large) {
+                flex: 0 0 var(--map-panel-width);
+            }
             height: px-to-rem(44);
             overflow: hidden;
             border: 1px solid var(--mb-rule);
@@ -138,30 +150,34 @@
             }
         }
 
-        // "Find installers near me" geolocate trigger. A compact inline control
-        // that sits in the search row between the input and the distance
-        // dropdown, not a page heading.
+        // Geolocate trigger: an icon-only square matching the search button, so
+        // it reads as a control rather than a line of text. Its label is kept in
+        // the markup (visually hidden + aria-label) for assistive tech.
         &__geolocate {
             @include button-reset-hard;
             @include mask-icon(before);
-            // Theme's small tracked label step (uppercase, type-3), so this
-            // control matches the "Distance" label beside it.
-            @include typestyle-h6;
 
             display: inline-flex;
             flex: none;
             align-items: center;
-            gap: var(--space--3xs);
-            text-align: left;
+            justify-content: center;
+            box-sizing: border-box;
+            width: var(--map-control-height);
+            height: var(--map-control-height);
+            border: 1px solid var(--mb-rule);
+            border-radius: px-to-rem(2);
+            background: var(--mb-spring-wood);
             color: var(--mb-ink);
             cursor: pointer;
+            transition: color var(--dur--base, 240ms) ease, border-color var(--dur--base, 240ms) ease;
 
             @include interact {
+                border-color: var(--mb-olive);
                 color: var(--mb-olive);
             }
 
             &::before {
-                --mask-icon--size: #{px-to-rem(15)};
+                --mask-icon--size: #{px-to-rem(18)};
 
                 flex: 0 0 auto;
                 width: var(--mask-icon--size);
@@ -626,14 +642,15 @@
         }
     }
 
+    // Sits inline in the search row (between the geolocate box and the distance
+    // control) and absorbs the slack, so the distance control stays right.
     &__legend {
         display: flex;
-        flex: none;
+        flex: 1 1 auto;
         flex-wrap: wrap;
         align-items: center;
         gap: var(--space--2xs) var(--space--m);
-        padding: var(--space--2xs) var(--space--m);
-        border-bottom: 1px solid var(--mb-rule);
+        padding: 0;
 
         &__label {
             font-weight: 700;

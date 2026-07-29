@@ -30,9 +30,39 @@
             </div>
 
             <?php if (!empty($args['search_geolocate_text'])) { ?>
-                <button type="button" class="map__search__geolocate">
-                    <span class="map__search__geolocate__text"><?= esc_html($args['search_geolocate_text']); ?></span>
+                <?php // Icon-only control; the label is kept for assistive tech. ?>
+                <button
+                    type="button"
+                    class="map__search__geolocate"
+                    aria-label="<?= esc_attr($args['search_geolocate_text']); ?>"
+                    title="<?= esc_attr($args['search_geolocate_text']); ?>"
+                >
+                    <span class="map__search__geolocate__text visually-hidden"><?= esc_html($args['search_geolocate_text']); ?></span>
                 </button>
+            <?php } ?>
+
+            <?php if (!empty($args['filters'])) { ?>
+                <div class="map__legend">
+                    <span class="map__legend__label">
+                        <?= esc_html_x('Key', 'Map legend label', 'granola'); ?>
+                    </span>
+
+                    <?php foreach ($args['filters'] as $filter) { ?>
+                        <?php if (empty($filter['value'])) { continue; } ?>
+                        <?php $marker = !empty($filter['marker']) ? $filter['marker'] : $filter['value']; ?>
+                        <span class="map__legend__item">
+                            <img
+                                class="map__legend__marker"
+                                src="<?= esc_url(\Granola\Components\Map\marker_icon_url($marker)); ?>"
+                                alt=""
+                                width="17"
+                                height="21"
+                                loading="lazy"
+                            />
+                            <?= esc_html($filter['label']); ?>
+                        </span>
+                    <?php } ?>
+                </div>
             <?php } ?>
 
             <div class="map__distance">
@@ -146,30 +176,6 @@
             </div>
 
             <div id="map-container" class="map__map-panel map__map-container map__tab-panel">
-                <?php if (!empty($args['filters'])) { ?>
-                    <div class="map__legend">
-                        <span class="map__legend__label">
-                            <?= esc_html_x('Key', 'Map legend label', 'granola'); ?>
-                        </span>
-
-                        <?php foreach ($args['filters'] as $filter) { ?>
-                            <?php if (empty($filter['value'])) { continue; } ?>
-                            <?php // Tier filters share one pin, so they name their marker explicitly. ?>
-                            <?php $marker = !empty($filter['marker']) ? $filter['marker'] : $filter['value']; ?>
-                            <span class="map__legend__item">
-                                <img
-                                    class="map__legend__marker"
-                                    src="<?= esc_url(\Granola\Components\Map\marker_icon_url($marker)); ?>"
-                                    alt=""
-                                    width="17"
-                                    height="21"
-                                    loading="lazy"
-                                />
-                                <?= esc_html($filter['label']); ?>
-                            </span>
-                        <?php } ?>
-                    </div>
-                <?php } ?>
 
                 <div id="leaflet-map-container"></div>
             </div>
