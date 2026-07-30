@@ -1146,6 +1146,20 @@ class OrderEssentials
         if ($quantity <= 0) {
             return 0;
         }
+
+        // Guard the ceil() boundary. These rates routinely land exactly on a whole
+        // number - a 100 board order is 64.935... m2, and 64.935... x 1.68 x 1.1 is
+        // exactly 120 - but the same product computed in a different order is
+        // 120.00000000000001 in binary floating point, because 1.12 x 1.5 is
+        // 1.6800000000000002 rather than 1.68. Ceiling that raw would charge the
+        // customer a whole extra pack for 1.4e-14 of drift, so treat a value within
+        // a hair of an integer as that integer.
+        $nearest = round($quantity);
+
+        if ($nearest >= 1 && abs($quantity - $nearest) < 1e-9) {
+            return (int) $nearest;
+        }
+
         return (int) ceil($quantity);
     }
 
