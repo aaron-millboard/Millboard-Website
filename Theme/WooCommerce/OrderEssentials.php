@@ -219,8 +219,7 @@ class OrderEssentials
             'ffl' => $ffl,
             'ffl_needed' => $ffl_needed,
             'ffl_missing' => $ffl_needed && $ffl < 1,
-            'ffl_out_of_range' => $ffl_needed && $ffl > 0 && self::lookup_duolift_row((string) $config, $ffl) === null
-                && self::lookup_post_height($ffl) === null,
+            'ffl_out_of_range' => self::ffl_is_out_of_range($source_lines),
             'acoustic_pads' => self::acoustic_pads_enabled(),
         ];
     }
@@ -1173,6 +1172,34 @@ class OrderEssentials
     }
 
     /**
+     * What the basket needs an FFL for. Both callers need this, and they must agree:
+     * if they disagree the step can prompt for a value it then ignores, or worse
+     * accept one and quietly recommend nothing.
+     *
+     * @param array<int, array<string, mixed>> $source_lines
+     * @return array{config: string|null, duolift: bool, posts: bool, needed: bool}
+     */
+    private static function get_ffl_needs(array $source_lines): array
+    {
+        $config = self::detect_subframe_config($source_lines);
+
+        if ($config === null) {
+            return ['config' => null, 'duolift' => false, 'posts' => false, 'needed' => false];
+        }
+
+        $duolift = self::basket_has_category($source_lines, 'duolift');
+        $posts = self::basket_has_sku($source_lines, self::POST_SKU)
+            && \in_array($config, ['pp125', 'ds99'], true);
+
+        return [
+            'config' => $config,
+            'duolift' => $duolift,
+            'posts' => $posts,
+            'needed' => $duolift || $posts,
+        ];
+    }
+
+    /**
      * Whether the basket needs an FFL that has not been given yet, so the step can
      * prompt for it instead of silently omitting DuoLift components or posts.
      *
@@ -1180,12 +1207,42 @@ class OrderEssentials
      */
     private static function ffl_is_needed(array $source_lines): bool
     {
-        if (self::detect_subframe_config($source_lines) === null) {
+        return self::get_ffl_needs($source_lines)['needed'];
+    }
+
+    /**
+     * True when an FFL has been supplied but no lookup can use it, so the step warns
+     * instead of returning nothing.
+     *
+     * Checked PER NEED, not across both tables: an FFL of 900mm is a valid post
+     * height but is outside every DuoLift band, so on a DuoLift build it must warn
+     * even though the post lookup would have succeeded.
+     *
+     * @param array<int, array<string, mixed>> $source_lines
+     */
+    private static function ffl_is_out_of_range(array $source_lines): bool
+    {
+        $ffl = self::get_ffl();
+
+        if ($ffl < 1) {
             return false;
         }
 
-        return self::basket_has_category($source_lines, 'duolift')
-            || self::basket_has_sku($source_lines, self::POST_SKU);
+        $needs = self::get_ffl_needs($source_lines);
+
+        if (!$needs['needed']) {
+            return false;
+        }
+
+        if ($needs['duolift'] && self::lookup_duolift_row((string) $needs['config'], $ffl) === null) {
+            return true;
+        }
+
+        if ($needs['posts'] && self::lookup_post_height($ffl) === null) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
