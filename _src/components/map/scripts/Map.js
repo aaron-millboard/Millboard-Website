@@ -553,17 +553,17 @@ let markerHtml = `
                 return;
             }
 
-            // Sidebar "More info" link: the same click-through as the popup
-            // button. Its name and type come from the listing row rather than
-            // the link itself.
-            const sidebarLink = event.target.closest('.map__listing__link');
+            // Sidebar card actions (email / phone / more info / directions).
+            // Each carries its own data-map-action; the name and type come from
+            // the listing row rather than the link itself.
+            const cardAction = event.target.closest('.map__listing__action');
 
-            if (sidebarLink && this.el.contains(sidebarLink)) {
-                const listingRow = sidebarLink.closest('.map__listing');
+            if (cardAction && this.el.contains(cardAction)) {
+                const listingRow = cardAction.closest('.map__listing');
                 const titleEl = listingRow ? listingRow.querySelector('.map__listing__title') : null;
 
                 this.pushListingClick(
-                    'contact_sidebar',
+                    cardAction.getAttribute('data-map-action') || '',
                     titleEl ? titleEl.textContent.trim() : '',
                     listingRow ? (listingRow.dataset.mapItemPostType || '') : ''
                 );
