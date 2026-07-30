@@ -551,7 +551,6 @@ class OrderEssentials
         $target_requirements = [];
         $target_rules = [];
         $target_ids = [];
-        $applied_rules = [];
 
         foreach ($matrix as $rule) {
             $target_id = (int) $rule['target_product_id'];
@@ -588,11 +587,7 @@ class OrderEssentials
                 continue;
             }
 
-            foreach ($matrix as $rule_index => $rule) {
-                if (isset($applied_rules[$rule_index])) {
-                    continue;
-                }
-
+            foreach ($matrix as $rule) {
                 if (!self::rule_matches_source($rule, $source_id, $source_category_slugs)) {
                     continue;
                 }
@@ -606,8 +601,18 @@ class OrderEssentials
                     continue;
                 }
 
-                $target_requirements[$target_id] = ($target_requirements[$target_id] ?? 0) + $multiplier;
-                $applied_rules[$rule_index] = true;
+                // The multiplier is a RATE PER UNIT of the source product, so it
+                // scales with the basket quantity and accumulates across every
+                // matching basket line.
+                //
+                // Previously the multiplier was added once per rule for the whole
+                // basket (guarded by an $applied_rules map) and $source_quantity
+                // was read but never used. Because the total is ceil()'d, any rate
+                // below 1 became a single unit no matter how much was ordered - one
+                // box of screws for 500 boards - and the residential and commercial
+                // rates gave identical results whenever both were under 1.
+                $target_requirements[$target_id] = ($target_requirements[$target_id] ?? 0)
+                    + ($multiplier * $source_quantity);
             }
         }
 
