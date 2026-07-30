@@ -1093,7 +1093,14 @@ class OrderEssentials
         return (bool) \WC()->session->get(self::SESSION_ESSENTIALS_DECLINED, false);
     }
 
-    private static function clear_declined_essentials(): void
+    /**
+     * Must stay PUBLIC: init() registers this directly as the
+     * 'woocommerce_cart_emptied' callback. While it was private, WordPress threw
+     * an uncaught TypeError from class-wp-hook.php every time the cart was
+     * emptied - including the empty_cart() WooCommerce performs after a completed
+     * order - which surfaced as "There has been a critical error on this website".
+     */
+    public static function clear_declined_essentials(): void
     {
         if (!\function_exists('WC') || !\WC()->session instanceof \WC_Session) {
             return;
