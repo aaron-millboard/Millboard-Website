@@ -1101,9 +1101,12 @@ class OrderEssentials
             return [];
         }
 
-        $config = self::detect_subframe_config($source_lines);
+        // Same helper the prompt and the warning use, so all three agree on what the
+        // basket needs an FFL for.
+        $needs = self::get_ffl_needs($source_lines);
+        $config = $needs['config'];
 
-        if ($config === null) {
+        if ($config === null || !$needs['needed']) {
             return [];
         }
 
@@ -1112,7 +1115,7 @@ class OrderEssentials
         $required = [];
 
         // ---- DuoLift components, only if the basket shows a DuoLift build ----
-        if (self::basket_has_category($source_lines, 'duolift')) {
+        if ($needs['duolift']) {
             $row = self::lookup_duolift_row($config, $ffl);
             $multipliers = self::SUPPORT_MULTIPLIERS[$config] ?? null;
 
@@ -1148,7 +1151,7 @@ class OrderEssentials
         }
 
         // ---- Posts, for the PP125-with-posts and DS99P builds ----
-        if (self::basket_has_sku($source_lines, self::POST_SKU) && \in_array($config, ['pp125', 'ds99'], true)) {
+        if ($needs['posts']) {
             $post_height = self::lookup_post_height($ffl);
 
             if ($post_height !== null) {
