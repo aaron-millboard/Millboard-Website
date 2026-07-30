@@ -41,6 +41,65 @@
             width: 100%;
         }
 
+        // Finished floor level, asked for only when the basket contains a DuoLift
+        // build or posts, because those quantities come from an FFL lookup.
+        &__ffl {
+            margin: 0 0 var(--space--m);
+            padding: 0;
+            border: 0;
+            width: 100%;
+        }
+
+        &__ffl-inner {
+            border: 1px solid var(--color--brand-1);
+            padding: var(--space--s);
+            display: grid;
+            gap: var(--space--2xs);
+            max-width: #{px-to-rem(560)};
+        }
+
+        &__ffl-label {
+            @include typestyle-h6;
+
+            text-transform: uppercase;
+        }
+
+        &__ffl-help {
+            @include typestyle-small;
+
+            margin: 0;
+            color: var(--color--foreground);
+        }
+
+        &__ffl-input {
+            --input--background-color: transparent;
+
+            max-width: #{px-to-rem(180)};
+        }
+
+        &__ffl-acoustic {
+            @include typestyle-small;
+
+            display: flex;
+            align-items: center;
+            gap: var(--space--3xs);
+
+            input {
+                flex: 0 0 auto;
+            }
+        }
+
+        &__ffl-notice {
+            @include typestyle-small;
+
+            margin: 0;
+
+            &--warning {
+                font-weight: var(--type--2--font-weight);
+                color: var(--color--error, #b3261e);
+            }
+        }
+
         &__project-type-legend {
             border: 1px solid var(--color--brand-1);
             border-bottom: none;

@@ -6,6 +6,72 @@ class OrderEssentials
 {
     private const ENDPOINT = 'order-essentials';
     private const SESSION_PROJECT_TYPE = 'millboard_order_essentials_project_type';
+    private const SESSION_FFL = 'millboard_order_essentials_ffl';
+    private const SESSION_ACOUSTIC_PADS = 'millboard_order_essentials_acoustic_pads';
+
+    /**
+     * Finished floor level lookups, from the internal calculator sections 5.6 and
+     * 5.7. These are engineering constants rather than merchandising settings, so
+     * they live in code with a filter for overrides rather than in ACF.
+     */
+
+    /** 5.6 post height: [FFL min (exclusive), FFL max (inclusive), postH in metres] */
+    private const POST_HEIGHT_TABLE = [
+        [1, 330, 0.6],
+        [330, 490, 0.75],
+        [490, 740, 1.0],
+        [740, 1140, 1.5],
+    ];
+
+    /**
+     * 5.7 DuoLift, per joist config: [FFL min, FFL max, joints per 10 supports,
+     * risers per 10 supports]. Cradles and feet are always 1 per 10 supports.
+     */
+    private const DUOLIFT_TABLES = [
+        'pp50' => [
+            [97, 142, 0, 0], [143, 162, 1, 0], [163, 207, 1, 1], [208, 252, 1, 2],
+            [253, 297, 1, 2], [298, 342, 1, 3], [343, 387, 1, 4], [388, 432, 1, 5],
+        ],
+        'pp125' => [
+            [172, 217, 0, 0], [218, 237, 1, 0], [238, 282, 1, 1], [283, 327, 1, 2],
+            [328, 372, 1, 2], [373, 417, 1, 3], [418, 462, 1, 4], [463, 507, 1, 5],
+        ],
+        'ds51' => [
+            [98, 143, 0, 0], [144, 163, 1, 0], [164, 208, 1, 1], [209, 253, 1, 2],
+            [254, 298, 1, 2], [299, 343, 1, 3], [344, 388, 1, 4], [389, 433, 1, 5],
+        ],
+        'ds99' => [
+            [146, 191, 0, 0], [192, 211, 1, 0], [212, 256, 1, 1], [257, 301, 1, 2],
+            [302, 346, 1, 2], [347, 391, 1, 3], [392, 436, 1, 4], [437, 481, 1, 5],
+        ],
+    ];
+
+    /** 5.7 supports per m2: config => [residential, commercial] */
+    private const SUPPORT_MULTIPLIERS = [
+        'pp50' => [6.5, 9.0],
+        'pp125' => [3.0, 5.5],
+        'ds51' => [3.84, 6.68],
+        'ds99' => [2.32, 3.8],
+    ];
+
+    /** The joist SKU that identifies each config. */
+    private const CONFIG_JOIST_SKUS = [
+        'pp50' => 'P0505B240',
+        'pp125' => 'P1205B300',
+        'ds51' => 'K5168J360',
+        'ds99' => 'K9968J360',
+    ];
+
+    /** DuoLift component SKUs (5.7). */
+    private const DUOLIFT_SKUS = [
+        'cradles' => 'PMCP010',
+        'joints' => 'PMLP010',
+        'risers' => 'PMRP010',
+        'feet' => 'PMFP010',
+        'acoustic' => 'PMAP010',
+    ];
+
+    private const POST_SKU = 'P1010B300';
     private const SESSION_ESSENTIALS_DECLINED = 'millboard_order_essentials_declined';
     private const CHECKOUT_ACK_FIELD = 'millboard_order_essentials_ack';
     private const QUERY_ADDED_ESSENTIALS = 'millboard_essentials_added';
@@ -126,6 +192,15 @@ class OrderEssentials
             $outstanding_count += (int) ($recommendation['missing_qty'] ?? 0);
         }
 
+        // Only products with boards_per_sqm contribute to area, so passing no target
+        // exclusions here cannot skew it: fixings never carry that field.
+        $source_lines = (\function_exists('WC') && \WC()->cart instanceof \WC_Cart && !\WC()->cart->is_empty())
+            ? self::get_source_cart_lines([])
+            : [];
+        $ffl = self::get_ffl();
+        $ffl_needed = self::ffl_is_needed($source_lines);
+        $config = self::detect_subframe_config($source_lines);
+
         return [
             'project_type' => $project_type,
             'recommendations' => $recommendations,
@@ -134,6 +209,19 @@ class OrderEssentials
             'recommendation_source_label' => self::get_recommendation_source_label(),
             'disclaimer_url' => 'https://millboard.com/en-us/installation-guides/',
             'show_added_modal' => self::should_show_added_modal(),
+            // Derived project area in m2, from the boards in the basket.
+            'project_area' => round(self::get_derived_project_area($source_lines), 2),
+            'subframe_config' => $config,
+            // The finished floor level cannot be inferred, so it is asked for. When
+            // the basket contains DuoLift components or posts and no FFL has been
+            // given, those quantities cannot be worked out and the step should
+            // prompt rather than silently omit them.
+            'ffl' => $ffl,
+            'ffl_needed' => $ffl_needed,
+            'ffl_missing' => $ffl_needed && $ffl < 1,
+            'ffl_out_of_range' => $ffl_needed && $ffl > 0 && self::lookup_duolift_row((string) $config, $ffl) === null
+                && self::lookup_post_height($ffl) === null,
+            'acoustic_pads' => self::acoustic_pads_enabled(),
         ];
     }
 
@@ -275,6 +363,15 @@ class OrderEssentials
 
         if (isset($_POST['millboard_order_essentials_project_type'])) {
             self::set_project_type((string) \wp_unslash($_POST['millboard_order_essentials_project_type']));
+        }
+
+        // The FFL field is only rendered alongside the acoustic pad checkbox, so its
+        // presence marks a settings submission. An unticked checkbox is not posted at
+        // all, hence reading it only when the FFL came with it - otherwise the option
+        // would be cleared by every "add to basket" post.
+        if (isset($_POST[self::SESSION_FFL])) {
+            self::set_ffl((int) \wc_stock_amount(\wp_unslash((string) $_POST[self::SESSION_FFL])));
+            self::set_acoustic_pads(isset($_POST[self::SESSION_ACOUSTIC_PADS]));
         }
 
         $add_all = isset($_POST['millboard_add_all_essentials']);
@@ -632,6 +729,22 @@ class OrderEssentials
             $target_requirements[$target_id] = ($target_requirements[$target_id] ?? 0) + $required;
         }
 
+        // FFL-dependent quantities (DuoLift components and posts) are table lookups
+        // rather than flat rates, so they are computed rather than configured. They
+        // need a $target_rules entry too: the output loop below drops any target
+        // without one, which would silently discard them.
+        foreach (self::get_ffl_requirements($source_lines, $project_area, $project_type) as $ffl_target_id => $ffl_quantity) {
+            if ($ffl_quantity <= 0) {
+                continue;
+            }
+
+            $target_requirements[$ffl_target_id] = ($target_requirements[$ffl_target_id] ?? 0) + $ffl_quantity;
+
+            if (!isset($target_rules[$ffl_target_id])) {
+                $target_rules[$ffl_target_id] = ['target_product_id' => $ffl_target_id, 'source' => 'ffl_lookup'];
+            }
+        }
+
         if (empty($target_requirements)) {
             return [];
         }
@@ -823,6 +936,256 @@ class OrderEssentials
         }
 
         return $rules;
+    }
+
+    /**
+     * Finished floor level in mm, as supplied by the customer on the essentials
+     * step. There is no way to infer this from a basket, which is why it is asked
+     * for: every DuoLift component count and post height depends on it.
+     */
+    public static function get_ffl(): int
+    {
+        if (!\function_exists('WC') || !\WC()->session instanceof \WC_Session) {
+            return 0;
+        }
+
+        return max(0, (int) \WC()->session->get(self::SESSION_FFL, 0));
+    }
+
+    private static function set_ffl(int $ffl): void
+    {
+        if (!\function_exists('WC') || !\WC()->session instanceof \WC_Session) {
+            return;
+        }
+
+        \WC()->session->set(self::SESSION_FFL, max(0, $ffl));
+    }
+
+    public static function acoustic_pads_enabled(): bool
+    {
+        if (!\function_exists('WC') || !\WC()->session instanceof \WC_Session) {
+            return false;
+        }
+
+        return (string) \WC()->session->get(self::SESSION_ACOUSTIC_PADS, '') === '1';
+    }
+
+    private static function set_acoustic_pads(bool $enabled): void
+    {
+        if (!\function_exists('WC') || !\WC()->session instanceof \WC_Session) {
+            return;
+        }
+
+        \WC()->session->set(self::SESSION_ACOUSTIC_PADS, $enabled ? '1' : '0');
+    }
+
+    /**
+     * 5.6: postH in metres for an FFL. The lookup is deliberately
+     * "FFL > min AND FFL <= max", and an FFL of 0 or outside 1-1140mm has no
+     * match, in which case the calculator shows a warning rather than guessing.
+     */
+    private static function lookup_post_height(int $ffl): ?float
+    {
+        if ($ffl < 1) {
+            return null;
+        }
+
+        foreach (self::POST_HEIGHT_TABLE as $row) {
+            if ($ffl > $row[0] - ($row[0] === 1 ? 1 : 0) && $ffl <= $row[1]) {
+                return (float) $row[2];
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * 5.7: the DuoLift row for a config and FFL, as
+     * ['joints' => int, 'risers' => int] per 10 supports. Null when the FFL falls
+     * outside the config's supported range.
+     *
+     * @return array<string, int>|null
+     */
+    private static function lookup_duolift_row(string $config, int $ffl): ?array
+    {
+        $table = self::DUOLIFT_TABLES[$config] ?? null;
+
+        if (!$table || $ffl < 1) {
+            return null;
+        }
+
+        foreach ($table as $row) {
+            if ($ffl >= $row[0] && $ffl <= $row[1]) {
+                return ['joints' => (int) $row[2], 'risers' => (int) $row[3]];
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Which subframe system is in the basket. The customer's choice of system is
+     * not derivable from boards, but it IS knowable once they have added joists,
+     * so no extra question is needed for it.
+     *
+     * @param array<int, array<string, mixed>> $source_lines
+     */
+    private static function detect_subframe_config(array $source_lines): ?string
+    {
+        foreach (self::CONFIG_JOIST_SKUS as $config => $joist_sku) {
+            $joist_id = \wc_get_product_id_by_sku($joist_sku);
+
+            if (!$joist_id) {
+                continue;
+            }
+
+            foreach ($source_lines as $line) {
+                if ((int) $line['source_id'] === (int) $joist_id) {
+                    return $config;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $source_lines
+     */
+    private static function basket_has_category(array $source_lines, string $slug): bool
+    {
+        foreach ($source_lines as $line) {
+            if (\in_array($slug, (array) $line['category_slugs'], true)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $source_lines
+     */
+    private static function basket_has_sku(array $source_lines, string $sku): bool
+    {
+        $id = \wc_get_product_id_by_sku($sku);
+
+        if (!$id) {
+            return false;
+        }
+
+        foreach ($source_lines as $line) {
+            if ((int) $line['source_id'] === (int) $id) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * FFL-dependent quantities: DuoLift components (5.7) and posts (5.6 with the
+     * 5.4/5.5 multipliers). These are table lookups rather than flat rates, so they
+     * cannot be expressed as matrix rules and are computed here.
+     *
+     * Returns [product_id => required quantity]. Empty when the customer has not
+     * supplied an FFL, or when their basket contains no DuoLift or post products.
+     *
+     * @param array<int, array<string, mixed>> $source_lines
+     * @return array<int, float>
+     */
+    private static function get_ffl_requirements(array $source_lines, float $area, string $project_type): array
+    {
+        $ffl = self::get_ffl();
+
+        if ($ffl < 1 || $area <= 0) {
+            return [];
+        }
+
+        $config = self::detect_subframe_config($source_lines);
+
+        if ($config === null) {
+            return [];
+        }
+
+        $commercial = ($project_type === 'commercial');
+        $waste = self::get_waste_multiplier();
+        $required = [];
+
+        // ---- DuoLift components, only if the basket shows a DuoLift build ----
+        if (self::basket_has_category($source_lines, 'duolift')) {
+            $row = self::lookup_duolift_row($config, $ffl);
+            $multipliers = self::SUPPORT_MULTIPLIERS[$config] ?? null;
+
+            if ($row !== null && $multipliers !== null) {
+                $raw_supports = $area * (float) ($commercial ? $multipliers[1] : $multipliers[0]) * $waste;
+                $per_ten = $raw_supports / 10;
+
+                $map = [
+                    'cradles' => $per_ten,
+                    'feet' => $per_ten,
+                    'joints' => $row['joints'] > 0 ? $per_ten : 0.0,
+                    'risers' => $row['risers'] > 0 ? ($raw_supports * $row['risers'] / 10) : 0.0,
+                ];
+
+                // Acoustic pads are UK only, opt-in, and the FFL used for their
+                // lookup is reduced by 3mm before matching.
+                if (self::acoustic_pads_enabled() && self::lookup_duolift_row($config, $ffl - 3) !== null) {
+                    $map['acoustic'] = $per_ten;
+                }
+
+                foreach ($map as $key => $quantity) {
+                    if ($quantity <= 0) {
+                        continue;
+                    }
+
+                    $id = \wc_get_product_id_by_sku(self::DUOLIFT_SKUS[$key] ?? '');
+
+                    if ($id) {
+                        $required[(int) $id] = ($required[(int) $id] ?? 0) + $quantity;
+                    }
+                }
+            }
+        }
+
+        // ---- Posts, for the PP125-with-posts and DS99P builds ----
+        if (self::basket_has_sku($source_lines, self::POST_SKU) && \in_array($config, ['pp125', 'ds99'], true)) {
+            $post_height = self::lookup_post_height($ffl);
+
+            if ($post_height !== null) {
+                if ($config === 'pp125') {
+                    $factor = $commercial ? 1.4 : 1.0;
+                } else {
+                    $factor = $commercial ? 0.98 : 0.61;
+                }
+
+                $posts = $area * $factor * $post_height / 3 * $waste;
+                $id = \wc_get_product_id_by_sku(self::POST_SKU);
+
+                if ($id) {
+                    // "Min 1 post always" per 5.4 / 5.5.
+                    $required[(int) $id] = max(1.0, $posts);
+                }
+            }
+        }
+
+        return $required;
+    }
+
+    /**
+     * Whether the basket needs an FFL that has not been given yet, so the step can
+     * prompt for it instead of silently omitting DuoLift components or posts.
+     *
+     * @param array<int, array<string, mixed>> $source_lines
+     */
+    private static function ffl_is_needed(array $source_lines): bool
+    {
+        if (self::detect_subframe_config($source_lines) === null) {
+            return false;
+        }
+
+        return self::basket_has_category($source_lines, 'duolift')
+            || self::basket_has_sku($source_lines, self::POST_SKU);
     }
 
     /**

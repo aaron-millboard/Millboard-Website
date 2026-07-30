@@ -35,8 +35,6 @@ if ($count === 0) {
     $names_array = implode(', ', $names) . ' and ' . $last;
 }
 
-echo $names_array;
-
 // Notices here.
 \Granola\Components\WC_OrderEssentials\render_before_cart();
 ?>
@@ -75,6 +73,69 @@ echo $names_array;
                     <button type="submit" class="button" name="millboard_refresh_essentials" value="1" hidden><?php esc_html_e('Update recommendations', 'granola'); ?></button>
                 </div>
             </fieldset>
+
+            <?php
+            // DuoLift component counts and post heights come from a lookup on the
+            // finished floor level, which cannot be derived from the basket. Only ask
+            // when the basket actually contains a DuoLift build or posts.
+            if (!empty($essentials_context['ffl_needed'])) :
+                $essentials_ffl = isset($essentials_context['ffl']) ? (int) $essentials_context['ffl'] : 0;
+                $essentials_ffl_missing = !empty($essentials_context['ffl_missing']);
+                $essentials_ffl_out_of_range = !empty($essentials_context['ffl_out_of_range']);
+                ?>
+                <fieldset class="cart__order-essentials__ffl">
+                    <div class="cart__order-essentials__ffl-inner">
+                        <label class="cart__order-essentials__ffl-label" for="millboard-order-essentials-ffl">
+                            <?php esc_html_e('Finished floor level (mm)', 'granola'); ?>
+                        </label>
+
+                        <p class="cart__order-essentials__ffl-help">
+                            <?php esc_html_e('The height from the base to the top of your finished deck. We need this to work out how many subframe supports and risers your project takes.', 'granola'); ?>
+                        </p>
+
+                        <input
+                            type="number"
+                            inputmode="numeric"
+                            id="millboard-order-essentials-ffl"
+                            class="cart__order-essentials__ffl-input"
+                            name="millboard_order_essentials_ffl"
+                            value="<?php echo $essentials_ffl > 0 ? esc_attr((string) $essentials_ffl) : ''; ?>"
+                            min="1"
+                            max="1140"
+                            step="1"
+                            placeholder="<?php esc_attr_e('e.g. 250', 'granola'); ?>"
+                            aria-describedby="millboard-order-essentials-ffl-help"
+                        >
+
+                        <label class="cart__order-essentials__ffl-acoustic">
+                            <input type="checkbox" name="millboard_order_essentials_acoustic_pads" value="1" <?php checked(!empty($essentials_context['acoustic_pads'])); ?>>
+                            <span><?php esc_html_e('Include acoustic separation pads', 'granola'); ?></span>
+                        </label>
+
+                        <button type="submit" class="button" name="millboard_refresh_essentials" value="1">
+                            <?php esc_html_e('Update recommendations', 'granola'); ?>
+                        </button>
+
+                        <?php if ($essentials_ffl_missing) : ?>
+                            <p class="cart__order-essentials__ffl-notice" id="millboard-order-essentials-ffl-help" role="status">
+                                <?php esc_html_e('Enter your finished floor level so we can include the right subframe supports.', 'granola'); ?>
+                            </p>
+                        <?php elseif ($essentials_ffl_out_of_range) : ?>
+                            <p class="cart__order-essentials__ffl-notice cart__order-essentials__ffl-notice--warning" id="millboard-order-essentials-ffl-help" role="alert">
+                                <?php esc_html_e('That finished floor level is outside the range we can calculate supports for. Please contact us and we will size the subframe for you.', 'granola'); ?>
+                            </p>
+                        <?php elseif (!empty($essentials_context['project_area'])) : ?>
+                            <p class="cart__order-essentials__ffl-notice" id="millboard-order-essentials-ffl-help">
+                                <?php echo esc_html(sprintf(
+                                    /* translators: %s: project area in square metres. */
+                                    __('Based on a project area of %s m² from the boards in your basket.', 'granola'),
+                                    (string) $essentials_context['project_area']
+                                )); ?>
+                            </p>
+                        <?php endif; ?>
+                    </div>
+                </fieldset>
+            <?php endif; ?>
 
             <div class="cart__order-essentials__items">
                 <?php if ($essentials_recommendation_source_label !== '') : ?>
