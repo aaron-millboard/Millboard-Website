@@ -198,8 +198,9 @@ class OrderEssentials
             ? self::get_source_cart_lines([])
             : [];
         $ffl = self::get_ffl();
-        $ffl_needed = self::ffl_is_needed($source_lines);
-        $config = self::detect_subframe_config($source_lines);
+        $ffl_needs = self::get_ffl_needs($source_lines);
+        $ffl_needed = $ffl_needs['needed'];
+        $config = $ffl_needs['config'];
 
         return [
             'project_type' => $project_type,
@@ -221,6 +222,8 @@ class OrderEssentials
             'ffl_missing' => $ffl_needed && $ffl < 1,
             'ffl_out_of_range' => self::ffl_is_out_of_range($source_lines),
             'acoustic_pads' => self::acoustic_pads_enabled(),
+            // Only worth asking about on a DuoLift build, and never in France.
+            'acoustic_pads_offered' => $ffl_needs['duolift'] && self::acoustic_pads_available(),
         ];
     }
 
@@ -960,9 +963,45 @@ class OrderEssentials
         \WC()->session->set(self::SESSION_FFL, max(0, $ffl));
     }
 
+    /**
+     * Which locale subsite this is, e.g. "en-gb". Taken from the multisite path
+     * rather than get_locale(), because the sites are per region rather than per
+     * language: en-ie and en-au are both English but are different calculators.
+     */
+    private static function site_locale(): string
+    {
+        if (!\function_exists('get_blog_details')) {
+            return '';
+        }
+
+        $details = \get_blog_details(\get_current_blog_id());
+
+        return $details ? trim((string) $details->path, '/') : '';
+    }
+
+    /**
+     * Acoustic separation pads are not offered on the France configurations, per
+     * calculator 3: "Acoustic separation pads (PMAP010) are not available for
+     * France configurations". PMAP010 IS published on fr-fr, so this has to be
+     * gated on the locale; product availability would not gate it.
+     */
+    public static function acoustic_pads_available(): bool
+    {
+        $excluded = (array) \apply_filters(
+            'millboard_order_essentials_acoustic_pads_excluded_locales',
+            ['fr-fr']
+        );
+
+        return !\in_array(self::site_locale(), $excluded, true);
+    }
+
     public static function acoustic_pads_enabled(): bool
     {
         if (!\function_exists('WC') || !\WC()->session instanceof \WC_Session) {
+            return false;
+        }
+
+        if (!self::acoustic_pads_available()) {
             return false;
         }
 
@@ -1200,17 +1239,6 @@ class OrderEssentials
             'posts' => $posts,
             'needed' => $duolift || $posts,
         ];
-    }
-
-    /**
-     * Whether the basket needs an FFL that has not been given yet, so the step can
-     * prompt for it instead of silently omitting DuoLift components or posts.
-     *
-     * @param array<int, array<string, mixed>> $source_lines
-     */
-    private static function ffl_is_needed(array $source_lines): bool
-    {
-        return self::get_ffl_needs($source_lines)['needed'];
     }
 
     /**

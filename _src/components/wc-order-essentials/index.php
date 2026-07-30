@@ -107,10 +107,16 @@ if ($count === 0) {
                             aria-describedby="millboard-order-essentials-ffl-help"
                         >
 
-                        <label class="cart__order-essentials__ffl-acoustic">
-                            <input type="checkbox" name="millboard_order_essentials_acoustic_pads" value="1" <?php checked(!empty($essentials_context['acoustic_pads'])); ?>>
-                            <span><?php esc_html_e('Include acoustic separation pads', 'granola'); ?></span>
-                        </label>
+                        <?php
+                        // Pads sit between the joist and the cradle, so they are only
+                        // relevant to a DuoLift build, and they are not sold for the
+                        // France configurations.
+                        if (!empty($essentials_context['acoustic_pads_offered'])) : ?>
+                            <label class="cart__order-essentials__ffl-acoustic">
+                                <input type="checkbox" name="millboard_order_essentials_acoustic_pads" value="1" <?php checked(!empty($essentials_context['acoustic_pads'])); ?>>
+                                <span><?php esc_html_e('Include acoustic separation pads', 'granola'); ?></span>
+                            </label>
+                        <?php endif; ?>
 
                         <button type="submit" class="button" name="millboard_refresh_essentials" value="1">
                             <?php esc_html_e('Update recommendations', 'granola'); ?>
