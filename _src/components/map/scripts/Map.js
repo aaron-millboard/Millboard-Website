@@ -1040,13 +1040,22 @@ let markerHtml = `
         let countryCode = (this.localeCountryCode || 'gb').toUpperCase();
 
         // Guernsey (GG) and Jersey (JE) are Crown Dependencies, not part of
-        // Great Britain (GB). Override the country component so Google geocodes
-        // them correctly instead of resolving to a GB location.
+        // Great Britain (GB). Bias towards them explicitly so Google geocodes
+        // them correctly instead of resolving to a mainland GB location.
         if (countryCode === 'GB') {
             countryCode = this.getChannelIslandCountryCode(normalizedData) || countryCode;
         }
 
-        const response = fetch(`https://maps.googleapis.com/maps/api/geocode/json?components=country:${countryCode}&address=${encodeURI(normalizedData)}&key=${this.googleApiKey}`)
+        // Bias the geocode to the current locale's country, but do NOT restrict
+        // to it. The partner directory is global: every locale lists all
+        // partners worldwide, so a hard `components=country:` filter made
+        // overseas records unreachable — searching "Bordeaux" on /en-gb/ was
+        // forced to return a Great Britain match and landed in Lanarkshire.
+        // `region` is a preference, so "Manchester" still resolves to England
+        // for a UK visitor while "Bordeaux" correctly resolves to France.
+        const regionBias = countryCode.toLowerCase();
+
+        const response = fetch(`https://maps.googleapis.com/maps/api/geocode/json?region=${regionBias}&address=${encodeURI(normalizedData)}&key=${this.googleApiKey}`)
             .then((r) => {
                 if (!r.ok) {
                     throw Error(r);
@@ -1065,7 +1074,8 @@ let markerHtml = `
      * Returns the ISO country code for Channel Island / Isle of Man queries
      * when the base locale is GB, or null if the query is not for these territories.
      * Google treats GG (Guernsey), JE (Jersey) and IM (Isle of Man) as separate
-     * country codes from GB, so a country:GB restriction causes misresolution.
+     * country codes from GB, so a gb region bias alone pulls these queries to
+     * the mainland. Returning the specific code biases them correctly.
      */
     getChannelIslandCountryCode(query) {
         if (/^GY\d/i.test(query) || /\bguernsey\b/i.test(query)) return 'GG';
