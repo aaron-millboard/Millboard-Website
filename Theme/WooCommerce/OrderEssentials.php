@@ -563,57 +563,73 @@ class OrderEssentials
             $target_rules[$target_id] = $rule;
         }
 
-        foreach (\WC()->cart->get_cart() as $cart_item) {
-            $product = $cart_item['data'] ?? null;
+        // Resolve the basket once, then iterate RULES on the outside. The loop
+        // order matters: a per-unit rule must accumulate across every matching
+        // basket line, whereas a per-m2 or per-project rule must contribute
+        // exactly once no matter how many lines match it.
+        $source_lines = self::get_source_cart_lines($target_ids);
+        $project_area = self::get_derived_project_area($source_lines);
+        $waste_multiplier = self::get_waste_multiplier();
 
-            if (!$product instanceof \WC_Product) {
+        foreach ($matrix as $rule) {
+            $target_id = (int) $rule['target_product_id'];
+            $multiplier = $project_type === 'commercial'
+                ? (float) $rule['commercial_multiplier']
+                : (float) $rule['residential_multiplier'];
+
+            if ($target_id < 1 || $multiplier <= 0) {
                 continue;
             }
 
-            if (self::is_sample_product($product)) {
+            if (!self::rule_conditions_met($rule, $source_lines)) {
                 continue;
             }
 
-            $source_id = self::resolve_source_product_id($product);
+            $matched = false;
+            $matched_quantity = 0;
 
-            if ($source_id < 1 || isset($target_ids[$source_id])) {
-                continue;
-            }
-
-            $source_category_slugs = self::get_product_category_slugs($source_id);
-            $source_quantity = (int) ($cart_item['quantity'] ?? 0);
-
-            if ($source_quantity < 1) {
-                continue;
-            }
-
-            foreach ($matrix as $rule) {
-                if (!self::rule_matches_source($rule, $source_id, $source_category_slugs)) {
+            foreach ($source_lines as $line) {
+                if (!self::rule_matches_source($rule, $line['source_id'], $line['category_slugs'])) {
                     continue;
                 }
 
-                $target_id = (int) $rule['target_product_id'];
-                $multiplier = $project_type === 'commercial'
-                    ? (float) $rule['commercial_multiplier']
-                    : (float) $rule['residential_multiplier'];
-
-                if ($target_id < 1 || $multiplier <= 0) {
-                    continue;
-                }
-
-                // The multiplier is a RATE PER UNIT of the source product, so it
-                // scales with the basket quantity and accumulates across every
-                // matching basket line.
-                //
-                // Previously the multiplier was added once per rule for the whole
-                // basket (guarded by an $applied_rules map) and $source_quantity
-                // was read but never used. Because the total is ceil()'d, any rate
-                // below 1 became a single unit no matter how much was ordered - one
-                // box of screws for 500 boards - and the residential and commercial
-                // rates gave identical results whenever both were under 1.
-                $target_requirements[$target_id] = ($target_requirements[$target_id] ?? 0)
-                    + ($multiplier * $source_quantity);
+                $matched = true;
+                $matched_quantity += (int) $line['quantity'];
             }
+
+            if (!$matched) {
+                continue;
+            }
+
+            switch (self::normalise_basis($rule['basis'] ?? '')) {
+                // Rate per square metre of derived project area. Area comes from
+                // the boards in the basket via their boards_per_sqm field, which
+                // is how the internal calculator converts lengths to area.
+                case 'per_sqm':
+                    $required = $multiplier * $project_area;
+                    break;
+
+                // A fixed quantity once per order, e.g. the DuoFix guide kit or a
+                // tin of touch-up paint.
+                case 'per_project':
+                    $required = $multiplier;
+                    break;
+
+                // Rate per unit of the source product.
+                default:
+                    $required = $multiplier * $matched_quantity;
+                    break;
+            }
+
+            if ($required <= 0) {
+                continue;
+            }
+
+            if (!empty($rule['apply_waste'])) {
+                $required *= $waste_multiplier;
+            }
+
+            $target_requirements[$target_id] = ($target_requirements[$target_id] ?? 0) + $required;
         }
 
         if (empty($target_requirements)) {
@@ -747,6 +763,12 @@ class OrderEssentials
                 'target_product_id' => $target_product_id,
                 'residential_multiplier' => $residential_multiplier,
                 'commercial_multiplier' => $commercial_multiplier,
+                // How the multiplier is applied: per unit of the source (default),
+                // per m2 of derived project area, or once per project.
+                'basis' => self::normalise_basis((string) ($rule['basis'] ?? '')),
+                'apply_waste' => !empty($rule['apply_waste']),
+                'requires_category_slugs' => self::normalise_slug_array($rule['requires_category_slugs'] ?? []),
+                'excludes_category_slugs' => self::normalise_slug_array($rule['excludes_category_slugs'] ?? []),
             ];
         }
 
@@ -790,11 +812,169 @@ class OrderEssentials
                     'target_product_id' => $recommendation['target_product_id'] ?? 0,
                     'residential_multiplier' => $recommendation['residential_multiplier'] ?? 0,
                     'commercial_multiplier' => $recommendation['commercial_multiplier'] ?? 0,
+                    'basis' => $recommendation['basis'] ?? 'per_unit',
+                    'apply_waste' => !empty($recommendation['apply_waste']),
+                    // Conditions live on the SOURCE row: they describe the basket as
+                    // a whole, not an individual recommendation.
+                    'requires_category_slugs' => $source['requires_category_slugs'] ?? [],
+                    'excludes_category_slugs' => $source['excludes_category_slugs'] ?? [],
                 ];
             }
         }
 
         return $rules;
+    }
+
+    /**
+     * Resolve the basket once into the shape the matrix needs, so the rule loop
+     * does not re-resolve products or re-read taxonomies per rule.
+     *
+     * Samples are excluded (ordering a sample must not recommend a project's
+     * worth of fixings) and so is anything that is itself a recommendation
+     * target, which would otherwise recommend against itself.
+     *
+     * @param array<int, bool> $target_ids
+     * @return array<int, array<string, mixed>>
+     */
+    private static function get_source_cart_lines(array $target_ids): array
+    {
+        $lines = [];
+
+        foreach (\WC()->cart->get_cart() as $cart_item) {
+            $product = $cart_item['data'] ?? null;
+
+            if (!$product instanceof \WC_Product) {
+                continue;
+            }
+
+            if (self::is_sample_product($product)) {
+                continue;
+            }
+
+            $source_id = self::resolve_source_product_id($product);
+
+            if ($source_id < 1 || isset($target_ids[$source_id])) {
+                continue;
+            }
+
+            $quantity = (int) ($cart_item['quantity'] ?? 0);
+
+            if ($quantity < 1) {
+                continue;
+            }
+
+            $lines[] = [
+                'source_id' => $source_id,
+                'quantity' => $quantity,
+                'category_slugs' => self::get_product_category_slugs($source_id),
+            ];
+        }
+
+        return $lines;
+    }
+
+    /**
+     * Derive the project area in m2 from the boards in the basket.
+     *
+     * Uses each product's `boards_per_sqm` field, which is the same figure the
+     * product calculator uses and the inverse of the internal calculator's
+     * boards-per-m2 multiplier, so 100 Enhanced Grain 176mm boards at 1.54
+     * resolves to 64.94 m2 exactly as the calculator's lengths mode does.
+     *
+     * Products without the field contribute nothing rather than guessing from raw
+     * dimensions, because a board's footprint is not its effective coverage.
+     *
+     * @param array<int, array<string, mixed>> $source_lines
+     */
+    private static function get_derived_project_area(array $source_lines): float
+    {
+        $area = 0.0;
+
+        foreach ($source_lines as $line) {
+            $boards_per_sqm = 0.0;
+
+            if (\function_exists('get_field')) {
+                $boards_per_sqm = (float) \get_field('boards_per_sqm', $line['source_id']);
+            }
+
+            if ($boards_per_sqm <= 0) {
+                $boards_per_sqm = (float) \get_post_meta($line['source_id'], 'boards_per_sqm', true);
+            }
+
+            if ($boards_per_sqm <= 0) {
+                continue;
+            }
+
+            $area += ((int) $line['quantity']) / $boards_per_sqm;
+        }
+
+        return $area;
+    }
+
+    /**
+     * The calculator applies a waste allowance (10% by default) to board and
+     * subframe quantities. Rules opt in per recommendation via `apply_waste`.
+     */
+    private static function get_waste_multiplier(): float
+    {
+        $percent = null;
+
+        if (\function_exists('get_field')) {
+            $percent = \get_field('order_essentials_waste_percent', 'option');
+        }
+
+        if (!\is_numeric($percent)) {
+            $percent = 10;
+        }
+
+        $percent = max(0.0, (float) $percent);
+
+        return 1 + ($percent / 100);
+    }
+
+    private static function normalise_basis(string $basis): string
+    {
+        $basis = strtolower(trim($basis));
+
+        return \in_array($basis, ['per_sqm', 'per_project'], true) ? $basis : 'per_unit';
+    }
+
+    /**
+     * Optional whole-basket conditions on a rule, for the calculator's conditional
+     * rates: the DuoSpan fascia rate applies only with a DuoSpan subframe, and the
+     * DuoFix guide kit only when 126mm accent boards are NOT in the order.
+     *
+     * @param array<string, mixed> $rule
+     * @param array<int, array<string, mixed>> $source_lines
+     */
+    private static function rule_conditions_met(array $rule, array $source_lines): bool
+    {
+        $requires = self::normalise_slug_array($rule['requires_category_slugs'] ?? []);
+        $excludes = self::normalise_slug_array($rule['excludes_category_slugs'] ?? []);
+
+        if (empty($requires) && empty($excludes)) {
+            return true;
+        }
+
+        $basket_slugs = [];
+
+        foreach ($source_lines as $line) {
+            foreach ((array) $line['category_slugs'] as $slug) {
+                $basket_slugs[$slug] = true;
+            }
+        }
+
+        $basket_slugs = array_keys($basket_slugs);
+
+        if (!empty($requires) && empty(array_intersect($requires, $basket_slugs))) {
+            return false;
+        }
+
+        if (!empty($excludes) && !empty(array_intersect($excludes, $basket_slugs))) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
