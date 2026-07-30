@@ -126,12 +126,22 @@ class Schema
 
         $graph[] = $business;
 
-        // Link the business to the page it is described on.
+        // Link the business to the page it is described on. @type can be a
+        // string or an array (Yoast uses ["WebPage","FAQPage"] where a page has
+        // an FAQ), and on those pages Yoast has already pointed mainEntity at
+        // the questions — so never overwrite an existing value.
         foreach ($graph as $index => $piece) {
-            if (($piece['@type'] ?? '') === 'WebPage') {
-                $graph[$index]['mainEntity'] = ['@id' => $id];
-                break;
+            $types = (array) ($piece['@type'] ?? []);
+
+            if (!in_array('WebPage', $types, true)) {
+                continue;
             }
+
+            if (empty($piece['mainEntity'])) {
+                $graph[$index]['mainEntity'] = ['@id' => $id];
+            }
+
+            break;
         }
 
         return $graph;
