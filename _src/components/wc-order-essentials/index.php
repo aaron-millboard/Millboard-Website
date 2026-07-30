@@ -10,14 +10,22 @@ $has_outstanding_essentials = !empty($essentials_context['has_outstanding_recomm
 $essentials_recommendation_source_label = isset($essentials_context['recommendation_source_label']) ? (string) $essentials_context['recommendation_source_label'] : '';
 $essentials_disclaimer_url = isset($essentials_context['disclaimer_url']) ? (string) $essentials_context['disclaimer_url'] : '';
 $essentials_show_added_modal = !empty($essentials_context['show_added_modal']);
+$essentials_basket_kind = isset($essentials_context['basket_kind']) ? (string) $essentials_context['basket_kind'] : '';
 $essentials_summary_label_singular = __('selected item', 'granola');
 $essentials_summary_label_plural = __('selected items', 'granola');
 $essentials_selected_count = 0;
 $essentials_selected_total = 0.0;
 
+// Only the items STILL missing belong in the warning. Listing every
+// recommendation meant that after adding them all, the modal went on naming them
+// as though they were absent.
 $names = [];
 
 foreach ($essentials_recommendations as $essentials_item) {
+    if ((int) ($essentials_item['missing_qty'] ?? 0) < 1) {
+        continue;
+    }
+
     $essentials_name = isset($essentials_item['product_name']) ? (string) $essentials_item['product_name'] : '';
     if ($essentials_name !== '') {
         $names[] = $essentials_name;
@@ -46,7 +54,18 @@ if ($count === 0) {
             <h1 class="cart__order-essentials__title"><?php esc_html_e('Order essentials', 'granola'); ?></h1>
 
             <h2 class="cart__order-essentials__subtitle" id="order-essentials-heading">
-                <?php esc_html_e('Complete your deck', 'granola'); ?>
+                <?php
+                switch ($essentials_basket_kind) {
+                    case 'decking':
+                        esc_html_e('Complete your deck', 'granola');
+                        break;
+                    case 'cladding':
+                        esc_html_e('Complete your cladding', 'granola');
+                        break;
+                    default:
+                        esc_html_e('Complete your project', 'granola');
+                }
+                ?>
             </h2>
 
             <p class="cart__order-essentials__intro">
@@ -287,7 +306,7 @@ if ($count === 0) {
                         printf(
                             /* translators: %s: installation guides URL */
                             wp_kses(
-                                __('These suggestions are based on what is currently in your basket, are intended to help guide your project, and reflect our <a href="%s" target="_blank" rel="noopener noreferrer">Installation Guides</a>. Please review quantities, suitability, and compatibility before completing your order. We are unable to accept responsibility for shortfalls or surplus materials resulting from these suggestions.', 'granola'),
+                                __('These suggestions are based on what is currently in your basket, intended to help you plan your project, and aligned with our <a href="%s" target="_blank" rel="noopener noreferrer">Installation Guides</a>. Please review quantities, suitability, and compatibility before completing your order. We are unable to accept responsibility for shortfalls or surplus materials resulting from these suggestions.', 'granola'),
                                 ['a' => ['href' => [], 'target' => [], 'rel' => []]]
                             ),
                             esc_url($essentials_disclaimer_url)
@@ -327,31 +346,59 @@ if ($count === 0) {
                         <h2 class="cart__order-essentials-modal__title" id="order-essentials-modal-title">
                             <?php esc_html_e('Essentials added to basket', 'granola'); ?>
                         </h2>
+                        <p class="cart__order-essentials-modal__intro">
+                            <?php esc_html_e('Please check the quantities suit your project before you check out.', 'granola'); ?>
+                        </p>
                     </div>
 
                     <div data-essentials-modal-panel="continue" <?php echo $essentials_show_added_modal ? 'hidden' : ''; ?>>
                         <h2 class="cart__order-essentials-modal__title" id="order-essentials-modal-title-continue">
                             <?php esc_html_e('Continue without essentials?', 'granola'); ?>
                         </h2>
+                        <p class="cart__order-essentials-modal__intro">
+                            <?php
+                            // The parts differ by product. Only mention a sub-frame when
+                            // there is decking in the basket, since cladding has none,
+                            // and a mixed basket does need one.
+                            switch ($essentials_basket_kind) {
+                                case 'decking':
+                                    esc_html_e('Decking needs the right fixings, sub-frame and finishing pieces to install correctly.', 'granola');
+                                    break;
+                                case 'cladding':
+                                    esc_html_e('Cladding needs the right fixings and finishing pieces to install correctly.', 'granola');
+                                    break;
+                                case 'both':
+                                    esc_html_e('Decking and cladding both need the right fixings and finishing pieces to install correctly, and your deck needs a sub-frame.', 'granola');
+                                    break;
+                                default:
+                                    esc_html_e('Your project needs the right fixings and finishing pieces to install correctly.', 'granola');
+                            }
+                            ?>
+                            <?php esc_html_e('You can carry on without adding our suggested essentials. We just want to make sure you have considered it.', 'granola'); ?>
+                        </p>
                     </div>
 
-                    <p class="cart__order-essentials-modal__intro">
-                        <?php esc_html_e('Your deck needs fixing, a sub-frame and finishing pieces to install correctly. You can carry on without adding our suggested essentials. We just want to make sure you have considered it.', 'granola'); ?>
-                    </p>
-
-                    <div class="cart__order-essentials-modal__warning">
-                        <span class="cart__order-essentials-modal__warning-icon" aria-hidden="true">!</span>
-                        <span>
-                            <strong><?php esc_html_e('Heads up.', 'granola'); ?></strong>
-                            <?php echo wp_kses_post(sprintf(__('Without %s your order may not meet our installation guidelines and the Millboard warranty.', 'granola'), $names_array)); ?>
-                        </span>
-                    </div>
+                    <?php if ($has_outstanding_essentials && $names_array !== '') : ?>
+                        <div class="cart__order-essentials-modal__warning">
+                            <span class="cart__order-essentials-modal__warning-icon" aria-hidden="true">!</span>
+                            <span>
+                                <strong><?php esc_html_e('Heads up.', 'granola'); ?></strong>
+                                <?php echo wp_kses_post(sprintf(__('Without %s your order may not meet our installation guidelines and the Millboard warranty.', 'granola'), $names_array)); ?>
+                            </span>
+                        </div>
+                    <?php endif; ?>
 
                     <?php if ($has_outstanding_essentials) : ?>
                         <label class="cart__order-essentials-modal__ack">
                             <input type="checkbox" data-essentials-modal-ack>
                             <span>
-                                <?php esc_html_e('I understand the recommended essentials have not been added to my order, and accept responsibility for sourcing the correct fixing and sub-frame for my project. This note will be saved against my order.', 'granola'); ?>
+                                <?php
+                                if ($essentials_basket_kind === 'cladding') {
+                                    esc_html_e('I understand the recommended essentials have not been added to my order, and accept responsibility for sourcing the correct fixings for my project. This note will be saved against my order.', 'granola');
+                                } else {
+                                    esc_html_e('I understand the recommended essentials have not been added to my order, and accept responsibility for sourcing the correct fixing and sub-frame for my project. This note will be saved against my order.', 'granola');
+                                }
+                                ?>
                             </span>
                         </label>
                     <?php endif; ?>

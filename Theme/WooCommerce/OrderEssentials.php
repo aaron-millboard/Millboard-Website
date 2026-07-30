@@ -224,6 +224,8 @@ class OrderEssentials
             'acoustic_pads' => self::acoustic_pads_enabled(),
             // Only worth asking about on a DuoLift build, and never in France.
             'acoustic_pads_offered' => $ffl_needs['duolift'] && self::acoustic_pads_available(),
+            // So the copy can say "deck" or "cladding" rather than assuming decking.
+            'basket_kind' => self::detect_basket_kind($source_lines),
         ];
     }
 
@@ -1085,6 +1087,66 @@ class OrderEssentials
         }
 
         return null;
+    }
+
+    /**
+     * Whether the basket is a decking job, a cladding job or both, so the step can
+     * stop telling someone buying cladding what their deck needs.
+     *
+     * Deliberately walks the category ANCESTRY rather than reading
+     * `category_slugs`, which holds only a product's own terms. Adding ancestors to
+     * that array instead would break rule matching: a rule sourced on
+     * `composite-decking` would suddenly match every fascia and edging product.
+     *
+     * @param array<int, array<string, mixed>> $source_lines
+     * @return string 'decking', 'cladding', 'both', or '' when neither is found
+     */
+    private static function detect_basket_kind(array $source_lines): string
+    {
+        $decking = false;
+        $cladding = false;
+
+        foreach ($source_lines as $line) {
+            $terms = \get_the_terms((int) $line['source_id'], 'product_cat');
+
+            if (!\is_array($terms)) {
+                continue;
+            }
+
+            foreach ($terms as $term) {
+                if (!$term instanceof \WP_Term) {
+                    continue;
+                }
+
+                $slugs = [$term->slug];
+
+                foreach (\get_ancestors($term->term_id, 'product_cat') as $ancestor_id) {
+                    $ancestor = \get_term((int) $ancestor_id, 'product_cat');
+
+                    if ($ancestor instanceof \WP_Term) {
+                        $slugs[] = $ancestor->slug;
+                    }
+                }
+
+                if (\in_array('composite-decking', $slugs, true)) {
+                    $decking = true;
+                }
+
+                if (\in_array('composite-cladding', $slugs, true)) {
+                    $cladding = true;
+                }
+            }
+        }
+
+        if ($decking && $cladding) {
+            return 'both';
+        }
+
+        if ($decking) {
+            return 'decking';
+        }
+
+        return $cladding ? 'cladding' : '';
     }
 
     /**
