@@ -220,11 +220,15 @@ if ($count === 0) {
 
                                 <div class="cart__order-essentials__item-meta">
                                     <?php
+                                    // number_format already returns a string with
+                                    // thousands separators, so running it through
+                                    // %.2f as well truncated anything over 999 to
+                                    // the digits before the comma.
                                     echo esc_html(
                                         sprintf(
-                                            '%1$s%2$.2f each',
-                                            get_woocommerce_currency_symbol(),
-                                            number_format($essentials_unit_price, 2)
+                                            /* translators: %s: unit price including currency symbol. */
+                                            __('%s each', 'granola'),
+                                            get_woocommerce_currency_symbol() . number_format($essentials_unit_price, 2)
                                         )
                                     );
                                     ?>

@@ -469,6 +469,13 @@
             }
         }
 
+        // The unit price. Matches the basket, which sets .product-price to
+        // typestyle-small; without this it inherits the larger body size and the
+        // same price reads at a different size either side of the step.
+        &__item-meta {
+            @include typestyle-small;
+        }
+
         &__item-name {
             @include typestyle-h6;
 
