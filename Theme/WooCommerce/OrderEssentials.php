@@ -212,7 +212,7 @@ class OrderEssentials
             'has_recommendations' => !empty($recommendations),
             'has_outstanding_recommendations' => $outstanding_count > 0,
             'recommendation_source_label' => self::get_recommendation_source_label(),
-            'disclaimer_url' => 'https://millboard.com/en-us/installation-guides/',
+            'disclaimer_url' => self::get_guides_url(),
             'show_added_modal' => self::should_show_added_modal(),
             // Derived project area in m2, from the boards in the basket.
             'project_area' => round(self::get_derived_project_area($source_lines), 2),
@@ -971,6 +971,50 @@ class OrderEssentials
         }
 
         \WC()->session->set(self::SESSION_FFL, max(0, $ffl));
+    }
+
+    /**
+     * The brochures and guides page for the site the customer is actually on.
+     *
+     * This was hardcoded to the en-US installation guides page, so a British
+     * customer was sent to an American page. The page is post 595 on all six
+     * residential sites, with the slug localised per site: brochures-and-guides on
+     * en-gb, en-ie and en-au, product-brochures on en-us, broschuren-und-leitfaden
+     * on de-de, guides-et-brochures on fr-fr. So resolving the permalink on the
+     * current site gets the right URL and the right language without a slug map.
+     *
+     * The ID is checked rather than trusted: if it is ever not a published page
+     * here, fall back to finding the page by any of the known slugs, and only then
+     * to the site home, so the link is never broken and never the wrong country.
+     */
+    private static function get_guides_url(): string
+    {
+        $id = (int) \apply_filters('millboard_order_essentials_guides_page_id', 595);
+
+        if ($id > 0 && \get_post_status($id) === 'publish') {
+            $url = \get_permalink($id);
+
+            if (\is_string($url) && $url !== '') {
+                return $url;
+            }
+        }
+
+        $slugs = [
+            'brochures-and-guides',
+            'product-brochures',
+            'broschuren-und-leitfaden',
+            'guides-et-brochures',
+        ];
+
+        foreach ($slugs as $slug) {
+            $page = \get_page_by_path($slug);
+
+            if ($page instanceof \WP_Post && $page->post_status === 'publish') {
+                return (string) \get_permalink($page);
+            }
+        }
+
+        return \home_url('/');
     }
 
     /**
