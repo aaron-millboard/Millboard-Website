@@ -1212,16 +1212,22 @@ class OrderEssentials
         }
 
         $commercial = ($project_type === 'commercial');
-        $waste = self::get_waste_multiplier();
         $required = [];
 
+        // NO WASTE MULTIPLIER HERE, deliberately. The calculator works from the
+        // deck area the customer typed and multiplies by waste to get the boards.
+        // We work backwards from the boards in the basket, so the area we derive
+        // ALREADY carries that waste, and applying it a second time compounds it:
+        // a 50 m2 deck buys 85 boards, which we read back as 55.19 m2, and
+        // 55.19 x 1.35 gives the calculator's 75 inserts while
+        // 55.19 x 1.35 x 1.1 gives 82.
         // ---- DuoLift components, only if the basket shows a DuoLift build ----
         if ($needs['duolift']) {
             $row = self::lookup_duolift_row($config, $ffl);
             $multipliers = self::SUPPORT_MULTIPLIERS[$config] ?? null;
 
             if ($row !== null && $multipliers !== null) {
-                $raw_supports = $area * (float) ($commercial ? $multipliers[1] : $multipliers[0]) * $waste;
+                $raw_supports = $area * (float) ($commercial ? $multipliers[1] : $multipliers[0]);
                 $per_ten = $raw_supports / 10;
 
                 $map = [
@@ -1262,7 +1268,8 @@ class OrderEssentials
                     $factor = $commercial ? 0.98 : 0.61;
                 }
 
-                $posts = $area * $factor * $post_height / 3 * $waste;
+                // Waste is already in $area, as above.
+                $posts = $area * $factor * $post_height / 3;
                 $id = \wc_get_product_id_by_sku(self::POST_SKU);
 
                 if ($id) {

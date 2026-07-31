@@ -229,7 +229,7 @@ class Settings
                                     'label' => 'Apply waste allowance',
                                     'name' => 'apply_waste',
                                     'type' => 'true_false',
-                                    'instructions' => 'Tick for quantities the calculator applies the waste percentage to, such as subframe components.',
+                                    'instructions' => 'Almost always leave this OFF. The project area is worked backwards from the boards in the basket, and those board quantities already include the customer\'s waste allowance, so ticking this applies waste twice: a 50m² deck buys 85 boards, which reads back as 55.19m², and that figure is already 50 × 1.1. Only tick it for a quantity that does NOT derive from the board count.',
                                     'default_value' => 0,
                                     'ui' => 1,
                                 ],
