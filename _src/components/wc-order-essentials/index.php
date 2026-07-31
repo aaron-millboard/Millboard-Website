@@ -306,7 +306,7 @@ if ($count === 0) {
                         printf(
                             /* translators: %s: installation guides URL */
                             wp_kses(
-                                __('These suggestions are based on what is currently in your basket, intended to help you plan your project, and aligned with our <a href="%s" target="_blank" rel="noopener noreferrer">Installation Guides</a>. Please review quantities, suitability, and compatibility before completing your order. We are unable to accept responsibility for shortfalls or surplus materials resulting from these suggestions.', 'granola'),
+                                __('These suggestions are based on what is currently in your basket and follow our <a href="%s" target="_blank" rel="noopener noreferrer">Installation Guides</a>. They are intended to help you plan your project. Please review quantities, suitability, and compatibility before completing your order. We are unable to accept responsibility for shortfalls or surplus materials resulting from these suggestions.', 'granola'),
                                 ['a' => ['href' => [], 'target' => [], 'rel' => []]]
                             ),
                             esc_url($essentials_disclaimer_url)
