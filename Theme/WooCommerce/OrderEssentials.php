@@ -1048,6 +1048,22 @@ class OrderEssentials
     }
 
     /**
+     * The FFL the DuoLift band is matched on.
+     *
+     * A UK acoustic pad sits 3mm under each cradle, so the DuoLift hardware only
+     * has to make up FFL minus 3, and the deduction happens BEFORE the band is
+     * matched rather than only deciding whether a pad box is added. The engine's
+     * own worked example is explicit: "FFL 297mm hits DuoLift row [254-298mm]
+     * (FFL 300 - 3mm pad = 297mm)". So it moves joint sets, risers per support and
+     * feet sets too, and it moves the working range: a pad build reaches 3mm
+     * higher than a bare one.
+     */
+    private static function duolift_band_ffl(int $ffl): int
+    {
+        return self::acoustic_pads_enabled() ? max(0, $ffl - 3) : $ffl;
+    }
+
+    /**
      * The DuoLift row for a config and FFL, as
      * ['joints' => int, 'risers' => int, 'feet' => int] per 10 supports. Null when
      * the FFL falls outside the config's working range, in which case the
@@ -1236,7 +1252,7 @@ class OrderEssentials
         // 55.19 x 1.35 x 1.1 gives 82.
         // ---- DuoLift components, only if the basket shows a DuoLift build ----
         if ($needs['duolift']) {
-            $row = self::lookup_duolift_row($config, $ffl);
+            $row = self::lookup_duolift_row($config, self::duolift_band_ffl($ffl));
             $multipliers = self::SUPPORT_MULTIPLIERS[$config] ?? null;
 
             if ($row !== null && $multipliers !== null) {
@@ -1252,9 +1268,10 @@ class OrderEssentials
                     'risers' => $row['risers'] > 0 ? ($raw_supports * $row['risers'] / 10) : 0.0,
                 ];
 
-                // Acoustic pads are UK only, opt-in, and the FFL used for their
-                // lookup is reduced by 3mm before matching.
-                if (self::acoustic_pads_enabled() && self::lookup_duolift_row($config, $ffl - 3) !== null) {
+                // One pad box per support box, in every band, whenever the option
+                // is on. The band shift the pads cause is handled once, in
+                // duolift_band_ffl().
+                if (self::acoustic_pads_enabled()) {
                     $map['acoustic'] = $per_ten;
                 }
 
@@ -1349,7 +1366,10 @@ class OrderEssentials
             return false;
         }
 
-        if ($needs['duolift'] && self::lookup_duolift_row((string) $needs['config'], $ffl) === null) {
+        // Same shifted FFL the quantities are worked out from, or a pad build near
+        // the top of a range would warn and then quietly recommend a full set.
+        if ($needs['duolift']
+            && self::lookup_duolift_row((string) $needs['config'], self::duolift_band_ffl($ffl)) === null) {
             return true;
         }
 
