@@ -1034,19 +1034,26 @@ class OrderEssentials
     }
 
     /**
-     * Acoustic separation pads are not offered on the France configurations, per
-     * calculator 3: "Acoustic separation pads (PMAP010) are not available for
-     * France configurations". PMAP010 IS published on fr-fr, so this has to be
-     * gated on the locale; product availability would not gate it.
+     * Acoustic separation pads are a UK line. The calculator has only a UK engine
+     * and a France engine, and the France one has no pad option at all, so the
+     * matrix records them as "UK only".
+     *
+     * Deliberately an ALLOWLIST rather than a France exclusion. PMAP010 is stocked
+     * and purchasable on all six storefronts, so availability cannot gate it, and
+     * the calculator has no engine for Ireland, Australia, Germany or the US to say
+     * whether their builds include a pad. Offering it where it is not part of a
+     * specified build risks selling a component the installation does not call for,
+     * whereas withholding it only costs an optional upsell. So the default is the
+     * one locale we have it in writing for, and adding another is one entry.
      */
     public static function acoustic_pads_available(): bool
     {
-        $excluded = (array) \apply_filters(
-            'millboard_order_essentials_acoustic_pads_excluded_locales',
-            ['fr-fr']
+        $allowed = (array) \apply_filters(
+            'millboard_order_essentials_acoustic_pad_locales',
+            ['en-gb']
         );
 
-        return !\in_array(self::site_locale(), $excluded, true);
+        return \in_array(self::site_locale(), $allowed, true);
     }
 
     public static function acoustic_pads_enabled(): bool
