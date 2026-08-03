@@ -2,11 +2,20 @@
     <div class="distributor-location-map__inner">
 
         <div class="distributor-location-map__map">
+            <?php
+            /**
+             * data-no-lazy opts out of Perfmatters' iframe lazy loading, which moves
+             * src to data-src and needs its own JS to swap it back. With script
+             * delaying on, that left the map as an empty box. The native
+             * loading="lazy" below defers it without depending on any JS.
+             */
+            ?>
             <iframe
-                class="distributor-location-map__frame"
+                class="distributor-location-map__frame skip-lazy"
                 src="<?= esc_url($args['embed_url']); ?>"
                 title="<?= esc_attr($args['embed_title']); ?>"
                 loading="lazy"
+                data-no-lazy="1"
                 referrerpolicy="no-referrer-when-downgrade"
                 allowfullscreen
             ></iframe>

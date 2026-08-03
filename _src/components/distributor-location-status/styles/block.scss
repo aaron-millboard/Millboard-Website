@@ -20,6 +20,13 @@
     --dls--muted: #{rgba(#151716, 0.6)};
     --dls--rule: #{rgba(#151716, 0.14)};
 
+    // The theme gives every wp-block child a large top/bottom margin, which on top
+    // of each block's own padding produced the big empty bands. The design's rhythm
+    // lives in the padding here, so the theme margin is cancelled.
+    --block--margin-top: 0;
+    --block--margin-bottom: 0;
+
+    padding-top: px-to-rem(6);
     padding-bottom: clamp(18px, 2.5vw, 26px);
 
     &__inner {

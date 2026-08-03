@@ -13,6 +13,9 @@
     --dlm--accent-text: #5c7010;
     --dlm--body: #{rgba(#151716, 0.76)};
 
+    --block--margin-top: 0;
+    --block--margin-bottom: 0;
+
     padding-top: clamp(40px, 5vw, 58px);
     padding-bottom: clamp(40px, 5vw, 58px);
 

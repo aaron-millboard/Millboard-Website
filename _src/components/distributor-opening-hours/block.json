@@ -17,5 +17,5 @@
         "color": { "text": false },
         "mode": false
     },
-    "attributes": { "align": { "type": "string", "default": "full" } }
+    "attributes": { "align": { "type": "string", "default": "" } }
 }

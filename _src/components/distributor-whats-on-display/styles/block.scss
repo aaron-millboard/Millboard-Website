@@ -11,6 +11,9 @@
     --dwod--faint: #{rgba(#151716, 0.45)};
     --dwod--chip-rule: #{rgba(#151716, 0.25)};
 
+    --block--margin-top: 0;
+    --block--margin-bottom: 0;
+
     padding-top: clamp(40px, 5vw, 58px);
     padding-bottom: clamp(40px, 5vw, 58px);
     background-color: var(--color--mist);
