@@ -19,10 +19,8 @@
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(px-to-rem(300), 1fr));
         gap: px-to-rem(22);
-        // start, not stretch: with no champion photo the contact panel is much
-        // shorter than a seven row hours table, and stretching it left a large
-        // empty band inside the card.
-        align-items: start;
+        // Equal height cards, per the design.
+        align-items: stretch;
         max-width: var(--width--responsive--l);
         margin: 0 auto;
     }

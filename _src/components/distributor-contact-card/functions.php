@@ -59,7 +59,7 @@ function filter_args(array $args): ?array
             'role' => $role === ''
                 ? \get_the_title($post_id)
                 : $role . " \u{00B7} " . \get_the_title($post_id),
-            'photo' => !empty($champion['photo']) ? $champion['photo'] : null,
+            'photo' => attachment_id($champion['photo'] ?? null),
         ];
 
         // Champion contact details fall back to the branch, since a champion is
@@ -92,6 +92,41 @@ function filter_args(array $args): ?array
         : 'distributor-contact-card--branch-only';
 
     return $args;
+}
+
+/**
+ * Normalise an ACF image value to an attachment ID.
+ *
+ * The Distributor Details image fields are set to return_format "array", so
+ * get_field() hands back the whole attachment array rather than an ID, and the
+ * theme's image component silently renders nothing when given an array.
+ *
+ * On this site that array carries the ID as `attachment_id`, not the `ID` / `id`
+ * ACF documents, because the image data is filtered before it reaches us. All three
+ * are accepted so the block does not break if that filtering changes or a field is
+ * switched to return an ID.
+ */
+function attachment_id($value): ?int
+{
+    if (is_numeric($value)) {
+        return (int) $value;
+    }
+
+    if (is_array($value)) {
+        foreach (['attachment_id', 'ID', 'id'] as $key) {
+            if (!empty($value[$key]) && is_numeric($value[$key])) {
+                return (int) $value[$key];
+            }
+        }
+
+        return null;
+    }
+
+    if (is_object($value) && !empty($value->ID)) {
+        return (int) $value->ID;
+    }
+
+    return null;
 }
 
 /**

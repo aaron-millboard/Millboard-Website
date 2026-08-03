@@ -21,6 +21,7 @@
     &__card {
         display: flex;
         flex-direction: column;
+        height: 100%;
         padding: clamp(22px, 3vw, 30px) clamp(22px, 3vw, 30px) px-to-rem(24);
         border: 1px solid #{rgba(#151716, 0.12)};
         background-color: var(--dcc--card);
@@ -129,7 +130,10 @@
     }
 
     // ---- Branch row ---------------------------------------------------------
+    // margin-top:auto pins this to the bottom so the card matches the height of the
+    // opening hours card beside it, which is what the design shows.
     &__branch {
+        margin-top: auto;
         padding-top: px-to-rem(18);
         border-top: 1px solid var(--dcc--rule);
     }
@@ -150,6 +154,13 @@
         margin: 0;
         padding: 0;
         list-style: none;
+
+        // See the badge note in distributor-location-status: the theme's
+        // li+li { margin-top: ... } offsets every item after the first.
+        li {
+            margin-top: 0;
+            margin-bottom: 0;
+        }
     }
 
     &__branch-link {

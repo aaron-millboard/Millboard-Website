@@ -51,9 +51,12 @@ function filter_args(array $args): ?array
         $args['heading'] = \__("What's on display", 'granola');
     }
 
-    if (empty($args['image'])) {
-        $args['image'] = \get_field('display_photo', $post_id) ?: null;
-    }
+    // The record's display_photo field returns an array (return_format "array"),
+    // while this block's own image field returns an ID, so both are normalised. The
+    // image component wants an ID and renders nothing when handed the array.
+    $args['image'] = \Granola\Components\DistributorContactCard\attachment_id(
+        !empty($args['image']) ? $args['image'] : \get_field('display_photo', $post_id)
+    );
 
     $args['classes'][] = !empty($args['image'])
         ? 'distributor-whats-on-display--has-image'

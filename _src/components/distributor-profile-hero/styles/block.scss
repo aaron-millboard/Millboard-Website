@@ -7,9 +7,10 @@
 
 .distributor-profile-hero {
     --dph--olive: var(--color--olivegreen);
-    // Mid olive is 3.2:1 on the light background and fails WCAG AA, so the eyebrow
-    // uses this darker olive at ~5.2:1. Same value as the installer header.
-    --dph--accent-text: #5c7010;
+    // The eyebrow sits on the mist band, not on the page background. Mist is darker,
+    // so the olive that passes AA elsewhere (#5c7010) drops to 4.04:1 here and fails.
+    // The deep olive passes comfortably at ~8.5:1 and stays in the same family.
+    --dph--accent-text: var(--color--sustainabilitygreen);
     --dph--body: #{rgba(#151716, 0.76)};
     --dph--rule: #{rgba(#151716, 0.14)};
 
@@ -18,7 +19,10 @@
     --block--margin-top: 0;
     --block--margin-bottom: 0;
 
-    padding-bottom: clamp(20px, 3vw, 28px);
+    // Banded header, matching the page header this block replaces, so a profile
+    // still opens with a clear header rather than running straight into the body.
+    padding-bottom: clamp(28px, 4vw, 44px);
+    background-color: var(--color--mist);
 
     // ---- Breadcrumbs --------------------------------------------------------
     // No rule under the trail: it read as a stray full-width line under the header.

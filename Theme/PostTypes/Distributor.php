@@ -71,7 +71,10 @@ class Distributor
                 ['acf/distributor-contact-hours'],
                 ['acf/distributor-whats-on-display'],
                 ['acf/distributor-location-map'],
-                ['acf/partner-contact-form'],
+                // The same enquiry form the installer profiles use, so the two
+                // partner types read as one system. Its postTypes were extended
+                // rather than the styling duplicated, so there is one source of truth.
+                ['acf/installer-quote-form'],
                 [
                     'core/paragraph',
                     [

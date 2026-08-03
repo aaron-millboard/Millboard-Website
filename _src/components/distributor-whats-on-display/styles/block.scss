@@ -16,7 +16,9 @@
 
     padding-top: clamp(40px, 5vw, 58px);
     padding-bottom: clamp(40px, 5vw, 58px);
-    background-color: var(--color--mist);
+    // Springwood rather than the design's mist: the hero now owns the mist band, and
+    // two mist sections on one page stopped reading as distinct.
+    background-color: var(--color--springwood);
 
     &__inner {
         display: grid;
@@ -82,6 +84,10 @@
     }
 
     &__chip {
+        // The theme's li+li { margin-top: ... } offsets every chip after the
+        // first, which read as the first chip sitting too high.
+        margin-top: 0;
+        margin-bottom: 0;
         padding: px-to-rem(5) px-to-rem(12);
         border: 1px solid var(--dwod--chip-rule);
         background-color: var(--dwod--chip-bg);

@@ -26,7 +26,9 @@
     --block--margin-top: 0;
     --block--margin-bottom: 0;
 
-    padding-top: px-to-rem(6);
+    // Matching top and bottom padding so the row sits centred in the space between
+    // the header band and the cards, rather than wedged up against the header.
+    padding-top: clamp(18px, 2.5vw, 26px);
     padding-bottom: clamp(18px, 2.5vw, 26px);
 
     &__inner {
@@ -76,10 +78,12 @@
     &__badge {
         display: inline-flex;
         align-items: center;
-        // Equal height on every badge, and centred rather than baseline aligned.
-        // A fractional line box made badges carrying a dot or an icon round to a
-        // different height than the plain one, so they sat a pixel or two out of
-        // line. A whole-pixel min-height settles all three.
+        // The theme's prose list rule, li+li { margin-top: var(--list--item--spacing) },
+        // was pushing every badge after the first down by 10px, which read as the
+        // first one sitting too high. The theme's own horizontal lists (.flex-list,
+        // .menu-list, .wp-block-buttons) zero the item margins for the same reason.
+        margin-top: 0;
+        margin-bottom: 0;
         align-self: center;
         min-height: px-to-rem(34);
         gap: px-to-rem(8);
