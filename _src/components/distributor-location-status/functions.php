@@ -5,9 +5,9 @@ namespace Granola\Components\DistributorLocationStatus;
 /**
  * Status row for a distributor / showroom / experience-centre profile.
  *
- * Sits directly under the theme page header, which the design keeps as-is, and
- * carries the short address line plus the stockist / stock / display badges and a
- * live open-or-closed line.
+ * Sits directly under the profile hero and carries the stockist / stock / display
+ * badges and a live open-or-closed line. The hero owns the address, so the address
+ * line here is off unless the block is used on its own.
  *
  * Everything is read from the record's own Distributor Details fields, so all 376
  * existing distributors render without editing. Of those only address, phone,
@@ -18,7 +18,9 @@ function filter_args(array $args): ?array
 {
     $args = array_merge([
         'classes' => [],
-        'show_address' => true,
+        // The profile hero carries the address, so this is off by default and only
+        // needed when the status block is used without it.
+        'show_address' => false,
         'show_badges' => true,
         'show_status' => true,
     ], $args);

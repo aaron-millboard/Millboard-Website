@@ -175,6 +175,42 @@ function add_installer_breadcrumb_step(array $links): array
 }
 
 /**
+ * Insert a "Find a Distributor" step into the breadcrumb trail on single
+ * distributor profiles. Like installers, the distributor post type has no archive,
+ * so the step is linked to the Find a Distributor finder page (resolved per
+ * site/locale).
+ *
+ * @param array $links The breadcrumb links array.
+ *
+ * @return array
+ */
+function add_distributor_breadcrumb_step(array $links): array
+{
+    if (!\is_singular('distributor')) {
+        return $links;
+    }
+
+    $finder = \get_page_by_path('find-a-distributor');
+    $url = $finder ? \get_permalink($finder) : \home_url('/find-a-distributor/');
+
+    $crumb = [
+        'text' => \__('Find a Distributor', 'granola'),
+        'url' => $url,
+    ];
+
+    // Insert the step just before the current-page (final) crumb.
+    if (count($links) > 1) {
+        $last = array_pop($links);
+        $links[] = $crumb;
+        $links[] = $last;
+    } else {
+        $links[] = $crumb;
+    }
+
+    return $links;
+}
+
+/**
  * Remove duplicate Yoast breadcrumb links.
  *
  * Also removes earlier duplicates when the current page breadcrumb text appears more than once.

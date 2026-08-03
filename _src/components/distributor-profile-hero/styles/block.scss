@@ -1,0 +1,81 @@
+// =============================================================================
+// Distributor Profile Hero
+// Replaces the theme page header on distributor / showroom / experience-centre
+// records: breadcrumbs, location eyebrow, name, short address. Left aligned on the
+// page background, per the design, rather than the centred banded page header.
+// =============================================================================
+
+.distributor-profile-hero {
+    --dph--olive: var(--color--olivegreen);
+    // Mid olive is 3.2:1 on the light background and fails WCAG AA, so the eyebrow
+    // uses this darker olive at ~5.2:1. Same value as the installer header.
+    --dph--accent-text: #5c7010;
+    --dph--body: #{rgba(#151716, 0.76)};
+    --dph--rule: #{rgba(#151716, 0.14)};
+
+    // The theme's block margins would add a band above the breadcrumbs and below
+    // the address; this block sets its own rhythm.
+    --block--margin-top: 0;
+    --block--margin-bottom: 0;
+
+    padding-bottom: clamp(20px, 3vw, 28px);
+
+    // ---- Breadcrumbs --------------------------------------------------------
+    // Full-bleed rule under the trail, with the trail itself on the content width.
+    &__breadcrumbs {
+        border-bottom: 1px solid var(--dph--rule);
+        margin-bottom: clamp(26px, 4vw, 40px);
+    }
+
+    &__breadcrumbs-inner {
+        max-width: var(--width--responsive--l);
+        margin: 0 auto;
+        padding: px-to-rem(14) 0;
+
+        .breadcrumbs {
+            margin: 0;
+        }
+    }
+
+    // ---- Content ------------------------------------------------------------
+    &__inner {
+        display: grid;
+        gap: px-to-rem(14);
+        justify-items: start;
+        max-width: var(--width--responsive--l);
+        margin: 0 auto;
+    }
+
+    &__preheading {
+        margin: 0;
+        color: var(--dph--accent-text);
+        font-weight: 700;
+        font-size: px-to-rem(11);
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+    }
+
+    &__heading {
+        @include typestyle-h1;
+
+        margin: 0;
+        text-align: left;
+    }
+
+    &__address {
+        display: flex;
+        align-items: center;
+        gap: px-to-rem(10);
+        margin: 0;
+        font-size: px-to-rem(13.5);
+        color: var(--dph--body);
+    }
+
+    // The theme resets `svg { width: 100% }`, so inline icons need explicit sizes.
+    &__pin {
+        flex: none;
+        width: px-to-rem(16);
+        height: px-to-rem(16);
+        color: var(--dph--olive);
+    }
+}

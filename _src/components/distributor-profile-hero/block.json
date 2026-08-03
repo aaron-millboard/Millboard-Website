@@ -1,0 +1,21 @@
+{
+    "$schema": "https://raw.githubusercontent.com/AdvancedCustomFields/schemas/main/json/block.json",
+    "apiVersion": 2,
+    "name": "acf/distributor-profile-hero",
+    "title": "Distributor Profile Hero",
+    "category": "granola-blocks",
+    "icon": "store",
+    "keywords": [ "distributor", "hero", "header", "profile" ],
+    "acf": {
+        "mode": "auto",
+        "renderCallback": "\\Granola\\Component::acf_render_callback",
+        "postTypes": [ "distributor", "showroom", "experience_centre" ]
+    },
+    "supports": {
+        "anchor": true,
+        "align": false,
+        "color": { "text": false },
+        "mode": false
+    },
+    "attributes": { "align": { "type": "string", "default": "full" } }
+}

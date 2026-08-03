@@ -49,13 +49,13 @@ class Distributor
             'taxonomies' => [
                 'distributor_type',
             ],
-            // Profile layout. The page header and the contact form are existing
-            // blocks and stay as they are; the distributor blocks sit between them.
-            // The contact card and opening hours share a row, which is why they are
-            // wrapped in columns rather than listed flat.
+            // Profile layout. A bespoke hero replaces the theme page header on these
+            // records, so site-main's has_own_header() has to list it or the page ends
+            // up with two h1 elements. The contact form is an existing block and stays
+            // as it is.
             'template' => [
                 [
-                    'acf/page-header',
+                    'acf/distributor-profile-hero',
                     [
                         'lock' => [
                             'remove' => true,
