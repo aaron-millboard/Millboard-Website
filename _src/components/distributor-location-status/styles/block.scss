@@ -1,8 +1,8 @@
 // =============================================================================
 // Distributor Location Status
-// Short address line plus the stockist / stock / display badges and the live
-// open-or-closed line. Sits directly under the theme page header, which the
-// design keeps in place.
+// Stockist / stock / display badges and the live open-or-closed line. Sits under
+// the profile hero, which owns the address, so the address line here is off unless
+// the block is used on its own.
 // =============================================================================
 
 .distributor-location-status {
@@ -43,7 +43,6 @@
         align-items: center;
         gap: px-to-rem(10);
         margin: 0;
-        font-size: px-to-rem(13.5);
         color: var(--dls--body);
     }
 
@@ -78,17 +77,17 @@
         display: inline-flex;
         align-items: center;
         // Equal height on every badge, and centred rather than baseline aligned.
-        // 10.5px at line-height 1.3 is a fractional line box, so badges that carry a
-        // dot or an icon rounded to a different height than the plain one and sat a
-        // pixel or two out of line. A whole-pixel min-height settles all three.
+        // A fractional line box made badges carrying a dot or an icon round to a
+        // different height than the plain one, so they sat a pixel or two out of
+        // line. A whole-pixel min-height settles all three.
         align-self: center;
-        min-height: px-to-rem(30);
+        min-height: px-to-rem(34);
         gap: px-to-rem(8);
         padding: px-to-rem(8) px-to-rem(13);
         border: 1px solid transparent;
         font-weight: 700;
-        font-size: px-to-rem(10.5);
-        letter-spacing: 0.16em;
+        font-size: px-to-rem(12);
+        letter-spacing: 0.14em;
         text-transform: uppercase;
         line-height: 1.3;
 
@@ -137,7 +136,7 @@
         align-items: center;
         gap: px-to-rem(8);
         margin: 0 0 0 px-to-rem(6);
-        font-size: px-to-rem(12);
+        font-size: px-to-rem(14);
         color: var(--dls--body);
 
         &--closed .distributor-location-status__dot {

@@ -21,7 +21,6 @@
     &__card {
         display: flex;
         flex-direction: column;
-        height: 100%;
         padding: clamp(22px, 3vw, 30px) clamp(22px, 3vw, 30px) px-to-rem(24);
         border: 1px solid #{rgba(#151716, 0.12)};
         background-color: var(--dcc--card);
@@ -59,8 +58,8 @@
         margin: 0 0 px-to-rem(7);
         color: var(--dcc--accent-text);
         font-weight: 700;
-        font-size: px-to-rem(10.5);
-        letter-spacing: 0.2em;
+        font-size: px-to-rem(13);
+        letter-spacing: 0.16em;
         text-transform: uppercase;
     }
 
@@ -73,7 +72,6 @@
 
     &__role {
         margin: 0;
-        font-size: px-to-rem(13);
         color: var(--dcc--muted);
     }
 
@@ -92,8 +90,8 @@
         padding: px-to-rem(13) px-to-rem(22);
         border: 1px solid transparent;
         font-weight: 700;
-        font-size: px-to-rem(11.5);
-        letter-spacing: 0.16em;
+        font-size: px-to-rem(13);
+        letter-spacing: 0.14em;
         text-transform: uppercase;
         text-decoration: none;
         transition: background-color 0.24s ease, color 0.24s ease, border-color 0.24s ease;
@@ -131,10 +129,7 @@
     }
 
     // ---- Branch row ---------------------------------------------------------
-    // margin-top:auto pins this to the bottom so the card matches the height of
-    // the opening hours card beside it.
     &__branch {
-        margin-top: auto;
         padding-top: px-to-rem(18);
         border-top: 1px solid var(--dcc--rule);
     }
@@ -143,8 +138,8 @@
         margin: 0 0 px-to-rem(10);
         color: var(--dcc--muted);
         font-weight: 700;
-        font-size: px-to-rem(10);
-        letter-spacing: 0.18em;
+        font-size: px-to-rem(13);
+        letter-spacing: 0.16em;
         text-transform: uppercase;
     }
 
@@ -155,7 +150,6 @@
         margin: 0;
         padding: 0;
         list-style: none;
-        font-size: px-to-rem(13);
     }
 
     &__branch-link {
@@ -184,7 +178,7 @@
 
     &__note {
         margin: px-to-rem(12) 0 0;
-        font-size: px-to-rem(11);
+        font-size: px-to-rem(13);
         color: var(--dcc--faint);
     }
 }

@@ -136,3 +136,118 @@
         }
     }
 }
+
+// =============================================================================
+// Distributor profile treatment
+//
+// The design gives this section a mist band, an olive rule above the heading and a
+// spring-wood card around the form with underlined fields. Scoped to distributor
+// pages rather than applied to the block itself, because 138 installers still use
+// this same block with the old look and must not change.
+//
+// The form is injected client-side by the HubSpot embed, so it is styled through
+// HubSpot's own --hsf-* custom properties, the same approach installer-quote-form
+// uses, rather than by guessing at generated class names.
+// =============================================================================
+.site-main--distributor {
+    .partner-contact-form {
+        --pcf--dark: var(--color--black);
+        --pcf--light: var(--color--springwood);
+        --pcf--olive: var(--color--olivegreen);
+        --pcf--rule: #{rgba(#151716, 0.14)};
+
+        --block--margin-top: 0;
+        --block--margin-bottom: 0;
+
+        background-color: var(--color--mist);
+
+        &__inner {
+            padding: clamp(40px, 5vw, 58px) 0;
+        }
+
+        &__grid {
+            align-items: start;
+
+            @include mq(medium) {
+                grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+                gap: clamp(32px, 4vw, 52px);
+            }
+        }
+
+        // Olive rule above the heading, matching the other distributor sections.
+        &__column--content {
+            @include mq(large) {
+                padding-right: 0;
+            }
+
+            &::before {
+                content: '';
+                display: block;
+                width: px-to-rem(48);
+                height: px-to-rem(2);
+                background-color: var(--pcf--olive);
+            }
+        }
+
+        &__table {
+            tr {
+                border-bottom-color: var(--pcf--rule);
+            }
+        }
+
+        // ---- Form card ------------------------------------------------------
+        &__column--form {
+            padding: clamp(22px, 3vw, 30px);
+            border: 1px solid #{rgba(#151716, 0.12)};
+            background-color: var(--pcf--light);
+        }
+
+        &__form {
+            // Underlined fields, per the design: no box, just a rule that turns
+            // olive on focus.
+            --hsf-global__font-family: var(--type--1--font-family, 'F37 Ginger', Helvetica, Arial, sans-serif);
+            --hsf-global__font-size: #{px-to-rem(16)};
+
+            --hsf-field-input__font-size: #{px-to-rem(16)};
+            --hsf-field-input__color: var(--color--foreground);
+            --hsf-field-input__background-color: transparent;
+            --hsf-field-input__border-color: #{rgba(#151716, 0.3)};
+            --hsf-field-input__border-style: solid;
+            --hsf-field-input__border-width: 0 0 1px;
+            --hsf-field-input__border-radius: 0;
+            --hsf-field-input__padding: #{px-to-rem(11)} 0;
+            --hsf-field-input--focus__border-color: var(--pcf--olive);
+
+            --hsf-field-textarea__font-size: #{px-to-rem(16)};
+            --hsf-field-textarea__color: var(--color--foreground);
+            --hsf-field-textarea__background-color: transparent;
+            --hsf-field-textarea__border-color: #{rgba(#151716, 0.3)};
+            --hsf-field-textarea__border-style: solid;
+            --hsf-field-textarea__border-width: 0 0 1px;
+            --hsf-field-textarea__border-radius: 0;
+            --hsf-field-textarea__padding: #{px-to-rem(11)} 0;
+
+            --hsf-field-checkbox__background-color: #ffffff;
+            --hsf-field-checkbox__border-color: #{rgba(#151716, 0.55)};
+            --hsf-field-checkbox__border-style: solid;
+            --hsf-field-checkbox__border-width: 1px;
+            --hsf-field-checkbox__color: var(--pcf--olive);
+
+            // 13px is the floor the installer profiles settled on for small labels;
+            // the design's 10px is below what is comfortably readable.
+            --hsf-field-label__font-size: #{px-to-rem(13)};
+            --hsf-field-label__color: var(--color--foreground);
+
+            --hsf-button__background-color: var(--pcf--dark);
+            --hsf-button--hover__background-color: #{darken(#151716, 2%)};
+            --hsf-button__color: var(--pcf--light);
+        }
+
+        // Full width submit, per the design.
+        .hs-button,
+        button[type='submit'] {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+}
