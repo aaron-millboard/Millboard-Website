@@ -77,6 +77,12 @@
     &__badge {
         display: inline-flex;
         align-items: center;
+        // Equal height on every badge, and centred rather than baseline aligned.
+        // 10.5px at line-height 1.3 is a fractional line box, so badges that carry a
+        // dot or an icon rounded to a different height than the plain one and sat a
+        // pixel or two out of line. A whole-pixel min-height settles all three.
+        align-self: center;
+        min-height: px-to-rem(30);
         gap: px-to-rem(8);
         padding: px-to-rem(8) px-to-rem(13);
         border: 1px solid transparent;
