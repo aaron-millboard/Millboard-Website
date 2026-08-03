@@ -1,0 +1,190 @@
+// =============================================================================
+// Distributor Contact Card
+// Millboard champion leads the card when set, otherwise the branch actions are
+// promoted into the primary buttons. Designed to sit beside the opening hours
+// card in a two-column row.
+// =============================================================================
+
+.distributor-contact-card {
+    --dcc--dark: var(--color--black);
+    --dcc--light: var(--color--springwood);
+    --dcc--olive: var(--color--olivegreen);
+    // Mid olive is 3.2:1 on the light background and fails AA, so the eyebrow and
+    // hover states use this darker olive at ~5.2:1.
+    --dcc--accent-text: #5c7010;
+    --dcc--card: var(--color--springwood);
+    --dcc--body: #{rgba(#151716, 0.76)};
+    --dcc--muted: #{rgba(#151716, 0.6)};
+    --dcc--faint: #{rgba(#151716, 0.45)};
+    --dcc--rule: #{rgba(#151716, 0.14)};
+
+    &__card {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        padding: clamp(22px, 3vw, 30px) clamp(22px, 3vw, 30px) px-to-rem(24);
+        border: 1px solid #{rgba(#151716, 0.12)};
+        background-color: var(--dcc--card);
+    }
+
+    // ---- Champion -----------------------------------------------------------
+    &__person {
+        display: flex;
+        align-items: center;
+        gap: px-to-rem(20);
+        margin-bottom: px-to-rem(22);
+    }
+
+    &__photo {
+        flex: none;
+        position: relative;
+        overflow: hidden;
+        width: px-to-rem(92);
+        height: px-to-rem(92);
+        border-radius: 50%;
+    }
+
+    &__photo-image {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    &__identity {
+        min-width: 0;
+    }
+
+    &__eyebrow {
+        margin: 0 0 px-to-rem(7);
+        color: var(--dcc--accent-text);
+        font-weight: 700;
+        font-size: px-to-rem(10.5);
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+    }
+
+    &__name {
+        margin: 0 0 px-to-rem(5);
+        font-weight: 700;
+        font-size: px-to-rem(21);
+        line-height: 1.2;
+    }
+
+    &__role {
+        margin: 0;
+        font-size: px-to-rem(13);
+        color: var(--dcc--muted);
+    }
+
+    // ---- Primary actions ----------------------------------------------------
+    &__actions {
+        display: flex;
+        flex-flow: row wrap;
+        gap: px-to-rem(10);
+        margin-bottom: px-to-rem(22);
+    }
+
+    &__action {
+        display: inline-flex;
+        align-items: center;
+        gap: px-to-rem(9);
+        padding: px-to-rem(13) px-to-rem(22);
+        border: 1px solid transparent;
+        font-weight: 700;
+        font-size: px-to-rem(11.5);
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        text-decoration: none;
+        transition: background-color 0.24s ease, color 0.24s ease, border-color 0.24s ease;
+
+        &--primary {
+            background-color: var(--dcc--dark);
+            color: var(--dcc--light);
+
+            &:hover,
+            &:focus-visible {
+                background-color: #{darken(#151716, 2%)};
+                color: var(--dcc--light);
+                text-decoration: none;
+            }
+        }
+
+        &--secondary {
+            background-color: transparent;
+            color: var(--dcc--dark);
+            border-color: var(--dcc--dark);
+
+            &:hover,
+            &:focus-visible {
+                border-color: var(--dcc--olive);
+                color: var(--dcc--accent-text);
+                text-decoration: none;
+            }
+        }
+    }
+
+    &__action-icon {
+        flex: none;
+        width: px-to-rem(14);
+        height: px-to-rem(14);
+    }
+
+    // ---- Branch row ---------------------------------------------------------
+    // margin-top:auto pins this to the bottom so the card matches the height of
+    // the opening hours card beside it.
+    &__branch {
+        margin-top: auto;
+        padding-top: px-to-rem(18);
+        border-top: 1px solid var(--dcc--rule);
+    }
+
+    &__branch-heading {
+        margin: 0 0 px-to-rem(10);
+        color: var(--dcc--muted);
+        font-weight: 700;
+        font-size: px-to-rem(10);
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+    }
+
+    &__branch-links {
+        display: flex;
+        flex-flow: row wrap;
+        gap: px-to-rem(8) px-to-rem(24);
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        font-size: px-to-rem(13);
+    }
+
+    &__branch-link {
+        display: inline-flex;
+        align-items: center;
+        gap: px-to-rem(7);
+        padding-bottom: px-to-rem(2);
+        border-bottom: 1px solid var(--dcc--rule);
+        color: var(--dcc--body);
+        font-weight: 700;
+        text-decoration: none;
+
+        &:hover,
+        &:focus-visible {
+            border-color: var(--dcc--olive);
+            color: var(--dcc--accent-text);
+            text-decoration: none;
+        }
+    }
+
+    &__branch-icon {
+        flex: none;
+        width: px-to-rem(13);
+        height: px-to-rem(13);
+    }
+
+    &__note {
+        margin: px-to-rem(12) 0 0;
+        font-size: px-to-rem(11);
+        color: var(--dcc--faint);
+    }
+}

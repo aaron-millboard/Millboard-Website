@@ -1,0 +1,112 @@
+// =============================================================================
+// Distributor Opening Hours
+// Week card, ordered Monday first with today banded and pilled. Designed to sit
+// beside the contact card in a two-column row, but renders fine on its own when
+// a record has hours and no champion.
+// =============================================================================
+
+.distributor-opening-hours {
+    --doh--dark: var(--color--black);
+    --doh--olive: var(--color--olivegreen);
+    // Mid olive is 3.2:1 on the light background and fails AA, so the Today pill
+    // takes near-black text on olive (5.4:1) rather than the design's white.
+    --doh--pill-text: var(--color--black);
+    --doh--card: var(--color--springwood);
+    --doh--body: #{rgba(#151716, 0.76)};
+    --doh--muted: #{rgba(#151716, 0.6)};
+    --doh--rule: #{rgba(#151716, 0.14)};
+
+    &__card {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        padding: clamp(22px, 3vw, 30px) clamp(22px, 3vw, 30px) px-to-rem(24);
+        border: 1px solid #{rgba(#151716, 0.12)};
+        background-color: var(--doh--card);
+    }
+
+    &__heading {
+        @include typestyle-h4;
+
+        margin: 0 0 px-to-rem(16);
+    }
+
+    &__week {
+        display: flex;
+        flex-direction: column;
+        margin: 0;
+        font-size: px-to-rem(13.5);
+    }
+
+    &__row {
+        display: flex;
+        justify-content: space-between;
+        gap: px-to-rem(12);
+        padding: px-to-rem(10) 0;
+        border-bottom: 1px solid var(--doh--rule);
+
+        &:last-child {
+            border-bottom: 0;
+        }
+
+        // Today is a banded row that bleeds past the card's text column, so it
+        // reads as highlighted rather than merely bold.
+        &--today {
+            padding: px-to-rem(10) px-to-rem(12);
+            margin: 0 px-to-rem(-12);
+            border-bottom: 0;
+            background-color: #{rgba(#78953c, 0.12)};
+            font-weight: 700;
+        }
+    }
+
+    &__day {
+        display: inline-flex;
+        align-items: center;
+        gap: px-to-rem(9);
+        margin: 0;
+        font-weight: inherit;
+    }
+
+    &__pill {
+        padding: px-to-rem(3) px-to-rem(7);
+        background-color: var(--doh--olive);
+        color: var(--doh--pill-text);
+        font-weight: 700;
+        font-size: px-to-rem(9);
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        line-height: 1.4;
+    }
+
+    &__hours {
+        margin: 0;
+        color: var(--doh--body);
+        font-weight: inherit;
+        white-space: nowrap;
+
+        &--closed {
+            color: var(--doh--muted);
+        }
+    }
+
+    // ---- Footnote -----------------------------------------------------------
+    &__notes {
+        display: flex;
+        align-items: flex-start;
+        gap: px-to-rem(9);
+        margin: px-to-rem(6) 0 0;
+        padding-top: px-to-rem(14);
+        border-top: 1px solid var(--doh--rule);
+        font-size: px-to-rem(12);
+        color: var(--doh--muted);
+    }
+
+    // The theme resets `svg { width: 100% }`, so inline icons need explicit sizes.
+    &__notes-icon {
+        flex: none;
+        width: px-to-rem(14);
+        height: px-to-rem(14);
+        margin-top: px-to-rem(1);
+    }
+}

@@ -49,6 +49,10 @@ class Distributor
             'taxonomies' => [
                 'distributor_type',
             ],
+            // Profile layout. The page header and the contact form are existing
+            // blocks and stay as they are; the distributor blocks sit between them.
+            // The contact card and opening hours share a row, which is why they are
+            // wrapped in columns rather than listed flat.
             'template' => [
                 [
                     'acf/page-header',
@@ -59,6 +63,25 @@ class Distributor
                         ]
                     ]
                 ],
+                ['acf/distributor-location-status'],
+                [
+                    'core/columns',
+                    [],
+                    [
+                        [
+                            'core/column',
+                            ['width' => '57.5%'],
+                            [['acf/distributor-contact-card']]
+                        ],
+                        [
+                            'core/column',
+                            ['width' => '42.5%'],
+                            [['acf/distributor-opening-hours']]
+                        ],
+                    ]
+                ],
+                ['acf/distributor-whats-on-display'],
+                ['acf/distributor-location-map'],
                 ['acf/partner-contact-form'],
                 [
                     'core/paragraph',
