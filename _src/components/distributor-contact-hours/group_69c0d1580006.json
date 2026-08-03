@@ -1,11 +1,11 @@
 {
-    "key": "group_69c0d1580002",
-    "title": "Block - Distributor Contact Card",
+    "key": "group_69c0d1580006",
+    "title": "Block - Distributor Contact & Hours",
     "fields": [
         {
-            "key": "field_69c0d1580201",
-            "label": "Eyebrow",
-            "name": "heading",
+            "key": "field_69c0d1580601",
+            "label": "Contact eyebrow",
+            "name": "contact_heading",
             "type": "text",
             "instructions": "Small label above the champion name. Defaults to Millboard Champion.",
             "required": 0,
@@ -18,14 +18,29 @@
             "append": ""
         },
         {
-            "key": "field_69c0d1580202",
-            "label": "Footnote",
-            "name": "note",
+            "key": "field_69c0d1580602",
+            "label": "Opening hours heading",
+            "name": "hours_heading",
+            "type": "text",
+            "instructions": "Defaults to Opening hours.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": { "width": "50", "class": "", "id": "" },
+            "default_value": "",
+            "maxlength": "",
+            "placeholder": "",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_69c0d1580603",
+            "label": "Contact footnote",
+            "name": "contact_note",
             "type": "text",
             "instructions": "Optional small print under the branch contact links.",
             "required": 0,
             "conditional_logic": 0,
-            "wrapper": { "width": "50", "class": "", "id": "" },
+            "wrapper": { "width": "", "class": "", "id": "" },
             "default_value": "",
             "maxlength": "",
             "placeholder": "",
@@ -38,7 +53,7 @@
             {
                 "param": "block",
                 "operator": "==",
-                "value": "acf/distributor-contact-card"
+                "value": "acf/distributor-contact-hours"
             }
         ]
     ],

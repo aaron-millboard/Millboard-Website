@@ -1,11 +1,11 @@
 {
     "$schema": "https://raw.githubusercontent.com/AdvancedCustomFields/schemas/main/json/block.json",
     "apiVersion": 2,
-    "name": "acf/distributor-opening-hours",
-    "title": "Distributor Opening Hours",
+    "name": "acf/distributor-contact-hours",
+    "title": "Distributor Contact & Hours",
     "category": "granola-blocks",
-    "icon": "clock",
-    "keywords": [ "distributor", "opening", "hours", "times" ],
+    "icon": "id-alt",
+    "keywords": [ "distributor", "champion", "contact", "hours", "branch" ],
     "acf": {
         "mode": "auto",
         "renderCallback": "\\Granola\\Component::acf_render_callback",
@@ -17,5 +17,5 @@
         "color": { "text": false },
         "mode": false
     },
-    "attributes": { "align": { "type": "string", "default": "" } }
+    "attributes": { "align": { "type": "string", "default": "full" } }
 }

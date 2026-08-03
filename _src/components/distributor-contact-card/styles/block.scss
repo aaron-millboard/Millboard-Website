@@ -5,31 +5,6 @@
 // card in a two-column row.
 // =============================================================================
 
-// The wrapper group the CPT template puts the two cards in. It is full width so the
-// theme does not apply --block--right-space (20rem) to it, so the content width has
-// to be restored here.
-//
-// auto-fit rather than two fixed tracks: the opening hours card returns null on every
-// record without hours, and a fixed second track would leave an empty half beside the
-// contact card. With auto-fit a lone card simply takes the full width.
-.distributor-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(px-to-rem(300), 1fr));
-    gap: px-to-rem(22);
-    align-items: stretch;
-    max-width: var(--width--responsive--l);
-    margin: 0 auto clamp(28px, 4vw, 44px);
-
-    // The theme adds its own block margins to every wp-block child; the grid gap
-    // already spaces these, so cancel them to avoid a double gutter.
-    > * {
-        --block--margin-top: 0;
-        --block--margin-bottom: 0;
-
-        margin: 0;
-    }
-}
-
 .distributor-contact-card {
     --dcc--dark: var(--color--black);
     --dcc--light: var(--color--springwood);

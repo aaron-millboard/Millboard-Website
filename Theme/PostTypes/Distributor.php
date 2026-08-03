@@ -64,23 +64,11 @@ class Distributor
                     ]
                 ],
                 ['acf/distributor-location-status'],
-                // A full-width group, not core/columns. The theme gives any block
-                // without an alignment a 20rem right padding
-                // (--block--right-space), which crushed the pair into the left of
-                // the page. The group's own CSS restores the content width and
-                // pairs the cards with auto-fit, so whichever card renders alone
-                // takes the full width instead of leaving a void.
-                [
-                    'core/group',
-                    [
-                        'align' => 'full',
-                        'className' => 'distributor-cards',
-                    ],
-                    [
-                        ['acf/distributor-contact-card'],
-                        ['acf/distributor-opening-hours'],
-                    ]
-                ],
+                // The contact card and opening hours are one block, not a pair
+                // inside a wrapper: the theme unregisters core/group, core/columns
+                // and core/column in the editor, so no wrapper block exists to put
+                // them in.
+                ['acf/distributor-contact-hours'],
                 ['acf/distributor-whats-on-display'],
                 ['acf/distributor-location-map'],
                 ['acf/partner-contact-form'],
