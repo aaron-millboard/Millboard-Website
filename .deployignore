@@ -2,6 +2,9 @@ _src
 _src/**
 node_modules
 node_modules/**
+docs
+docs/**
+CODEOWNERS
 build
 build/**
 .vscode
@@ -26,6 +29,7 @@ LICENCE
 package-lock.json
 package.json
 phpcs.xml
+.phpcs.xml
 postcss.config.js
 readme.md
 webpack.config.js

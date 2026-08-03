@@ -1,0 +1,74 @@
+# CODEOWNERS - millboard.com WordPress theme
+#
+# Owners are notified and requested as reviewers on any merge request that
+# touches a matching path. See docs/code-ownership-and-branch-protection.md
+# for the review tiers, the approval route, and what is enforced vs advisory.
+#
+# NOTE ON ENFORCEMENT: code owner *approval* is a GitLab Premium feature.
+# On GitLab Free this file is advisory: GitLab shows the owners on the merge
+# request and suggests them as reviewers, but does not block the merge.
+# The enforced controls on Free are protected branches, "pipelines must
+# succeed", and "all threads resolved". The accountability control for
+# medium and high risk work is the Freshdesk change request and CAB.
+#
+# Last reviewed: 2026-08-03
+
+# ---------------------------------------------------------------------------
+# Default owner: everything in the repository
+# ---------------------------------------------------------------------------
+*                                       @aarondavismillboard
+
+# ---------------------------------------------------------------------------
+# TIER 3 - high risk. Second reviewer required, Normal CR, CAB approval.
+# Money, orders, tax, shipping, customer data, or anything that can take the
+# storefront down across all six locales.
+# ---------------------------------------------------------------------------
+/Theme/WooCommerce/                     @aarondavismillboard
+/woocommerce/                           @aarondavismillboard
+/Theme/Multisite/                       @aarondavismillboard
+/Theme/Hubspot/                         @aarondavismillboard
+/Theme/Meta/                            @aarondavismillboard
+/functions.php                          @aarondavismillboard
+
+# Build, deploy, and dependency pinning. A wrong change here breaks every
+# environment at once, and the deploy job holds the Kinsta credentials.
+/.gitlab-ci.yml                         @aarondavismillboard
+/.deployignore                          @aarondavismillboard
+/build/                                 @aarondavismillboard
+/composer.json                          @aarondavismillboard
+/composer.lock                          @aarondavismillboard
+/package.json                           @aarondavismillboard
+/package-lock.json                      @aarondavismillboard
+/CODEOWNERS                             @aarondavismillboard
+
+# ---------------------------------------------------------------------------
+# TIER 2 - medium risk. Merge request with staging evidence, Standard CR.
+# Templates, blocks, post types, and field definitions. Visible sitewide but
+# recoverable by revert.
+# ---------------------------------------------------------------------------
+/Theme/PostTypes/                       @aarondavismillboard
+/Theme/Taxonomies/                      @aarondavismillboard
+/Theme/Shortcodes/                      @aarondavismillboard
+/Theme/WordPress/                       @aarondavismillboard
+/Theme/Plugins/                         @aarondavismillboard
+/Theme/Utils/                           @aarondavismillboard
+/acf-json/                              @aarondavismillboard
+/page-templates/                        @aarondavismillboard
+/_src/components/                       @aarondavismillboard
+/_src/components-wholegrain/            @aarondavismillboard
+/_src/scripts/                          @aarondavismillboard
+/header.php                             @aarondavismillboard
+/footer.php                             @aarondavismillboard
+/index.php                              @aarondavismillboard
+/singular.php                           @aarondavismillboard
+/404.php                                @aarondavismillboard
+
+# ---------------------------------------------------------------------------
+# TIER 1 - low risk. Self merge once CI is green. No CR required.
+# Styling, images, static assets, translation strings, docs, editor config.
+# ---------------------------------------------------------------------------
+/_src/styles/                           @aarondavismillboard
+/_src/images/                           @aarondavismillboard
+/_src/static/                           @aarondavismillboard
+/docs/                                  @aarondavismillboard
+/readme.md                              @aarondavismillboard
