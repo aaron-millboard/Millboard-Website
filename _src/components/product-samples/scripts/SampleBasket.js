@@ -17,15 +17,6 @@ export default class SampleBasket {
 
         if (!this.buttons.length) return;
 
-        // The "add" markup differs per sample (size, dimensions, price), so cache
-        // it up front rather than trying to rebuild it in JS.
-        this.addStateMarkup = new Map();
-        this.buttons.forEach((button) => {
-            if (button.dataset.sampleAction === 'add') {
-                this.addStateMarkup.set(button.dataset.sampleProductId, button.innerHTML);
-            }
-        });
-
         this.bar = null;
         this.pending = false;
 
@@ -74,15 +65,28 @@ export default class SampleBasket {
 
             const payload = await response.json();
 
-            if (!payload || !payload.success) {
-                const message = (payload && payload.data && payload.data.message) || this.config.i18n.error;
+            // A stale nonce makes WordPress answer with a bare -1 rather than our
+            // payload. Treat anything that isn't an object as unrecoverable and
+            // let the plain link take over.
+            if (!payload || typeof payload !== 'object') {
+                window.location.href = button.getAttribute('href');
+                return;
+            }
 
+            if (!payload.success) {
                 // The basket is full, so reflect the real state we were given.
-                if (payload && payload.data && payload.data.samples) {
-                    this.applyState(payload.data.samples);
+                if (payload.data && payload.data.state) {
+                    this.applyState(payload.data.state);
                 }
 
-                this.announce(message, true);
+                // A refusal because three free samples are already chosen gets a
+                // notice on the button itself, where the visitor is looking.
+                if (response.status === 409) {
+                    this.showLimitNotice(button, this.config.i18n.limit);
+                    return;
+                }
+
+                this.announce((payload.data && payload.data.message) || this.config.i18n.error, true);
                 return;
             }
 
@@ -127,6 +131,120 @@ export default class SampleBasket {
         this.count = state.count || 0;
         this.full = !!state.full;
         this.syncBar();
+        this.syncHeaderCount(state.cartCount);
+    }
+
+    /**
+     * Keep the header basket badge in step. It is server-rendered on page load,
+     * and is omitted entirely when the basket is empty, so it may need creating.
+     *
+     * @param {number} cartCount Total items in the basket.
+     */
+    syncHeaderCount(cartCount) {
+        if (typeof cartCount !== 'number') return;
+
+        const link = document.querySelector('.site-header__basket-link');
+        if (!link) return;
+
+        let badge = link.querySelector('.site-header__basket-count');
+
+        if (!cartCount) {
+            if (badge) badge.remove();
+            return;
+        }
+
+        if (!badge) {
+            badge = document.createElement('span');
+            badge.className = 'site-header__basket-count';
+            link.appendChild(badge);
+        }
+
+        badge.textContent = String(cartCount);
+    }
+
+    /**
+     * Show a short notice pinned to the button the visitor just pressed.
+     *
+     * Fixed positioning against the button's own rect, so it cannot be clipped
+     * by the card's overflow. Dismissed on the next scroll, resize, outside
+     * click, Escape, or after a few seconds.
+     *
+     * @param {HTMLElement} button The button that was refused.
+     * @param {string} message Text to show.
+     */
+    showLimitNotice(button, message) {
+        this.hideLimitNotice();
+
+        const notice = document.createElement('div');
+        notice.className = 'product-samples__limit';
+        notice.setAttribute('role', 'alert');
+        notice.textContent = message;
+        document.body.appendChild(notice);
+
+        this.limitNotice = notice;
+        this.limitAnchor = button;
+        this.positionLimitNotice();
+
+        // Announce it to the button for assistive tech while it is on screen.
+        button.setAttribute('aria-describedby', 'product-samples-limit');
+        notice.id = 'product-samples-limit';
+
+        this.limitDismiss = (event) => {
+            if (event && event.type === 'click' && notice.contains(event.target)) return;
+            if (event && event.type === 'keydown' && event.key !== 'Escape') return;
+            this.hideLimitNotice();
+        };
+
+        window.addEventListener('scroll', this.limitDismiss, { passive: true, once: true });
+        window.addEventListener('resize', this.limitDismiss, { once: true });
+        document.addEventListener('keydown', this.limitDismiss);
+        // Defer the click listener so this same click doesn't close it instantly.
+        window.setTimeout(() => document.addEventListener('click', this.limitDismiss), 0);
+
+        window.clearTimeout(this.limitTimer);
+        this.limitTimer = window.setTimeout(() => this.hideLimitNotice(), 5000);
+    }
+
+    positionLimitNotice() {
+        if (!this.limitNotice || !this.limitAnchor) return;
+
+        const rect = this.limitAnchor.getBoundingClientRect();
+        const notice = this.limitNotice;
+        const width = notice.offsetWidth;
+        const height = notice.offsetHeight;
+
+        // Prefer above the button; drop below when there isn't room.
+        const above = rect.top - height - 8;
+        const top = above > 8 ? above : rect.bottom + 8;
+
+        let left = rect.left + rect.width / 2 - width / 2;
+        left = Math.max(8, Math.min(left, window.innerWidth - width - 8));
+
+        notice.style.top = `${Math.round(top)}px`;
+        notice.style.left = `${Math.round(left)}px`;
+        notice.classList.toggle('product-samples__limit--below', above <= 8);
+    }
+
+    hideLimitNotice() {
+        window.clearTimeout(this.limitTimer);
+
+        if (this.limitDismiss) {
+            window.removeEventListener('scroll', this.limitDismiss);
+            window.removeEventListener('resize', this.limitDismiss);
+            document.removeEventListener('keydown', this.limitDismiss);
+            document.removeEventListener('click', this.limitDismiss);
+            this.limitDismiss = null;
+        }
+
+        if (this.limitAnchor) {
+            this.limitAnchor.removeAttribute('aria-describedby');
+            this.limitAnchor = null;
+        }
+
+        if (this.limitNotice) {
+            this.limitNotice.remove();
+            this.limitNotice = null;
+        }
     }
 
     /**
@@ -137,14 +255,17 @@ export default class SampleBasket {
         button.classList.add('product-samples__button--in-cart');
         button.dataset.sampleAction = 'remove';
 
+        // The remove label carries a <strong> around the position, matching the
+        // server-rendered markup. Only the position is interpolated, and it is
+        // coerced to an integer first, so there is nothing to inject.
+        const removeLabel = this.config.i18n.remove.replace('{position}', String(parseInt(position, 10) || 0));
+
         button.innerHTML =
             '<span>' +
             `<span class="product-samples__button__content product-samples__button__content--added">${this.escape(
                 this.config.i18n.added,
             )}</span> ` +
-            `<span class="product-samples__button__action">${this.escape(
-                this.config.i18n.remove.replace('{position}', position),
-            )}</span>` +
+            `<span class="product-samples__button__action">${removeLabel}</span>` +
             '</span>';
     }
 
@@ -152,14 +273,18 @@ export default class SampleBasket {
      * @param {HTMLElement} button Button to restore to its addable state.
      */
     renderAddable(button) {
-        const original = this.addStateMarkup.get(button.dataset.sampleProductId);
-
         button.classList.remove('product-samples__button--in-cart');
         button.dataset.sampleAction = 'add';
 
-        if (original) {
-            button.innerHTML = original;
-        }
+        // Rebuilt from the label parts PHP puts on the element, so this works for
+        // buttons that were already in the basket when the page loaded and never
+        // had an addable state to remember.
+        button.innerHTML =
+            '<span>' +
+            `<span class="product-samples__button__content">${this.escape(button.dataset.sampleLabel)}</span> ` +
+            `<span class="product-samples__button__dimensions">${this.escape(button.dataset.sampleDimensions)}</span> ` +
+            `<span class="product-samples__button__price">${this.escape(button.dataset.samplePrice)}</span>` +
+            '</span>';
     }
 
     /**

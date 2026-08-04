@@ -80,13 +80,15 @@ function enqueue_assets(): void
         'i18n' => [
             'added' => \__('Added to basket', 'granola'),
             // Reuses the same string the server-rendered button uses, so the
-            // existing translations apply and the two states stay consistent.
+            // existing translations apply and the two states stay identical.
             // translators: 1: HTML opening tag. 2: Product place in basket. 3: HTML closing tag.
-            'remove' => sprintf(\__('Remove %1$s%2$s/3%3$s', 'granola'), '', '{position}', ''),
+            'remove' => sprintf(\__('Remove %1$s%2$s/3%3$s', 'granola'), '<strong>', '{position}', '</strong>'),
             'viewBasket' => \__('View basket', 'granola'),
             // translators: 1: Number of samples chosen. 2: Maximum number of samples.
             'chosen' => sprintf(\__('%1$s of %2$s samples chosen', 'granola'), '{count}', MAX_SAMPLES),
             'error' => \__('Sorry, that sample could not be updated. Please try again.', 'granola'),
+            // translators: %s: Maximum number of free samples.
+            'limit' => sprintf(\__('You have reached the limit of %s free samples', 'granola'), MAX_SAMPLES),
         ],
     ]);
 }
@@ -111,13 +113,14 @@ function get_cart_sample_positions(): array
     $position = 1;
 
     foreach ($cart->get_cart() as $cart_item_key => $cart_item) {
-        $cart_product_obj = \wc_get_product($cart_item['variation_id'] ?? $cart_item['product_id']);
+        $cart_product_obj = get_cart_item_product($cart_item);
 
+        // Only free samples are numbered and capped. Large samples are unlimited.
         if (empty($cart_product_obj) || !\Theme\WooCommerce\Utils::is_free_sample($cart_product_obj)) {
             continue;
         }
 
-        $product_id = !empty($cart_item['variation_id']) ? $cart_item['variation_id'] : $cart_item['product_id'];
+        $product_id = $cart_product_obj->get_id();
 
         $positions[(int) $product_id] = [
             'position' => $position,
@@ -163,9 +166,23 @@ function ajax_toggle_sample(): void
     \wc_clear_notices();
 
     if ($toggle === 'add') {
-        // add_to_cart() runs the 3-sample validation filter, which adds a notice
-        // and returns false when the basket is already full.
-        $added = WC()->cart->add_to_cart($product->get_parent_id() ?: $product_id, 1, $product_id);
+        // Enforce the limit here rather than relying only on the validation
+        // filter. That filter receives the parent product ID, so its
+        // is_free_sample() check does not recognise a sample and lets it through.
+        if (count(get_cart_sample_positions()) >= MAX_SAMPLES) {
+            \wp_send_json_error([
+                'message' => sprintf(
+                    // translators: %s: Maximum number of samples.
+                    \__('You can only add a maximum of %s free samples', 'granola'),
+                    MAX_SAMPLES
+                ),
+                'state' => format_sample_state(),
+            ], 409);
+        }
+
+        // Pass the variation as the product ID, matching the ?add-to-cart link
+        // this replaces, so cart items keep the same shape either way.
+        $added = WC()->cart->add_to_cart($product_id, 1);
 
         if (empty($added)) {
             $notices = \wc_get_notices('error');
@@ -175,7 +192,9 @@ function ajax_toggle_sample(): void
                 'message' => !empty($notices[0]['notice'])
                     ? \wp_strip_all_tags($notices[0]['notice'])
                     : \__('That sample could not be added.', 'granola'),
-                'samples' => format_sample_state(),
+                // Send the real state too, so a full basket still reconciles the
+                // buttons rather than leaving them out of step.
+                'state' => format_sample_state(),
             ], 409);
         }
     } else {
@@ -196,15 +215,19 @@ function ajax_toggle_sample(): void
 /**
  * Describe the current sample basket for the client.
  *
- * @return array{count: int, samples: array<int, int>, full: bool}
+ * @return array{count: int, samples: array<int, int>, full: bool, cartCount: int}
  */
 function format_sample_state(): array
 {
     $positions = get_cart_sample_positions();
+    $cart = WC()->cart;
 
     return [
         'count' => count($positions),
         'full' => count($positions) >= MAX_SAMPLES,
+        // Everything in the basket, not just samples, so the header count can be
+        // kept in step without a page load.
+        'cartCount' => !empty($cart) ? (int) $cart->get_cart_contents_count() : 0,
         'samples' => array_map(function ($sample) {
             return $sample['position'];
         }, $positions),
@@ -301,11 +324,15 @@ function get_product_default_variation($wc_product)
  * @param integer $quantity Quantity added to the cart.
  * @return bool True if the item passed validation.
  */
-function sample_product_add_to_cart_validation(bool $add_to_cart, int $product_id, int $qty): bool
+function sample_product_add_to_cart_validation(bool $add_to_cart, int $product_id, int $qty, int $variation_id = 0): bool
 {
-    $product = \wc_get_product($product_id);
+    // WooCommerce passes the parent ID as $product_id for variable products, so
+    // prefer the variation when one is supplied. Without this the check below
+    // sees the parent, which is never a free sample, and lets everything through.
+    $product = \wc_get_product($variation_id ?: $product_id);
 
-    // Bail early - not a product variation (different to a "variable" product), no samples.
+    // Bail early - not a free sample. Large samples carry a price and are
+    // deliberately unlimited, so only free ones are capped.
     if (!\Theme\WooCommerce\Utils::is_free_sample($product)) {
         return $add_to_cart;
     }
@@ -313,10 +340,14 @@ function sample_product_add_to_cart_validation(bool $add_to_cart, int $product_i
     // Count the number of samples in the cart.
     $sample_count = get_cart_sample_count();
 
-    if ($sample_count + $qty > 3) {
+    if ($sample_count + $qty > MAX_SAMPLES) {
         wc_clear_notices();
         \wc_add_notice(
-            \__('You can only add a maximum of 3 free samples', 'granola'),
+            sprintf(
+                // translators: %s: Maximum number of free samples.
+                \__('You can only add a maximum of %s free samples', 'granola'),
+                MAX_SAMPLES
+            ),
             'error'
         );
         $add_to_cart = false;
@@ -334,28 +365,50 @@ function sample_product_add_to_cart_validation(bool $add_to_cart, int $product_i
  */
 function get_cart_sample_count(): int
 {
-    $cart = WC()->cart->get_cart();
+    $cart = WC()->cart;
 
-    // Count the number of samples in the cart.
-    return array_reduce($cart, function ($samples_quantity, $cart_item) {
-        // Bail early - no product/variation id found.
-        if (empty($cart_item['product_id']) || empty($cart_item['variation_id'])) {
-            return $samples_quantity;
-        }
+    if (empty($cart)) {
+        return 0;
+    }
 
-        $card_product_obj = \wc_get_product($cart_item['variation_id']);
+    // Count the number of free samples in the cart.
+    return array_reduce($cart->get_cart(), function ($samples_quantity, $cart_item) {
+        // Samples added via ?add-to-cart={variation} are stored with the
+        // variation as product_id and variation_id 0, so fall back to
+        // product_id rather than skipping the item entirely.
+        $product = get_cart_item_product($cart_item);
 
-        // Bail early - this is a default product variation (i.e. not a sample).
-        if (\Theme\WooCommerce\Utils::is_default_product($card_product_obj)) {
-            return $samples_quantity;
-        }
-
-        // Bail early - sample isn't free.
-        if (isset($cart_item['line_total']) && $cart_item['line_total'] > 0) {
+        // Bail early - only free samples count. Large samples carry a price and
+        // are deliberately unlimited. is_free_sample() already checks the price,
+        // so there is no need to look at line_total.
+        if (empty($product) || !\Theme\WooCommerce\Utils::is_free_sample($product)) {
             return $samples_quantity;
         }
 
         // Carry the quantity of samples.
-        return $samples_quantity + (int) $cart_item['quantity'];
+        return $samples_quantity + (int) ($cart_item['quantity'] ?? 1);
     }, 0);
+}
+
+/**
+ * Resolve the product a cart item refers to.
+ *
+ * Sample links pass the variation ID as add-to-cart, which WooCommerce stores as
+ * product_id with variation_id 0. Anything added as parent + variation stores
+ * both. This handles either shape.
+ *
+ * @param array $cart_item A WooCommerce cart item.
+ * @return \WC_Product|null
+ */
+function get_cart_item_product(array $cart_item): ?\WC_Product
+{
+    $id = !empty($cart_item['variation_id']) ? $cart_item['variation_id'] : ($cart_item['product_id'] ?? 0);
+
+    if (empty($id)) {
+        return null;
+    }
+
+    $product = \wc_get_product($id);
+
+    return $product instanceof \WC_Product ? $product : null;
 }
