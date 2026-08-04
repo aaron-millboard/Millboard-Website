@@ -96,7 +96,8 @@ class Map {
         // list has to be priced for that to be reliable rather than just the first
         // screenful. Capped because each chunk is a billed request and nobody
         // scrolls past this; anything beyond keeps straight-line ordering.
-        this.ROAD_DISTANCE_MAX_DESTINATIONS = 100;
+        // Held at 50, i.e. two requests per search, to keep Routes API spend down.
+        this.ROAD_DISTANCE_MAX_DESTINATIONS = 50;
 
         // Result grading (brief §2/§3).
         this.EC_SURFACE_RADIUS_MILES = 30; // Experience Centres within this range surface first.
@@ -1155,14 +1156,18 @@ let markerHtml = `
         const listingEl = data.listingElement;
 
         const isExperienceCentre = data.postType === 'experience_centre';
-        const isPreferred = listingEl
-            && listingEl.getAttribute('data-map-item-preferred') === '1';
+        // data-map-item-priority, not -preferred: the priority band covers a
+        // distributor flagged as a preferred stockist AND an installer flagged as
+        // Advanced. Reading the distributor-only flag meant Advanced installers were
+        // never promoted.
+        const isPrioritised = listingEl
+            && listingEl.getAttribute('data-map-item-priority') === '1';
 
         if (isExperienceCentre && this.getSortDistance(marker) <= this.EC_SURFACE_RADIUS_MILES) {
             return 0;
         }
 
-        if (isPreferred) {
+        if (isPrioritised) {
             return 1;
         }
 

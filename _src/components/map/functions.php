@@ -283,6 +283,16 @@ function get_item_data($args): array|null
         $holds_stock = !empty(\get_field('holds_stock', $wp_post_id));
         $today_hours = get_todays_opening_hours(\get_field('opening_hours', $wp_post_id));
 
+        // The priority band the listing sort uses (see getListingRank in Map.js).
+        //
+        // Each partner type carries its tier in a different field: preferred_stockist
+        // on distributors, advanced_installer on installers. The sort only ever read
+        // the distributor one, so an Advanced installer could never outrank an
+        // Approved one in the finder no matter how it was flagged. This carries
+        // whichever applies, and stays separate from `preferred` so that keeps its
+        // distributor-only meaning for anything else reading it.
+        $prioritised = $preferred || $advanced_installer;
+
         $items[] = [
             'id' => $wp_post_id,
             'title' => $wp_post->post_title,
@@ -311,6 +321,7 @@ function get_item_data($args): array|null
                 'data-map-item-lng' => $lng,
                 'data-map-item-post-type' => $post_type,
                 'data-map-item-preferred' => $preferred ? '1' : null,
+                'data-map-item-priority' => $prioritised ? '1' : null,
                 'data-map-item-has-display' => $has_display ? '1' : null,
             ],
         ];
