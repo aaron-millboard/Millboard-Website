@@ -315,17 +315,18 @@ export default class SampleBasket {
         if (!this.bar) return;
 
         const count = this.count || 0;
+        const target = this.bar.querySelector('.product-samples__bar__count');
 
         if (!count) {
+            // Clear the text as well as hiding, so a stale count can't flash the
+            // next time the bar is shown.
+            target.textContent = '';
             this.bar.setAttribute('hidden', 'hidden');
             return;
         }
 
         this.bar.removeAttribute('hidden');
-        this.bar.querySelector('.product-samples__bar__count').textContent = this.config.i18n.chosen.replace(
-            '{count}',
-            count,
-        );
+        target.textContent = this.config.i18n.chosen.replace('{count}', count);
     }
 
     /**
