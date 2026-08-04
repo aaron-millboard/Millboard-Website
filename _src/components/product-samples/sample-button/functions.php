@@ -149,27 +149,20 @@ function filter_args(array $args): ?array
             'add-to-cart' => $product_id,
         ], '');
 
+        // Built from the same three values handed to the script above, so the
+        // visible label and the state it restores after a removal cannot drift.
         $args['content'] = \Granola\Component::get('element', [
-            'content' => !empty($sample_size) ? sprintf(
-                // translators: Sample type.
-                \__('Add %s sample', 'granola'),
-                strtolower($sample_size),
-            ) : \__('Add sample', 'granola'),
+            'content' => $add_label,
             'classes' => [
                 'product-samples__button__content',
             ],
         ]) . \Granola\Component::get('element', [
-            'content' => sprintf(
-                // translators: 1: Product length. 2: Product width.
-                \__('%1$smm x %2$smm', 'granola'),
-                $dimensions['length'],
-                $dimensions['width'],
-            ),
+            'content' => $add_dimensions,
             'classes' => [
                 'product-samples__button__dimensions',
             ],
         ]) . \Granola\Component::get('element', [
-            'content' => !empty($price) ? \get_woocommerce_currency_symbol() . $price : \__('Free', 'granola'),
+            'content' => $add_price,
             'classes' => [
                 'product-samples__button__price',
             ],
