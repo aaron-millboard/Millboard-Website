@@ -65,6 +65,40 @@
     }
 }
 
+// Limit notice, pinned to the button the visitor just pressed.
+//
+// Square corners and brand tones only - theme.json disables border radius and no
+// other component uses one.
+.product-samples__limit {
+    position: fixed;
+    z-index: 30;
+    max-width: #{px-to-rem(260)};
+    padding: var(--space--3xs) var(--space--2xs);
+    background-color: var(--color--brand-5);
+    color: var(--color--brand-2);
+    font-size: #{px-to-rem(14)};
+    line-height: 1.35;
+    text-align: center;
+
+    // Arrow touching the button.
+    &::after {
+        position: absolute;
+        bottom: #{px-to-rem(-4)};
+        left: 50%;
+        width: #{px-to-rem(8)};
+        height: #{px-to-rem(8)};
+        margin-left: #{px-to-rem(-4)};
+        background-color: inherit;
+        content: '';
+        transform: rotate(45deg);
+    }
+
+    &--below::after {
+        top: #{px-to-rem(-4)};
+        bottom: auto;
+    }
+}
+
 // Sticky basket bar.
 //
 // Sample archives run to 20+ screens on mobile, so once a visitor has chosen a
@@ -81,8 +115,9 @@
     align-items: center;
     justify-content: space-between;
     padding: var(--space--2xs) var(--space--xs);
-    background-color: var(--color--background, #fff);
-    box-shadow: 0 #{px-to-rem(-2)} #{px-to-rem(12)} rgba(0, 0, 0, 0.15);
+    border-top: #{px-to-rem(1)} solid var(--color--brand-5);
+    background-color: var(--color--brand-1);
+    color: var(--color--foreground);
 
     &[hidden] {
         display: none;
@@ -98,14 +133,14 @@
     }
 
     &--error &__count {
-        color: var(--color--error, #b3261e);
+        color: var(--color--brand-5);
     }
 
     @include mq(medium) {
         right: var(--space--xs);
-        left: auto;
         bottom: var(--space--xs);
-        border-radius: #{px-to-rem(4)};
+        left: auto;
         gap: var(--space--xs);
+        border: #{px-to-rem(1)} solid var(--color--brand-5);
     }
 }

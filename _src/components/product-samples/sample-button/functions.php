@@ -86,9 +86,30 @@ function filter_args(array $args): ?array
     // feature is on, so the markup is unchanged for sites still opted out.
     $ajax_basket = \Granola\Components\ProductSamples\ajax_sample_basket_enabled();
 
+    // The three pieces of the addable label. Held separately so they can also be
+    // handed to the script, which needs to rebuild this state after a removal -
+    // including for buttons that were already in the basket on page load.
+    $add_label = !empty($sample_size) ? sprintf(
+        // translators: Sample type.
+        \__('Add %s sample', 'granola'),
+        strtolower($sample_size),
+    ) : \__('Add sample', 'granola');
+
+    $add_dimensions = sprintf(
+        // translators: 1: Product length. 2: Product width.
+        \__('%1$smm x %2$smm', 'granola'),
+        $dimensions['length'],
+        $dimensions['width'],
+    );
+
+    $add_price = !empty($price) ? \get_woocommerce_currency_symbol() . $price : \__('Free', 'granola');
+
     if ($ajax_basket) {
         $args['attributes']['data-sample-product-id'] = $product_id;
         $args['attributes']['data-sample-action'] = !empty($product_cart_id) ? 'remove' : 'add';
+        $args['attributes']['data-sample-label'] = $add_label;
+        $args['attributes']['data-sample-dimensions'] = $add_dimensions;
+        $args['attributes']['data-sample-price'] = $add_price;
     }
 
     // Generate a "remove from cart" url for small samples that are already in the cart.
