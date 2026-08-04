@@ -105,10 +105,11 @@ class Map {
         // Ceiling on how far the map zooms in when framing a search, so a town with
         // three branches close together does not land on street level.
         this.SEARCH_FIT_MAX_ZOOM = 11;
-        // How long the listing order waits for driving times before going in on
-        // straight-line distance instead. Long enough for a warm cache and a normal
-        // round trip, short enough that a slow service does not look broken.
-        this.ROAD_DISTANCE_TIMEOUT_MS = 3500;
+        // Abort a matrix request that hangs, so the listing order is never waiting on
+        // a call that will never answer. Generous on purpose: a cold search on a slow
+        // host can take ten seconds or more, and cutting it short only to re-sort when
+        // it finally lands is exactly the visible reorder this is meant to avoid.
+        this.ROAD_DISTANCE_REQUEST_TIMEOUT_MS = 20000;
         this.showMoreButton = null;
         this.currentOverflowCount = 0;
 
@@ -985,11 +986,15 @@ let markerHtml = `
      * swapped it for one near Lille a second later. When times are on their way the
      * order is held back until they land, so the list settles in one go.
      *
-     * The wait is bounded. If the routing service is slow or fails, the straight-line
-     * order goes in anyway rather than leaving the list stuck; if the times then turn up
-     * late, updateRoadDistances re-sorts, which is the one case a reorder is still
-     * visible. Repeat searches are near instant because the endpoint caches each
-     * origin-destination pair for 30 days.
+     * There is deliberately no timer racing the fetch. An earlier version gave up after
+     * 3.5 seconds and sorted on straight-line distance, but a cold search on a slow host
+     * takes longer than that, so the timer fired, the list sorted, and then the times
+     * landed and re-sorted it: the very reorder this is meant to remove. The request
+     * itself is bounded instead (see fetchRoadDistances), and it resolves either way, so
+     * the sort below runs exactly once whether the times arrived or not.
+     *
+     * Repeat searches are quick because the endpoint caches each origin-destination pair
+     * for 30 days; it is the first search of a new area that waits.
      */
     async orderListings(filteredLayers) {
         if (!this.willFetchRoadDistances(filteredLayers)) {
@@ -1000,10 +1005,7 @@ let markerHtml = `
 
         this.setListingsBusy(true);
 
-        await Promise.race([
-            this.updateRoadDistances(filteredLayers),
-            new Promise((resolve) => setTimeout(resolve, this.ROAD_DISTANCE_TIMEOUT_MS)),
-        ]);
+        await this.updateRoadDistances(filteredLayers);
 
         // Sort here too, because updateRoadDistances returns without sorting when a
         // newer search has superseded it, and the list must never be left unsorted.
@@ -1110,10 +1112,12 @@ let markerHtml = `
         }
 
         // Road distances can push a result outside the chosen radius, so the radius
-        // has to be re-applied before re-ordering.
+        // has to be re-applied before the ordering runs.
         this.applyRoadDistanceRadius();
 
-        this.sortlistingEls(this.filteredMarkersGroup.getLayers());
+        // Deliberately does NOT sort. orderListings, the only caller, sorts once after
+        // awaiting this. Sorting here as well rebuilt the listing DOM twice for the same
+        // final order, which is the flash this whole change exists to remove.
     }
 
     /**
@@ -1126,10 +1130,16 @@ let markerHtml = `
             return {lat: latLng.lat, lng: latLng.lng};
         });
 
+        // fetch has no timeout of its own, and the listing order waits on this, so a
+        // request that never answers would leave the list dimmed indefinitely.
+        const controller = new AbortController();
+        const abortTimer = setTimeout(() => controller.abort(), this.ROAD_DISTANCE_REQUEST_TIMEOUT_MS);
+
         try {
             const response = await fetch(this.roadDistancesEndpoint, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
+                signal: controller.signal,
                 body: JSON.stringify({
                     origin: {
                         lat: this.LMAP_DISTANCE_CENTER.lat,
@@ -1148,6 +1158,8 @@ let markerHtml = `
             console.log(e);
 
             return null;
+        } finally {
+            clearTimeout(abortTimer);
         }
     }
 
