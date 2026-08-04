@@ -105,6 +105,10 @@ class Map {
         // Ceiling on how far the map zooms in when framing a search, so a town with
         // three branches close together does not land on street level.
         this.SEARCH_FIT_MAX_ZOOM = 11;
+        // How long the listing order waits for driving times before going in on
+        // straight-line distance instead. Long enough for a warm cache and a normal
+        // round trip, short enough that a slow service does not look broken.
+        this.ROAD_DISTANCE_TIMEOUT_MS = 3500;
         this.showMoreButton = null;
         this.currentOverflowCount = 0;
 
@@ -873,8 +877,7 @@ let markerHtml = `
             this.fitToResults(filteredLayers);
         }
 
-        this.sortlistingEls(filteredLayers);
-        this.updateRoadDistances(filteredLayers);
+        this.orderListings(filteredLayers);
     }
 
     filterByDistanceAndPostType(shouldAdjustMapBounds = true) {
@@ -928,8 +931,7 @@ let markerHtml = `
             this.fitToResults(filteredLayers);
         }
 
-        this.sortlistingEls(filteredLayers);
-        this.updateRoadDistances(filteredLayers);
+        this.orderListings(filteredLayers);
     }
 
     /**
@@ -975,6 +977,59 @@ let markerHtml = `
      * fetches road distances for the nearest listings (the ones users act on)
      * and re-sorts. On any failure the straight-line order simply remains.
      */
+    /**
+     * Orders the listings once rather than twice.
+     *
+     * Sorting on straight-line distance and then re-sorting when driving times arrived
+     * made the list visibly jump: a Calais search showed a Kent branch at the top, then
+     * swapped it for one near Lille a second later. When times are on their way the
+     * order is held back until they land, so the list settles in one go.
+     *
+     * The wait is bounded. If the routing service is slow or fails, the straight-line
+     * order goes in anyway rather than leaving the list stuck; if the times then turn up
+     * late, updateRoadDistances re-sorts, which is the one case a reorder is still
+     * visible. Repeat searches are near instant because the endpoint caches each
+     * origin-destination pair for 30 days.
+     */
+    async orderListings(filteredLayers) {
+        if (!this.willFetchRoadDistances(filteredLayers)) {
+            this.sortlistingEls(filteredLayers);
+
+            return;
+        }
+
+        this.setListingsBusy(true);
+
+        await Promise.race([
+            this.updateRoadDistances(filteredLayers),
+            new Promise((resolve) => setTimeout(resolve, this.ROAD_DISTANCE_TIMEOUT_MS)),
+        ]);
+
+        // Sort here too, because updateRoadDistances returns without sorting when a
+        // newer search has superseded it, and the list must never be left unsorted.
+        this.sortlistingEls(this.filteredMarkersGroup.getLayers());
+        this.setListingsBusy(false);
+    }
+
+    /**
+     * Mirrors the guard at the top of updateRoadDistances, so the caller knows whether
+     * driving times are actually coming before it decides to wait for them.
+     */
+    willFetchRoadDistances(filteredLayers) {
+        return Boolean(this.roadDistancesEndpoint)
+            && this.hasUserSearchLocation
+            && filteredLayers.length > 0;
+    }
+
+    setListingsBusy(isBusy) {
+        if (!this.listingContainer) {
+            return;
+        }
+
+        this.listingContainer.classList.toggle('map__items--busy', isBusy);
+        this.listingContainer.setAttribute('aria-busy', isBusy ? 'true' : 'false');
+    }
+
     async updateRoadDistances(filteredLayers) {
         if (!this.roadDistancesEndpoint || !this.hasUserSearchLocation || !filteredLayers.length) {
             return;

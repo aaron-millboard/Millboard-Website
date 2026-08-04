@@ -294,6 +294,14 @@
         }
     }
 
+    // Held back while driving times are being fetched, so the order that is about to
+    // change does not read as the final answer. Dimmed rather than emptied, because
+    // the right branches are already listed and only their order is still settling.
+    &__items--busy {
+        opacity: 0.45;
+        transition: opacity 0.15s ease;
+    }
+
     // ---- Filter chips ----
     &__filters {
         display: flex;
