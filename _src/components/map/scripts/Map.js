@@ -102,6 +102,9 @@ class Map {
         // Result grading (brief §2/§3).
         this.EC_SURFACE_RADIUS_MILES = 30; // Experience Centres within this range surface first.
         this.TOP_RESULTS = 3; // List view shows this many by default; the rest sit behind "Show more".
+        // Ceiling on how far the map zooms in when framing a search, so a town with
+        // three branches close together does not land on street level.
+        this.SEARCH_FIT_MAX_ZOOM = 11;
         this.showMoreButton = null;
         this.currentOverflowCount = 0;
 
@@ -833,10 +836,7 @@ let markerHtml = `
         // Reset filters markers.
         this.filteredMarkersGroup = new L.FeatureGroup();
 
-        // Start a bounded area.
         const distance = parseFloat(this.distanceSelect.value) || 0;
-        const bounds = L.latLngBounds();
-        bounds.extend(this.LMAP_DISTANCE_CENTER);
 
         // Process all markers.
         this.allMarkersGroup.eachLayer((marker) => {
@@ -850,7 +850,6 @@ let markerHtml = `
                 this.filteredMarkersGroup.addLayer(marker);
                 marker.options.themeData.listingElement.removeAttribute('hidden', '');
                 marker.options.themeData.distanceInMiles = distanceInMiles;
-                bounds.extend(marker.getLatLng());
             } else {
                 marker.options.themeData.listingElement.setAttribute('hidden', '');
             }
@@ -870,7 +869,7 @@ let markerHtml = `
         this.updateResultsCount(markerCount);
 
         if (shouldAdjustMapBounds) {
-            this.lmap.fitBounds(bounds);
+            this.fitToResults(filteredLayers);
         }
 
         this.sortlistingEls(filteredLayers);
@@ -888,10 +887,7 @@ let markerHtml = `
         // Reset filters markers.
         this.filteredMarkersGroup = new L.FeatureGroup();
 
-        // Start a bounded area.
         const distance = parseFloat(this.distanceSelect.value) || 0;
-        const bounds = L.latLngBounds();
-        bounds.extend(this.LMAP_DISTANCE_CENTER);
 
         // Process all markers.
         this.allMarkersGroup.eachLayer((marker) => {
@@ -912,7 +908,6 @@ let markerHtml = `
                 this.filteredMarkersGroup.addLayer(marker);
                 marker.options.themeData.listingElement.removeAttribute('hidden', '');
                 marker.options.themeData.distanceInMiles = distanceInMiles;
-                bounds.extend(marker.getLatLng());
             } else {
                 marker.options.themeData.listingElement.setAttribute('hidden', '');
             }
@@ -928,11 +923,40 @@ let markerHtml = `
         this.updateResultsCount(markerCount);
 
         if (shouldAdjustMapBounds) {
-            this.lmap.fitBounds(bounds);
+            this.fitToResults(filteredLayers);
         }
 
         this.sortlistingEls(filteredLayers);
         this.updateRoadDistances(filteredLayers);
+    }
+
+    /**
+     * Frames the map on the results.
+     *
+     * After a user search, fits the searched point plus only the nearest few results.
+     * Fitting every visible marker was fine when a site held only its own country's
+     * partners, but every locale now carries all of them, so "Any distance" spanned
+     * the globe: searching Calais zoomed out to the whole world instead of showing
+     * northern France. With no user search, the default locale view still frames
+     * everything.
+     */
+    fitToResults(markers) {
+        if (!markers.length) {
+            return;
+        }
+
+        const bounds = L.latLngBounds();
+        bounds.extend(this.LMAP_DISTANCE_CENTER);
+
+        const framed = this.hasUserSearchLocation
+            ? [...markers]
+                .sort((a, b) => a.options.themeData.distanceInMiles - b.options.themeData.distanceInMiles)
+                .slice(0, this.TOP_RESULTS)
+            : markers;
+
+        framed.forEach((marker) => bounds.extend(marker.getLatLng()));
+
+        this.lmap.fitBounds(bounds, {maxZoom: this.SEARCH_FIT_MAX_ZOOM});
     }
 
     calcLatLngDistanceMilesFromMapCenter(latLng) {
