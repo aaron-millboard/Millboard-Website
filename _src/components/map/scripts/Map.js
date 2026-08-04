@@ -432,11 +432,20 @@ const markerType = listingData.postType
 // Example:
 // Installer -> installer-marker.png
 // Experience Centre -> experience-centre-marker.png
-const markerIconUrl = `/wp-content/themes/millboard/assets/images/icons/${markerType}-marker.png`;
+// Advanced installers get their own gold "AI" pin, so the map matches the
+// "Approved / Advanced" key the same way the distributor types do.
+const isAdvancedInstaller = el.dataset.mapItemAdvancedInstaller === '1';
+// PHP resolves the pin (including its cache-busting version), so prefer that.
+// The fallback keeps older markup working if the attribute is ever absent.
+const markerFile = isAdvancedInstaller ? 'installer-advanced' : markerType;
+const SVG_PIN_TYPES = ['installer', 'installer-advanced', 'distributor', 'experience_centre', 'showroom'];
+const markerExtension = SVG_PIN_TYPES.includes(markerFile) ? 'svg' : 'png';
+const markerIconUrl = el.dataset.mapItemMarkerUrl
+    || `/wp-content/themes/millboard/assets/images/icons/${markerFile}-marker.${markerExtension}`;
 
 let markerHtml = `
     <span class="leaflet-marker-icon__icon-container" aria-hidden="true">
-        <img 
+        <img
             class="leaflet-marker-icon__icon"
             src="${markerIconUrl}"
             alt="${listingData.postType} marker"
@@ -461,6 +470,7 @@ let markerHtml = `
                     listingElement: el,
                     distanceInMiles: this.calcLatLngDistanceMilesFromMapCenter(listingLatLng),
                     postType: listingData.postType,
+                    advancedInstaller: isAdvancedInstaller,
                 },
             });
 
@@ -539,9 +549,11 @@ let markerHtml = `
     }
 
     /**
-     * Tracks clicks on the popup "Directions" and "Contact us" buttons by
-     * pushing a custom event to the GTM dataLayer (which forwards to GA4).
-     * Delegated on the map root so it also catches dynamically-created popups.
+     * Tracks profile click-throughs by pushing a `map_listing_click` custom
+     * event to the GTM dataLayer (which forwards to GA4). Covers both the popup
+     * "Directions" / "Contact us" buttons and the equivalent "More info" link in
+     * the left sidebar, so the same action is measured wherever it is clicked.
+     * Delegated on the map root so it also catches popups created after load.
      */
     initClickTracking() {
         if (!this.el) {
@@ -549,19 +561,43 @@ let markerHtml = `
         }
 
         this.el.addEventListener('click', (event) => {
+            // Popup buttons carry their own tracking data attributes.
             const button = event.target.closest('.map__marker-tooltip__btn');
 
-            if (!button || !this.el.contains(button)) {
+            if (button && this.el.contains(button)) {
+                this.pushListingClick(
+                    button.getAttribute('data-map-action') || '',
+                    button.getAttribute('data-map-listing-name') || '',
+                    button.getAttribute('data-map-listing-type') || ''
+                );
                 return;
             }
 
-            window.dataLayer = window.dataLayer || [];
-            window.dataLayer.push({
-                event: 'map_listing_click',
-                map_action: button.getAttribute('data-map-action') || '',
-                map_listing_name: button.getAttribute('data-map-listing-name') || '',
-                map_listing_type: button.getAttribute('data-map-listing-type') || '',
-            });
+            // Sidebar card actions (email / phone / more info / directions).
+            // Each carries its own data-map-action; the name and type come from
+            // the listing row rather than the link itself.
+            const cardAction = event.target.closest('.map__listing__action');
+
+            if (cardAction && this.el.contains(cardAction)) {
+                const listingRow = cardAction.closest('.map__listing');
+                const titleEl = listingRow ? listingRow.querySelector('.map__listing__title') : null;
+
+                this.pushListingClick(
+                    cardAction.getAttribute('data-map-action') || '',
+                    titleEl ? titleEl.textContent.trim() : '',
+                    listingRow ? (listingRow.dataset.mapItemPostType || '') : ''
+                );
+            }
+        });
+    }
+
+    pushListingClick(action, name, type) {
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({
+            event: 'map_listing_click',
+            map_action: action,
+            map_listing_name: name,
+            map_listing_type: type,
         });
     }
 
@@ -670,6 +706,32 @@ let markerHtml = `
             const buttonValue = button.dataset.filterValue || '';
             button.classList.toggle('map__filter--active', buttonValue === this.activePostTypeFilter);
         });
+    }
+
+    /**
+     * Does a marker pass the active category filter?
+     *
+     * The distributor map filters by post type; the installer map has a single
+     * post type and filters by tier instead ("installer-approved" /
+     * "installer-advanced"). Both go through here so the filter bar, the key and
+     * the listing/marker filtering stay one mechanism.
+     */
+    matchesCategoryFilter(marker) {
+        const active = this.activePostTypeFilter;
+
+        if (active === '') {
+            return true;
+        }
+
+        if (active === 'installer-advanced') {
+            return marker.options.themeData.advancedInstaller === true;
+        }
+
+        if (active === 'installer-approved') {
+            return marker.options.themeData.advancedInstaller !== true;
+        }
+
+        return marker.options.themeData.postType === active;
     }
 
     initTablist() {
@@ -782,7 +844,6 @@ let markerHtml = `
             const distanceInMiles = this.calcLatLngDistanceMilesFromMapCenter(marker.getLatLng());
             marker.options.themeData.distanceInMiles = distanceInMiles;
             marker.options.themeData.roadDistanceInMiles = null;
-            marker.options.themeData.roadDurationInSeconds = null;
             marker.options.themeData.roadDistanceUnroutable = false;
 
             if (distance === 0 || distanceInMiles <= distance) {
@@ -834,15 +895,14 @@ let markerHtml = `
             const distanceInMiles = this.calcLatLngDistanceMilesFromMapCenter(marker.getLatLng());
             marker.options.themeData.distanceInMiles = distanceInMiles;
             marker.options.themeData.roadDistanceInMiles = null;
-            marker.options.themeData.roadDurationInSeconds = null;
             marker.options.themeData.roadDistanceUnroutable = false;
 
             // Check distance filter
             const passesDistanceFilter = distance === 0 || distanceInMiles <= distance;
-            
-            // Check post type filter
-            const passesPostTypeFilter = this.activePostTypeFilter === '' || marker.options.themeData.postType === this.activePostTypeFilter;
-            
+
+            // Check category filter (post type, or installer tier)
+            const passesPostTypeFilter = this.matchesCategoryFilter(marker);
+
             // Show/hide based on both filters
             if (passesDistanceFilter && passesPostTypeFilter) {
                 this.filteredMarkersGroup.addLayer(marker);
@@ -968,14 +1028,6 @@ let markerHtml = `
                 if (result && Number.isFinite(result.meters)) {
                     layer.options.themeData.roadDistanceInMiles =
                         Math.round(this.METERS_TO_MILES_RATIO * result.meters * 100) / 100;
-
-                    // Travel time is what the ordering actually uses. Road mileage
-                    // alone put Kent above Lille for a Calais search, because Google
-                    // routes through the Eurotunnel: 52 road miles to Kent against 73
-                    // to Lille, but roughly two and a half hours against one.
-                    if (Number.isFinite(result.seconds)) {
-                        layer.options.themeData.roadDurationInSeconds = result.seconds;
-                    }
                 } else {
                     layer.options.themeData.roadDistanceUnroutable = true;
                 }
@@ -1102,48 +1154,6 @@ let markerHtml = `
             : data.distanceInMiles;
     }
 
-    /**
-     * Travel time in seconds, or null when it is not known for this marker.
-     *
-     * This, not mileage, is what "closest" means to someone driving. Road mileage put
-     * Kent above Lille for a Calais search because Google routes through the
-     * Eurotunnel: 52 road miles to Kent against 73 to Lille, but about two and a half
-     * hours against one. Only the priced markers have a time, so ordering falls back
-     * to mileage for the rest (see sortlistingEls).
-     */
-    getSortDuration(marker) {
-        const data = marker.options.themeData;
-
-        // An unreachable branch deliberately returns null rather than Infinity, so it
-        // drops to the mileage tier where getSortDistance gives it Infinity and it
-        // lands last of all. Returning Infinity here would have kept it in the timed
-        // tier, ahead of branches that ARE reachable but were not priced.
-        if (data.roadDistanceUnroutable) {
-            return null;
-        }
-
-        return Number.isFinite(data.roadDurationInSeconds) ? data.roadDurationInSeconds : null;
-    }
-
-    /**
-     * Human travel time, e.g. "2 hr 35 min" or "45 min".
-     */
-    formatDuration(seconds) {
-        if (!Number.isFinite(seconds)) {
-            return '';
-        }
-
-        const totalMinutes = Math.max(1, Math.round(seconds / 60));
-        const hours = Math.floor(totalMinutes / 60);
-        const minutes = totalMinutes % 60;
-
-        if (!hours) {
-            return `${minutes} min`;
-        }
-
-        return minutes ? `${hours} hr ${minutes} min` : `${hours} hr`;
-    }
-
     sortlistingEls(filteredLayers) {
         // Grade results (brief §2/§3): Experience Centres within range first,
         // then preferred stockists, then everything else — each ordered by
@@ -1153,26 +1163,6 @@ let markerHtml = `
 
             if (rankDiff !== 0) {
                 return rankDiff;
-            }
-
-            // Travel time first, because that is what "closest" means when driving.
-            // Only the priced markers have a time, and those are the nearest by
-            // straight line, so anything without one sorts after and falls back to
-            // mileage among itself. Mixing the two units in one comparison would be
-            // meaningless.
-            const durationA = this.getSortDuration(a);
-            const durationB = this.getSortDuration(b);
-
-            if (durationA !== null && durationB !== null) {
-                return durationA - durationB;
-            }
-
-            if (durationA !== null) {
-                return -1;
-            }
-
-            if (durationB !== null) {
-                return 1;
             }
 
             return this.getSortDistance(a) - this.getSortDistance(b);
@@ -1331,22 +1321,10 @@ let markerHtml = `
         }
 
         const roadMiles = marker.options.themeData.roadDistanceInMiles;
-        const distMiles = marker.options.themeData.distanceInMiles;
-        const driveTime = this.formatDuration(marker.options.themeData.roadDurationInSeconds);
-
-        // Show the drive time alongside the mileage, because the list is ordered by
-        // time. Without it a Calais search reads as though it is out of order: Kent
-        // at 52 road miles sits below Lille at 73, which only makes sense once you
-        // can see Kent is two and a half hours away and Lille is one.
-        let distText;
-
-        if (Number.isFinite(roadMiles) && driveTime) {
-            distText = `${roadMiles} miles by road \u{00B7} ${driveTime}`; // TODO: translate
-        } else if (Number.isFinite(roadMiles)) {
-            distText = `${roadMiles} miles by road`; // TODO: translate
-        } else {
-            distText = `${distMiles} miles`; // TODO: translate
-        }
+        const distMiles = marker.options.themeData.distanceInMiles
+        const distText = Number.isFinite(roadMiles)
+            ? roadMiles + ' miles by road' // TODO: translate
+            : distMiles + ' miles away'; // TODO: translate
 
         let distanceEl = listingMetaEl.querySelector('.map__listing__distance');
         if (!distanceEl) {
@@ -1468,13 +1446,9 @@ let markerHtml = `
         const roadDistanceInMiles = marker.options.themeData.roadDistanceInMiles;
         const distanceInMiles = marker.options.themeData.distanceInMiles;
 
-        const driveTime = this.formatDuration(marker.options.themeData.roadDurationInSeconds);
-
         let distance = '';
 
-        if (Number.isFinite(roadDistanceInMiles) && driveTime) {
-            distance = `${roadDistanceInMiles} miles by road \u{00B7} ${driveTime}`;
-        } else if (Number.isFinite(roadDistanceInMiles)) {
+        if (Number.isFinite(roadDistanceInMiles)) {
             distance = `${roadDistanceInMiles} miles by road`;
         } else if (Number.isFinite(distanceInMiles)) {
             distance = `${distanceInMiles} miles away`;
@@ -1623,13 +1597,22 @@ let markerHtml = `
         let countryCode = (this.localeCountryCode || 'gb').toUpperCase();
 
         // Guernsey (GG) and Jersey (JE) are Crown Dependencies, not part of
-        // Great Britain (GB). Override the country component so Google geocodes
-        // them correctly instead of resolving to a GB location.
+        // Great Britain (GB). Bias towards them explicitly so Google geocodes
+        // them correctly instead of resolving to a mainland GB location.
         if (countryCode === 'GB') {
             countryCode = this.getChannelIslandCountryCode(normalizedData) || countryCode;
         }
 
-        const response = fetch(`https://maps.googleapis.com/maps/api/geocode/json?components=country:${countryCode}&address=${encodeURI(normalizedData)}&key=${this.googleApiKey}`)
+        // Bias the geocode to the current locale's country, but do NOT restrict
+        // to it. The partner directory is global: every locale lists all
+        // partners worldwide, so a hard `components=country:` filter made
+        // overseas records unreachable — searching "Bordeaux" on /en-gb/ was
+        // forced to return a Great Britain match and landed in Lanarkshire.
+        // `region` is a preference, so "Manchester" still resolves to England
+        // for a UK visitor while "Bordeaux" correctly resolves to France.
+        const regionBias = countryCode.toLowerCase();
+
+        const response = fetch(`https://maps.googleapis.com/maps/api/geocode/json?region=${regionBias}&address=${encodeURI(normalizedData)}&key=${this.googleApiKey}`)
             .then((r) => {
                 if (!r.ok) {
                     throw Error(r);
@@ -1648,7 +1631,8 @@ let markerHtml = `
      * Returns the ISO country code for Channel Island / Isle of Man queries
      * when the base locale is GB, or null if the query is not for these territories.
      * Google treats GG (Guernsey), JE (Jersey) and IM (Isle of Man) as separate
-     * country codes from GB, so a country:GB restriction causes misresolution.
+     * country codes from GB, so a gb region bias alone pulls these queries to
+     * the mainland. Returning the specific code biases them correctly.
      */
     getChannelIslandCountryCode(query) {
         if (/^GY\d/i.test(query) || /\bguernsey\b/i.test(query)) return 'GG';
