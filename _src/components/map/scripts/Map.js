@@ -88,6 +88,15 @@ class Map {
         this.hasUserSearchLocation = false;
         this.roadDistanceRequestId = 0;
         this.ROAD_DISTANCE_LIMIT = 25; // Routes API matrix cap per request.
+        // Overall ceiling on destinations we price per search, batched in
+        // ROAD_DISTANCE_LIMIT chunks. Straight-line distance used to decide the
+        // radius filter, which meant a branch on the far side of a sea counted as
+        // near: 34 miles Calais to Dover as the crow flies, about 90 by road. Road
+        // distance now drives both the ordering and the radius, so enough of the
+        // list has to be priced for that to be reliable rather than just the first
+        // screenful. Capped because each chunk is a billed request and nobody
+        // scrolls past this; anything beyond keeps straight-line ordering.
+        this.ROAD_DISTANCE_MAX_DESTINATIONS = 100;
 
         // Result grading (brief §2/§3).
         this.EC_SURFACE_RADIUS_MILES = 30; // Experience Centres within this range surface first.
@@ -834,6 +843,7 @@ let markerHtml = `
             const distanceInMiles = this.calcLatLngDistanceMilesFromMapCenter(marker.getLatLng());
             marker.options.themeData.distanceInMiles = distanceInMiles;
             marker.options.themeData.roadDistanceInMiles = null;
+            marker.options.themeData.roadDistanceUnroutable = false;
 
             if (distance === 0 || distanceInMiles <= distance) {
                 this.filteredMarkersGroup.addLayer(marker);
@@ -856,19 +866,7 @@ let markerHtml = `
         const filteredLayers = this.filteredMarkersGroup.getLayers();
         const markerCount = filteredLayers.length;
 
-        // Update listings heading content.
-        if (markerCount === 1) {
-            this.listingsHeading.textContent = `Displaying: ${markerCount} result`
-        } else {
-            this.listingsHeading.textContent = `Displaying: ${markerCount} results`
-        }
-
-        // Update no content element classes.
-        if (markerCount > 0) {
-            this.listingContainer.classList.remove('no-results');
-        } else {
-            this.listingContainer.classList.add('no-results');
-        }
+        this.updateResultsCount(markerCount);
 
         if (shouldAdjustMapBounds) {
             this.lmap.fitBounds(bounds);
@@ -900,6 +898,7 @@ let markerHtml = `
             const distanceInMiles = this.calcLatLngDistanceMilesFromMapCenter(marker.getLatLng());
             marker.options.themeData.distanceInMiles = distanceInMiles;
             marker.options.themeData.roadDistanceInMiles = null;
+            marker.options.themeData.roadDistanceUnroutable = false;
 
             // Check distance filter
             const passesDistanceFilter = distance === 0 || distanceInMiles <= distance;
@@ -925,19 +924,7 @@ let markerHtml = `
         const filteredLayers = this.filteredMarkersGroup.getLayers();
         const markerCount = filteredLayers.length;
 
-        // Update listings heading content.
-        if (markerCount === 1) {
-            this.listingsHeading.textContent = `Displaying: ${markerCount} result`
-        } else {
-            this.listingsHeading.textContent = `Displaying: ${markerCount} results`
-        }
-
-        // Update no content element classes.
-        if (markerCount > 0) {
-            this.listingContainer.classList.remove('no-results');
-        } else {
-            this.listingContainer.classList.add('no-results');
-        }
+        this.updateResultsCount(markerCount);
 
         if (shouldAdjustMapBounds) {
             this.lmap.fitBounds(bounds);
@@ -970,14 +957,84 @@ let markerHtml = `
 
         const layers = [...filteredLayers]
             .sort((a, b) => a.options.themeData.distanceInMiles - b.options.themeData.distanceInMiles)
-            .slice(0, this.ROAD_DISTANCE_LIMIT);
+            .slice(0, this.ROAD_DISTANCE_MAX_DESTINATIONS);
 
-        const destinations = layers.map((layer) => {
+        // The matrix endpoint takes ROAD_DISTANCE_LIMIT destinations at a time, so
+        // walk the list in chunks. Sent in parallel: they are independent, and doing
+        // them in sequence would make the list visibly re-order several times.
+        const batches = [];
+        for (let i = 0; i < layers.length; i += this.ROAD_DISTANCE_LIMIT) {
+            batches.push(layers.slice(i, i + this.ROAD_DISTANCE_LIMIT));
+        }
+
+        const settled = await Promise.all(batches.map((batch) => this.fetchRoadDistances(batch)));
+
+        // Bail early - a newer search has superseded this request.
+        if (requestId !== this.roadDistanceRequestId) {
+            return;
+        }
+
+        let anyBatchSucceeded = false;
+
+        settled.forEach((results, batchIndex) => {
+            // A failed batch leaves its markers on straight-line distance, which is
+            // the safe fallback. Only a batch that came back can tell us a specific
+            // destination is genuinely unreachable.
+            if (!results || !Array.isArray(results.distances)) {
+                return;
+            }
+
+            // The endpoint seeds every entry as null and fills in what the Routes
+            // API returned, so a null means "no distance". A batch where nothing at
+            // all resolved is far more likely an upstream problem than a whole page
+            // of genuinely unreachable branches, so leave that batch on
+            // straight-line rather than hiding valid results.
+            const resolved = results.distances.filter((r) => r && Number.isFinite(r.meters)).length;
+
+            if (resolved === 0) {
+                return;
+            }
+
+            anyBatchSucceeded = true;
+
+            batches[batchIndex].forEach((layer, index) => {
+                const result = results.distances[index];
+
+                if (result && Number.isFinite(result.meters)) {
+                    layer.options.themeData.roadDistanceInMiles =
+                        Math.round(this.METERS_TO_MILES_RATIO * result.meters * 100) / 100;
+                } else {
+                    layer.options.themeData.roadDistanceUnroutable = true;
+                }
+
+                this.updateMarkerDistanceMeta(layer);
+
+                if (layer.getPopup() && layer.isPopupOpen()) {
+                    layer.setPopupContent(this.getMarkerTooltipHtml(layer));
+                }
+            });
+        });
+
+        if (!anyBatchSucceeded) {
+            return;
+        }
+
+        // Road distances can push a result outside the chosen radius, so the radius
+        // has to be re-applied before re-ordering.
+        this.applyRoadDistanceRadius();
+
+        this.sortlistingEls(this.filteredMarkersGroup.getLayers());
+    }
+
+    /**
+     * One matrix request. Resolves to the parsed body, or null on any failure so the
+     * caller can tell a failed batch apart from an unreachable destination.
+     */
+    async fetchRoadDistances(batch) {
+        const destinations = batch.map((layer) => {
             const latLng = layer.getLatLng();
             return {lat: latLng.lat, lng: latLng.lng};
         });
-
-        let results = null;
 
         try {
             const response = await fetch(this.roadDistancesEndpoint, {
@@ -993,50 +1050,83 @@ let markerHtml = `
             });
 
             if (!response.ok) {
-                throw Error(response);
+                throw Error(response.status);
             }
 
-            results = await response.json();
+            return await response.json();
         } catch (e) {
             console.log(e);
-            return;
+
+            return null;
         }
-
-        // Bail early - a newer search has superseded this request.
-        if (requestId !== this.roadDistanceRequestId) {
-            return;
-        }
-
-        if (!results || !Array.isArray(results.distances)) {
-            return;
-        }
-
-        layers.forEach((layer, index) => {
-            const result = results.distances[index];
-
-            if (result && Number.isFinite(result.meters)) {
-                layer.options.themeData.roadDistanceInMiles =
-                    Math.round(this.METERS_TO_MILES_RATIO * result.meters * 100) / 100;
-            }
-
-            this.updateMarkerDistanceMeta(layer);
-
-            if (layer.getPopup() && layer.isPopupOpen()) {
-                layer.setPopupContent(this.getMarkerTooltipHtml(layer));
-            }
-        });
-
-        this.sortlistingEls(this.filteredMarkersGroup.getLayers());
     }
 
     /**
-     * The distance used for ordering: road distance when known, otherwise
-     * straight-line distance.
+     * Drops results that the chosen radius only admitted on straight-line distance.
+     *
+     * This is what stops a branch across a sea counting as nearby: it is inside the
+     * radius as the crow flies but well outside it by road.
+     */
+    applyRoadDistanceRadius() {
+        const distance = this.distanceSelect ? parseFloat(this.distanceSelect.value) || 0 : 0;
+
+        // "Any distance" has no radius to re-apply; ordering alone handles it.
+        if (!distance) {
+            return;
+        }
+
+        let removed = false;
+
+        this.filteredMarkersGroup.getLayers().forEach((marker) => {
+            if (this.getSortDistance(marker) <= distance) {
+                return;
+            }
+
+            this.filteredMarkersGroup.removeLayer(marker);
+            marker.options.themeData.listingElement.setAttribute('hidden', '');
+            removed = true;
+        });
+
+        if (removed) {
+            this.updateResultsCount(this.filteredMarkersGroup.getLayers().length);
+        }
+    }
+
+    /**
+     * Result count heading and the empty state.
+     */
+    updateResultsCount(markerCount) {
+        if (this.listingsHeading) {
+            this.listingsHeading.textContent = markerCount === 1
+                ? `Displaying: ${markerCount} result`
+                : `Displaying: ${markerCount} results`;
+        }
+
+        if (!this.listingContainer) {
+            return;
+        }
+
+        this.listingContainer.classList.toggle('no-results', markerCount === 0);
+    }
+
+    /**
+     * The distance used for ordering and for the radius filter: road distance when
+     * known, otherwise straight-line distance.
+     *
+     * A branch the routing service could not reach by road sorts last and fails the
+     * radius, rather than falling back to its straight-line figure. Without that, an
+     * unreachable branch across water looks like the closest result on the list.
      */
     getSortDistance(marker) {
-        const roadDistance = marker.options.themeData.roadDistanceInMiles;
+        const data = marker.options.themeData;
 
-        return Number.isFinite(roadDistance) ? roadDistance : marker.options.themeData.distanceInMiles;
+        if (data.roadDistanceUnroutable) {
+            return Infinity;
+        }
+
+        return Number.isFinite(data.roadDistanceInMiles)
+            ? data.roadDistanceInMiles
+            : data.distanceInMiles;
     }
 
     sortlistingEls(filteredLayers) {
