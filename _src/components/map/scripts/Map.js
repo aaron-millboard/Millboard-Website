@@ -844,6 +844,7 @@ let markerHtml = `
             const distanceInMiles = this.calcLatLngDistanceMilesFromMapCenter(marker.getLatLng());
             marker.options.themeData.distanceInMiles = distanceInMiles;
             marker.options.themeData.roadDistanceInMiles = null;
+            marker.options.themeData.roadDurationInSeconds = null;
             marker.options.themeData.roadDistanceUnroutable = false;
 
             if (distance === 0 || distanceInMiles <= distance) {
@@ -895,6 +896,7 @@ let markerHtml = `
             const distanceInMiles = this.calcLatLngDistanceMilesFromMapCenter(marker.getLatLng());
             marker.options.themeData.distanceInMiles = distanceInMiles;
             marker.options.themeData.roadDistanceInMiles = null;
+            marker.options.themeData.roadDurationInSeconds = null;
             marker.options.themeData.roadDistanceUnroutable = false;
 
             // Check distance filter
@@ -1028,6 +1030,14 @@ let markerHtml = `
                 if (result && Number.isFinite(result.meters)) {
                     layer.options.themeData.roadDistanceInMiles =
                         Math.round(this.METERS_TO_MILES_RATIO * result.meters * 100) / 100;
+
+                    // Travel time is what the ordering actually uses. Road mileage
+                    // alone put Kent above Lille for a Calais search, because Google
+                    // routes through the Eurotunnel: 52 road miles to Kent against 73
+                    // to Lille, but roughly two and a half hours against one.
+                    if (Number.isFinite(result.seconds)) {
+                        layer.options.themeData.roadDurationInSeconds = result.seconds;
+                    }
                 } else {
                     layer.options.themeData.roadDistanceUnroutable = true;
                 }
@@ -1154,6 +1164,48 @@ let markerHtml = `
             : data.distanceInMiles;
     }
 
+    /**
+     * Travel time in seconds, or null when it is not known for this marker.
+     *
+     * This, not mileage, is what "closest" means to someone driving. Road mileage put
+     * Kent above Lille for a Calais search because Google routes through the
+     * Eurotunnel: 52 road miles to Kent against 73 to Lille, but about two and a half
+     * hours against one. Only the priced markers have a time, so ordering falls back
+     * to mileage for the rest (see sortlistingEls).
+     */
+    getSortDuration(marker) {
+        const data = marker.options.themeData;
+
+        // An unreachable branch deliberately returns null rather than Infinity, so it
+        // drops to the mileage tier where getSortDistance gives it Infinity and it
+        // lands last of all. Returning Infinity here would have kept it in the timed
+        // tier, ahead of branches that ARE reachable but were not priced.
+        if (data.roadDistanceUnroutable) {
+            return null;
+        }
+
+        return Number.isFinite(data.roadDurationInSeconds) ? data.roadDurationInSeconds : null;
+    }
+
+    /**
+     * Human travel time, e.g. "2 hr 35 min" or "45 min".
+     */
+    formatDuration(seconds) {
+        if (!Number.isFinite(seconds)) {
+            return '';
+        }
+
+        const totalMinutes = Math.max(1, Math.round(seconds / 60));
+        const hours = Math.floor(totalMinutes / 60);
+        const minutes = totalMinutes % 60;
+
+        if (!hours) {
+            return `${minutes} min`;
+        }
+
+        return minutes ? `${hours} hr ${minutes} min` : `${hours} hr`;
+    }
+
     sortlistingEls(filteredLayers) {
         // Grade results (brief §2/§3): Experience Centres within range first,
         // then preferred stockists, then everything else — each ordered by
@@ -1163,6 +1215,26 @@ let markerHtml = `
 
             if (rankDiff !== 0) {
                 return rankDiff;
+            }
+
+            // Travel time first, because that is what "closest" means when driving.
+            // Only the priced markers have a time, and those are the nearest by
+            // straight line, so anything without one sorts after and falls back to
+            // mileage among itself. Mixing the two units in one comparison would be
+            // meaningless.
+            const durationA = this.getSortDuration(a);
+            const durationB = this.getSortDuration(b);
+
+            if (durationA !== null && durationB !== null) {
+                return durationA - durationB;
+            }
+
+            if (durationA !== null) {
+                return -1;
+            }
+
+            if (durationB !== null) {
+                return 1;
             }
 
             return this.getSortDistance(a) - this.getSortDistance(b);
@@ -1321,10 +1393,22 @@ let markerHtml = `
         }
 
         const roadMiles = marker.options.themeData.roadDistanceInMiles;
-        const distMiles = marker.options.themeData.distanceInMiles
-        const distText = Number.isFinite(roadMiles)
-            ? roadMiles + ' miles by road' // TODO: translate
-            : distMiles + ' miles away'; // TODO: translate
+        const distMiles = marker.options.themeData.distanceInMiles;
+        const driveTime = this.formatDuration(marker.options.themeData.roadDurationInSeconds);
+
+        // Show the drive time alongside the mileage, because the list is ordered by
+        // time. Without it a Calais search reads as though it is out of order: Kent
+        // at 52 road miles sits below Lille at 73, which only makes sense once you
+        // can see Kent is two and a half hours away and Lille is one.
+        let distText;
+
+        if (Number.isFinite(roadMiles) && driveTime) {
+            distText = `${roadMiles} miles by road \u{00B7} ${driveTime}`; // TODO: translate
+        } else if (Number.isFinite(roadMiles)) {
+            distText = `${roadMiles} miles by road`; // TODO: translate
+        } else {
+            distText = `${distMiles} miles away`; // TODO: translate
+        }
 
         let distanceEl = listingMetaEl.querySelector('.map__listing__distance');
         if (!distanceEl) {
@@ -1446,9 +1530,13 @@ let markerHtml = `
         const roadDistanceInMiles = marker.options.themeData.roadDistanceInMiles;
         const distanceInMiles = marker.options.themeData.distanceInMiles;
 
+        const driveTime = this.formatDuration(marker.options.themeData.roadDurationInSeconds);
+
         let distance = '';
 
-        if (Number.isFinite(roadDistanceInMiles)) {
+        if (Number.isFinite(roadDistanceInMiles) && driveTime) {
+            distance = `${roadDistanceInMiles} miles by road \u{00B7} ${driveTime}`;
+        } else if (Number.isFinite(roadDistanceInMiles)) {
             distance = `${roadDistanceInMiles} miles by road`;
         } else if (Number.isFinite(distanceInMiles)) {
             distance = `${distanceInMiles} miles away`;
