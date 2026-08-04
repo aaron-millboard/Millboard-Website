@@ -150,11 +150,11 @@
         },
         {
             "key": "field_69b43be3a0826",
-            "label": "Hide \"View product\" overlay on sample cards",
-            "name": "hide_sample_card_view_product",
+            "label": "Sample tiles: make adding the sample the primary action",
+            "name": "sample_tile_add_focus",
             "aria-label": "",
             "type": "true_false",
-            "instructions": "On sample listings the overlay label competes with the add-sample button and is not clickable, because the product link is the card heading. Turning this on hides the label and keeps the sample image preview. Set per site.",
+            "instructions": "By default the heading link is stretched across the whole sample tile, so tapping the swatch navigates to the product page rather than adding the sample. Turning this on hides the \"View product\" overlay label and hands the tile-wide tap to the sample button instead, so tapping the swatch adds it. The heading stays a normal link to the product page. Removal stays on the button, so a mis-tap cannot drop a sample. Applies only where a tile offers a single sample. Set per site.",
             "required": 0,
             "conditional_logic": 0,
             "wrapper": {

@@ -31,24 +31,26 @@ function ajax_sample_basket_enabled(): bool
 }
 
 /**
- * Whether the "View product" overlay should be hidden on cards offering samples.
+ * Whether sample cards should treat adding the sample as the primary action.
  *
- * Set per site on the Product Settings options page. Off by default.
+ * Hides the "View product" overlay label and hands the card-wide click area to
+ * the sample button rather than the heading link. Set per site on the Product
+ * Settings options page. Off by default.
  *
  * @return bool
  */
-function hide_sample_card_view_product(): bool
+function sample_tile_add_focus(): bool
 {
-    static $hide = null;
+    static $focus = null;
 
-    if ($hide === null) {
-        $hide = (bool) \apply_filters(
-            'granola/product_samples/hide_card_view_product',
-            (bool) \get_field('hide_sample_card_view_product', 'options')
+    if ($focus === null) {
+        $focus = (bool) \apply_filters(
+            'granola/product_samples/sample_tile_add_focus',
+            (bool) \get_field('sample_tile_add_focus', 'options')
         );
     }
 
-    return $hide;
+    return $focus;
 }
 
 /**

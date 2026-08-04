@@ -19,6 +19,10 @@ function filter_args(array $args): ?array
         'heading_class' => '',
         'heading_level' => 'h2',
         'component_clickable' => true,
+        // Whether the heading link should be stretched across the whole
+        // component. Turn off to keep the heading a normal link and let
+        // something else own the component-wide click area.
+        'stretch_link' => true,
         'animate' => false,
         'video' => null,
         'shape' => null,
@@ -77,7 +81,7 @@ function filter_args(array $args): ?array
     // -------------------------------------------------------------------------
     // Link.
     // -------------------------------------------------------------------------
-    if (!empty($args['url'])) {
+    if (!empty($args['url']) && $args['stretch_link']) {
         // $args['classes'][] = 'has-link';
         $args['attributes']['data-link'] = 'true';
     }
@@ -109,7 +113,7 @@ function filter_args(array $args): ?array
     // -------------------------------------------------------------------------
     if (!empty($args['buttons'])) {
         // If we have 1 button and no heading link, add a link to heading.
-        if (count($args['buttons']) === 1 && empty($args['url']) && $args['component_clickable']) {
+        if (count($args['buttons']) === 1 && empty($args['url']) && $args['component_clickable'] && $args['stretch_link']) {
             $args['heading']['link'] = $args['buttons'][0]['url'];
             $args['heading']['target'] = $args['buttons'][0]['target'] ?? null;
             $args['attributes']['data-link'] = 'true';

@@ -65,6 +65,40 @@
     }
 }
 
+// Sample tiles where adding the sample is the primary action.
+//
+// media-object normally stretches the heading link across the whole card, which
+// on a sample listing means the largest tap target goes to the product page.
+// This hands that area to the sample button instead, using the same technique
+// and stacking scale as media-object's own [data-link] block.
+.media-object[data-sample-tile] {
+    // Mirrors $internal-z-index in media-object/styles/main.scss.
+    $card-internal-z-index: 100;
+
+    // Real links stay above the stretched area, so the heading still reaches the
+    // product page.
+    a {
+        position: relative;
+        z-index: $card-internal-z-index * 2;
+    }
+
+    // Only an addable sample stretches. Once it is in the basket the area
+    // collapses back to the button, so tapping the swatch cannot remove it.
+    .product-samples__button:not(.product-samples__button--in-cart) {
+        position: static;
+
+        &::before {
+            position: absolute;
+            z-index: $card-internal-z-index;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            content: '';
+        }
+    }
+}
+
 // Limit notice, pinned to the button the visitor just pressed.
 //
 // Square corners and brand tones only - theme.json disables border radius and no
