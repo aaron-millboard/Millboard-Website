@@ -467,7 +467,14 @@ let markerHtml = `
                 marker.bindPopup(markerTooltipHtml, {
                     className: 'map__marker-tooltip',
                     offset: [0, -this.LMAP_MARKER_HEIGHT],
-                    autoPan: true,
+                    // autoPan must stay off because these popups open on HOVER, not
+                    // click. With it on, Leaflet pans the map so each popup fits, so
+                    // simply moving the cursor across the pins walked the map away
+                    // from where the user was looking: sweep upwards over a few
+                    // markers and you end up in Scotland without having asked to go
+                    // anywhere. Panning should only ever follow a deliberate click,
+                    // which selectMarkerByListing still does.
+                    autoPan: false,
                     closeButton: true,
                 });
 
