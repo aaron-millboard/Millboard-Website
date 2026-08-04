@@ -205,6 +205,16 @@ function handle_wp_object_args(array $args, object $object): array
 
             // Override hover effect texts
             $args['hover_effect_bottom'] = \__('Product', 'granola');
+
+            // Where a card offers samples, the add-sample button is the action
+            // we want. The "View product" overlay competes with it and isn't
+            // even clickable - the product link is the card heading - so drop
+            // the label while keeping the image swap that previews the sample.
+            // Opt-in per site via the Product Settings options page.
+            if (!empty($args['buttons']) && \Granola\Components\ProductSamples\hide_sample_card_view_product()) {
+                $args['hover_effect_top'] = '';
+                $args['hover_effect_bottom'] = '';
+            }
         }
     } elseif ($object instanceof \WP_Term) {
         // -------------------------------------------------------------------------

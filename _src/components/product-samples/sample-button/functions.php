@@ -8,6 +8,7 @@ function filter_args(array $args): ?array
     // Default arguments.
     // -------------------------------------------------------------------------
     $args = array_merge([
+        'attributes' => [],
         'classes' => [],
         'product' => null,
     ], $args);
@@ -47,6 +48,11 @@ function filter_args(array $args): ?array
     $dimensions = $product->get_dimensions(false);
     $price = $product->get_price();
 
+    // Samples are toggled over AJAX so that choosing three of them doesn't cost
+    // the visitor three full page reloads. The href below is kept as a no-JS
+    // fallback.
+    \Granola\Components\ProductSamples\enqueue_assets();
+
     $sample_size_attribute_name = \get_field('product_sample_size_taxonomy', 'options');
     $sample_size = $product->get_attribute($sample_size_attribute_name ?? 'pa_sample-size');
 
@@ -75,8 +81,22 @@ function filter_args(array $args): ?array
         $args['classes'][] = 'product-samples__button--in-cart';
     }
 
+    // Hooks for the AJAX toggle. The button identifies itself and its current
+    // state so the script can flip it without a page load. Only added when the
+    // feature is on, so the markup is unchanged for sites still opted out.
+    $ajax_basket = \Granola\Components\ProductSamples\ajax_sample_basket_enabled();
+
+    if ($ajax_basket) {
+        $args['attributes']['data-sample-product-id'] = $product_id;
+        $args['attributes']['data-sample-action'] = !empty($product_cart_id) ? 'remove' : 'add';
+    }
+
     // Generate a "remove from cart" url for small samples that are already in the cart.
     if (!empty($product_cart_id) && !\Theme\WooCommerce\Utils::is_default_product($product)) {
+        if ($ajax_basket) {
+            $args['attributes']['data-sample-cart-item'] = $product_cart_id;
+        }
+
         $args['url'] = \wp_nonce_url(
             \add_query_arg([
                 'remove_item' => $product_cart_id,

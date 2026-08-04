@@ -126,6 +126,48 @@
             "step": 0.01,
             "prepend": "",
             "append": ""
+        },
+        {
+            "key": "field_69b43bd2a0825",
+            "label": "Enable AJAX sample basket",
+            "name": "enable_ajax_sample_basket",
+            "aria-label": "",
+            "type": "true_false",
+            "instructions": "Adds samples to the basket without reloading the page, and shows a sticky \"x of 3 chosen\" bar linking to the basket. Off means each sample costs a full page load and returns the visitor to the top of the page. Set per site, so it can be piloted in one market before rolling out.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "message": "",
+            "default_value": 0,
+            "allow_in_bindings": 0,
+            "ui": 1,
+            "ui_on_text": "On",
+            "ui_off_text": "Off"
+        },
+        {
+            "key": "field_69b43be3a0826",
+            "label": "Hide \"View product\" overlay on sample cards",
+            "name": "hide_sample_card_view_product",
+            "aria-label": "",
+            "type": "true_false",
+            "instructions": "On sample listings the overlay label competes with the add-sample button and is not clickable, because the product link is the card heading. Turning this on hides the label and keeps the sample image preview. Set per site.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "message": "",
+            "default_value": 0,
+            "allow_in_bindings": 0,
+            "ui": 1,
+            "ui_on_text": "On",
+            "ui_off_text": "Off"
         }
     ],
     "location": [
@@ -148,5 +190,5 @@
     "show_in_rest": 0,
     "display_title": "",
     "granola_save_location": 0,
-    "modified": 1774005087
+    "modified": 1785846200
 }

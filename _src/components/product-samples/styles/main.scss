@@ -57,4 +57,55 @@
     .product-samples__button--in-cart {
         @include button--interacted;
     }
+
+    &__button--pending {
+        cursor: progress;
+        opacity: 0.65;
+        pointer-events: none;
+    }
+}
+
+// Sticky basket bar.
+//
+// Sample archives run to 20+ screens on mobile, so once a visitor has chosen a
+// sample they need a way to reach the basket without scrolling back up.
+.product-samples__bar {
+    position: fixed;
+    z-index: 20;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: flex;
+    flex-flow: row wrap;
+    gap: var(--space--2xs);
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space--2xs) var(--space--xs);
+    background-color: var(--color--background, #fff);
+    box-shadow: 0 #{px-to-rem(-2)} #{px-to-rem(12)} rgba(0, 0, 0, 0.15);
+
+    &[hidden] {
+        display: none;
+    }
+
+    &__count {
+        margin: 0;
+        font-weight: var(--type--3--font-weight);
+    }
+
+    &__link {
+        flex: 0 0 auto;
+    }
+
+    &--error &__count {
+        color: var(--color--error, #b3261e);
+    }
+
+    @include mq(medium) {
+        right: var(--space--xs);
+        left: auto;
+        bottom: var(--space--xs);
+        border-radius: #{px-to-rem(4)};
+        gap: var(--space--xs);
+    }
 }
