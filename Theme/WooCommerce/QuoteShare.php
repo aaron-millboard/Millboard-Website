@@ -6,12 +6,20 @@ class QuoteShare
 {
     private const RESTORE_LINK_TEXT = 'Add items to basket';
 
+    /**
+     * Fingerprints of the quotes already merged into the current basket, so following the
+     * same link twice does not add its items twice.
+     */
+    private const APPLIED_QUOTES_SESSION_KEY = 'millboard_applied_quotes';
+    private const APPLIED_QUOTES_LIMIT = 20;
+
     public static function init(): void
     {
         \add_action('admin_post_millboard_quote_submit', [__CLASS__, 'handle_submit']);
         \add_action('admin_post_nopriv_millboard_quote_submit', [__CLASS__, 'handle_submit']);
         \add_action('template_redirect', [__CLASS__, 'maybe_add_quote_sent_notice'], 5);
         \add_action('template_redirect', [__CLASS__, 'maybe_restore_quote']);
+        \add_action('woocommerce_cart_emptied', [__CLASS__, 'forget_applied_quotes'], 10, 0);
         \add_action('acf/init', [__CLASS__, 'register_acf_fields']);
     }
 
@@ -1558,26 +1566,52 @@ class QuoteShare
             exit;
         }
 
-        $existing_items = self::build_items_snapshot_from_live_cart();
-        \WC()->cart->empty_cart();
+        $cart = \WC()->cart;
+        $had_existing_items = !$cart->is_empty();
 
+        // An empty basket cannot still hold a previously merged quote, so drop any stale
+        // record and let the customer add the same quote again from scratch.
+        if (!$had_existing_items) {
+            self::forget_applied_quotes();
+        }
+
+        // The link lives in a downloaded PDF and an email, so the same one gets followed
+        // more than once. Merging is not self-correcting the way replacing the basket was,
+        // so following one link twice must not double the quantities.
+        $quote_fingerprint = \hash('sha256', $encoded_payload);
+
+        if (self::is_quote_already_applied($quote_fingerprint)) {
+            if (\function_exists('wc_add_notice')) {
+                \wc_add_notice(\__('These quote items are already in your basket.', 'granola'), 'notice');
+            }
+
+            \wp_safe_redirect(\wc_get_cart_url());
+            exit;
+        }
+
+        // Add on top of whatever is already in the basket rather than replacing it, so a
+        // second quote merges into the first. add_to_cart() sums the quantity itself when a
+        // matching line is already present.
         $added = 0;
         foreach ($items_to_restore as $item) {
-            $cart_item_key = \WC()->cart->add_to_cart($item['product_id'], $item['quantity'], $item['variation_id'], $item['variation']);
+            $cart_item_key = $cart->add_to_cart($item['product_id'], $item['quantity'], $item['variation_id'], $item['variation']);
             if ($cart_item_key) {
                 $added++;
             }
         }
 
-        if ($added < 1 && !empty($existing_items)) {
-            foreach ($existing_items as $item) {
-                \WC()->cart->add_to_cart($item['product_id'], $item['quantity'], $item['variation_id'], $item['variation']);
-            }
+        if ($added > 0) {
+            self::remember_applied_quote($quote_fingerprint);
         }
 
         if (\function_exists('wc_add_notice')) {
             if ($added > 0) {
-                \wc_add_notice(\__('Quote restored to your basket.', 'granola'), 'success');
+                \wc_add_notice(
+                    $had_existing_items
+                        ? \__('Quote items added to your basket.', 'granola')
+                        : \__('Quote restored to your basket.', 'granola'),
+                    'success'
+                );
             } else {
                 \wc_add_notice(\__('Unable to restore quote items.', 'granola'), 'error');
             }
@@ -1686,33 +1720,57 @@ class QuoteShare
         return true;
     }
 
-    private static function build_items_snapshot_from_live_cart(): array
+    private static function get_applied_quotes(): array
     {
-        if (!\function_exists('WC') || empty(\WC()->cart)) {
+        if (!\function_exists('WC') || empty(\WC()->session)) {
             return [];
         }
 
-        $items = [];
+        $stored = \WC()->session->get(self::APPLIED_QUOTES_SESSION_KEY);
 
-        foreach (\WC()->cart->get_cart() as $cart_item) {
-            if (empty($cart_item['data']) || !$cart_item['data'] instanceof \WC_Product) {
-                continue;
-            }
+        return is_array($stored) ? $stored : [];
+    }
 
-            $quantity = isset($cart_item['quantity']) ? (int) $cart_item['quantity'] : 0;
-            if ($quantity < 1) {
-                continue;
-            }
+    private static function is_quote_already_applied(string $fingerprint): bool
+    {
+        return \in_array($fingerprint, self::get_applied_quotes(), true);
+    }
 
-            $items[] = [
-                'product_id' => isset($cart_item['product_id']) ? (int) $cart_item['product_id'] : 0,
-                'variation_id' => isset($cart_item['variation_id']) ? (int) $cart_item['variation_id'] : 0,
-                'quantity' => $quantity,
-                'variation' => isset($cart_item['variation']) && is_array($cart_item['variation']) ? $cart_item['variation'] : [],
-            ];
+    private static function remember_applied_quote(string $fingerprint): void
+    {
+        if (!\function_exists('WC') || empty(\WC()->session)) {
+            return;
         }
 
-        return $items;
+        $applied = self::get_applied_quotes();
+
+        if (\in_array($fingerprint, $applied, true)) {
+            return;
+        }
+
+        $applied[] = $fingerprint;
+
+        // Nobody merges more than a handful of quotes into one basket; cap the list so a
+        // long-lived session cannot grow unbounded.
+        if (\count($applied) > self::APPLIED_QUOTES_LIMIT) {
+            $applied = \array_slice($applied, -self::APPLIED_QUOTES_LIMIT);
+        }
+
+        \WC()->session->set(self::APPLIED_QUOTES_SESSION_KEY, $applied);
+    }
+
+    // Public because it is registered on woocommerce_cart_emptied.
+    public static function forget_applied_quotes(): void
+    {
+        if (!\function_exists('WC') || empty(\WC()->session)) {
+            return;
+        }
+
+        if (self::get_applied_quotes() === []) {
+            return;
+        }
+
+        \WC()->session->set(self::APPLIED_QUOTES_SESSION_KEY, []);
     }
 
     private static function encode_restore_payload(array $payload): string
