@@ -2,6 +2,61 @@
 
 namespace Granola\Components\Map;
 
+/**
+ * Parses the "Appointed market territory" field into ISO country codes.
+ *
+ * Editors type these by hand, e.g. "NL, BE, LU", so the input is split on anything that
+ * is not a letter. That accepts commas, semicolons, slashes and newlines equally, and
+ * anything that is not a two-letter code is discarded rather than silently creating a
+ * territory that can never match a search.
+ *
+ * @return array<int, string> Uppercase two-letter codes, de-duplicated.
+ */
+function parse_market_territory($raw): array
+{
+    if (!is_string($raw) || trim($raw) === '') {
+        return [];
+    }
+
+    $codes = [];
+
+    foreach (preg_split('~[^A-Za-z]+~', $raw) as $part) {
+        $code = strtoupper(trim($part));
+
+        if (strlen($code) === 2) {
+            $codes[] = $code;
+        }
+    }
+
+    return array_values(array_unique($codes));
+}
+
+/**
+ * Country names for display, e.g. ["BE","NL","LU"] to "Belgium, Netherlands, Luxembourg".
+ *
+ * Falls back to the code itself where the name cannot be resolved, so a typo shows as the
+ * code rather than disappearing.
+ *
+ * @param array<int, string> $codes
+ * @return array<int, string>
+ */
+function territory_country_names(array $codes): array
+{
+    $names = [];
+
+    foreach ($codes as $code) {
+        $name = '';
+
+        if (class_exists('\Locale')) {
+            $name = (string) \Locale::getDisplayRegion('-' . $code, \get_locale());
+        }
+
+        $names[] = ($name !== '' && $name !== $code) ? $name : $code;
+    }
+
+    return $names;
+}
+
 function get_selected_post_types(array $args): array
 {
     $post_types = [];
@@ -79,6 +134,13 @@ function filter_args(array $args): ?array
 
     // Generate filters if multiple post types are present
     $args['filters'] = generate_filters($args);
+
+    // Linked from the appointed market distributor note. Resolved per locale so each site
+    // links to its own copy of the page.
+    if (empty($args['global_distributors_url'])) {
+        $global_page = \get_page_by_path('approved-global-distributors');
+        $args['global_distributors_url'] = $global_page ? \get_permalink($global_page) : '';
+    }
 
     $args['search_submit'] = [
         'type' => 'submit',
@@ -283,6 +345,11 @@ function get_item_data($args): array|null
         $holds_stock = !empty(\get_field('holds_stock', $wp_post_id));
         $today_hours = get_todays_opening_hours(\get_field('opening_hours', $wp_post_id));
 
+        // Appointed market territory. Non-empty means a search anywhere in these
+        // countries shows this distributor on its own and ignores the distance filter, so
+        // neighbouring branches are not listed even where they are closer by road.
+        $territory = parse_market_territory(\get_field('market_territory', $wp_post_id));
+
         // The priority band the listing sort uses (see getListingRank in Map.js).
         //
         // Each partner type carries its tier in a different field: preferred_stockist
@@ -308,6 +375,8 @@ function get_item_data($args): array|null
             // One key drives the map pin, the key swatch and the card badge icon
             // so all three always agree.
             'marker' => ($post_type === 'installer' && $advanced_installer) ? 'installer-advanced' : $post_type,
+            'territory' => $territory,
+            'territory_names' => territory_country_names($territory),
             'preferred' => $preferred,
             'has_display' => $has_display,
             'holds_stock' => $holds_stock,
@@ -322,6 +391,8 @@ function get_item_data($args): array|null
                 'data-map-item-post-type' => $post_type,
                 'data-map-item-preferred' => $preferred ? '1' : null,
                 'data-map-item-priority' => $prioritised ? '1' : null,
+                'data-map-item-territory' => $territory ? implode(',', $territory) : null,
+                'data-map-item-territory-names' => $territory ? implode(', ', territory_country_names($territory)) : null,
                 'data-map-item-has-display' => $has_display ? '1' : null,
             ],
         ];

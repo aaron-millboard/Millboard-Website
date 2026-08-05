@@ -132,9 +132,43 @@
             </div>
         <?php } ?>
 
+        <?php
+        /**
+         * Appointed market distributor notice.
+         *
+         * Shown only when a search lands in a country served by one appointed distributor.
+         * The shell is rendered here rather than built in JavaScript so the copy goes
+         * through translation on all six locales; Map.js fills in the country, the partner
+         * and the territory from the matched listing.
+         */
+        ?>
+        <div class="map__territory-banner alignwide" data-map-territory-banner hidden>
+            <p class="map__territory-banner__eyebrow">
+                <span data-map-territory-country></span>
+                <?= esc_html_x('Appointed market distributor', 'Map territory banner', 'granola'); ?>
+            </p>
+
+            <p class="map__territory-banner__text">
+                <?php /* translators: %s: country name, e.g. Belgium. */ ?>
+                <span
+                    data-map-territory-intro
+                    data-template="<?= esc_attr_x('Millboard is supplied in %s through a single appointed market distributor.', 'Map territory banner', 'granola'); ?>"
+                ></span>
+                <strong><?= esc_html_x('Contact our appointed market distributor for details of local stockists in country.', 'Map territory banner', 'granola'); ?></strong>
+            </p>
+        </div>
+
         <div class="map__content alignwide">
             <div id="map-sidebar" class="map__sidebar map__tab-panel">
                 <?= \Granola\Component::get('heading', $args['sidebar_heading']) ?>
+
+                <?php /* translators: %s: the countries the appointed distributor covers. */ ?>
+                <p
+                    class="map__territory-subheading"
+                    data-map-territory-subheading
+                    data-template="<?= esc_attr_x('%s territory, distance filter not used', 'Map territory subheading', 'granola'); ?>"
+                    hidden
+                ></p>
 
                 <?php if (!empty($args['filters'])) { ?>
                     <div class="map__filters map__filters--sidebar">
@@ -161,6 +195,40 @@
                     <strong class="map__sidebar__no-content">
                         <?= esc_html__('Please try removing filters or widening your search area.', 'granola'); ?>
                     </strong>
+                </div>
+
+                <?php
+                /**
+                 * Sits where the other result cards would have been, so a single result
+                 * reads as deliberate rather than as a search that found almost nothing.
+                 */
+                ?>
+                <div class="map__territory-note" data-map-territory-note hidden>
+                    <svg class="map__territory-note__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"></path>
+                        <path d="m9 12 2 2 4-4"></path>
+                    </svg>
+
+                    <p class="map__territory-note__heading">
+                        <?= esc_html_x('This is our preferred partner for your search', 'Map territory note', 'granola'); ?>
+                    </p>
+
+                    <?php /* translators: %1$s: distributor name. %2$s: the countries they cover. */ ?>
+                    <p
+                        class="map__territory-note__text"
+                        data-map-territory-note-text
+                        data-template="<?= esc_attr_x('%1$s holds our appointment for %2$s, so they are the only distributor shown. They will point you to your nearest stockist and advise on availability and lead times.', 'Map territory note', 'granola'); ?>"
+                    ></p>
+
+                    <p class="map__territory-note__small">
+                        <?= esc_html_x('Distributors in neighbouring countries are not listed, even where they are closer by road.', 'Map territory note', 'granola'); ?>
+                    </p>
+
+                    <?php if (!empty($args['global_distributors_url'])) { ?>
+                        <a class="map__territory-note__link" href="<?= esc_url($args['global_distributors_url']); ?>">
+                            <?= esc_html_x('View all global distributors', 'Map territory note', 'granola'); ?>
+                        </a>
+                    <?php } ?>
                 </div>
 
                 <div class="map__show-more-wrap">

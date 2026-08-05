@@ -52,6 +52,110 @@
         padding-left: clamp(#{px-to-rem(20)}, 4vw, #{px-to-rem(52)});
     }
 
+    // -------------------------------------------------------------------------
+    // Appointed market distributor
+    //
+    // Millboard is sold through a single appointed distributor in most countries, so a
+    // search there returns that partner alone. These blocks explain why one result is
+    // showing, which is the first question a visitor will have.
+    // -------------------------------------------------------------------------
+    &__territory-banner {
+        margin-bottom: var(--space--m);
+        padding: var(--space--s) var(--space--m);
+        border-left: px-to-rem(3) solid var(--mb-olive);
+        background: var(--color--mist);
+    }
+
+    &__territory-banner__eyebrow {
+        @include typestyle-h6;
+
+        margin: 0 0 px-to-rem(8);
+        // Deep olive rather than --mb-olive: this sits on mist, which is darker than the
+        // panel, and the mid olive only reaches about 4:1 there, failing AA at this size.
+        color: var(--color--sustainabilitygreen);
+    }
+
+    &__territory-banner__text {
+        @include typestyle-base;
+
+        max-width: 76ch;
+        margin: 0;
+    }
+
+    &__territory-subheading {
+        @include typestyle-small;
+
+        margin: px-to-rem(4) 0 0;
+        color: var(--mb-muted);
+    }
+
+    // Sits where the remaining result cards would have been, so one result reads as
+    // deliberate rather than as a search that found almost nothing.
+    &__territory-note {
+        margin-top: var(--space--s);
+        padding: var(--space--m) var(--space--s);
+        border-top: 1px dashed var(--mb-rule);
+        text-align: center;
+    }
+
+    // The theme resets `svg { width: 100% }`, so inline icons need an explicit size.
+    &__territory-note__icon {
+        flex: none;
+        width: px-to-rem(26);
+        height: px-to-rem(26);
+        margin-bottom: px-to-rem(12);
+        color: var(--mb-olive);
+    }
+
+    &__territory-note__heading {
+        @include typestyle-h5;
+
+        margin: 0 0 px-to-rem(10);
+    }
+
+    &__territory-note__text {
+        @include typestyle-small;
+
+        margin: 0 0 px-to-rem(14);
+        line-height: 1.6;
+    }
+
+    &__territory-note__small {
+        @include typestyle-small;
+
+        margin: 0;
+        color: var(--mb-muted);
+    }
+
+    &__territory-note__link {
+        @include typestyle-h6;
+
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        margin-top: var(--space--s);
+        padding: px-to-rem(14) px-to-rem(22);
+        border: 1px solid var(--mb-ink);
+        color: var(--mb-ink);
+        text-decoration: none;
+        transition: border-color var(--dur--base, 240ms) ease, color var(--dur--base, 240ms) ease;
+
+        @include interact {
+            border-color: var(--mb-olive);
+            // Darker olive: --mb-olive as text is about 3.2:1 on this panel.
+            color: #5c7010;
+            text-decoration: none;
+        }
+    }
+
+    // One result, so the "Show more" toggle has nothing to reveal.
+    &--territory {
+        #{$this}__show-more-wrap {
+            display: none;
+        }
+    }
+
     // ---- Optional subtitle + olive accent rule (heading stays page-level) ----
     &__subtitle {
         @include typestyle-base;

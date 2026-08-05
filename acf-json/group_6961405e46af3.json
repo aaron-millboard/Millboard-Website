@@ -139,6 +139,26 @@
             "ui_off_text": ""
         },
         {
+            "key": "field_6961405e5a030",
+            "label": "Appointed market territory",
+            "name": "market_territory",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "Only for appointed market distributors. Two-letter country codes, comma separated, e.g. \"NL, BE, LU\". A search anywhere in these countries shows this distributor on its own and ignores the distance filter, so neighbouring branches are not listed even when they are closer. Leave empty for ordinary stockists, including the UK, Germany, Austria, France, the US, Ireland and the Channel Islands.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "placeholder": "NL, BE, LU",
+            "prepend": "",
+            "append": ""
+        },
+        {
             "key": "field_6961405e5a003",
             "label": "What's on display",
             "name": "display_collections",
@@ -477,5 +497,5 @@
     "show_in_rest": 1,
     "display_title": "",
     "granola_save_location": 0,
-    "modified": 1785443177
+    "modified": 1785942831
 }

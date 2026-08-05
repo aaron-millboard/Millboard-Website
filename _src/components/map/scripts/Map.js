@@ -86,6 +86,9 @@ class Map {
         // location (search, geolocate, or URL param) - never for the default
         // locale-centred view - to keep Routes API usage down.
         this.hasUserSearchLocation = false;
+        // ISO country code of the last search, used to decide whether an appointed
+        // market distributor owns that country. Empty until the visitor searches.
+        this.searchedCountryCode = '';
         this.roadDistanceRequestId = 0;
         this.ROAD_DISTANCE_LIMIT = 25; // Routes API matrix cap per request.
         // Overall ceiling on destinations we price per search, batched in
@@ -337,6 +340,7 @@ class Map {
         const {lat, lng} = response.results[0].geometry.location;
         this.LMAP_DISTANCE_CENTER = new L.LatLng(lat, lng);
         this.LMAP_INITIAL_CENTER = [lat, lng];
+        this.searchedCountryCode = this.countryCodeFromGeocode(response);
         this.hasUserSearchLocation = true;
         this.filterListingsByDistance();
     }
@@ -669,6 +673,7 @@ let markerHtml = `
             const {lat, lng} = response.results[0].geometry.location;
 
             this.LMAP_DISTANCE_CENTER = new L.LatLng(lat, lng);
+            this.searchedCountryCode = this.countryCodeFromGeocode(response);
             this.hasUserSearchLocation = true;
             this.filterListingsByDistance();
         });
@@ -835,6 +840,18 @@ let markerHtml = `
             return;
         }
 
+        // Millboard is sold through one appointed distributor in most countries, so a
+        // search inside such a territory short-circuits the whole distance pipeline.
+        const appointedMarker = this.findAppointedDistributor();
+
+        if (appointedMarker) {
+            this.applyTerritoryMode(appointedMarker, shouldAdjustMapBounds);
+
+            return;
+        }
+
+        this.clearTerritoryNotice();
+
         // Clean up map.
         this.lmap.removeLayer(this.filteredMarkersGroup);
 
@@ -886,6 +903,18 @@ let markerHtml = `
             return;
         }
 
+        // Millboard is sold through one appointed distributor in most countries, so a
+        // search inside such a territory short-circuits the whole distance pipeline.
+        const appointedMarker = this.findAppointedDistributor();
+
+        if (appointedMarker) {
+            this.applyTerritoryMode(appointedMarker, shouldAdjustMapBounds);
+
+            return;
+        }
+
+        this.clearTerritoryNotice();
+
         // Clean up map.
         this.lmap.removeLayer(this.filteredMarkersGroup);
 
@@ -933,6 +962,182 @@ let markerHtml = `
         }
 
         this.orderListings(filteredLayers);
+    }
+
+    /**
+     * The ISO country code of whatever the visitor searched for.
+     *
+     * Google returns the country as one of the address components, whatever was typed:
+     * a postcode, a town or the country name itself all resolve to the same code. That is
+     * what lets one rule cover all three, which is what Sam asked for.
+     */
+    countryCodeFromGeocode(response) {
+        const components = response?.results?.[0]?.address_components || [];
+        const country = components.find((component) => (component.types || []).includes('country'));
+
+        // The readable name comes from the same component, so the banner can say
+        // "Belgium" without shipping a code-to-name list to the browser.
+        this.searchedCountryName = country?.long_name || '';
+
+        return country?.short_name ? country.short_name.toUpperCase() : '';
+    }
+
+    /**
+     * The appointed distributor for the searched country, or null.
+     *
+     * Millboard is sold through a single appointed distributor in most countries, so a
+     * search there should return that partner rather than a list of branches over the
+     * border. Territory is held per distributor as country codes, because it does not
+     * follow the address: the record covering Belgium sits in the Netherlands, and some
+     * countries have no branch of their own at all.
+     */
+    findAppointedDistributor() {
+        if (!this.searchedCountryCode) {
+            return null;
+        }
+
+        return this.allMarkersGroup.getLayers().find((marker) => {
+            const listingEl = marker.options.themeData.listingElement;
+            const territory = listingEl ? (listingEl.dataset.mapItemTerritory || '') : '';
+
+            return territory
+                .split(',')
+                .some((code) => code.trim().toUpperCase() === this.searchedCountryCode);
+        }) || null;
+    }
+
+    /**
+     * Fills in and shows the territory banner, subheading and note.
+     *
+     * The copy lives in the template so it stays translatable; only the country, the
+     * partner name and the territory list are inserted here.
+     */
+    /**
+     * Substitutes values into a translated string held on the element.
+     *
+     * The sentence itself is rendered by PHP into data-template so it goes through
+     * translation, since these blocks appear on all six locales. Handles the numbered
+     * placeholders (%1$s) that let a translator reorder the values, and the plain %s
+     * form for single-value strings.
+     */
+    fillTemplate(el, ...values) {
+        const template = el.dataset.template;
+
+        if (!template) {
+            return;
+        }
+
+        let index = 0;
+
+        el.textContent = template
+            .replace(/%(\d+)\$s/g, (match, position) => values[Number(position) - 1] ?? '')
+            .replace(/%s/g, () => values[index++] ?? '');
+    }
+
+    renderTerritoryNotice(appointedMarker) {
+        const listingEl = appointedMarker.options.themeData.listingElement;
+        const titleEl = listingEl ? listingEl.querySelector('.map__listing__title') : null;
+        const partnerName = titleEl ? titleEl.textContent.trim() : '';
+        const territoryNames = listingEl ? (listingEl.dataset.mapItemTerritoryNames || '') : '';
+        const country = this.searchedCountryName || this.searchedCountryCode;
+
+        const banner = this.el.querySelector('[data-map-territory-banner]');
+
+        if (banner) {
+            const countryEl = banner.querySelector('[data-map-territory-country]');
+            const introEl = banner.querySelector('[data-map-territory-intro]');
+
+            if (countryEl) {
+                countryEl.textContent = country ? `${country} \u{00B7} ` : '';
+            }
+
+            if (introEl && country) {
+                this.fillTemplate(introEl, country);
+            }
+
+            banner.hidden = false;
+        }
+
+        const subheading = this.el.querySelector('[data-map-territory-subheading]');
+
+        if (subheading && territoryNames) {
+            this.fillTemplate(subheading, territoryNames);
+            subheading.hidden = false;
+        }
+
+        const note = this.el.querySelector('[data-map-territory-note]');
+
+        if (note) {
+            const textEl = note.querySelector('[data-map-territory-note-text]');
+
+            if (textEl && partnerName && territoryNames) {
+                this.fillTemplate(textEl, partnerName, territoryNames);
+            }
+
+            note.hidden = false;
+        }
+
+        this.el.classList.add('map--territory');
+    }
+
+    /**
+     * Puts the finder back to normal results.
+     */
+    clearTerritoryNotice() {
+        ['[data-map-territory-banner]', '[data-map-territory-subheading]', '[data-map-territory-note]']
+            .forEach((selector) => {
+                const el = this.el.querySelector(selector);
+
+                if (el) {
+                    el.hidden = true;
+                }
+            });
+
+        this.el.classList.remove('map--territory');
+    }
+
+    /**
+     * Shows the appointed distributor on its own for a search inside its territory.
+     *
+     * Confirmed behaviour: the distance filter is ignored entirely, and branches in
+     * neighbouring countries are not listed even where they are closer by road. Road
+     * distances are not fetched either, since there is one result and nothing to rank,
+     * which also saves a billed request.
+     */
+    applyTerritoryMode(appointedMarker, shouldAdjustMapBounds = true) {
+        this.lmap.removeLayer(this.filteredMarkersGroup);
+        this.filteredMarkersGroup = new L.FeatureGroup();
+
+        this.allMarkersGroup.eachLayer((marker) => {
+            const listingEl = marker.options.themeData.listingElement;
+            const isAppointed = marker === appointedMarker;
+
+            // Distance is still measured so the card can show it, but it decides nothing.
+            marker.options.themeData.distanceInMiles =
+                this.calcLatLngDistanceMilesFromMapCenter(marker.getLatLng());
+            marker.options.themeData.roadDistanceInMiles = null;
+            marker.options.themeData.roadDurationInSeconds = null;
+            marker.options.themeData.roadDistanceUnroutable = false;
+
+            if (isAppointed) {
+                this.filteredMarkersGroup.addLayer(marker);
+                listingEl.removeAttribute('hidden');
+            } else {
+                listingEl.setAttribute('hidden', '');
+            }
+
+            this.updateMarkerDistanceMeta(marker);
+        });
+
+        this.lmap.addLayer(this.filteredMarkersGroup);
+        this.updateResultsCount(1);
+        this.sortlistingEls(this.filteredMarkersGroup.getLayers());
+        this.renderTerritoryNotice(appointedMarker);
+
+        if (shouldAdjustMapBounds) {
+            // Just the pin, per Aaron: no territory outline, so centre on the partner.
+            this.lmap.setView(appointedMarker.getLatLng(), this.SEARCH_FIT_MAX_ZOOM);
+        }
     }
 
     /**
