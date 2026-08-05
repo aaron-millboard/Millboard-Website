@@ -89,10 +89,11 @@
         gap: px-to-rem(8);
         padding: px-to-rem(8) px-to-rem(13);
         border: 1px solid transparent;
-        font-weight: 700;
-        font-size: px-to-rem(12);
-        letter-spacing: 0.14em;
-        text-transform: uppercase;
+        @include typestyle-meta;
+
+        // Tighter than the mixin default: bigger glyphs need less tracking, and it keeps
+        // the badge row close to its previous width.
+        letter-spacing: 0.08em;
         line-height: 1.3;
 
         &--stockist {
@@ -140,7 +141,9 @@
         align-items: center;
         gap: px-to-rem(8);
         margin: 0 0 0 px-to-rem(6);
-        font-size: px-to-rem(14);
+        // Body text, so it takes the theme's small step rather than label size.
+        @include typestyle-small;
+
         color: var(--dls--body);
 
         &--closed .distributor-location-status__dot {

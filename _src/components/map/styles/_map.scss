@@ -117,7 +117,9 @@
         background-color: var(--color--brand-1);
         box-shadow: 0px 0px #{px-to-rem(7)} hsla(var(--color--brand-1--hsl), 25%);
         color: var(--color--white);
-        font-size: rfs(15, 15);
+        // The theme's small step. Was a flat 15px, which sat below every step on the
+        // scale and read as tiny against 20px body copy.
+        @include typestyle-small;
 
         &::before {
             border-top-color: var(--color--brand-1);

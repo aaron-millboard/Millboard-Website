@@ -26,10 +26,9 @@
 
     &__eyebrow {
         margin: 0 0 px-to-rem(16);
-        font-weight: 700;
-        font-size: px-to-rem(13);
-        letter-spacing: 0.22em;
-        text-transform: uppercase;
+        @include typestyle-meta;
+
+        letter-spacing: 0.08em;
         color: var(--color--apple, #a0cd4f);
     }
 
@@ -113,7 +112,7 @@
         right: px-to-rem(14);
         bottom: px-to-rem(12);
         padding: px-to-rem(4) px-to-rem(9);
-        font-size: px-to-rem(13);
+        @include typestyle-small;
         font-weight: 700;
         letter-spacing: 0.1em;
         color: var(--iv--light);

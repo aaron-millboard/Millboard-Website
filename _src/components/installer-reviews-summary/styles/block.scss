@@ -100,7 +100,8 @@
     }
 
     &__source-score {
-        font-size: px-to-rem(14);
+        @include typestyle-small;
+
         color: var(--irs--muted);
     }
 
@@ -118,7 +119,7 @@
     }
 
     &__source-count {
-        font-size: px-to-rem(13);
+        @include typestyle-small;
         color: var(--irs--muted);
     }
 }

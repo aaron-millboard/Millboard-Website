@@ -111,10 +111,9 @@
         gap: px-to-rem(7);
         margin-top: px-to-rem(14);
         padding-bottom: px-to-rem(3);
-        font-size: px-to-rem(13);
-        font-weight: 700;
-        letter-spacing: 0.15em;
-        text-transform: uppercase;
+        @include typestyle-meta;
+
+        letter-spacing: 0.08em;
         text-decoration: none;
         color: var(--color--foreground);
         border-bottom: 1px solid var(--is--rule);

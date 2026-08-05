@@ -55,10 +55,9 @@
     // ---- Eyebrow (tier label) ------------------------------------------------
     &__eyebrow {
         margin: 0 0 px-to-rem(14);
-        font-weight: 700;
-        font-size: px-to-rem(13);
-        letter-spacing: 0.22em;
-        text-transform: uppercase;
+        @include typestyle-meta;
+
+        letter-spacing: 0.08em;
         color: var(--iph--accent-text);
     }
 
@@ -100,7 +99,7 @@
         align-items: center;
         gap: px-to-rem(8);
         margin: 0 0 px-to-rem(22);
-        font-size: px-to-rem(14);
+        @include typestyle-small;
         color: var(--iph--muted);
         text-decoration: none;
     }
@@ -140,10 +139,8 @@
         align-items: center;
         gap: px-to-rem(8);
         padding: px-to-rem(14) px-to-rem(22);
-        font-weight: 700;
-        font-size: px-to-rem(13);
-        letter-spacing: 0.15em;
-        text-transform: uppercase;
+        @include typestyle-meta;
+        letter-spacing: 0.08em;
         text-decoration: none;
         border: 1px solid transparent;
         transition: background-color 0.24s ease, color 0.24s ease, border-color 0.24s ease;
@@ -221,16 +218,14 @@
 
     &__badge-brand {
         font-weight: 700;
-        font-size: px-to-rem(13);
+        @include typestyle-small;
         letter-spacing: 0.02em;
         color: var(--color--foreground);
     }
 
     &__badge-tier {
-        font-weight: 700;
-        font-size: px-to-rem(11);
-        letter-spacing: 0.15em;
-        text-transform: uppercase;
+        @include typestyle-meta;
+        letter-spacing: 0.08em;
         color: var(--iph--accent-text);
     }
 
@@ -288,10 +283,8 @@
         padding: px-to-rem(9) px-to-rem(15);
         background: #{rgba(#2f292e, 0.55)};
         color: var(--iph--light);
-        font-weight: 700;
-        font-size: px-to-rem(12);
-        letter-spacing: 0.18em;
-        text-transform: uppercase;
+        @include typestyle-meta;
+        letter-spacing: 0.08em;
 
         svg {
             flex: none;
@@ -432,10 +425,8 @@
     &__stat-label {
         display: block;
         margin-top: px-to-rem(5);
-        font-size: px-to-rem(12);
-        font-weight: 700;
-        letter-spacing: 0.15em;
-        text-transform: uppercase;
+        @include typestyle-meta;
+        letter-spacing: 0.08em;
         color: #{rgba(#151716, 0.66)};
     }
 

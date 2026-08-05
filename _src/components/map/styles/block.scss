@@ -130,11 +130,13 @@
 
     // Deliberately NOT typestyle-h5. That is display type: uppercase, tracked and up to
     // 28px, which turned this sentence into a shouted headline and made the body copy
-    // beneath it look tiny by comparison. The design shows a modest sentence-case line.
+    // beneath it look tiny by comparison. The design shows a modest sentence-case line,
+    // so this takes the theme step directly below body copy.
     &__territory-note__heading {
+        @include typestyle-large;
+
         margin: 0 0 px-to-rem(10);
         font-weight: 700;
-        font-size: #{px-to-rem(17)};
         line-height: 1.4;
     }
 
@@ -380,13 +382,14 @@
         background: var(--mb-spring-wood);
 
         &__heading {
+            // typestyle-meta is the theme's step for exactly this: an uppercase tracked
+            // micro-label. It carries the size, weight, family and tracking, so none of
+            // those need restating here.
+            @include typestyle-meta;
+
             flex: none;
             margin: 0;
             padding: var(--space--m) px-to-rem(22) var(--space--2xs);
-            font-weight: 700;
-            font-size: #{px-to-rem(13)}; // label floor for legibility
-            letter-spacing: 0.16em;
-            text-transform: uppercase;
             color: var(--mb-ink);
         }
 
@@ -441,6 +444,7 @@
 
     &__filter {
         @include button-reset-hard;
+        @include typestyle-meta;
 
         display: inline-flex;
         align-items: center;
@@ -450,10 +454,10 @@
         border-radius: px-to-rem(2);
         background: transparent;
         color: var(--mb-ink);
-        font-weight: 700;
-        font-size: #{px-to-rem(12)}; // dense control label
-        letter-spacing: 0.11em;
-        text-transform: uppercase;
+        // Tighter than the mixin's tracking. Bigger glyphs need less of it, and it keeps
+        // the chip row close to its previous width instead of pushing chips onto a
+        // second line.
+        letter-spacing: 0.08em;
         transition: color var(--dur--base, 240ms) ease, border-color var(--dur--base, 240ms) ease, background-color var(--dur--base, 240ms) ease;
 
         @include interact {
@@ -491,15 +495,13 @@
 
     // ---- Category section headers (label + trailing hairline) ----
     &__items__category {
+        @include typestyle-meta;
+
         display: flex;
         align-items: center;
         gap: var(--space--2xs);
         margin: 0;
         padding-top: var(--space--m);
-        font-weight: 700;
-        font-size: #{px-to-rem(13)}; // label floor for legibility
-        letter-spacing: 0.16em;
-        text-transform: uppercase;
         color: var(--mb-ink);
 
         &::after {
@@ -550,6 +552,8 @@
         // colour follows each colour's brand foreground so the label stays
         // legible: white on the dark greens and wenge, dark on olive and apple.
         &__type {
+            @include typestyle-meta;
+
             display: inline-flex;
             align-items: center;
             gap: px-to-rem(6);
@@ -558,10 +562,7 @@
             border-radius: px-to-rem(2);
             background: var(--mb-wenge);
             color: var(--mb-spring-wood);
-            font-weight: 700;
-            font-size: #{px-to-rem(12)}; // dense control label
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
+            letter-spacing: 0.08em;
         }
 
         &__badge-icon {
@@ -605,8 +606,9 @@
         }
 
         &__distance {
+            @include typestyle-small;
+
             flex: none;
-            font-size: #{px-to-rem(13)}; // label floor for legibility
             color: var(--mb-muted);
             white-space: nowrap;
         }
@@ -633,8 +635,9 @@
         }
 
         &__hours {
+            @include typestyle-small;
+
             margin: 0;
-            font-size: #{px-to-rem(13)}; // label floor for legibility
             font-weight: var(--fw-light, 300);
             color: var(--mb-muted);
 
@@ -648,12 +651,13 @@
         }
 
         &__stock {
+            @include typestyle-small;
+
             display: inline-flex;
             align-items: center;
             gap: px-to-rem(6);
             margin: 0;
             font-weight: 700;
-            font-size: #{px-to-rem(13)}; // label floor for legibility
             letter-spacing: 0.04em;
             color: var(--mb-olive);
 
@@ -676,21 +680,22 @@
         }
 
         &__action {
+            @include typestyle-meta;
+
             display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: px-to-rem(6);
             box-sizing: border-box;
-            height: px-to-rem(34);
+            // Was a fixed 34px, which only fitted 12px text. A min-height lets the
+            // button grow if a translated label wraps rather than clipping it.
+            min-height: px-to-rem(38);
             padding: 0 px-to-rem(12);
             border: 1px solid var(--mb-rule);
             border-radius: px-to-rem(2);
             background: transparent;
             color: var(--mb-ink);
-            font-weight: 700;
-            font-size: #{px-to-rem(12)}; // dense control label
-            letter-spacing: 0.12em;
-            text-transform: uppercase;
+            letter-spacing: 0.06em;
             text-decoration: none;
             transition: color var(--dur--base, 240ms) ease, border-color var(--dur--base, 240ms) ease;
 
@@ -708,8 +713,9 @@
                 height: px-to-rem(15);
             }
 
+            // Square, so it tracks the button height above.
             &--icon {
-                width: px-to-rem(34);
+                width: px-to-rem(38);
                 padding: 0;
             }
 
@@ -724,8 +730,9 @@
             // The number is not a control label, so it keeps normal casing and spacing
             // rather than the uppercase tracked treatment of the buttons around it.
             .partner-phone-number {
+                @include typestyle-small;
+
                 font-weight: 400;
-                font-size: #{px-to-rem(13)};
                 letter-spacing: 0;
                 text-transform: none;
                 white-space: nowrap;
@@ -736,6 +743,7 @@
     // ---- Show more (full-width) ----
     &__show-more {
         @include button-reset-hard;
+        @include typestyle-meta;
 
         flex: none;
         width: 100%;
@@ -745,10 +753,6 @@
         border-radius: px-to-rem(2);
         background: transparent;
         color: var(--mb-ink);
-        font-weight: 700;
-        font-size: #{px-to-rem(13)}; // label floor for legibility
-        letter-spacing: 0.14em;
-        text-transform: uppercase;
         transition: color var(--dur--base, 240ms) ease, border-color var(--dur--base, 240ms) ease;
 
         @include interact {
@@ -807,18 +811,17 @@
         padding: 0;
 
         &__label {
-            font-weight: 700;
-            font-size: #{px-to-rem(13)}; // label floor for legibility
-            letter-spacing: 0.16em;
-            text-transform: uppercase;
+            @include typestyle-meta;
+
             color: var(--mb-muted);
         }
 
         &__item {
+            @include typestyle-small;
+
             display: inline-flex;
             align-items: center;
             gap: var(--space--3xs);
-            font-size: px-to-rem(13);
             color: var(--mb-ink);
         }
 
@@ -857,14 +860,11 @@
 
     &__tab {
         @include button-reset-hard;
+        @include typestyle-meta;
 
         padding: var(--space--2xs) var(--space--3xs);
         background-color: transparent;
         color: var(--mb-ink);
-        font-weight: 700;
-        font-size: #{px-to-rem(13)}; // label floor for legibility
-        letter-spacing: 0.14em;
-        text-transform: uppercase;
 
         &--active {
             background-color: var(--mb-ink);
@@ -891,14 +891,14 @@
         }
 
         &__badge {
+            @include typestyle-meta;
+
             display: flex;
             align-items: center;
             gap: #{px-to-rem(8)};
             margin: 0 0 #{px-to-rem(16)};
-            font-weight: 700;
-            font-size: #{px-to-rem(13)}; // label floor for legibility
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
+            // Wider than the mixin default, kept from the popup design.
+            letter-spacing: 0.16em;
             color: var(--color--olivegreen);
         }
 
@@ -924,14 +924,12 @@
         }
 
         &__distance {
+            @include typestyle-meta;
+
             display: flex;
             align-items: center;
             gap: #{px-to-rem(7)};
             margin: 0 0 #{px-to-rem(18)};
-            font-weight: 700;
-            font-size: #{px-to-rem(13)}; // label floor for legibility
-            letter-spacing: 0.16em;
-            text-transform: uppercase;
             color: var(--mb-tt-ink);
 
             .map__marker-tooltip__icon {
@@ -949,20 +947,22 @@
         }
 
         &__address {
+            @include typestyle-small;
+
             margin: 0 0 #{px-to-rem(22)};
             font-weight: 300;
-            font-size: #{px-to-rem(14)};
             line-height: 1.65;
             color: var(--mb-tt-muted);
         }
 
         &__stock {
+            @include typestyle-small;
+
             display: flex;
             align-items: center;
             gap: #{px-to-rem(8)};
             margin: 0 0 #{px-to-rem(20)};
             font-weight: 700;
-            font-size: #{px-to-rem(13)}; // label floor for legibility
             letter-spacing: 0.04em;
             color: var(--color--olivegreen);
 
@@ -983,7 +983,11 @@
         }
 
         &__btn {
-            flex: 1 1 #{px-to-rem(130)};
+            @include typestyle-meta;
+
+            // Wider basis than before: at label size the two buttons need more room
+            // side by side, and this makes them stack cleanly instead of squeezing.
+            flex: 1 1 #{px-to-rem(140)};
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -991,10 +995,7 @@
             min-height: #{px-to-rem(44)};
             padding: 0 #{px-to-rem(12)};
             border-radius: #{px-to-rem(2)};
-            font-weight: 700;
-            font-size: #{px-to-rem(13)}; // label floor for legibility
-            letter-spacing: 0.14em;
-            text-transform: uppercase;
+            letter-spacing: 0.06em;
             text-decoration: none;
             transition: opacity 240ms ease, border-color 240ms ease, color 240ms ease;
         }

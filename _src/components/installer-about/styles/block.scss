@@ -77,10 +77,9 @@
 
     &__tag {
         padding: px-to-rem(7) px-to-rem(13);
-        font-size: px-to-rem(13);
-        font-weight: 700;
-        letter-spacing: 0.14em;
-        text-transform: uppercase;
+        @include typestyle-meta;
+
+        letter-spacing: 0.08em;
         border: 1px solid var(--ia--rule);
     }
 
@@ -103,10 +102,8 @@
     }
 
     &__fact-label {
-        font-size: px-to-rem(13);
-        font-weight: 700;
-        letter-spacing: 0.16em;
-        text-transform: uppercase;
+        @include typestyle-meta;
+        letter-spacing: 0.08em;
         color: var(--ia--muted);
     }
 

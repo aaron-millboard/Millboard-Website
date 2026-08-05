@@ -42,7 +42,8 @@
         align-items: center;
         justify-content: center;
         gap: px-to-rem(10);
-        font-size: px-to-rem(15);
+        @include typestyle-small;
+
         color: var(--irf--muted);
 
         strong {
@@ -106,10 +107,8 @@
     }
 
     &__card-source {
-        font-size: px-to-rem(12);
-        font-weight: 700;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
+        @include typestyle-meta;
+        letter-spacing: 0.08em;
         color: var(--irf--muted);
     }
 
@@ -126,7 +125,7 @@
         align-items: center;
         justify-content: space-between;
         gap: px-to-rem(10);
-        font-size: px-to-rem(13);
+        @include typestyle-small;
         color: var(--irf--muted);
     }
 
@@ -146,10 +145,8 @@
         align-items: center;
         gap: px-to-rem(7);
         padding-bottom: px-to-rem(4);
-        font-size: px-to-rem(13);
-        font-weight: 700;
-        letter-spacing: 0.16em;
-        text-transform: uppercase;
+        @include typestyle-meta;
+        letter-spacing: 0.08em;
         text-decoration: none;
         color: var(--color--foreground);
         border-bottom: 1px solid var(--irf--rule);

@@ -49,13 +49,14 @@
         margin: 0 auto;
     }
 
+    // typestyle-meta is the theme's step for an uppercase tracked micro-label, and it
+    // carries the size, weight, family and tracking. Was a flat 13px, below every step
+    // on the scale.
     &__preheading {
+        @include typestyle-meta;
+
         margin: 0;
         color: var(--dph--accent-text);
-        font-weight: 700;
-        font-size: px-to-rem(13);
-        letter-spacing: 0.18em;
-        text-transform: uppercase;
     }
 
     &__heading {

@@ -124,14 +124,13 @@
     }
 
     &__area-county {
-        font-size: px-to-rem(13);
-        font-weight: 700;
-        letter-spacing: 0.14em;
-        text-transform: uppercase;
+        @include typestyle-meta;
+
+        letter-spacing: 0.08em;
     }
 
     &__area-towns {
-        font-size: px-to-rem(15);
+        @include typestyle-small;
         color: var(--ic--muted);
         text-align: right;
     }
@@ -156,7 +155,7 @@
 
     &__chip {
         padding: px-to-rem(6) px-to-rem(12);
-        font-size: px-to-rem(14);
+        @include typestyle-small;
         border: 1px solid var(--ic--rule);
     }
 
@@ -168,10 +167,8 @@
         gap: px-to-rem(9);
         margin-top: px-to-rem(26);
         padding: px-to-rem(14) px-to-rem(26);
-        font-weight: 700;
-        font-size: px-to-rem(13);
-        letter-spacing: 0.16em;
-        text-transform: uppercase;
+        @include typestyle-meta;
+        letter-spacing: 0.08em;
         text-decoration: none;
         background: var(--ic--dark);
         color: var(--ic--light);
