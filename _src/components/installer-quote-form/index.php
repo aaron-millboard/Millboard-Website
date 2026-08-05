@@ -23,7 +23,8 @@ $icon_mail = '<svg class="installer-quote-form__contact-icon" width="18" height=
             <?php if (!empty($phone) || !empty($email)) { ?>
                 <div class="installer-quote-form__contact">
                     <?php if (!empty($phone)) { ?>
-                        <a class="installer-quote-form__contact-btn" href="tel:<?= esc_attr($tel); ?>"><?= $icon_phone; ?><span><?= esc_html__('Call us', 'granola'); ?></span></a>
+                        <?php /* Reveals the number on desktop, where tel: does nothing. */ ?>
+                        <a class="installer-quote-form__contact-btn" href="tel:<?= esc_attr($tel); ?>" data-reveal-phone data-partner-action="phone"><?= $icon_phone; ?><span data-reveal-phone-label><?= esc_html__('Call us', 'granola'); ?></span></a>
                     <?php } ?>
                     <?php if (!empty($email)) { ?>
                         <a class="installer-quote-form__contact-btn" href="mailto:<?= esc_attr($email); ?>"><?= $icon_mail; ?><span><?= esc_html__('Email us', 'granola'); ?></span></a>

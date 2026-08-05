@@ -60,10 +60,12 @@ $icon = static function (string $name, string $class): void {
                         class="distributor-contact-card__action distributor-contact-card__action--<?= !empty($action['primary']) ? 'primary' : 'secondary'; ?>"
                         href="<?= esc_url($action['url']); ?>"
                         data-partner-action="<?= esc_attr($action['data']); ?>"
+                        <?php /* tel: does nothing on a desktop, so these reveal the number on click instead. */ ?>
+                        <?php if (strpos($action['url'], 'tel:') === 0) { ?>data-reveal-phone<?php } ?>
                         <?php if (!empty($action['external'])) { ?>target="_blank" rel="noopener noreferrer"<?php } ?>
                     >
                         <?php $icon($action['icon'], 'distributor-contact-card__action-icon'); ?>
-                        <?= esc_html($action['label']); ?>
+                        <span data-reveal-phone-label><?= esc_html($action['label']); ?></span>
                     </a>
                 <?php } ?>
             </div>
@@ -80,12 +82,13 @@ $icon = static function (string $name, string $class): void {
                                 class="distributor-contact-card__branch-link"
                                 href="<?= esc_url($link['url']); ?>"
                                 data-partner-action="<?= esc_attr($link['data']); ?>"
+                                <?php if (strpos($link['url'], 'tel:') === 0) { ?>data-reveal-phone<?php } ?>
                                 <?php if (!empty($link['external'])) { ?>target="_blank" rel="noopener noreferrer"<?php } ?>
                             >
                                 <?php if ($link['icon'] !== 'external') { ?>
                                     <?php $icon($link['icon'], 'distributor-contact-card__branch-icon'); ?>
                                 <?php } ?>
-                                <?= esc_html($link['label']); ?>
+                                <span data-reveal-phone-label><?= esc_html($link['label']); ?></span>
                                 <?php if ($link['icon'] === 'external') { ?>
                                     <?php $icon('external', 'distributor-contact-card__branch-icon'); ?>
                                 <?php } ?>
