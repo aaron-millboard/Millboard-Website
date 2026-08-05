@@ -141,7 +141,7 @@ final class Admin
             echo '<input type="hidden" name="action" value="millboard_hsof_save">';
             echo '<p><input type="password" name="token" class="regular-text" autocomplete="off" value="' . esc_attr($current) . '" placeholder="pat-eu1-..."></p>';
             echo '<p class="description" style="max-width:46em">' . esc_html__(
-                'A HubSpot private app token with crm.objects.contacts.write. Better still, define MILLBOARD_HUBSPOT_TOKEN in wp-config.php so it never sits in the database or in a database backup.',
+                'A HubSpot Service Key with crm.objects.contacts.write (that scope alone is enough; the plugin never reads). Better still, define MILLBOARD_HUBSPOT_TOKEN in wp-config.php so it never sits in the database or in a database backup.',
                 'millboard-hsof'
             ) . '</p>';
             submit_button(__('Save token', 'millboard-hsof'));

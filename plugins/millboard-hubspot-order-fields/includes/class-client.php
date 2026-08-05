@@ -88,7 +88,19 @@ final class Client
     }
 
     /**
-     * Cheap credential check for the settings screen.
+     * Credential check for the settings screen.
+     *
+     * Deliberately does NOT read contacts. This plugin only ever writes, so
+     * requiring crm.objects.contacts.read just to run a health check would mean
+     * granting a scope the plugin has no use for.
+     *
+     * Instead it attempts a PATCH against a reserved address that cannot exist
+     * (.invalid is reserved by RFC 2606). PATCH never creates a record, so there
+     * is no side effect, and the response tells us what we need:
+     *
+     *   404 -> credential accepted and permitted to attempt the write. Good.
+     *   403 -> authenticated but missing crm.objects.contacts.write.
+     *   401 -> credential itself rejected.
      *
      * @return array{ok: bool, message: string}
      */
@@ -100,9 +112,19 @@ final class Client
             return ['ok' => false, 'message' => 'No token configured'];
         }
 
-        $response = wp_remote_get(self::BASE . '/crm/v3/objects/contacts?limit=1', [
+        $probe = 'millboard-hsof-connection-test@example.invalid';
+        $url   = self::BASE . '/crm/v3/objects/contacts/' . rawurlencode($probe) . '?idProperty=email';
+
+        $response = wp_remote_request($url, [
+            'method'  => 'PATCH',
             'timeout' => 15,
-            'headers' => ['Authorization' => 'Bearer ' . $token],
+            'headers' => [
+                'Authorization' => 'Bearer ' . $token,
+                'Content-Type'  => 'application/json',
+            ],
+            // A harmless no-op payload. It is never applied, because the record
+            // does not exist and PATCH will not create it.
+            'body' => wp_json_encode(['properties' => new \stdClass()]),
         ]);
 
         if (is_wp_error($response)) {
@@ -111,12 +133,27 @@ final class Client
 
         $status = (int) wp_remote_retrieve_response_code($response);
 
-        if ($status >= 200 && $status < 300) {
-            return ['ok' => true, 'message' => 'Token valid, contacts readable'];
+        // The expected healthy answer: permitted to write, record simply absent.
+        if ($status === 404) {
+            return ['ok' => true, 'message' => 'Token valid, contact write permitted'];
         }
 
-        if ($status === 401 || $status === 403) {
-            return ['ok' => false, 'message' => 'Token rejected (' . $status . '). Check it has crm.objects.contacts.write.'];
+        // Some deployments answer 400 for a malformed idProperty lookup. That
+        // still proves the credential got past authorisation.
+        if ($status === 400) {
+            return ['ok' => true, 'message' => 'Token valid, contact write permitted'];
+        }
+
+        if ($status >= 200 && $status < 300) {
+            return ['ok' => true, 'message' => 'Token valid, contact write permitted'];
+        }
+
+        if ($status === 403) {
+            return ['ok' => false, 'message' => 'Authenticated, but missing the crm.objects.contacts.write scope (403). Add it to the Service Key.'];
+        }
+
+        if ($status === 401) {
+            return ['ok' => false, 'message' => 'Credential rejected (401). Check the key was copied in full.'];
         }
 
         return ['ok' => false, 'message' => 'Unexpected status ' . $status];

@@ -4,7 +4,7 @@
  * Plugin Name:       Millboard HubSpot Order Fields
  * Plugin URI:        https://gitlab.com/aarondavismillboard1/millboard
  * Description:       Pushes the custom WooCommerce checkout fields to the HubSpot contact. CRM Perks reads these only intermittently, so this guarantees them. Network-installed, activate per site.
- * Version:           1.0.0
+ * Version:           1.0.1
  * Requires at least: 6.4
  * Requires PHP:      8.0
  * Author:            Millboard
@@ -43,7 +43,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-const VERSION     = '1.0.0';
+const VERSION     = '1.0.1';
 const OPTION_KEY  = 'millboard_hsof_settings';
 const LOG_OPTION  = 'millboard_hsof_log';
 const SYNCED_META = '_millboard_hsof_synced';
