@@ -89,6 +89,27 @@
         color: var(--mb-muted);
     }
 
+    // The note sits below the results inside the sidebar's flex column, so it competed
+    // with the scrolling results list for space and squeezed it to almost nothing: the
+    // cards vanished behind a stub scrollbar. In territory mode there are only one or two
+    // results, so the list sizes to its content and the note takes what it needs.
+    &--territory {
+        #{$this}__items {
+            flex: 0 0 auto;
+            max-height: none;
+            overflow: visible;
+        }
+
+        #{$this}__territory-note {
+            flex: none;
+        }
+
+        // One or two results, so the "Show more" toggle has nothing to reveal.
+        #{$this}__show-more-wrap {
+            display: none;
+        }
+    }
+
     // Sits where the remaining result cards would have been, so one result reads as
     // deliberate rather than as a search that found almost nothing.
     &__territory-note {
@@ -107,14 +128,18 @@
         color: var(--mb-olive);
     }
 
+    // Deliberately NOT typestyle-h5. That is display type: uppercase, tracked and up to
+    // 28px, which turned this sentence into a shouted headline and made the body copy
+    // beneath it look tiny by comparison. The design shows a modest sentence-case line.
     &__territory-note__heading {
-        @include typestyle-h5;
-
         margin: 0 0 px-to-rem(10);
+        font-weight: 700;
+        font-size: #{px-to-rem(17)};
+        line-height: 1.4;
     }
 
     &__territory-note__text {
-        @include typestyle-small;
+        @include typestyle-base;
 
         margin: 0 0 px-to-rem(14);
         line-height: 1.6;
@@ -146,13 +171,6 @@
             // Darker olive: --mb-olive as text is about 3.2:1 on this panel.
             color: #5c7010;
             text-decoration: none;
-        }
-    }
-
-    // One result, so the "Show more" toggle has nothing to reveal.
-    &--territory {
-        #{$this}__show-more-wrap {
-            display: none;
         }
     }
 
@@ -693,6 +711,24 @@
             &--icon {
                 width: px-to-rem(34);
                 padding: 0;
+            }
+
+            // Revealing a phone number turns an icon-only square into a labelled
+            // button, so it has to be allowed to grow. Without this the number
+            // overflowed the fixed 34px width and collided with the button beside it.
+            &--icon[data-phone-revealed] {
+                width: auto;
+                padding: 0 px-to-rem(10);
+            }
+
+            // The number is not a control label, so it keeps normal casing and spacing
+            // rather than the uppercase tracked treatment of the buttons around it.
+            .partner-phone-number {
+                font-weight: 400;
+                font-size: #{px-to-rem(13)};
+                letter-spacing: 0;
+                text-transform: none;
+                white-space: nowrap;
             }
         }
     }

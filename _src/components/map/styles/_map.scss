@@ -9,7 +9,12 @@
 
     to {
         opacity: 1;
-        transform: translateY(0);
+        // `none`, not translateY(0). The animation is fill-mode: both, so whatever the
+        // final keyframe says is retained, and any transform other than none keeps the
+        // popup on its own compositing layer. Leaflet positions popups with fractional
+        // translate3d values, so that layer rasterises the text off the pixel grid and it
+        // reads as blurred or shadowed.
+        transform: none;
     }
 }
 
