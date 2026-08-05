@@ -168,16 +168,9 @@ function handle_wp_object_args(array $args, object $object): array
                 $samples = \Granola\Components\ProductSamples\get_product_samples($product);
 
                 if (!empty($samples)) {
-                    // filter_args() returns null for a sample that is out of
-                    // stock, so drop those and re-index. Otherwise the nulls are
-                    // rendered as nothing but still counted, which makes any
-                    // count() of this array disagree with what is on screen.
-                    $args['buttons'] = array_values(array_filter(array_map(
-                        function ($sample) {
-                            return \Granola\Components\ProductSamples\SampleButton\filter_args($sample);
-                        },
-                        $samples
-                    )));
+                    $args['buttons'] = array_map(function ($sample) {
+                        return \Granola\Components\ProductSamples\SampleButton\filter_args($sample);
+                    }, $samples);
 
                     foreach ($samples as $sample) {
                         $sample_image_id = $sample['product']->get_image_id();
@@ -212,27 +205,6 @@ function handle_wp_object_args(array $args, object $object): array
 
             // Override hover effect texts
             $args['hover_effect_bottom'] = \__('Product', 'granola');
-
-            // Where a card offers samples, adding the sample is the action we
-            // want. By default the heading link is stretched across the whole
-            // card, so the largest tap target navigates to the product page -
-            // on a page whose only job is choosing samples. Opt-in per site via
-            // the Product Settings options page.
-            if (!empty($args['buttons']) && \Granola\Components\ProductSamples\sample_tile_add_focus()) {
-                // Drop the "View product" label. The image swap that previews
-                // the sample is kept.
-                $args['hover_effect_top'] = '';
-                $args['hover_effect_bottom'] = '';
-
-                // Hand the card-wide click area to the sample button instead of
-                // the heading, which stays a normal link so the product page and
-                // its internal link are still there. Only with a single sample,
-                // since more than one makes a card-wide add ambiguous.
-                if (count($args['buttons']) === 1) {
-                    $args['stretch_link'] = false;
-                    $args['attributes']['data-sample-tile'] = 'true';
-                }
-            }
         }
     } elseif ($object instanceof \WP_Term) {
         // -------------------------------------------------------------------------

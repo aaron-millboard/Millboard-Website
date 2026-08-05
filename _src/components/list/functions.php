@@ -79,9 +79,6 @@ function filter_args(array $args): ?array
             'classes' => $classes,
             'content_filter' => null,
             'content' => implode('', $el_content),
-            // Forward any attributes the item carries, so list items can expose
-            // data-* hooks. Defaults to empty, so existing callers are unchanged.
-            'attributes' => $item['attributes'] ?? [],
         ];
 
         // Add item to list.
