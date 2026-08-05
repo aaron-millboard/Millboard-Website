@@ -4,11 +4,7 @@ node_modules/
 /assets
 /vendor
 sassdoc/
-# Ignore generated translation artefacts, but track the locales we maintain by
-# hand so they are versioned and can be rolled back with the theme.
-languages/*
-!languages/de_DE.po
-!languages/de_DE.mo
+languages/
 .env.js
 /*.pot
 
