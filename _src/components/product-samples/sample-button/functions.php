@@ -8,6 +8,7 @@ function filter_args(array $args): ?array
     // Default arguments.
     // -------------------------------------------------------------------------
     $args = array_merge([
+        'attributes' => [],
         'classes' => [],
         'product' => null,
     ], $args);
@@ -47,6 +48,11 @@ function filter_args(array $args): ?array
     $dimensions = $product->get_dimensions(false);
     $price = $product->get_price();
 
+    // Samples are toggled over AJAX so that choosing three of them doesn't cost
+    // the visitor three full page reloads. The href below is kept as a no-JS
+    // fallback.
+    \Granola\Components\ProductSamples\enqueue_assets();
+
     $sample_size_attribute_name = \get_field('product_sample_size_taxonomy', 'options');
     $sample_size = $product->get_attribute($sample_size_attribute_name ?? 'pa_sample-size');
 
@@ -75,8 +81,43 @@ function filter_args(array $args): ?array
         $args['classes'][] = 'product-samples__button--in-cart';
     }
 
+    // Hooks for the AJAX toggle. The button identifies itself and its current
+    // state so the script can flip it without a page load. Only added when the
+    // feature is on, so the markup is unchanged for sites still opted out.
+    $ajax_basket = \Granola\Components\ProductSamples\ajax_sample_basket_enabled();
+
+    // The three pieces of the addable label. Held separately so they can also be
+    // handed to the script, which needs to rebuild this state after a removal -
+    // including for buttons that were already in the basket on page load.
+    $add_label = !empty($sample_size) ? sprintf(
+        // translators: Sample type.
+        \__('Add %s sample', 'granola'),
+        strtolower($sample_size),
+    ) : \__('Add sample', 'granola');
+
+    $add_dimensions = sprintf(
+        // translators: 1: Product length. 2: Product width.
+        \__('%1$smm x %2$smm', 'granola'),
+        $dimensions['length'],
+        $dimensions['width'],
+    );
+
+    $add_price = !empty($price) ? \get_woocommerce_currency_symbol() . $price : \__('Free', 'granola');
+
+    if ($ajax_basket) {
+        $args['attributes']['data-sample-product-id'] = $product_id;
+        $args['attributes']['data-sample-action'] = !empty($product_cart_id) ? 'remove' : 'add';
+        $args['attributes']['data-sample-label'] = $add_label;
+        $args['attributes']['data-sample-dimensions'] = $add_dimensions;
+        $args['attributes']['data-sample-price'] = $add_price;
+    }
+
     // Generate a "remove from cart" url for small samples that are already in the cart.
     if (!empty($product_cart_id) && !\Theme\WooCommerce\Utils::is_default_product($product)) {
+        if ($ajax_basket) {
+            $args['attributes']['data-sample-cart-item'] = $product_cart_id;
+        }
+
         $args['url'] = \wp_nonce_url(
             \add_query_arg([
                 'remove_item' => $product_cart_id,
@@ -108,27 +149,20 @@ function filter_args(array $args): ?array
             'add-to-cart' => $product_id,
         ], '');
 
+        // Built from the same three values handed to the script above, so the
+        // visible label and the state it restores after a removal cannot drift.
         $args['content'] = \Granola\Component::get('element', [
-            'content' => !empty($sample_size) ? sprintf(
-                // translators: Sample type.
-                \__('Add %s sample', 'granola'),
-                strtolower($sample_size),
-            ) : \__('Add sample', 'granola'),
+            'content' => $add_label,
             'classes' => [
                 'product-samples__button__content',
             ],
         ]) . \Granola\Component::get('element', [
-            'content' => sprintf(
-                // translators: 1: Product length. 2: Product width.
-                \__('%1$smm x %2$smm', 'granola'),
-                $dimensions['length'],
-                $dimensions['width'],
-            ),
+            'content' => $add_dimensions,
             'classes' => [
                 'product-samples__button__dimensions',
             ],
         ]) . \Granola\Component::get('element', [
-            'content' => !empty($price) ? \get_woocommerce_currency_symbol() . $price : \__('Free', 'granola'),
+            'content' => $add_price,
             'classes' => [
                 'product-samples__button__price',
             ],
