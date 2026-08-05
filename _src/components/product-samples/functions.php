@@ -20,6 +20,13 @@ function ajax_sample_basket_enabled(): bool
 {
     static $enabled = null;
 
+    // This is now read on the add-to-cart path, which runs earlier than template
+    // render, so never assume ACF is loaded. Return false without caching, so a
+    // premature call cannot pin the answer for the rest of the request.
+    if (!\function_exists('get_field')) {
+        return false;
+    }
+
     if ($enabled === null) {
         $enabled = (bool) \apply_filters(
             'granola/product_samples/ajax_basket_enabled',
@@ -326,12 +333,34 @@ function get_product_default_variation($wc_product)
  * @param integer $quantity Quantity added to the cart.
  * @return bool True if the item passed validation.
  */
-function sample_product_add_to_cart_validation(bool $add_to_cart, int $product_id, int $qty, int $variation_id = 0): bool
+function sample_product_add_to_cart_validation($add_to_cart, $product_id = 0, $qty = 1, $variation_id = 0)
 {
+    // Do NOT declare parameter types here. WooCommerce fires this filter with
+    // three, four or five arguments depending on the handler, and
+    // WC_Form_Handler::add_to_cart_handler_variable() passes an empty string for
+    // $variation_id when the request carried no variation. An `int` hint makes
+    // that a fatal TypeError on every add-to-cart, in every locale.
+    $product_id   = \absint($product_id);
+    $variation_id = \absint($variation_id);
+    $qty          = (int) $qty;
+
+    // Scoped to the German pilot. While the toggle is off every other locale
+    // keeps exactly the behaviour it has today, so enabling the pilot can never
+    // change add-to-cart anywhere it has not been switched on.
+    if (!ajax_sample_basket_enabled()) {
+        return $add_to_cart;
+    }
+
     // WooCommerce passes the parent ID as $product_id for variable products, so
     // prefer the variation when one is supplied. Without this the check below
     // sees the parent, which is never a free sample, and lets everything through.
     $product = \wc_get_product($variation_id ?: $product_id);
+
+    // wc_get_product() returns false, not null, for an ID it cannot load, and
+    // is_free_sample() accepts ?WC_Product, so false would be another TypeError.
+    if (!$product instanceof \WC_Product) {
+        return $add_to_cart;
+    }
 
     // Bail early - not a free sample. Large samples carry a price and are
     // deliberately unlimited, so only free ones are capped.
