@@ -32,25 +32,78 @@ German sessions landing on the two sample category pages:
 paid search 10,280 of 76,353). Organic search is 12.5%. So this is bought
 traffic, and it was landing on a page that made the next step expensive.
 
-End to end for the year: **2,021 users added a sample, 534 completed an order.**
+End to end for the year: **1,453 users added a sample, 534 completed an order.**
+
+The add figure is counted from the `?add-to-cart=` URL, not from the
+`add_to_basket` event. The event reports 2,021 and should not be used: it fires
+only for sessions whose landing page was `/de-de/order-a-sample` and records
+nothing for sessions landing directly on either category page, so it
+undercounts some journeys and cannot be compared across landing pages.
 
 ### Where people went instead
 
-Onward journeys from the decking sample page:
+> **Correction.** An earlier version of this document, and the commit message on
+> `c54fa58`, claimed a 7:1 and 17:1 ratio of product-page clicks to basket
+> clicks. Those figures were wrong: they summed `totalUsers` across many
+> individual product-page rows, which double-counts anyone who viewed more than
+> one product page. The corrected figures are below. The commit message is
+> already pushed and cannot be edited, so this note is the record.
 
-| Destination | Users |
+Onward journeys from a sample listing page, Germany, deduplicated by user:
+
+| Destination | Users | |
+| --- | --- | --- |
+| A product page | 5,908 | |
+| The basket | 2,479 | **2.4 : 1** |
+
+That ratio is not a German problem. The same component ships everywhere and the
+ratios are comparable, with the UK slightly worse while converting far better:
+
+| Market | To product | To basket | Ratio |
+| --- | --- | --- | --- |
+| UK | 63,634 | 24,550 | 2.6 : 1 |
+| US | 25,768 | 11,706 | 2.2 : 1 |
+| Germany | 5,908 | 2,479 | 2.4 : 1 |
+| France | 14,204 | 7,388 | 1.9 : 1 |
+| Ireland | 167 | 117 | 1.4 : 1 |
+| Australia | 178 | 405 | 0.4 : 1 |
+
+So the tap-through itself is not what separates the markets. What matters is
+that most of the people who take it do not come back.
+
+### Does the product page recover them?
+
+The product page renders the same sample buttons, so a visitor who taps through
+can still add from there. Measured by the `?add-to-cart=` URL, which is a
+server-side fact rather than a tag:
+
+| Add happened on | Users, 12 months |
 | --- | --- |
-| Individual product pages | ~2,640 |
-| Reload of the same sample page | 808 |
-| Basket | **377** |
+| The sample listing page | 898 |
+| A product page | 714 |
 
-Roughly **7 users clicked through to a product page for every 1 who reached the
-basket**. On the cladding page it was about 17 to 1 (1,188 against 70).
+Both routes are real. The exact three-step path (listing, then product page,
+then add) cannot be measured:
+
+- `pageReferrer` only looks one hop back, and the add happens *on* the product
+  page, so its referrer is the product page itself.
+- A sequential funnel runs, but its final step depends on `add_to_basket`, which
+  fires unreliably (it records nothing for sessions that land directly on the
+  category pages). That step returns zero for every market, which is the tag, not
+  behaviour.
+
+It can be bounded. Roughly 4,045 German users went from the listing to a product
+page (funnel step 2, GA4-sampled at about 47%, so approximate). At most 714 of
+them added from a product page, and the true number is lower because that 714
+also includes everyone who reached a product page directly from search or
+navigation. So **at most 18% of the tap-through traffic recovers, and realistically
+well under that.**
 
 The pages carried 25 and 31 view-product links against only 15 and 21 add
 buttons. Worse, the "View product" overlay on the card image is not a link at
-all - the product link is the card heading - so it was a false affordance that
-did nothing on tap while pulling attention off the one control that mattered.
+all - the product link is the stretched card heading - so it was a false
+affordance that did nothing on tap while pulling attention off the one control
+that mattered.
 
 ### Why the reload hurt so much
 
