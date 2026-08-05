@@ -29,3 +29,5 @@ phpcs.xml
 postcss.config.js
 readme.md
 webpack.config.js
+plugins
+plugins/**
