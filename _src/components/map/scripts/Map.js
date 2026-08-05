@@ -840,12 +840,12 @@ let markerHtml = `
             return;
         }
 
-        // Millboard is sold through one appointed distributor in most countries, so a
-        // search inside such a territory short-circuits the whole distance pipeline.
-        const appointedMarker = this.findAppointedDistributor();
+        // Millboard is sold through appointed distributors in most countries, so a search
+        // inside such a territory short-circuits the whole distance pipeline.
+        const appointedMarkers = this.findAppointedDistributors();
 
-        if (appointedMarker) {
-            this.applyTerritoryMode(appointedMarker, shouldAdjustMapBounds);
+        if (appointedMarkers.length) {
+            this.applyTerritoryMode(appointedMarkers, shouldAdjustMapBounds);
 
             return;
         }
@@ -903,12 +903,12 @@ let markerHtml = `
             return;
         }
 
-        // Millboard is sold through one appointed distributor in most countries, so a
-        // search inside such a territory short-circuits the whole distance pipeline.
-        const appointedMarker = this.findAppointedDistributor();
+        // Millboard is sold through appointed distributors in most countries, so a search
+        // inside such a territory short-circuits the whole distance pipeline.
+        const appointedMarkers = this.findAppointedDistributors();
 
-        if (appointedMarker) {
-            this.applyTerritoryMode(appointedMarker, shouldAdjustMapBounds);
+        if (appointedMarkers.length) {
+            this.applyTerritoryMode(appointedMarkers, shouldAdjustMapBounds);
 
             return;
         }
@@ -983,35 +983,35 @@ let markerHtml = `
     }
 
     /**
-     * The appointed distributor for the searched country, or null.
+     * Every appointed distributor covering the searched country.
      *
-     * Millboard is sold through a single appointed distributor in most countries, so a
-     * search there should return that partner rather than a list of branches over the
-     * border. Territory is held per distributor as country codes, because it does not
-     * follow the address: the record covering Belgium sits in the Netherlands, and some
-     * countries have no branch of their own at all.
+     * Millboard is sold through an appointed distributor in most countries, so a search
+     * there should return that partner rather than a list of branches over the border.
+     * Territory is held per distributor as country codes, because it does not follow the
+     * address: the records covering Belgium sit in the Netherlands, and Luxembourg,
+     * Andorra, Latvia and Estonia have no branch of their own at all.
+     *
+     * Returns an array rather than one match on purpose. Benelux is served by two
+     * Wooddeck entities, both appointed for the same three countries, and picking the
+     * first would hide one of them at random depending on marker order.
+     *
+     * @return array Markers, empty when the country has no appointed distributor.
      */
-    findAppointedDistributor() {
+    findAppointedDistributors() {
         if (!this.searchedCountryCode) {
-            return null;
+            return [];
         }
 
-        return this.allMarkersGroup.getLayers().find((marker) => {
+        return this.allMarkersGroup.getLayers().filter((marker) => {
             const listingEl = marker.options.themeData.listingElement;
             const territory = listingEl ? (listingEl.dataset.mapItemTerritory || '') : '';
 
             return territory
                 .split(',')
                 .some((code) => code.trim().toUpperCase() === this.searchedCountryCode);
-        }) || null;
+        });
     }
 
-    /**
-     * Fills in and shows the territory banner, subheading and note.
-     *
-     * The copy lives in the template so it stays translatable; only the country, the
-     * partner name and the territory list are inserted here.
-     */
     /**
      * Substitutes values into a translated string held on the element.
      *
@@ -1034,10 +1034,11 @@ let markerHtml = `
             .replace(/%s/g, () => values[index++] ?? '');
     }
 
-    renderTerritoryNotice(appointedMarker) {
-        const listingEl = appointedMarker.options.themeData.listingElement;
-        const titleEl = listingEl ? listingEl.querySelector('.map__listing__title') : null;
-        const partnerName = titleEl ? titleEl.textContent.trim() : '';
+    renderTerritoryNotice(appointedMarkers) {
+        // Every match covers the searched country, and in practice they share a
+        // territory: the two Wooddeck entities are both appointed for the same three
+        // countries. So the first one's list describes the territory for all of them.
+        const listingEl = appointedMarkers[0].options.themeData.listingElement;
         const territoryNames = listingEl ? (listingEl.dataset.mapItemTerritoryNames || '') : '';
         const country = this.searchedCountryName || this.searchedCountryCode;
 
@@ -1045,14 +1046,9 @@ let markerHtml = `
 
         if (banner) {
             const countryEl = banner.querySelector('[data-map-territory-country]');
-            const introEl = banner.querySelector('[data-map-territory-intro]');
 
             if (countryEl) {
                 countryEl.textContent = country ? `${country} \u{00B7} ` : '';
-            }
-
-            if (introEl && country) {
-                this.fillTemplate(introEl, country);
             }
 
             banner.hidden = false;
@@ -1070,8 +1066,12 @@ let markerHtml = `
         if (note) {
             const textEl = note.querySelector('[data-map-territory-note-text]');
 
-            if (textEl && partnerName && territoryNames) {
-                this.fillTemplate(textEl, partnerName, territoryNames);
+            // Deliberately describes the territory rather than naming the partner.
+            // Benelux returns two Wooddeck entities, so a sentence built around one name
+            // would either hide the other or need singular and plural forms in all six
+            // locales for no real gain.
+            if (textEl && territoryNames) {
+                this.fillTemplate(textEl, territoryNames);
             }
 
             note.hidden = false;
@@ -1104,13 +1104,13 @@ let markerHtml = `
      * distances are not fetched either, since there is one result and nothing to rank,
      * which also saves a billed request.
      */
-    applyTerritoryMode(appointedMarker, shouldAdjustMapBounds = true) {
+    applyTerritoryMode(appointedMarkers, shouldAdjustMapBounds = true) {
         this.lmap.removeLayer(this.filteredMarkersGroup);
         this.filteredMarkersGroup = new L.FeatureGroup();
 
         this.allMarkersGroup.eachLayer((marker) => {
             const listingEl = marker.options.themeData.listingElement;
-            const isAppointed = marker === appointedMarker;
+            const isAppointed = appointedMarkers.includes(marker);
 
             // Distance is still measured so the card can show it, but it decides nothing.
             marker.options.themeData.distanceInMiles =
@@ -1130,13 +1130,20 @@ let markerHtml = `
         });
 
         this.lmap.addLayer(this.filteredMarkersGroup);
-        this.updateResultsCount(1);
+        this.updateResultsCount(appointedMarkers.length);
         this.sortlistingEls(this.filteredMarkersGroup.getLayers());
-        this.renderTerritoryNotice(appointedMarker);
+        this.renderTerritoryNotice(appointedMarkers);
 
         if (shouldAdjustMapBounds) {
-            // Just the pin, per Aaron: no territory outline, so centre on the partner.
-            this.lmap.setView(appointedMarker.getLatLng(), this.SEARCH_FIT_MAX_ZOOM);
+            // Just the pins, per Aaron: no territory outline drawn.
+            if (appointedMarkers.length === 1) {
+                this.lmap.setView(appointedMarkers[0].getLatLng(), this.SEARCH_FIT_MAX_ZOOM);
+            } else {
+                const bounds = L.latLngBounds();
+
+                appointedMarkers.forEach((marker) => bounds.extend(marker.getLatLng()));
+                this.lmap.fitBounds(bounds, {maxZoom: this.SEARCH_FIT_MAX_ZOOM});
+            }
         }
     }
 

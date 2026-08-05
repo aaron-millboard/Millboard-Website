@@ -149,12 +149,7 @@
             </p>
 
             <p class="map__territory-banner__text">
-                <?php /* translators: %s: country name, e.g. Belgium. */ ?>
-                <span
-                    data-map-territory-intro
-                    data-template="<?= esc_attr_x('Millboard is supplied in %s through a single appointed market distributor.', 'Map territory banner', 'granola'); ?>"
-                ></span>
-                <strong><?= esc_html_x('Contact our appointed market distributor for details of local stockists in country.', 'Map territory banner', 'granola'); ?></strong>
+                <?= esc_html_x('Our appointed distributor for this country is listed below. Contact them for details of local stockists.', 'Map territory banner', 'granola'); ?>
             </p>
         </div>
 
@@ -213,11 +208,20 @@
                         <?= esc_html_x('This is our preferred partner for your search', 'Map territory note', 'granola'); ?>
                     </p>
 
-                    <?php /* translators: %1$s: distributor name. %2$s: the countries they cover. */ ?>
+                    <?php
+                    /**
+                     * Describes the territory rather than naming the partner: Benelux is
+                     * served by two Wooddeck entities, so a sentence built around one name
+                     * would either hide the other or need singular and plural forms in
+                     * every locale.
+                     *
+                     * translators: %s: the countries the appointment covers.
+                     */
+                    ?>
                     <p
                         class="map__territory-note__text"
                         data-map-territory-note-text
-                        data-template="<?= esc_attr_x('%1$s holds our appointment for %2$s, so they are the only distributor shown. They will point you to your nearest stockist and advise on availability and lead times.', 'Map territory note', 'granola'); ?>"
+                        data-template="<?= esc_attr_x('We supply %s through appointed distributors, so only they are listed. They will point you to your nearest stockist and advise on availability and lead times.', 'Map territory note', 'granola'); ?>"
                     ></p>
 
                     <p class="map__territory-note__small">
