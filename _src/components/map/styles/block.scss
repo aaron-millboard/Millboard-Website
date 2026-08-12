@@ -491,6 +491,23 @@
                 opacity: 0.72;
             }
         }
+
+        // A category with nothing in the current results. Dimmed and non-interactive
+        // rather than removed, so the row keeps its width and does not jump about as
+        // the visitor changes the distance or searches somewhere new.
+        &--empty {
+            opacity: 0.45;
+
+            &:disabled {
+                cursor: default;
+
+                @include interact {
+                    background: transparent;
+                    border-color: currentcolor;
+                    color: var(--mb-ink);
+                }
+            }
+        }
     }
 
     // ---- Category section headers (label + trailing hairline) ----

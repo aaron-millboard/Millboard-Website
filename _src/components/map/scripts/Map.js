@@ -890,6 +890,9 @@ let markerHtml = `
         const markerCount = filteredLayers.length;
 
         this.updateResultsCount(markerCount);
+        // This path applies no category filter, so the visible set is the in-scope set.
+        // No-ops on the installer map, which has a single post type and so no chips.
+        this.updateFilterCounts(filteredLayers);
 
         if (shouldAdjustMapBounds) {
             this.fitToResults(filteredLayers);
@@ -923,6 +926,10 @@ let markerHtml = `
 
         const distance = parseFloat(this.distanceSelect.value) || 0;
 
+        // Everything inside the distance, before the category filter is applied. The chip
+        // counts are built from this, so each chip says how many results IT would give.
+        const inRange = [];
+
         // Process all markers.
         this.allMarkersGroup.eachLayer((marker) => {
             // Updating marker distance data.
@@ -937,6 +944,12 @@ let markerHtml = `
 
             // Check category filter (post type, or installer tier)
             const passesPostTypeFilter = this.matchesCategoryFilter(marker);
+
+            // Counted before the category filter, so each chip reports its own total
+            // rather than the total for whichever chip happens to be active.
+            if (passesDistanceFilter) {
+                inRange.push(marker);
+            }
 
             // Show/hide based on both filters
             if (passesDistanceFilter && passesPostTypeFilter) {
@@ -956,12 +969,55 @@ let markerHtml = `
         const markerCount = filteredLayers.length;
 
         this.updateResultsCount(markerCount);
+        this.updateFilterCounts(inRange);
 
         if (shouldAdjustMapBounds) {
             this.fitToResults(filteredLayers);
         }
 
         this.orderListings(filteredLayers);
+    }
+
+    /**
+     * Rewrites the number on each filter chip to match what is actually on screen.
+     *
+     * The chips are rendered server side from the whole dataset and were never updated
+     * afterwards, so every search showed the site-wide totals: a search for Canada listed
+     * one result above chips reading "All 377 / Distributors 376 / Experience Centres 1".
+     *
+     * Each chip counts the markers IT would show, not the markers the active chip shows,
+     * which is why the count is taken before the category filter is applied. A chip that
+     * would return nothing is disabled rather than hidden, so the row does not reflow.
+     */
+    updateFilterCounts(markersInScope) {
+        const buttons = this.el.querySelectorAll('.map__filter');
+
+        if (!buttons.length) {
+            return;
+        }
+
+        // matchesCategoryFilter() reads the active filter off the instance, so it is
+        // swapped per chip and restored. Keeping one matcher means the counts can never
+        // drift from the filtering itself.
+        const active = this.activePostTypeFilter;
+
+        buttons.forEach((button) => {
+            const value = button.dataset.filterValue || '';
+
+            this.activePostTypeFilter = value;
+
+            const count = markersInScope.filter((marker) => this.matchesCategoryFilter(marker)).length;
+            const countEl = button.querySelector('.map__filter__count');
+
+            if (countEl) {
+                countEl.textContent = String(count);
+            }
+
+            button.disabled = count === 0 && value !== active;
+            button.classList.toggle('map__filter--empty', count === 0);
+        });
+
+        this.activePostTypeFilter = active;
     }
 
     /**
@@ -1112,9 +1168,17 @@ let markerHtml = `
             const listingEl = marker.options.themeData.listingElement;
             const isAppointed = appointedMarkers.includes(marker);
 
-            // Distance is still measured so the card can show it, but it decides nothing.
-            marker.options.themeData.distanceInMiles =
-                this.calcLatLngDistanceMilesFromMapCenter(marker.getLatLng());
+            /**
+             * No distance in territory mode.
+             *
+             * It used to be measured anyway "so the card can show it", but the map centre
+             * after a country search is the country's centroid, not anywhere the visitor
+             * is. Searching Canada put "1396.85 miles away" on the one distributor being
+             * recommended, directly under a note saying the distance filter was not used.
+             * A number measured from the middle of a country tells the visitor nothing,
+             * and reads as though the partner is unhelpfully far away.
+             */
+            marker.options.themeData.distanceInMiles = null;
             marker.options.themeData.roadDistanceInMiles = null;
             marker.options.themeData.roadDurationInSeconds = null;
             marker.options.themeData.roadDistanceUnroutable = false;
@@ -1131,6 +1195,7 @@ let markerHtml = `
 
         this.lmap.addLayer(this.filteredMarkersGroup);
         this.updateResultsCount(appointedMarkers.length);
+        this.updateFilterCounts(appointedMarkers);
         this.sortlistingEls(this.filteredMarkersGroup.getLayers());
         this.renderTerritoryNotice(appointedMarkers);
 
@@ -1685,11 +1750,24 @@ let markerHtml = `
             distText = `${roadMiles} miles by road \u{00B7} ${driveTime}`; // TODO: translate
         } else if (Number.isFinite(roadMiles)) {
             distText = `${roadMiles} miles by road`; // TODO: translate
-        } else {
+        } else if (Number.isFinite(distMiles)) {
             distText = `${distMiles} miles away`; // TODO: translate
+        } else {
+            // Territory mode clears the distance deliberately. Without this branch the
+            // template literal stringified the null and printed "null miles away".
+            distText = '';
         }
 
         let distanceEl = listingMetaEl.querySelector('.map__listing__distance');
+
+        if (distText === '') {
+            if (distanceEl) {
+                distanceEl.remove();
+            }
+
+            return;
+        }
+
         if (!distanceEl) {
             const newEl = document.createElement('span')
             newEl.classList.add('map__listing__distance');

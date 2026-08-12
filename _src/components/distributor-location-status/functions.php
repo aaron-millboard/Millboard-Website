@@ -91,7 +91,27 @@ function filter_args(array $args): ?array
 }
 
 /**
- * Short, human address line: street, town, postcode.
+ * Countries that write the postcode BEFORE the town, e.g. "54634 Bitburg".
+ *
+ * Listed by ISO code because `country` holds Google's localised name, which is
+ * whatever language the record was geocoded in ("Deutschland" or "Germany",
+ * "Schweiz/Suisse/Svizzera/Svizra", "Ελλάς"), and is far too unreliable to match on.
+ */
+const POSTCODE_FIRST = [
+    'AT', 'BE', 'BG', 'CH', 'CZ', 'DE', 'DK', 'EE', 'ES', 'FI', 'FR', 'GR', 'HR',
+    'HU', 'IT', 'LT', 'LU', 'LV', 'MC', 'NL', 'NO', 'PL', 'PT', 'RO', 'RS', 'SE',
+    'SI', 'SK', 'UA',
+];
+
+/**
+ * Countries that put a state or province between the town and the postcode,
+ * e.g. "Montgomery, NY 12549". Without it the town is ambiguous: there are
+ * Montgomerys in more than a dozen US states.
+ */
+const STATE_BEFORE_POSTCODE = ['US', 'CA', 'AU', 'NZ'];
+
+/**
+ * Short, human address line, ordered the way the country it is in writes it.
  *
  * The stored google_map string is the full formatted address, which on records
  * carried over from Drupal is tab separated and repeats the street name, e.g.
@@ -99,6 +119,11 @@ function filter_args(array $args): ?array
  * Kingdom". The design wants the shorter "Yeomans Way, Bournemouth BH8 0BJ", so
  * prefer the structured components Google returned and only fall back to tidying
  * the raw string.
+ *
+ * The design is a UK example, and "town postcode" is a UK convention. Now that the
+ * directory carries partners in 23 countries, following it everywhere printed
+ * German addresses backwards ("Bitburg 54634" for what Germany writes as
+ * "54634 Bitburg") and dropped the state from every US and Canadian record.
  */
 function short_address($address): string
 {
@@ -109,9 +134,9 @@ function short_address($address): string
     $street = trim((string) ($address['street_name'] ?? ''));
     $city = trim((string) ($address['city'] ?? ''));
     $postcode = trim((string) ($address['post_code'] ?? ''));
+    $code = strtoupper(trim((string) ($address['country_short'] ?? '')));
 
-    // Town and postcode read as one unit, as they do on an envelope.
-    $locality = trim($city . ' ' . $postcode);
+    $locality = locality_line($city, $postcode, $code, $address);
 
     if ($street !== '' && $locality !== '') {
         return $street . ', ' . $locality;
@@ -122,6 +147,34 @@ function short_address($address): string
     }
 
     return tidy_raw_address((string) ($address['address'] ?? ''));
+}
+
+/**
+ * Town and postcode as one unit, in the local order.
+ */
+function locality_line(string $city, string $postcode, string $code, array $address): string
+{
+    if ($city === '' || $postcode === '') {
+        // Nothing to order. Ireland is the common case: Eircode, no town.
+        return trim($city . ' ' . $postcode);
+    }
+
+    if (in_array($code, POSTCODE_FIRST, true)) {
+        return $postcode . ' ' . $city;
+    }
+
+    if (in_array($code, STATE_BEFORE_POSTCODE, true)) {
+        // state_short is only populated for some countries, so fall back to the
+        // full name rather than dropping the state altogether.
+        $state = trim((string) ($address['state_short'] ?? '')) ?: trim((string) ($address['state'] ?? ''));
+
+        return $state !== ''
+            ? $city . ', ' . $state . ' ' . $postcode
+            : $city . ' ' . $postcode;
+    }
+
+    // UK, Ireland and the Crown Dependencies, and the safe default.
+    return $city . ' ' . $postcode;
 }
 
 /**
