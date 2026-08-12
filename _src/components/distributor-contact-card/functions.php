@@ -48,7 +48,10 @@ function filter_args(array $args): ?array
 
     if ($championName !== '') {
         if (empty($args['heading'])) {
-            $args['heading'] = \__('Millboard Champion', 'granola');
+            // "Speak to" rather than "Millboard Champion": these are the branch's own manager,
+            // taken from the distributor's website. Calling them a Millboard Champion claims a
+            // relationship they have not agreed to, and their actual role is shown underneath.
+            $args['heading'] = \__('Speak to', 'granola');
         }
 
         $role = trim((string) ($champion['role'] ?? ''));

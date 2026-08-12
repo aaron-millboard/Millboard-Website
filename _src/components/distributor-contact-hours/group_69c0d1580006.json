@@ -7,7 +7,7 @@
             "label": "Contact eyebrow",
             "name": "contact_heading",
             "type": "text",
-            "instructions": "Small label above the champion name. Defaults to Millboard Champion.",
+            "instructions": "Small label above the named contact. Defaults to Speak to.",
             "required": 0,
             "conditional_logic": 0,
             "wrapper": { "width": "50", "class": "", "id": "" },
