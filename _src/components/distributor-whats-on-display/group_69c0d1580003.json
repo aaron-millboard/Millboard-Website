@@ -7,7 +7,7 @@
             "label": "Heading",
             "name": "heading",
             "type": "text",
-            "instructions": "Defaults to What's on display.",
+            "instructions": "Defaults to At this branch.",
             "required": 0,
             "conditional_logic": 0,
             "wrapper": { "width": "", "class": "", "id": "" },

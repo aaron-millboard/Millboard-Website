@@ -16,9 +16,10 @@
 
     padding-top: clamp(40px, 5vw, 58px);
     padding-bottom: clamp(40px, 5vw, 58px);
-    // Springwood rather than the design's mist: the hero now owns the mist band, and
-    // two mist sections on one page stopped reading as distinct.
-    background-color: var(--color--springwood);
+    // Mist, per the design. This was briefly springwood on the grounds that the hero also
+    // uses mist, but Aaron's call is that the darker band is correct: the two are far enough
+    // apart on the page, with lighter blocks between, to read as distinct.
+    background-color: var(--color--mist);
 
     &__inner {
         display: grid;

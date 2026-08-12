@@ -5,7 +5,7 @@ namespace Granola\Components\DistributorWhatsOnDisplay;
 /**
  * What a distributor / showroom / experience centre has on display.
  *
- * Parsed from the record's free-text "What's on display" field, so branches can be
+ * Parsed from the record's free-text branch field, so branches can be
  * kept current without touching the page. The design groups the chips under
  * category headings (Decking, Cladding), which a textarea expresses as a line
  * ending in a colon:
@@ -43,20 +43,26 @@ function filter_args(array $args): ?array
 
     $args['groups'] = parse_display((string) \get_field('display_collections', $post_id));
 
-    if (empty($args['groups']) && empty($args['is_preview'])) {
-        return null;
-    }
-
-    if (empty($args['heading'])) {
-        $args['heading'] = \__("What's on display", 'granola');
-    }
-
     // The record's display_photo field returns an array (return_format "array"),
     // while this block's own image field returns an ID, so both are normalised. The
     // image component wants an ID and renders nothing when handed the array.
     $args['image'] = \Granola\Components\DistributorContactCard\attachment_id(
         !empty($args['image']) ? $args['image'] : \get_field('display_photo', $post_id)
     );
+
+    // Render when there is EITHER something to list OR a photo of the branch. Gating on the
+    // list alone hid the branch photo on every record that had one, and almost no distributor
+    // can tell us which Millboard ranges are physically on their floor.
+    if (empty($args['groups']) && empty($args['image']) && empty($args['is_preview'])) {
+        return null;
+    }
+
+    if (empty($args['heading'])) {
+        // "At this branch" rather than "What's on display": the field now carries the services
+        // and departments a branch publishes about itself, which is knowable, where the
+        // Millboard ranges on display are not.
+        $args['heading'] = \__('At this branch', 'granola');
+    }
 
     $args['classes'][] = !empty($args['image'])
         ? 'distributor-whats-on-display--has-image'
