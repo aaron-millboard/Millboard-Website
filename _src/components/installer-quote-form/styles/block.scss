@@ -187,12 +187,48 @@
                 grid-column: 1 / -1;
             }
 
-            // ...except first/last name and email/phone, which sit 50/50.
+            // ...except these, which sit 50/50. Sales have added enough fields that
+            // one field per line made the form very long, so the pairs below follow
+            // the order they already appear in the DOM and simply fall into the two
+            // columns: name, email/phone, who-am-i/company, postcode/category,
+            // size/start-time, reference/how-you-heard.
+            //
+            // The dropdowns (who am I, project size, start time, how did you hear)
+            // have NO name on their visible input — HubSpot renders a combobox and
+            // puts the property on a HIDDEN input inside the same row, which is the
+            // only stable hook. Matched with *= rather than $= because several are
+            // cloned properties whose exact suffix differs between forms.
             .hsfc-Row:has(input[name$="/firstname"]),
             .hsfc-Row:has(input[name$="/lastname"]),
             .hsfc-Row:has(input[type="email"]),
-            .hsfc-Row:has(input[type="tel"]) {
+            .hsfc-Row:has(input[type="tel"]),
+            .hsfc-Row:has(input[name*="who_am_i"]),
+            .hsfc-Row:has(input[name*="/company"]),
+            .hsfc-Row:has(input[name*="/zip"]),
+            .hsfc-Row:has(input[name*="latest_project_category"]),
+            .hsfc-Row:has(input[name*="project_size"]),
+            .hsfc-Row:has(input[name*="project_start_time"]),
+            .hsfc-Row:has(input[name*="project_reference_and_postcode"]),
+            .hsfc-Row:has(input[name*="how_did_you_hear"]) {
                 grid-column: auto;
+            }
+
+            // A row carrying only a hidden field (the installer/distributor routing
+            // address) still occupies a grid cell, which would knock every pair after
+            // it out of step.
+            .hsfc-Row:not(:has(input:not([type="hidden"]), select, textarea)) {
+                display: none;
+            }
+        }
+
+        // Lay the category choices along one line instead of stacking them: three
+        // short options do not need three rows. Scoped to that field so the single
+        // T&Cs and marketing checkboxes keep their own full-width line.
+        .hsfc-Row:has(input[name*="latest_project_category"]) {
+            .hsfc-CheckboxFieldGroup__Options {
+                display: flex;
+                flex-wrap: wrap;
+                gap: px-to-rem(6) px-to-rem(20);
             }
         }
     }
