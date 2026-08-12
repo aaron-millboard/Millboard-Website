@@ -84,8 +84,16 @@
     &__territory-banner__text {
         @include typestyle-base;
 
-        max-width: 76ch;
+        // Sam's sentence needs 895px on one line and 76ch resolved to 890.6px, so it
+        // wrapped four pixels short and dropped "stockists." on to a line of its own,
+        // inside a banner with 1062px of room. 80ch clears it while keeping a sane
+        // measure.
+        max-width: 80ch;
         margin: 0;
+        // The six locales all have different lengths, so the fit cannot be tuned per
+        // string: German still needs two lines. This stops any of them ending on a
+        // single orphaned word.
+        text-wrap: pretty;
     }
 
     &__territory-subheading {
