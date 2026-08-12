@@ -60,6 +60,12 @@
     // showing, which is the first question a visitor will have.
     // -------------------------------------------------------------------------
     &__territory-banner {
+        // .alignwide sets `margin-inline: auto`, which on a grid item switches the used
+        // width from stretch to fit-content. The banner therefore shrank to its own text
+        // (942px) while the search row and the results/map row below it stayed 1113px,
+        // so it sat visibly inset from both. The max-width is already identical; only the
+        // stretch was missing.
+        width: 100%;
         margin-bottom: var(--space--m);
         padding: var(--space--s) var(--space--m);
         border-left: px-to-rem(3) solid var(--mb-olive);
@@ -85,7 +91,12 @@
     &__territory-subheading {
         @include typestyle-small;
 
+        // The sidebar has no padding of its own; each child insets itself by 22px. This
+        // line was the one that did not, so "Canada territory, distance filter not used"
+        // sat hard against the panel border while the chips beneath it were indented.
         margin: px-to-rem(4) 0 0;
+        padding-right: px-to-rem(22);
+        padding-left: px-to-rem(22);
         color: var(--mb-muted);
     }
 
@@ -94,6 +105,18 @@
     // cards vanished behind a stub scrollbar. In territory mode there are only one or two
     // results, so the list sizes to its content and the note takes what it needs.
     &--territory {
+        // One scroller, not two. The results list stops scrolling and sizes to its one or
+        // two cards, and the sidebar itself scrolls instead, so the notice below the cards
+        // can be reached. Previously the sidebar was `overflow: hidden` at the map's fixed
+        // height, which cut the notice off with no way to scroll to it at all.
+        //
+        // The sidebar deliberately keeps the map's height rather than growing to fit: at
+        // full height it ran to roughly 1050px beside a 620px map, leaving a large empty
+        // band next to it.
+        #{$this}__sidebar {
+            overflow-y: auto;
+        }
+
         #{$this}__items {
             flex: 0 0 auto;
             max-height: none;
