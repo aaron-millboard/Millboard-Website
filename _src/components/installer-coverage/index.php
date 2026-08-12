@@ -14,6 +14,10 @@ $iframe_kses = [
         'referrerpolicy' => true,
         'title' => true,
         'aria-label' => true,
+        // Both carry the Perfmatters lazy-load opt-out added in functions.php. Without
+        // them here wp_kses strips the pair straight back out and the map stays blank.
+        'class' => true,
+        'data-no-lazy' => true,
     ],
 ];
 ?>
