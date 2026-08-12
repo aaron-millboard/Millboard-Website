@@ -1469,6 +1469,17 @@ let markerHtml = `
         if (removed) {
             this.updateResultsCount(this.filteredMarkersGroup.getLayers().length);
         }
+
+        // The chip counts were taken from the straight-line set before the routing call,
+        // so a result pushed out of the radius by road left them one ahead of the list:
+        // Bournemouth at 10 miles listed three installers under a chip reading four.
+        // Recounted here through getSortDistance(), the same rule the radius above uses,
+        // so the active chip always matches what is on the list. Markers filtered out by
+        // category never had a road distance fetched, so they fall back to straight-line,
+        // which is the best figure available for them.
+        this.updateFilterCounts(
+            this.allMarkersGroup.getLayers().filter((marker) => this.getSortDistance(marker) <= distance)
+        );
     }
 
     /**
