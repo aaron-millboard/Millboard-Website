@@ -458,11 +458,15 @@ const markerIconUrl = el.dataset.mapItemMarkerUrl
 // height. The badge pins are taller than the shields because they carry the
 // wordmark and the chevrons (two for Approved, three for Advanced), and forcing
 // them to the shields' height shrank the lettering below legibility.
+// [width, height, anchorY], all from the artwork README. anchorY is the row the
+// pin's tip actually sits on, which is NOT the image height for the shields: they
+// carry two pixels of shadow below the point, so anchoring at 42 floated them off
+// their own coordinates.
 const PIN_SIZES = {
-    'installer': [36, 55],
-    'installer-advanced': [36, 62],
+    'installer': [36, 55, 55],
+    'installer-advanced': [36, 62, 62],
 };
-const [markerWidth, markerHeight] = PIN_SIZES[markerFile] || [32, 42];
+const [markerWidth, markerHeight, markerAnchorY] = PIN_SIZES[markerFile] || [32, 42, 40];
 
 let markerHtml = `
     <span class="leaflet-marker-icon__icon-container" aria-hidden="true">
@@ -483,8 +487,9 @@ let markerHtml = `
                 icon: L.divIcon({
                     html: markerHtml,
                     iconSize: [markerWidth, markerHeight],
-                    // Anchored on the point of the pin: half its own width, full height.
-                    iconAnchor: [Math.round(markerWidth / 2), markerHeight],
+                    // Anchored on the point of the pin: half its own width, and the row
+                    // its tip is actually on (see PIN_SIZES).
+                    iconAnchor: [Math.round(markerWidth / 2), markerAnchorY],
                 }),
 
                 // Custom object data.

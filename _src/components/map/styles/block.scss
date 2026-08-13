@@ -634,8 +634,17 @@
         //
         // The glyphs are drawn with currentColor, so setting `color` is all it takes.
         //
-        // Distributors and Showrooms need no rule: they take the Sustainable Green
-        // default from __type.
+        // Distributors need no rule: they take the Sustainable Green default from
+        // __type, which is the colour the artwork gives them.
+
+        // Showrooms: wenge, per the artwork README.
+        &[data-map-item-post-type='showroom'] #{$this}__listing__type {
+            border-color: var(--color--wenge);
+
+            #{$this}__listing__badge-icon {
+                color: var(--color--wenge);
+            }
+        }
 
         // Approved installers: olive.
         &[data-map-item-post-type='installer'] #{$this}__listing__type {
