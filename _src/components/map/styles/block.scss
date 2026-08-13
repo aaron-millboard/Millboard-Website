@@ -649,6 +649,22 @@
             color: var(--color--sustainabilitygreen);
         }
 
+        // Experience Centres wear the gold, so they stand apart from the ordinary
+        // stockists they sit above in the results.
+        //
+        // The outline and the glyph carry it, NOT the label: gold on Spring Wood is
+        // about 2.2:1, which fails AA at this size, so the wording stays Sustainable
+        // Green. The glyph is decorative and sits beside text that already says
+        // "Experience Centre", so it is not carrying meaning on colour alone.
+        &[data-map-item-post-type='experience_centre'] #{$this}__listing__type {
+            border-color: var(--mb-gold);
+
+            #{$this}__listing__badge-icon {
+                // The mark is drawn with currentColor, so this is all it takes.
+                color: var(--mb-gold);
+            }
+        }
+
         &__distance {
             @include typestyle-small;
 
