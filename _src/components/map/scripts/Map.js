@@ -69,9 +69,7 @@ class Map {
             this.LMAP_INITIAL_ZOOM = this.LMAP_GB_INITIAL_ZOOM;
         }
 
-        // Height is common to every pin; width follows each pin's own proportions
-        // (see PIN_RATIOS) so the badge pins are not squashed to the shield ratio.
-        this.LMAP_MARKER_HEIGHT = 40;
+        // Pin dimensions are per type now, see PIN_SIZES where the markers are built.
 
         this.METERS_TO_MILES_RATIO = 0.000621371;
 
@@ -456,15 +454,15 @@ const markerExtension = SVG_PIN_TYPES.includes(markerFile) ? 'svg' : 'png';
 const markerIconUrl = el.dataset.mapItemMarkerUrl
     || `/wp-content/themes/millboard/assets/images/icons/${markerFile}-marker.${markerExtension}`;
 
-// Each pin is drawn to its own proportions, so one size for all of them would
-// squash something: the shields are 32x42, the Approved badge 36x47 and the
-// Advanced badge 36x53. Scaled to a common height so they sit level on the map.
-const PIN_RATIOS = {
-    'installer': 36 / 47,
-    'installer-advanced': 36 / 53,
+// Drawn at the size each pin was designed for, rather than squeezed to a common
+// height. The badge pins are taller than the shields because they carry the
+// wordmark and the chevrons (two for Approved, three for Advanced), and forcing
+// them to the shields' height shrank the lettering below legibility.
+const PIN_SIZES = {
+    'installer': [36, 55],
+    'installer-advanced': [36, 62],
 };
-const markerHeight = this.LMAP_MARKER_HEIGHT;
-const markerWidth = Math.round(markerHeight * (PIN_RATIOS[markerFile] || 32 / 42));
+const [markerWidth, markerHeight] = PIN_SIZES[markerFile] || [32, 42];
 
 let markerHtml = `
     <span class="leaflet-marker-icon__icon-container" aria-hidden="true">
@@ -503,7 +501,10 @@ let markerHtml = `
             if (markerTooltipHtml) {
                 marker.bindPopup(markerTooltipHtml, {
                     className: 'map__marker-tooltip',
-                    offset: [0, -this.LMAP_MARKER_HEIGHT],
+                    // Lifted by THIS pin's height, not a fixed one: the badge pins are
+                    // taller than the shields, and a shared offset left the popup
+                    // overlapping them.
+                    offset: [0, -markerHeight],
                     // autoPan must stay off because these popups open on HOVER, not
                     // click. With it on, Leaflet pans the map so each popup fits, so
                     // simply moving the cursor across the pins walked the map away
