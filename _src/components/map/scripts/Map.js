@@ -718,7 +718,14 @@ let markerHtml = `
                 const filterValue = button.dataset.filterValue || '';
 
                 this.setActivePostTypeFilter(filterValue);
-                this.filterByDistanceAndPostType();
+
+                // Deliberately does NOT re-frame the map (hence `false`). Switching from
+                // All to Advanced Installers used to fit the map to every remaining
+                // marker, which threw the visitor from the town they had zoomed into out
+                // to a view of the whole world. Changing a category is a request to
+                // filter the list, not to go somewhere else, so the map stays put and
+                // only the pins and the cards change.
+                this.filterByDistanceAndPostType(false);
             });
         });
     }

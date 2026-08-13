@@ -619,9 +619,15 @@
             height: px-to-rem(12);
         }
 
-        // ---- Badge colour per location type (matches the map pins) ----
-        // Light fills take dark text, dark fills take Spring Wood, so the label
-        // keeps AA contrast either way (white on olive is only ~3.5:1).
+        // ---- Badge colour per location type ----
+        //
+        // Follows Dan's redesigned pins rather than the old solid blocks. The three
+        // location pins are a Spring Wood shield with a Sustainable Green outline and
+        // glyph, so the badges are drawn the same way: light fill, green outline, green
+        // label. Sustainable Green on Spring Wood is ~11:1, comfortably AA at this size.
+        //
+        // The two installer pins keep their tier colours, because green-versus-gold is
+        // the only thing distinguishing Approved from Advanced at a glance.
         &[data-map-item-post-type='installer'] #{$this}__listing__type {
             border-color: var(--color--olivegreen);
             background: var(--color--olivegreen);
@@ -635,22 +641,12 @@
             color: var(--color--black);
         }
 
-        &[data-map-item-post-type='distributor'] #{$this}__listing__type {
-            border-color: var(--color--sustainabilitygreen);
-            background: var(--color--sustainabilitygreen);
-            color: var(--mb-spring-wood);
-        }
-
-        &[data-map-item-post-type='experience_centre'] #{$this}__listing__type {
-            border-color: var(--mb-apple);
-            background: var(--mb-apple);
-            color: var(--color--sustainabilitygreen);
-        }
-
+        &[data-map-item-post-type='distributor'] #{$this}__listing__type,
+        &[data-map-item-post-type='experience_centre'] #{$this}__listing__type,
         &[data-map-item-post-type='showroom'] #{$this}__listing__type {
-            border-color: var(--color--wenge);
-            background: var(--color--wenge);
-            color: var(--mb-spring-wood);
+            border-color: var(--color--sustainabilitygreen);
+            background: var(--mb-spring-wood);
+            color: var(--color--sustainabilitygreen);
         }
 
         &__distance {

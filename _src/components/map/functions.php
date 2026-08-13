@@ -588,12 +588,20 @@ function marker_icon_url(string $marker, string $variant = 'marker'): string
  */
 function marker_icon_svg(string $marker, string $class = ''): string
 {
+    // Dan's redesigned marks, taken from his icons/inline export so the card badges,
+    // the key and the map pins are all drawn from the same set. Solid fills rather than
+    // the previous strokes, which is what the new pin artwork uses.
+    //
+    // NOTE: distributor and experience_centre are the SAME glyph in his export. That is
+    // how it was supplied, so it is reproduced faithfully here rather than invented
+    // around, but the two location types are indistinguishable in the card badge as a
+    // result and it is worth checking whether that was intended.
     $glyphs = [
-        'installer' => '<path d="M4 6.8L12 12L20 6.8" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M4 12L12 17.2L20 12" fill="none" stroke="currentColor" stroke-width="2.2"/>',
-        'installer-advanced' => '<path d="M4.4 5L12 9.4L19.6 5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4.4 9.8L12 14.2L19.6 9.8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4.4 14.6L12 19L19.6 14.6" fill="none" stroke="currentColor" stroke-width="2"/>',
-        'distributor' => '<rect x="3" y="5.5" width="18" height="3" fill="currentColor"/><rect x="3" y="10.5" width="18" height="3" fill="currentColor"/><rect x="3" y="15.5" width="18" height="3" fill="currentColor"/>',
-        'experience_centre' => '<path d="M3 13.2L12 6L21 13.2" fill="none" stroke="currentColor" stroke-width="2.2"/><rect x="3" y="16.6" width="18" height="3" fill="currentColor"/>',
-        'showroom' => '<rect x="4.2" y="5.4" width="15.6" height="13.2" fill="none" stroke="currentColor" stroke-width="2.2"/>',
+        'installer' => '<path d="M3 4.6L12 9.1L21 4.6L21 9.2L12 13.7L3 9.2Z" fill="currentColor"/><path d="M3 11.6L12 16.1L21 11.6L21 16.2L12 20.7L3 16.2Z" fill="currentColor"/>',
+        'installer-advanced' => '<path d="M3 3.4L12 7.9L21 3.4L21 6.8L12 11.3L3 6.8Z" fill="currentColor"/><path d="M3 8.4L12 12.9L21 8.4L21 11.8L12 16.3L3 11.8Z" fill="currentColor"/><path d="M3 13.4L12 17.9L21 13.4L21 16.8L12 21.3L3 16.8Z" fill="currentColor"/>',
+        'distributor' => '<path d="M4.9 5.4H19.1A1.2 1.2 0 0 1 20.2 6.15L21.6 9.4H2.4L3.8 6.15A1.2 1.2 0 0 1 4.9 5.4Z" fill="currentColor"/><path fill-rule="evenodd" d="M5.2 10.9H18.8A1.7 1.7 0 0 1 20.5 12.6V20.2H3.5V12.6A1.7 1.7 0 0 1 5.2 10.9ZM10.2 14.4H13.8A1.3 1.3 0 0 1 15.1 15.7V20.2H8.9V15.7A1.3 1.3 0 0 1 10.2 14.4Z" fill="currentColor"/>',
+        'experience_centre' => '<path d="M4.9 5.4H19.1A1.2 1.2 0 0 1 20.2 6.15L21.6 9.4H2.4L3.8 6.15A1.2 1.2 0 0 1 4.9 5.4Z" fill="currentColor"/><path fill-rule="evenodd" d="M5.2 10.9H18.8A1.7 1.7 0 0 1 20.5 12.6V20.2H3.5V12.6A1.7 1.7 0 0 1 5.2 10.9ZM10.2 14.4H13.8A1.3 1.3 0 0 1 15.1 15.7V20.2H8.9V15.7A1.3 1.3 0 0 1 10.2 14.4Z" fill="currentColor"/>',
+        'showroom' => '<rect x="3.7" y="4.4" width="16.6" height="11.6" rx="2.2" fill="currentColor"/><path d="M9.4 16.4L7.6 20.6M14.6 16.4L16.4 20.6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>',
     ];
 
     if (empty($glyphs[$marker])) {
