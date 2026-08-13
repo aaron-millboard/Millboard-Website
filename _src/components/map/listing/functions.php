@@ -39,7 +39,20 @@ function filter_args(array $args): ?array
 
     // Resolve the map pin here so PHP owns the path (and its cache-busting
     // version) rather than the script rebuilding it from a hardcoded theme URL.
-    if (!empty($args['marker'])) {
+    //
+    // Installers use their own accreditation badge when they have one, per Dan. It is
+    // drawn at 31x40, so a detailed badge will read as a small coloured blob; the
+    // simplified marks it replaces were made for that size. Falls back to the standard
+    // pin whenever a record has no badge, so the map never loses a marker.
+    if (!empty($args['id']) && ($args['post_type'] ?? '') === 'installer') {
+        $badge = \Granola\Components\Map\installer_badge_url((int) $args['id']);
+
+        if ($badge !== '') {
+            $args['attributes']['data-map-item-marker-url'] = $badge;
+        }
+    }
+
+    if (empty($args['attributes']['data-map-item-marker-url']) && !empty($args['marker'])) {
         $args['attributes']['data-map-item-marker-url'] = \Granola\Components\Map\marker_icon_url($args['marker']);
     }
 
