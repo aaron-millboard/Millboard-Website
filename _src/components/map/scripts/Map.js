@@ -69,7 +69,8 @@ class Map {
             this.LMAP_INITIAL_ZOOM = this.LMAP_GB_INITIAL_ZOOM;
         }
 
-        this.LMAP_MARKER_WIDTH = 31;
+        // Height is common to every pin; width follows each pin's own proportions
+        // (see PIN_RATIOS) so the badge pins are not squashed to the shield ratio.
         this.LMAP_MARKER_HEIGHT = 40;
 
         this.METERS_TO_MILES_RATIO = 0.000621371;
@@ -423,8 +424,6 @@ class Map {
             return;
         }
 
-        const markerHoizontalMiddle = this.LMAP_MARKER_WIDTH / 2; // Icon width / 2 to center it.
-
         this.listingEls.forEach((el) => {
             // Get data.
             const listingData = Map.getDataFromRowElement(el);
@@ -450,10 +449,22 @@ const isAdvancedInstaller = el.dataset.mapItemAdvancedInstaller === '1';
 // PHP resolves the pin (including its cache-busting version), so prefer that.
 // The fallback keeps older markup working if the attribute is ever absent.
 const markerFile = isAdvancedInstaller ? 'installer-advanced' : markerType;
-const SVG_PIN_TYPES = ['installer', 'installer-advanced', 'distributor', 'experience_centre', 'showroom'];
+// The two installer pins are the accreditation badges and ship as PNG; the three
+// location pins are flat shields and ship as SVG. Mirrors marker_icon_url() in PHP.
+const SVG_PIN_TYPES = ['distributor', 'experience_centre', 'showroom'];
 const markerExtension = SVG_PIN_TYPES.includes(markerFile) ? 'svg' : 'png';
 const markerIconUrl = el.dataset.mapItemMarkerUrl
     || `/wp-content/themes/millboard/assets/images/icons/${markerFile}-marker.${markerExtension}`;
+
+// Each pin is drawn to its own proportions, so one size for all of them would
+// squash something: the shields are 32x42, the Approved badge 36x47 and the
+// Advanced badge 36x53. Scaled to a common height so they sit level on the map.
+const PIN_RATIOS = {
+    'installer': 36 / 47,
+    'installer-advanced': 36 / 53,
+};
+const markerHeight = this.LMAP_MARKER_HEIGHT;
+const markerWidth = Math.round(markerHeight * (PIN_RATIOS[markerFile] || 32 / 42));
 
 let markerHtml = `
     <span class="leaflet-marker-icon__icon-container" aria-hidden="true">
@@ -461,8 +472,8 @@ let markerHtml = `
             class="leaflet-marker-icon__icon"
             src="${markerIconUrl}"
             alt="${listingData.postType} marker"
-            width="${this.LMAP_MARKER_WIDTH}"
-            height="${this.LMAP_MARKER_HEIGHT}"
+            width="${markerWidth}"
+            height="${markerHeight}"
         />
         <span class="screen-reader-text">${listingTitle}</span>
     </span>
@@ -473,8 +484,9 @@ let markerHtml = `
                 autoPanOnFocus: true,
                 icon: L.divIcon({
                     html: markerHtml,
-                    iconSize: [this.LMAP_MARKER_WIDTH, this.LMAP_MARKER_HEIGHT],
-                    iconAnchor: [markerHoizontalMiddle, this.LMAP_MARKER_HEIGHT], // Icon radius / 2 to center it.
+                    iconSize: [markerWidth, markerHeight],
+                    // Anchored on the point of the pin: half its own width, full height.
+                    iconAnchor: [Math.round(markerWidth / 2), markerHeight],
                 }),
 
                 // Custom object data.

@@ -554,52 +554,16 @@ function generate_filters($args): array
  * swatch); 'badge' is the small white glyph used inside the card's type badge.
  * Types with SVG artwork use it; anything else falls back to the legacy PNG pin.
  */
-/**
- * An installer's own accreditation badge, for use as its map pin.
- *
- * Dan asked for the real badges on the pins rather than the simplified marks. The badge is a
- * block attribute on acf/installer-profile-header, not post meta, so the block has to be
- * parsed. Cached per post because the finder renders every installer on one page and would
- * otherwise parse the same content repeatedly.
- *
- * Returns '' when there is no badge, so the caller falls back to the standard pin.
- */
-function installer_badge_url(int $post_id): string
-{
-    static $cache = [];
-
-    if (array_key_exists($post_id, $cache)) {
-        return $cache[$post_id];
-    }
-
-    $cache[$post_id] = '';
-
-    foreach (\parse_blocks((string) \get_post_field('post_content', $post_id)) as $block) {
-        if (($block['blockName'] ?? '') !== 'acf/installer-profile-header') {
-            continue;
-        }
-
-        $badge = $block['attrs']['data']['badge_image'] ?? '';
-
-        if (is_numeric($badge)) {
-            $cache[$post_id] = (string) \wp_get_attachment_image_url((int) $badge, 'medium');
-        } elseif (is_string($badge) && $badge !== '') {
-            $cache[$post_id] = $badge;
-        }
-
-        break;
-    }
-
-    return $cache[$post_id];
-}
-
 function marker_icon_url(string $marker, string $variant = 'marker'): string
 {
     if ($marker === '') {
         return '';
     }
 
-    $has_svg = in_array($marker, ['installer', 'installer-advanced', 'distributor', 'experience_centre', 'showroom'], true);
+    // The two installer pins are the accreditation badges and ship as PNG; the three
+    // location pins are flat shields and ship as SVG. Keep this in step with
+    // SVG_PIN_TYPES in Map.js, which makes the same decision for the fallback path.
+    $has_svg = in_array($marker, ['distributor', 'experience_centre', 'showroom'], true);
     $extension = $has_svg ? 'svg' : 'png';
     $file = $marker . '-marker.' . $extension;
     $url = \get_template_directory_uri() . '/assets/images/icons/' . $file;
