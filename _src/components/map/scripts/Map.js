@@ -115,6 +115,9 @@ class Map {
         this.ROAD_DISTANCE_REQUEST_TIMEOUT_MS = 20000;
         this.showMoreButton = null;
         this.currentOverflowCount = 0;
+        // The one prioritised result promoted above the distance ordering. Set per sort,
+        // because which one is nearest depends on where the visitor searched.
+        this.nearestPrioritised = null;
 
         if (typeof L === 'object') {
             this.init();
@@ -1562,9 +1565,13 @@ let markerHtml = `
     }
 
     sortlistingEls(filteredLayers) {
+        // Which single prioritised result gets promoted. Recomputed per sort because it
+        // depends on where the visitor searched.
+        this.nearestPrioritised = this.findNearestPrioritised(filteredLayers);
+
         // Grade results (brief §2/§3): Experience Centres within range first,
-        // then preferred stockists, then everything else — each ordered by
-        // distance (road distance when known, else straight-line).
+        // then the nearest preferred stockist or Advanced installer, then everything
+        // else — each ordered by distance (road distance when known, else straight-line).
         const ordered = [...filteredLayers].sort((a, b) => {
             const rankDiff = this.getListingRank(a) - this.getListingRank(b);
 
@@ -1599,26 +1606,60 @@ let markerHtml = `
     }
 
     /**
+     * Is this marker a preferred stockist or an Advanced installer?
+     *
+     * data-map-item-priority, not -preferred: the priority band covers a distributor
+     * flagged as a preferred stockist AND an installer flagged as Advanced. Reading the
+     * distributor-only flag meant Advanced installers were never promoted.
+     */
+    isPrioritisedMarker(marker) {
+        const listingEl = marker.options.themeData.listingElement;
+
+        return Boolean(listingEl) && listingEl.getAttribute('data-map-item-priority') === '1';
+    }
+
+    /**
+     * The closest prioritised result in the current set, or null.
+     *
+     * Only ONE gets promoted. Promoting all of them buried the genuinely local results:
+     * a search for Guildford led with five Advanced installers at 14, 31, 48, 65 and 74
+     * miles before an Approved installer 2.7 miles away, and included Advanced installers
+     * in France. Dan's call, and plainly right — one nearby Advanced is a recommendation,
+     * ten of them ordered by distance is just a different list.
+     */
+    findNearestPrioritised(markers) {
+        let best = null;
+        let bestDistance = Infinity;
+
+        markers.forEach((marker) => {
+            if (!this.isPrioritisedMarker(marker)) {
+                return;
+            }
+
+            const distance = this.getSortDistance(marker);
+
+            if (Number.isFinite(distance) && distance < bestDistance) {
+                bestDistance = distance;
+                best = marker;
+            }
+        });
+
+        return best;
+    }
+
+    /**
      * Grade band for a marker's listing: 0 = Experience Centre within range,
-     * 1 = preferred stockist, 2 = everything else.
+     * 1 = the single nearest preferred stockist or Advanced installer,
+     * 2 = everything else, including any other prioritised results.
      */
     getListingRank(marker) {
-        const data = marker.options.themeData;
-        const listingEl = data.listingElement;
-
-        const isExperienceCentre = data.postType === 'experience_centre';
-        // data-map-item-priority, not -preferred: the priority band covers a
-        // distributor flagged as a preferred stockist AND an installer flagged as
-        // Advanced. Reading the distributor-only flag meant Advanced installers were
-        // never promoted.
-        const isPrioritised = listingEl
-            && listingEl.getAttribute('data-map-item-priority') === '1';
+        const isExperienceCentre = marker.options.themeData.postType === 'experience_centre';
 
         if (isExperienceCentre && this.getSortDistance(marker) <= this.EC_SURFACE_RADIUS_MILES) {
             return 0;
         }
 
-        if (isPrioritised) {
+        if (this.nearestPrioritised && marker === this.nearestPrioritised) {
             return 1;
         }
 
