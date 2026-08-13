@@ -595,10 +595,14 @@
             gap: var(--space--3xs);
         }
 
-        // Type badge. Filled with the same colour as the location's map pin (see
-        // the per-type rules below), so card and map read as one system. Text
-        // colour follows each colour's brand foreground so the label stays
-        // legible: white on the dark greens and wenge, dark on olive and apple.
+        // Type badge: outlined, never solid-filled. Distributors were outlined and
+        // installers were solid, which read as two different components across the two
+        // finders. The outline is the one kept, because it is what Dan's redesigned
+        // pins do (Spring Wood shield, coloured outline and glyph) and what the brand
+        // guide's line-based marks call for.
+        //
+        // Fill and label are fixed here; only the outline and the glyph change per type
+        // (see below).
         &__type {
             @include typestyle-meta;
 
@@ -606,10 +610,10 @@
             align-items: center;
             gap: px-to-rem(6);
             padding: px-to-rem(5) px-to-rem(9);
-            border: 1px solid var(--mb-wenge);
+            border: 1px solid var(--color--sustainabilitygreen);
             border-radius: px-to-rem(2);
-            background: var(--mb-wenge);
-            color: var(--mb-spring-wood);
+            background: var(--mb-spring-wood);
+            color: var(--color--sustainabilitygreen);
             letter-spacing: 0.08em;
         }
 
@@ -619,48 +623,40 @@
             height: px-to-rem(12);
         }
 
-        // ---- Badge colour per location type ----
+        // ---- Accent per location type: outline and glyph only ----
         //
-        // Follows Dan's redesigned pins rather than the old solid blocks. The three
-        // location pins are a Spring Wood shield with a Sustainable Green outline and
-        // glyph, so the badges are drawn the same way: light fill, green outline, green
-        // label. Sustainable Green on Spring Wood is ~11:1, comfortably AA at this size.
+        // The fill and the label are fixed on __type above; only the accent changes.
+        // The label is ALWAYS Sustainable Green, about 11:1 on Spring Wood, because the
+        // accents cannot carry text at this size: olive is roughly 3.0:1 and gold
+        // roughly 2.2:1, both under AA. The accent sits on the outline and the glyph,
+        // beside wording that already names the type, so nothing is signalled by colour
+        // alone.
         //
-        // The two installer pins keep their tier colours, because green-versus-gold is
-        // the only thing distinguishing Approved from Advanced at a glance.
+        // The glyphs are drawn with currentColor, so setting `color` is all it takes.
+        //
+        // Distributors and Showrooms need no rule: they take the Sustainable Green
+        // default from __type.
+
+        // Approved installers: olive.
         &[data-map-item-post-type='installer'] #{$this}__listing__type {
             border-color: var(--color--olivegreen);
-            background: var(--color--olivegreen);
-            color: var(--color--black);
+
+            #{$this}__listing__badge-icon {
+                color: var(--color--olivegreen);
+            }
         }
 
-        // Advanced installers: gold. Must come after the installer rule above.
-        &[data-map-item-advanced-installer='1'] #{$this}__listing__type {
-            border-color: var(--mb-gold);
-            background: var(--mb-gold);
-            color: var(--color--black);
-        }
-
-        &[data-map-item-post-type='distributor'] #{$this}__listing__type,
-        &[data-map-item-post-type='experience_centre'] #{$this}__listing__type,
-        &[data-map-item-post-type='showroom'] #{$this}__listing__type {
-            border-color: var(--color--sustainabilitygreen);
-            background: var(--mb-spring-wood);
-            color: var(--color--sustainabilitygreen);
-        }
-
-        // Experience Centres wear the gold, so they stand apart from the ordinary
-        // stockists they sit above in the results.
+        // Gold marks out the two that should stand apart: Advanced installers from
+        // Approved, and Experience Centres from the stockists they sit above. The two
+        // never appear on the same page, so there is no ambiguity between them.
         //
-        // The outline and the glyph carry it, NOT the label: gold on Spring Wood is
-        // about 2.2:1, which fails AA at this size, so the wording stays Sustainable
-        // Green. The glyph is decorative and sits beside text that already says
-        // "Experience Centre", so it is not carrying meaning on colour alone.
+        // The Advanced selector must come after the installer rule above, because an
+        // Advanced installer carries both attributes.
+        &[data-map-item-advanced-installer='1'] #{$this}__listing__type,
         &[data-map-item-post-type='experience_centre'] #{$this}__listing__type {
             border-color: var(--mb-gold);
 
             #{$this}__listing__badge-icon {
-                // The mark is drawn with currentColor, so this is all it takes.
                 color: var(--mb-gold);
             }
         }
