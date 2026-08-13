@@ -171,6 +171,67 @@ function filter_args(array $args): ?array
 }
 
 /**
+ * Sends a partner record's own page to the page `directory_link` names.
+ *
+ * Without this the reclassified Experience Centres would each have two public pages: the
+ * fuller one under /experience-centres/ that the finder now links to, and this record's own
+ * profile saying much the same thing. One canonical page per centre instead.
+ *
+ * Deliberately narrow: it only fires on a single view of a partner record that actually has
+ * the field filled in, and never in the admin or on a preview, so an editor can still see
+ * what the record itself renders.
+ */
+function redirect_to_directory_link(): void
+{
+    if (\is_admin() || \is_preview() || !\is_singular(['distributor', 'showroom', 'experience_centre'])) {
+        return;
+    }
+
+    $post = \get_queried_object();
+
+    if (!$post instanceof \WP_Post) {
+        return;
+    }
+
+    $target = listing_url($post);
+    $own = (string) \get_permalink($post);
+
+    // listing_url() falls back to the permalink, so an empty field is a no-op.
+    if ($target === '' || \untrailingslashit($target) === \untrailingslashit($own)) {
+        return;
+    }
+
+    \wp_safe_redirect($target, 301);
+    exit;
+}
+
+/**
+ * Where a listing's "More info" should go.
+ *
+ * Normally the record's own page. Experience Centres are the exception: each one already
+ * has a fuller, already-indexed page under /experience-centres/ with video and photography,
+ * so the record carries a `directory_link` pointing at it and the finder sends people there
+ * instead. Publishing a near-identical profile alongside it would put two pages per centre
+ * on our own domain competing with each other, for the sake of three records.
+ *
+ * Falls back to the permalink whenever the field is empty or points at something unpublished,
+ * so a half-filled record still links somewhere real.
+ */
+function listing_url(\WP_Post $wp_post): string
+{
+    $link = \get_field('directory_link', $wp_post->ID);
+
+    // page_link returns a URL string, but is set to return an ID on some installs.
+    if (is_numeric($link)) {
+        $link = \get_post_status((int) $link) === 'publish' ? \get_permalink((int) $link) : '';
+    }
+
+    $link = is_string($link) ? trim($link) : '';
+
+    return $link !== '' ? $link : (string) \get_permalink($wp_post);
+}
+
+/**
  * Returns a human-readable "location type" label for a map listing, used for
  * the listing tag / popup badge. Distributors and installers use their taxonomy
  * term (with a sensible default); Experience Centres and Showrooms use a fixed
@@ -368,7 +429,7 @@ function get_item_data($args): array|null
             'phone' => \get_field('phone', $wp_post_id),
             'email' => \get_field('email', $wp_post_id),
             'website' => \get_field('website', $wp_post_id),
-            'url' => \get_permalink($wp_post),
+            'url' => listing_url($wp_post),
             'post' => $wp_post,
             'post_type' => $post_type,
             'type_label' => get_type_label($wp_post, $advanced_installer),
