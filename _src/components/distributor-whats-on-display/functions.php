@@ -50,10 +50,17 @@ function filter_args(array $args): ?array
         !empty($args['image']) ? $args['image'] : \get_field('display_photo', $post_id)
     );
 
-    // Render when there is EITHER something to list OR a photo of the branch. Gating on the
-    // list alone hid the branch photo on every record that had one, and almost no distributor
-    // can tell us which Millboard ranges are physically on their floor.
-    if (empty($args['groups']) && empty($args['image']) && empty($args['is_preview'])) {
+    // Render when there is ANY of: something to list, a photo of the branch, or a written
+    // description. Gating on the list alone hid the branch photo on every record that had one,
+    // and almost no distributor can tell us which Millboard ranges are physically on their
+    // floor. The intro was then added for branches whose description is prose rather than a
+    // list of services, and had to be included here or those sections rendered nothing at all.
+    if (
+        empty($args['groups'])
+        && empty($args['image'])
+        && empty(trim(wp_strip_all_tags((string) $args['intro'])))
+        && empty($args['is_preview'])
+    ) {
         return null;
     }
 

@@ -238,7 +238,10 @@
             display: flex;
             flex-wrap: wrap;
             align-items: center;
-            gap: var(--space--s) var(--space--l);
+            // Narrow screens: a full body gap between the geolocate box and the
+            // field ate enough width to clip the placeholder, so the column gap
+            // is tightened here and only opens up once there is room for it.
+            gap: var(--space--s);
 
             // Desktop: search / geolocate / key / distance on one line. The
             // search takes exactly the results-panel width and the form gap
@@ -247,16 +250,20 @@
             // distance control to the right.
             @include mq(large) {
                 flex-wrap: nowrap;
+                gap: var(--space--s) var(--space--l);
             }
         }
 
         &__input-wrapper {
             display: flex;
             align-items: stretch;
-            flex: 1 1 px-to-rem(320);
+            // Takes the rest of the row on a phone. A 220px minimum plus the
+            // geolocate box overflowed a 375px screen, which is what pushed the
+            // field narrower than its own placeholder.
+            flex: 1 1 px-to-rem(200);
+            min-width: 0;
             // Match the results panel so the search lines up with the cards.
             max-width: var(--map-panel-width);
-            min-width: px-to-rem(220);
             height: var(--map-control-height);
             overflow: hidden;
             border: 1px solid var(--mb-rule);
@@ -267,6 +274,7 @@
             // starts exactly on the map's left edge.
             @include mq(large) {
                 flex: 0 0 var(--map-panel-width);
+                min-width: px-to-rem(220);
             }
         }
 
@@ -278,9 +286,17 @@
             flex: 1;
             min-width: 0;
             border: 0;
-            padding: 0 px-to-rem(16);
+            padding: 0 px-to-rem(12);
             font-weight: var(--fw-light, 300);
             line-height: 1;
+            // The placeholder is a full sentence and is the first thing that gets
+            // clipped, so it is allowed to shorten with an ellipsis rather than
+            // being cut mid-word by the submit button.
+            text-overflow: ellipsis;
+
+            @include mq(large) {
+                padding: 0 px-to-rem(16);
+            }
         }
 
         &__submit {
@@ -290,8 +306,14 @@
             align-items: center;
             justify-content: center;
             flex: none;
-            width: px-to-rem(54);
+            // Narrower on a phone: 54px of solid block was taking width the
+            // placeholder needed. Full size again once the row has room.
+            width: px-to-rem(44);
             min-height: 100%;
+
+            @include mq(large) {
+                width: px-to-rem(54);
+            }
             padding: 0;
             border: 0;
             border-radius: 0;
@@ -739,7 +761,11 @@
         &__actions {
             display: flex;
             flex-wrap: wrap;
-            align-items: center;
+            // Stretch, not centre. Centring let each button keep its own natural
+            // height, so the labelled "More info" sat lower than the icon-only
+            // buttons beside it. Stretching makes every button in a row the same
+            // height, which lines their edges up by construction.
+            align-items: stretch;
             gap: px-to-rem(8);
             margin-top: px-to-rem(4);
         }
