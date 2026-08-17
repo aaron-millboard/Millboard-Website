@@ -28,9 +28,11 @@
         @include button--secondary;
     }
 
+    &--solid {
+        @include button--solid;
+    }
+
     @include button--interaction;
-
-
 }
 
 // Override hover colors:
@@ -40,7 +42,6 @@
 .has-brand-5-background-color,
 .has-brand-3-background-color,
 .has-brand-6-background-color {
-
     --button--background-color: transparent;
     --button--border-color: var(--color--white);
     --button--color: var(--color--white);

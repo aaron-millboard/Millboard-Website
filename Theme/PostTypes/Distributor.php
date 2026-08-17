@@ -49,9 +49,13 @@ class Distributor
             'taxonomies' => [
                 'distributor_type',
             ],
+            // Profile layout. A bespoke hero replaces the theme page header on these
+            // records, so site-main's has_own_header() has to list it or the page ends
+            // up with two h1 elements. The contact form is an existing block and stays
+            // as it is.
             'template' => [
                 [
-                    'acf/page-header',
+                    'acf/distributor-profile-hero',
                     [
                         'lock' => [
                             'remove' => true,
@@ -59,7 +63,18 @@ class Distributor
                         ]
                     ]
                 ],
-                ['acf/partner-contact-form'],
+                ['acf/distributor-location-status'],
+                // The contact card and opening hours are one block, not a pair
+                // inside a wrapper: the theme unregisters core/group, core/columns
+                // and core/column in the editor, so no wrapper block exists to put
+                // them in.
+                ['acf/distributor-contact-hours'],
+                ['acf/distributor-whats-on-display'],
+                ['acf/distributor-location-map'],
+                // The same enquiry form the installer profiles use, so the two
+                // partner types read as one system. Its postTypes were extended
+                // rather than the styling duplicated, so there is one source of truth.
+                ['acf/installer-quote-form'],
                 [
                     'core/paragraph',
                     [

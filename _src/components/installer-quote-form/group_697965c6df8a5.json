@@ -1,0 +1,121 @@
+{
+    "key": "group_697965c6df8a5",
+    "title": "Block - Installer Quote Form",
+    "fields": [
+        {
+            "key": "field_697965c6f001",
+            "label": "Eyebrow",
+            "name": "eyebrow",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": { "width": "", "class": "", "id": "" },
+            "default_value": "Request a quote",
+            "maxlength": "",
+            "placeholder": "",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_697965c6f002",
+            "label": "Heading",
+            "name": "heading",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": { "width": "", "class": "", "id": "" },
+            "default_value": "Let's design your outdoor room",
+            "maxlength": "",
+            "placeholder": "",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_697965c6f003",
+            "label": "Intro",
+            "name": "intro",
+            "aria-label": "",
+            "type": "textarea",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": { "width": "", "class": "", "id": "" },
+            "default_value": "",
+            "maxlength": "",
+            "rows": 3,
+            "placeholder": "",
+            "new_lines": ""
+        },
+        {
+            "key": "field_697965c6f004",
+            "label": "HubSpot form ID",
+            "name": "hs_form_id",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "The data-form-id of the HubSpot form to embed.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": { "width": "50", "class": "", "id": "" },
+            "default_value": "",
+            "maxlength": "",
+            "placeholder": "8754dc2c-4b9a-4e9f-bc85-4acc2a171c38",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_697965c6f005",
+            "label": "HubSpot portal ID",
+            "name": "hs_portal_id",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": { "width": "25", "class": "", "id": "" },
+            "default_value": "26853518",
+            "maxlength": "",
+            "placeholder": "26853518",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_697965c6f006",
+            "label": "HubSpot region",
+            "name": "hs_region",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": { "width": "25", "class": "", "id": "" },
+            "default_value": "eu1",
+            "maxlength": "",
+            "placeholder": "eu1",
+            "prepend": "",
+            "append": ""
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "block",
+                "operator": "==",
+                "value": "acf/installer-quote-form"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "",
+    "show_in_rest": 0,
+    "modified": 1785472000
+}

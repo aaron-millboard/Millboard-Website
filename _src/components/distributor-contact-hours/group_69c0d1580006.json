@@ -1,0 +1,69 @@
+{
+    "key": "group_69c0d1580006",
+    "title": "Block - Distributor Contact & Hours",
+    "fields": [
+        {
+            "key": "field_69c0d1580601",
+            "label": "Contact eyebrow",
+            "name": "contact_heading",
+            "type": "text",
+            "instructions": "Small label above the named contact. Defaults to Speak to.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": { "width": "50", "class": "", "id": "" },
+            "default_value": "",
+            "maxlength": "",
+            "placeholder": "",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_69c0d1580602",
+            "label": "Opening hours heading",
+            "name": "hours_heading",
+            "type": "text",
+            "instructions": "Defaults to Opening hours.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": { "width": "50", "class": "", "id": "" },
+            "default_value": "",
+            "maxlength": "",
+            "placeholder": "",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_69c0d1580603",
+            "label": "Contact footnote",
+            "name": "contact_note",
+            "type": "text",
+            "instructions": "Optional small print under the branch contact links.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": { "width": "", "class": "", "id": "" },
+            "default_value": "",
+            "maxlength": "",
+            "placeholder": "",
+            "prepend": "",
+            "append": ""
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "block",
+                "operator": "==",
+                "value": "acf/distributor-contact-hours"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "",
+    "show_in_rest": 0
+}

@@ -1,0 +1,84 @@
+// =============================================================================
+// Distributor Profile Hero
+// Replaces the theme page header on distributor / showroom / experience-centre
+// records: breadcrumbs, location eyebrow, name, short address. Left aligned on the
+// page background, per the design, rather than the centred banded page header.
+// =============================================================================
+
+.distributor-profile-hero {
+    --dph--olive: var(--color--olivegreen);
+    // The eyebrow sits on the mist band, not on the page background. Mist is darker,
+    // so the olive that passes AA elsewhere (#5c7010) drops to 4.04:1 here and fails.
+    // The deep olive passes comfortably at ~8.5:1 and stays in the same family.
+    --dph--accent-text: var(--color--sustainabilitygreen);
+    --dph--body: #{rgba(#151716, 0.76)};
+    --dph--rule: #{rgba(#151716, 0.14)};
+
+    // The theme's block margins would add a band above the breadcrumbs and below
+    // the address; this block sets its own rhythm.
+    --block--margin-top: 0;
+    --block--margin-bottom: 0;
+
+    // Banded header, matching the page header this block replaces, so a profile
+    // still opens with a clear header rather than running straight into the body.
+    padding-bottom: clamp(28px, 4vw, 44px);
+    background-color: var(--color--mist);
+
+    // ---- Breadcrumbs --------------------------------------------------------
+    // No rule under the trail: it read as a stray full-width line under the header.
+    &__breadcrumbs {
+        margin-bottom: clamp(20px, 3vw, 32px);
+    }
+
+    &__breadcrumbs-inner {
+        max-width: var(--width--responsive--l);
+        margin: 0 auto;
+        padding: px-to-rem(14) 0;
+
+        .breadcrumbs {
+            margin: 0;
+        }
+    }
+
+    // ---- Content ------------------------------------------------------------
+    &__inner {
+        display: grid;
+        gap: px-to-rem(14);
+        justify-items: start;
+        max-width: var(--width--responsive--l);
+        margin: 0 auto;
+    }
+
+    // typestyle-meta is the theme's step for an uppercase tracked micro-label, and it
+    // carries the size, weight, family and tracking. Was a flat 13px, below every step
+    // on the scale.
+    &__preheading {
+        @include typestyle-meta;
+
+        margin: 0;
+        color: var(--dph--accent-text);
+    }
+
+    &__heading {
+        @include typestyle-h1;
+
+        margin: 0;
+        text-align: left;
+    }
+
+    &__address {
+        display: flex;
+        align-items: center;
+        gap: px-to-rem(10);
+        margin: 0;
+        color: var(--dph--body);
+    }
+
+    // The theme resets `svg { width: 100% }`, so inline icons need explicit sizes.
+    &__pin {
+        flex: none;
+        width: px-to-rem(16);
+        height: px-to-rem(16);
+        color: var(--dph--olive);
+    }
+}

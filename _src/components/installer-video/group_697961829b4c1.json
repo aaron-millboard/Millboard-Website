@@ -1,0 +1,143 @@
+{
+    "key": "group_697961829b4c1",
+    "title": "Block - Installer Video",
+    "fields": [
+        {
+            "key": "field_69796182b001",
+            "label": "Eyebrow",
+            "name": "eyebrow",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "Small label above the heading.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": { "width": "", "class": "", "id": "" },
+            "default_value": "Meet the team",
+            "maxlength": "",
+            "placeholder": "",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_69796182b002",
+            "label": "Heading",
+            "name": "heading",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": { "width": "", "class": "", "id": "" },
+            "default_value": "See how we work",
+            "maxlength": "",
+            "placeholder": "",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_69796182b003",
+            "label": "Intro",
+            "name": "intro",
+            "aria-label": "",
+            "type": "textarea",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": { "width": "", "class": "", "id": "" },
+            "default_value": "",
+            "maxlength": "",
+            "rows": 4,
+            "placeholder": "",
+            "new_lines": ""
+        },
+        {
+            "key": "field_69796182b004",
+            "label": "Cover image",
+            "name": "cover_image",
+            "aria-label": "",
+            "type": "image",
+            "instructions": "Poster image shown before the video plays.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": { "width": "", "class": "", "id": "" },
+            "return_format": "id",
+            "preview_size": "medium",
+            "library": "all",
+            "min_width": "",
+            "min_height": "",
+            "min_size": "",
+            "max_width": "",
+            "max_height": "",
+            "max_size": "",
+            "mime_types": ""
+        },
+        {
+            "key": "field_69796182b005",
+            "label": "Video URL",
+            "name": "video_url",
+            "aria-label": "",
+            "type": "url",
+            "instructions": "YouTube or Vimeo link. Clicking the poster plays it inline (other links open in a new tab).",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": { "width": "70", "class": "", "id": "" },
+            "default_value": "",
+            "placeholder": "https://www.youtube.com/watch?v=..."
+        },
+        {
+            "key": "field_69796182b006",
+            "label": "Duration",
+            "name": "duration",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "Optional badge, e.g. \"2:14\".",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": { "width": "30", "class": "", "id": "" },
+            "default_value": "",
+            "maxlength": "8",
+            "placeholder": "2:14",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_69796182b007",
+            "label": "Aspect ratio",
+            "name": "aspect",
+            "aria-label": "",
+            "type": "button_group",
+            "instructions": "Match this to the video so it fills the frame with no black bars. Most videos are 16:9.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": { "width": "", "class": "", "id": "" },
+            "choices": {
+                "16:9": "16:9",
+                "4:3": "4:3",
+                "21:9": "21:9 (cinematic)",
+                "1:1": "1:1 (square)"
+            },
+            "default_value": "16:9",
+            "return_format": "value",
+            "allow_null": 0
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "block",
+                "operator": "==",
+                "value": "acf/installer-video"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "",
+    "show_in_rest": 0,
+    "modified": 1785470000
+}

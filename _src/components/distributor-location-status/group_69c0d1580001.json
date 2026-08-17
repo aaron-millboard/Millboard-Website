@@ -1,0 +1,69 @@
+{
+    "key": "group_69c0d1580001",
+    "title": "Block - Distributor Location Status",
+    "fields": [
+        {
+            "key": "field_69c0d1580101",
+            "label": "Show address line",
+            "name": "show_address",
+            "type": "true_false",
+            "instructions": "Street, town and postcode. Off by default because the profile hero already shows it.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": { "width": "33", "class": "", "id": "" },
+            "message": "",
+            "default_value": 0,
+            "ui": 1,
+            "ui_on_text": "",
+            "ui_off_text": ""
+        },
+        {
+            "key": "field_69c0d1580102",
+            "label": "Show badges",
+            "name": "show_badges",
+            "type": "true_false",
+            "instructions": "Stockist, stock state and Millboard display.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": { "width": "33", "class": "", "id": "" },
+            "message": "",
+            "default_value": 1,
+            "ui": 1,
+            "ui_on_text": "",
+            "ui_off_text": ""
+        },
+        {
+            "key": "field_69c0d1580103",
+            "label": "Show open / closed",
+            "name": "show_status",
+            "type": "true_false",
+            "instructions": "Live line derived from the record's opening hours. Hidden automatically when no hours are set.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": { "width": "34", "class": "", "id": "" },
+            "message": "",
+            "default_value": 1,
+            "ui": 1,
+            "ui_on_text": "",
+            "ui_off_text": ""
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "block",
+                "operator": "==",
+                "value": "acf/distributor-location-status"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "",
+    "show_in_rest": 0
+}

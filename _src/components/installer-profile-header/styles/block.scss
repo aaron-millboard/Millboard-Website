@@ -1,0 +1,436 @@
+// =============================================================================
+// Installer Profile Header
+// Bespoke hero for the single installer profile. Tier (Approved / Advanced) and
+// the contact details are read from the Installer Details fields; the rest come
+// from the block. Palette + type follow the Millboard brand tokens in core.
+// =============================================================================
+
+.installer-profile-header {
+    --iph--accent: var(--color--olivegreen);
+    // Darker olive for small accent TEXT — #799513 only hits 3.2:1 on the light
+    // background (fails WCAG AA); this passes at ~5.2:1.
+    --iph--accent-text: #5c7010;
+    --iph--dark: var(--color--black);
+    --iph--light: var(--color--springwood);
+    --iph--muted: #{rgba(#151716, 0.66)};
+    --iph--rule: #{rgba(#151716, 0.14)};
+
+    padding: 0 0 clamp(40px, 5vw, 60px);
+    color: var(--color--foreground);
+
+    // ---- Breadcrumbs ---------------------------------------------------------
+    // Inherit the site's breadcrumb colour + size (no overrides here).
+    &__breadcrumbs {
+        max-width: var(--width--responsive--l);
+        margin: 0 auto clamp(24px, 4vw, 40px);
+        padding: px-to-rem(14) 0 0;
+
+        .breadcrumbs {
+            margin: 0;
+        }
+    }
+
+    &__inner {
+        display: flex;
+        flex-direction: column;
+        gap: clamp(24px, 4vw, 40px);
+        max-width: var(--width--responsive--l);
+        margin: 0 auto;
+        padding: 0;
+
+        @include mq(large) {
+            flex-direction: row;
+            align-items: center;
+            gap: px-to-rem(44);
+        }
+    }
+
+    &__body {
+        @include mq(large) {
+            flex: 1 1 50%;
+            min-width: 0;
+        }
+    }
+
+    // ---- Eyebrow (tier label) ------------------------------------------------
+    &__eyebrow {
+        margin: 0 0 px-to-rem(14);
+        @include typestyle-meta;
+
+        letter-spacing: 0.08em;
+        color: var(--iph--accent-text);
+    }
+
+    // ---- Title (inherits the site h1 hierarchy) ------------------------------
+    &__title {
+        margin: 0 0 px-to-rem(14);
+        overflow-wrap: break-word;
+    }
+
+    // ---- Tagline (site body size) --------------------------------------------
+    &__tagline {
+        margin: 0 0 px-to-rem(16);
+        max-width: 46ch;
+        color: var(--iph--muted);
+    }
+
+    // ---- Location ------------------------------------------------------------
+    &__location {
+        display: flex;
+        align-items: center;
+        gap: px-to-rem(9);
+        margin: 0 0 px-to-rem(12);
+        font-size: px-to-rem(16);
+        color: var(--iph--muted);
+    }
+
+    &__pin {
+        flex: none;
+        // The theme applies a global `svg { width: 100% }` reset, so inline
+        // icons MUST be given explicit dimensions or they blow up to full width.
+        width: px-to-rem(15);
+        height: px-to-rem(15);
+        color: var(--iph--accent);
+    }
+
+    // ---- Rating --------------------------------------------------------------
+    &__rating {
+        display: inline-flex;
+        align-items: center;
+        gap: px-to-rem(8);
+        margin: 0 0 px-to-rem(22);
+        @include typestyle-small;
+        color: var(--iph--muted);
+        text-decoration: none;
+    }
+
+    a#{&}__rating:hover &__rating-value,
+    a#{&}__rating:hover {
+        color: var(--iph--accent);
+    }
+
+    &__stars {
+        display: inline-flex;
+        gap: px-to-rem(2);
+        color: var(--iph--accent);
+
+        // Constrain against the global `svg { width: 100% }` reset.
+        svg {
+            flex: none;
+            width: px-to-rem(14);
+            height: px-to-rem(14);
+        }
+    }
+
+    &__rating-value {
+        font-weight: 700;
+        color: var(--color--foreground);
+    }
+
+    // ---- Actions -------------------------------------------------------------
+    &__actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: px-to-rem(10);
+    }
+
+    &__btn {
+        display: inline-flex;
+        align-items: center;
+        gap: px-to-rem(8);
+        padding: px-to-rem(14) px-to-rem(22);
+        @include typestyle-meta;
+        letter-spacing: 0.08em;
+        text-decoration: none;
+        border: 1px solid transparent;
+        transition: background-color 0.24s ease, color 0.24s ease, border-color 0.24s ease;
+
+        &--primary {
+            background: var(--iph--dark);
+            color: var(--iph--light);
+
+            &:hover,
+            &:focus-visible {
+                background: #{darken(#151716, 2%)};
+                color: var(--iph--light);
+            }
+        }
+
+        &--secondary {
+            background: transparent;
+            color: var(--color--foreground);
+            border-color: var(--iph--dark);
+
+            &:hover,
+            &:focus-visible {
+                border-color: var(--iph--accent);
+                color: var(--iph--accent);
+            }
+        }
+    }
+
+    // Constrain button icons against the global `svg { width: 100% }` reset.
+    &__btn-icon {
+        flex: none;
+        width: px-to-rem(15);
+        height: px-to-rem(15);
+    }
+
+    // ---- Media ---------------------------------------------------------------
+    &__media {
+        position: relative;
+
+        @include mq(large) {
+            flex: 1 1 50%;
+            min-width: 0;
+        }
+    }
+
+    &__cover {
+        display: block;
+        width: 100%;
+        height: clamp(220px, 42vw, 340px);
+        object-fit: cover;
+    }
+
+    // ---- Badge ---------------------------------------------------------------
+    &__badge {
+        display: inline-flex;
+        flex-direction: column;
+        gap: px-to-rem(2);
+        padding: px-to-rem(11) px-to-rem(14);
+        background: var(--iph--light);
+        border: 1px solid var(--iph--rule);
+        box-shadow: 0 12px 32px #{rgba(#151716, 0.16)};
+    }
+
+    // Approved: badge overlaps the bottom-left corner of the cover image.
+    &__media &__badge {
+        position: absolute;
+        left: px-to-rem(-14);
+        bottom: px-to-rem(-16);
+
+        @include mq($until: large) {
+            left: px-to-rem(12);
+            bottom: px-to-rem(12);
+        }
+    }
+
+    &__badge-brand {
+        font-weight: 700;
+        @include typestyle-small;
+        letter-spacing: 0.02em;
+        color: var(--color--foreground);
+    }
+
+    &__badge-tier {
+        @include typestyle-meta;
+        letter-spacing: 0.08em;
+        color: var(--iph--accent-text);
+    }
+
+    &__badge--image {
+        padding: px-to-rem(10);
+    }
+
+    // Approved-tier badge (official image, sits on the cover image corner).
+    &__badge-img {
+        display: block;
+        height: px-to-rem(112);
+        width: auto;
+    }
+
+    // =========================================================================
+    // Advanced tier — full-bleed hero image + overlapping stats card.
+    // =========================================================================
+    // Full-bleed to the viewport (the section is alignfull).
+    &__hero-media {
+        position: relative;
+        width: 100%;
+        height: clamp(260px, 44vw, 480px);
+        overflow: hidden;
+    }
+
+    &__hero-img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    &__hero-scrim {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+            to bottom,
+            #{rgba(#2f292e, 0.28)} 0%,
+            transparent 30%,
+            transparent 60%,
+            #{rgba(#2f292e, 0.34)} 100%
+        );
+    }
+
+    &__verified {
+        position: absolute;
+        top: px-to-rem(22);
+        // Align the pill's left edge with the content column (the hero image is
+        // full-bleed, so offset by the same gutter the content uses).
+        left: calc((100% - var(--width--responsive--l)) / 2);
+        display: inline-flex;
+        align-items: center;
+        gap: px-to-rem(8);
+        padding: px-to-rem(9) px-to-rem(15);
+        background: #{rgba(#2f292e, 0.55)};
+        color: var(--iph--light);
+        @include typestyle-meta;
+        letter-spacing: 0.08em;
+
+        svg {
+            flex: none;
+            width: px-to-rem(14);
+            height: px-to-rem(14);
+            color: var(--color--apple, #a0cd4f);
+        }
+    }
+
+    &__card-wrap {
+        max-width: var(--width--responsive--l);
+        margin: 0 auto;
+        padding: 0;
+
+        &--overlap {
+            position: relative;
+            z-index: 2;
+            margin-top: clamp(-140px, -12vw, -60px);
+
+            @include mq($until: medium) {
+                margin-top: px-to-rem(-48);
+            }
+        }
+    }
+
+    // Grid so the badge sits top-right on mobile/tablet (in a row with the
+    // eyebrow) and becomes a full-height, centred column on desktop.
+    &__card {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        grid-template-areas:
+            "eyebrow badge"
+            "main    main";
+        column-gap: clamp(16px, 3vw, 46px);
+        row-gap: px-to-rem(14);
+        padding: clamp(24px, 4vw, 42px);
+        background: var(--iph--light);
+        border: 1px solid #{rgba(#151716, 0.1)};
+        box-shadow: 0 20px 54px #{rgba(#151716, 0.2)};
+
+        @include mq(large) {
+            grid-template-areas:
+                "eyebrow badge"
+                "main    badge";
+            align-items: start;
+        }
+
+        > .installer-profile-header__eyebrow {
+            grid-area: eyebrow;
+            align-self: start;
+            margin: 0;
+        }
+    }
+
+    &__card-main {
+        grid-area: main;
+        min-width: 0;
+    }
+
+    &__card-badge {
+        grid-area: badge;
+        justify-self: end;
+        align-self: start;
+
+        @include mq(large) {
+            align-self: center;
+        }
+
+        .installer-profile-header__badge {
+            box-shadow: none;
+            padding: px-to-rem(10);
+        }
+
+        .installer-profile-header__badge-img {
+            height: px-to-rem(58);
+
+            @include mq(medium) {
+                height: px-to-rem(96);
+            }
+
+            @include mq(large) {
+                height: px-to-rem(150);
+            }
+        }
+    }
+
+    // ---- Stats bar (advanced only) ------------------------------------------
+    // CSS grid with minmax(0, 1fr) so cells shrink instead of forcing the card
+    // wider than the viewport (which was cutting off the title and squeezing
+    // the badge over the buttons). 2-up on mobile, 4-up from tablet.
+    &__stats {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        border-top: 1px solid var(--iph--rule);
+        border-bottom: 1px solid var(--iph--rule);
+        margin: 0 0 px-to-rem(24);
+
+        @include mq(medium) {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+    }
+
+    &__stat {
+        min-width: 0;
+        padding: px-to-rem(14) px-to-rem(20);
+        border-top: 1px solid var(--iph--rule);
+        border-left: 1px solid var(--iph--rule);
+
+        // Mobile (2-up): no left border on the first column, no top border on
+        // the first row.
+        @include mq($until: medium) {
+            &:nth-child(odd) {
+                border-left: 0;
+            }
+
+            &:nth-child(-n + 2) {
+                border-top: 0;
+            }
+        }
+
+        // Tablet+ (4-up, single row): only vertical dividers.
+        @include mq(medium) {
+            border-top: 0;
+
+            &:first-child {
+                border-left: 0;
+            }
+        }
+    }
+
+    &__stat-value {
+        display: block;
+        font-size: px-to-rem(29);
+        font-weight: 300;
+        line-height: 1;
+    }
+
+    &__stat-label {
+        display: block;
+        margin-top: px-to-rem(5);
+        @include typestyle-meta;
+        letter-spacing: 0.08em;
+        color: #{rgba(#151716, 0.66)};
+    }
+
+    &__stat-sublabel {
+        display: block;
+    }
+}

@@ -1,0 +1,84 @@
+{
+    "key": "group_69c0d1580005",
+    "title": "Block - Distributor Profile Hero",
+    "fields": [
+        {
+            "key": "field_69c0d1580501",
+            "label": "Location eyebrow",
+            "name": "preheading",
+            "type": "text",
+            "instructions": "Small label above the name. Leave empty to use the town and county from the record's Address.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": { "width": "50", "class": "", "id": "" },
+            "default_value": "",
+            "maxlength": "",
+            "placeholder": "",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_69c0d1580502",
+            "label": "Heading",
+            "name": "heading",
+            "type": "text",
+            "instructions": "Leave empty to use the record's own name.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": { "width": "50", "class": "", "id": "" },
+            "default_value": "",
+            "maxlength": "",
+            "placeholder": "",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_69c0d1580503",
+            "label": "Show breadcrumbs",
+            "name": "show_breadcrumbs",
+            "type": "true_false",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": { "width": "50", "class": "", "id": "" },
+            "message": "",
+            "default_value": 1,
+            "ui": 1,
+            "ui_on_text": "",
+            "ui_off_text": ""
+        },
+        {
+            "key": "field_69c0d1580504",
+            "label": "Show address",
+            "name": "show_address",
+            "type": "true_false",
+            "instructions": "Street, town and postcode, under the name.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": { "width": "50", "class": "", "id": "" },
+            "message": "",
+            "default_value": 1,
+            "ui": 1,
+            "ui_on_text": "",
+            "ui_off_text": ""
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "block",
+                "operator": "==",
+                "value": "acf/distributor-profile-hero"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "",
+    "show_in_rest": 0
+}

@@ -194,7 +194,6 @@ function filter_args(array $args): ?array
 
         // Loading, set to eager
         $args['image']['loading'] = 'eager';
-        $args['image']['size'] = '1536x1536';
         $args['image']['attributes']['fetchpriority'] = 'high';
         $args['image']['attributes']['data-spai-eager'] = true;
     }

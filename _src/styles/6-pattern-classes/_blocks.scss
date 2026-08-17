@@ -70,6 +70,13 @@
         }
     }
 
+    // Installer profile sections are full-bleed bands designed to stack flush
+    // (front end only — the editor keeps normal spacing + the block appender).
+    > :where([class*='installer-']) {
+        --block--margin-top: 0;
+        --block--margin-bottom: 0;
+    }
+
     > .alignright {
         @include block-align--right;
     }

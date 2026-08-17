@@ -3,6 +3,27 @@
     "title": "Block - Map",
     "fields": [
         {
+            "key": "field_6985133852f99",
+            "label": "Subtitle",
+            "name": "subtitle",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "Optional line shown beneath the page heading, above the search. e.g. \"Find your nearest showspace, stockist or Experience Centre\".",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "allow_in_bindings": 0,
+            "placeholder": "",
+            "prepend": "",
+            "append": ""
+        },
+        {
             "key": "field_6985133852f98",
             "label": "Content Type",
             "name": "content_type",
