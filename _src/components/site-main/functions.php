@@ -2,6 +2,34 @@
 
 namespace Granola\Components\SiteMain;
 
+/**
+ * Whether the content already supplies its own page heading.
+ *
+ * When it does, site-main must not also output the default page-header, or the page
+ * ends up with two h1 elements. Any new hero or profile-header block has to be added
+ * to this list, which is why it is one list rather than a chain of has_block() calls
+ * repeated in both branches below.
+ *
+ * @param int|\WP_Post|null $post Optional post to inspect instead of the current one.
+ */
+function has_own_header($post = null): bool
+{
+    $blocks = \apply_filters('granola/components/site-main/header_blocks', [
+        'acf/page-header',
+        'acf/hero-header',
+        'acf/installer-profile-header',
+        'acf/distributor-profile-hero',
+    ]);
+
+    foreach ($blocks as $block) {
+        if ($post === null ? \has_block($block) : \has_block($block, $post)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 function filter_args(array $args): ?array
 {
     // ---------------------------------------
@@ -34,12 +62,12 @@ function filter_args(array $args): ?array
         $template_page = \Granola\WordPress\TemplatePage::get_template_page($args['object']);
 
         if (!\is_single() && !empty($template_page)) {
-            if (!\has_block('acf/page-header', $template_page) && !\has_block('acf/hero-header', $template_page)) {
+            if (!has_own_header($template_page)) {
                 $args['header'] = \Granola\Component::get('page-header', [
                     'object' => $args['object'],
                 ]);
             }
-        } elseif (!\has_block('acf/page-header') && !\has_block('acf/hero-header')) {
+        } elseif (!has_own_header()) {
             $args['header'] = \Granola\Component::get('page-header', [
                 'object' => $args['object'],
             ]);
