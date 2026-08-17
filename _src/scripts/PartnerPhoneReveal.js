@@ -1,5 +1,6 @@
 /**
- * Makes partner "Call us" buttons usable on a desktop.
+ * Partner contact behaviour: revealing "Call us" numbers on a desktop, and measuring the
+ * contact clicks on partner profile pages.
  *
  * A tel: link does nothing on most desktops, so a button labelled "Call us" was a dead
  * end for anyone not on a phone. The numbers are deliberately not printed on the page,
@@ -13,9 +14,18 @@
  *
  * Opt in per link with data-reveal-phone. Without JavaScript the tel: link is untouched,
  * so nothing is lost.
+ *
+ * MEASUREMENT: inside the finder, Map.js tracks every card and popup action. On a profile
+ * page nothing did, so phone clicks were measured and email and website clicks were not.
+ * Those two are picked up here by matching the link itself rather than by requiring an
+ * attribute in the markup, so no template has to be edited and no partner block can be
+ * missed by forgetting one.
  */
 
 const REVEAL_SELECTOR = 'a[href^="tel:"][data-reveal-phone]';
+
+// Body classes WordPress puts on a partner single page.
+const PARTNER_TYPES = ['distributor', 'installer', 'showroom', 'experience_centre'];
 
 /**
  * True when the visitor is driving a mouse or trackpad rather than a finger.
@@ -52,12 +62,50 @@ function partnerContext(link) {
     }
 
     const heading = document.querySelector('h1');
-    const types = ['distributor', 'installer', 'showroom', 'experience_centre'];
 
     return {
         name: heading ? heading.textContent.trim() : '',
-        type: types.find((type) => document.body.classList.contains(`single-${type}`)) || '',
+        type: partnerPageType(),
     };
+}
+
+/**
+ * The partner post type of the page being viewed, or an empty string anywhere else.
+ */
+function partnerPageType() {
+    return PARTNER_TYPES.find((type) => document.body.classList.contains(`single-${type}`)) || '';
+}
+
+/**
+ * Which contact action a link represents, or null when it is not one.
+ *
+ * Only runs on partner profile pages, and never inside the finder, so an ordinary link in
+ * the header or footer is not counted and a finder click is not counted twice.
+ */
+function contactAction(link) {
+    if (!partnerPageType() || link.closest('.map')) {
+        return null;
+    }
+
+    const href = link.getAttribute('href') || '';
+
+    if (href.toLowerCase().startsWith('mailto:')) {
+        return 'email';
+    }
+
+    // An off-site link on a partner profile is that partner's own website. Compared by
+    // host rather than by target="_blank", which is also used for directions and PDFs.
+    if (/^https?:\/\//i.test(href)) {
+        try {
+            if (new URL(href, window.location.href).host !== window.location.host) {
+                return 'website';
+            }
+        } catch (error) {
+            return null;
+        }
+    }
+
+    return null;
 }
 
 /**
@@ -114,6 +162,22 @@ function reveal(link) {
 }
 
 export default function initPartnerPhoneReveal() {
+    // Email and website clicks on a partner profile. Separate listener from the reveal
+    // below because these links are never intercepted, only measured.
+    document.addEventListener('click', (event) => {
+        const link = event.target.closest('a[href]');
+
+        if (!link) {
+            return;
+        }
+
+        const action = contactAction(link);
+
+        if (action) {
+            track(link, action);
+        }
+    });
+
     document.addEventListener('click', (event) => {
         const link = event.target.closest(REVEAL_SELECTOR);
 
