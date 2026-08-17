@@ -1,0 +1,247 @@
+{
+    "key": "group_69791a2b3c4d5",
+    "title": "Block - Installer Profile Header",
+    "fields": [
+        {
+            "key": "field_69791a2b0001",
+            "label": "Tagline",
+            "name": "tagline",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "A short line shown under the installer name, e.g. \"Contemporary garden design and build, crafted for the way you live outside.\"",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "placeholder": "",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_69791a2b0002",
+            "label": "Cover image",
+            "name": "cover_image",
+            "aria-label": "",
+            "type": "image",
+            "instructions": "The main hero image for this installer, ideally a landscape photo of a completed project.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "return_format": "id",
+            "preview_size": "medium",
+            "library": "all",
+            "min_width": "",
+            "min_height": "",
+            "min_size": "",
+            "max_width": "",
+            "max_height": "",
+            "max_size": "",
+            "mime_types": ""
+        },
+        {
+            "key": "field_69791a2b0003",
+            "label": "Badge image",
+            "name": "badge_image",
+            "aria-label": "",
+            "type": "image",
+            "instructions": "Optional. The official Millboard Approved / Advanced Installer badge. If left empty, a text badge is shown automatically based on the installer tier.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "return_format": "id",
+            "preview_size": "thumbnail",
+            "library": "all",
+            "min_width": "",
+            "min_height": "",
+            "min_size": "",
+            "max_width": "",
+            "max_height": "",
+            "max_size": "",
+            "mime_types": ""
+        },
+        {
+            "key": "field_69791a2b0004",
+            "label": "Rating",
+            "name": "rating",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "Average review score, e.g. \"4.9\". Leave blank to hide the rating.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "50",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "4",
+            "placeholder": "4.9",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_69791a2b0005",
+            "label": "Review count",
+            "name": "review_count",
+            "aria-label": "",
+            "type": "number",
+            "instructions": "Number of reviews behind the rating, e.g. 63.",
+            "required": 0,
+            "conditional_logic": [
+                [
+                    {
+                        "field": "field_69791a2b0004",
+                        "operator": "!=empty"
+                    }
+                ]
+            ],
+            "wrapper": {
+                "width": "50",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "min": 0,
+            "max": "",
+            "placeholder": "63",
+            "step": "",
+            "prepend": "",
+            "append": "reviews"
+        },
+        {
+            "key": "field_69791a2b0006",
+            "label": "Reviews link",
+            "name": "reviews_url",
+            "aria-label": "",
+            "type": "url",
+            "instructions": "Optional. Link the rating through to the installer's reviews (Google, Trustpilot, etc.).",
+            "required": 0,
+            "conditional_logic": [
+                [
+                    {
+                        "field": "field_69791a2b0004",
+                        "operator": "!=empty"
+                    }
+                ]
+            ],
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "placeholder": ""
+        },
+        {
+            "key": "field_69791a2b0008",
+            "label": "Years established",
+            "name": "years_established",
+            "aria-label": "",
+            "type": "number",
+            "instructions": "Advanced installers only. Shown in the hero stats bar, e.g. 12.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "33",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "min": 0,
+            "max": "",
+            "placeholder": "12",
+            "step": "",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_69791a2b0009",
+            "label": "Projects completed",
+            "name": "projects_completed",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "Advanced installers only. Shown in the hero stats bar, e.g. \"180+\".",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "33",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "10",
+            "placeholder": "180+",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_69791a2b000a",
+            "label": "Counties covered",
+            "name": "counties_covered",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "Advanced installers only. Shown in the hero stats bar, e.g. 3.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "33",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "10",
+            "placeholder": "3",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_69791a2b0007",
+            "label": "Request a quote link",
+            "name": "quote_url",
+            "aria-label": "",
+            "type": "url",
+            "instructions": "Optional. Where the \"Request a quote\" button links. Defaults to the enquiry form further down the page.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "placeholder": ""
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "block",
+                "operator": "==",
+                "value": "acf/installer-profile-header"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "",
+    "show_in_rest": 0,
+    "modified": 1785450000
+}

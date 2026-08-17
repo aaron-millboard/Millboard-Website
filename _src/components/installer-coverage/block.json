@@ -1,0 +1,30 @@
+{
+    "$schema": "https://raw.githubusercontent.com/AdvancedCustomFields/schemas/main/json/block.json",
+    "apiVersion": 2,
+    "name": "acf/installer-coverage",
+    "title": "Installer Coverage",
+    "category": "granola-blocks",
+    "icon": "location-alt",
+    "keywords": [ "installer", "coverage", "areas", "map", "profile" ],
+    "acf": {
+        "mode": "auto",
+        "renderCallback": "\\Granola\\Component::acf_render_callback",
+        "postTypes": [
+            "installer"
+        ]
+    },
+    "supports": {
+        "anchor": true,
+        "align": false,
+        "color": {
+            "text": false
+        },
+        "mode": false
+    },
+    "attributes": {
+        "align": {
+            "type": "string",
+            "default": "full"
+        }
+    }
+}

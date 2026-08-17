@@ -1,0 +1,30 @@
+{
+    "$schema": "https://raw.githubusercontent.com/AdvancedCustomFields/schemas/main/json/block.json",
+    "apiVersion": 2,
+    "name": "acf/installer-profile-header",
+    "title": "Installer Profile Header",
+    "category": "granola-blocks",
+    "icon": "cover-image",
+    "keywords": [ "installer", "hero", "profile", "header" ],
+    "acf": {
+        "mode": "auto",
+        "renderCallback": "\\Granola\\Component::acf_render_callback",
+        "postTypes": [
+            "installer"
+        ]
+    },
+    "supports": {
+        "anchor": true,
+        "align": false,
+        "color": {
+            "text": false
+        },
+        "mode": false
+    },
+    "attributes": {
+        "align": {
+            "type": "string",
+            "default": "full"
+        }
+    }
+}

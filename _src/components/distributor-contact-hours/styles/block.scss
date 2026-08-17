@@ -1,0 +1,31 @@
+// =============================================================================
+// Distributor Contact & Hours
+// One block holding the two cards, because the theme unregisters core/group and
+// core/columns in the editor so there is no wrapper block available for a pair.
+// =============================================================================
+
+.distributor-contact-hours {
+    // The theme adds its own block margin to every wp-block child; this block owns
+    // its spacing so the two do not stack into an empty band.
+    --block--margin-top: 0;
+    --block--margin-bottom: 0;
+
+    padding-bottom: clamp(28px, 4vw, 44px);
+
+    // auto-fit rather than two fixed tracks: either panel can be absent (no record
+    // has opening hours yet) and a fixed second track would leave an empty half.
+    // With auto-fit a lone panel simply takes the full width.
+    &__grid {
+        display: grid;
+        // min() caps the track floor at the container width. A bare
+        // minmax(300px, 1fr) forces a 300px track even when the container is
+        // narrower, which overflows the page sideways on a small phone once the
+        // container gutters are taken off.
+        grid-template-columns: repeat(auto-fit, minmax(min(px-to-rem(300), 100%), 1fr));
+        gap: px-to-rem(22);
+        // Equal height cards, per the design.
+        align-items: stretch;
+        max-width: var(--width--responsive--l);
+        margin: 0 auto;
+    }
+}

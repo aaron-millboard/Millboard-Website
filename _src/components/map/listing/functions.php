@@ -11,6 +11,9 @@ function filter_args(array $args): ?array
         'classes' => [],
         'link' => [],
         'tag' => [],
+        'email' => '',
+        'phone' => '',
+        'marker' => '',
     ], $args);
 
     // ---------------------------------------
@@ -24,22 +27,39 @@ function filter_args(array $args): ?array
         return null;
     }
 
-    $args['attributes']['data-map-item-lat'] = $args['address']['lat'];
-    $args['attributes']['data-map-item-lng'] = $args['address']['lng'];
+    $lat = $args['address']['lat'] ?? '';
+    $lng = $args['address']['lng'] ?? '';
+
+    $args['attributes']['data-map-item-lat'] = $lat;
+    $args['attributes']['data-map-item-lng'] = $lng;
 
     if (!empty($args['advanced_installer'])) {
         $args['attributes']['data-map-item-advanced-installer'] = '1';
     }
 
-    // Finally set address.
-    $args['address'] = $args['address']['address'];
+    // Resolve the map pin here so PHP owns the path (and its cache-busting
+    // version) rather than the script rebuilding it from a hardcoded theme URL.
+    //
+    // The installer pins ARE the accreditation badges, drawn as pins by design rather
+    // than the record's own badge image scaled down. That was the interim approach and
+    // it squashed a 197x300 logo into a 31px pin; these are drawn for the size.
+    if (!empty($args['marker'])) {
+        $args['attributes']['data-map-item-marker-url'] = \Granola\Components\Map\marker_icon_url($args['marker']);
+    }
 
+    // Finally set address (the google_map field returns an array).
+    $args['address'] = $args['address']['address'] ?? '';
+
+    // Directions link to the listing's coordinates (card action).
+    $args['directions_url'] = ($lat !== '' && $lng !== '')
+        ? 'https://www.google.com/maps/dir/?api=1&destination=' . rawurlencode($lat . ',' . $lng)
+        : '';
+
+    // Detail-page link (the "More info" card action). Kept in $args['link'] too
+    // for the marker popup, which reads .map__listing__link for the detail href.
     if (!empty($args['url'])) {
         $args['link'] = [
-            'content' => !empty($args['post']->post_type) ? sprintf(
-                \__('Contact %s', 'granola'),
-                $args['post']->post_type,
-            ) : \_x('Contact', 'Map listing link text', 'granola'),
+            'content' => \_x('More info', 'Map listing detail link', 'granola'),
             'url' => $args['url'],
             'classes' => [
                 'map__listing__link',
@@ -47,7 +67,13 @@ function filter_args(array $args): ?array
         ];
     }
 
-    if (!empty($args['post']) && $args['post'] instanceof \WP_Post) {
+    // Location-type tag (Stockist / Showspace / Experience Centre / installer
+    // type). Prefer the pre-resolved type_label from get_item_data; fall back to
+    // the installer_type term for listings not built via it (e.g. custom items).
+    // The g-tag inside .map__listing__meta is also read by the marker popup badge.
+    $type_label = trim((string) ($args['type_label'] ?? ''));
+
+    if ($type_label === '' && !empty($args['post']) && $args['post'] instanceof \WP_Post) {
         $terms = \Theme\Meta\ObjectMeta::get_object_labels($args['post'], [
             'limit' => 1,
             'taxonomies' => [
@@ -56,13 +82,18 @@ function filter_args(array $args): ?array
         ]);
 
         if (!empty($terms[0])) {
-            $args['tag'] = [
-                'content' => $terms[0]['name'],
-                'classes' => [
-                    'g-tag',
-                ],
-            ];
+            $type_label = $terms[0]['name'];
         }
+    }
+
+    if ($type_label !== '') {
+        $args['tag'] = [
+            'content' => $type_label,
+            'classes' => [
+                'g-tag',
+                'map__listing__type',
+            ],
+        ];
     }
 
     // -------------------------------------------------------------------------

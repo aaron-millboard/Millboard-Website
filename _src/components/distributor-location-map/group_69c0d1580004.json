@@ -1,0 +1,53 @@
+{
+    "key": "group_69c0d1580004",
+    "title": "Block - Distributor Location Map",
+    "fields": [
+        {
+            "key": "field_69c0d1580401",
+            "label": "Heading",
+            "name": "heading",
+            "type": "text",
+            "instructions": "Defaults to Find us.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": { "width": "60", "class": "", "id": "" },
+            "default_value": "",
+            "maxlength": "",
+            "placeholder": "",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_69c0d1580402",
+            "label": "Zoom",
+            "name": "zoom",
+            "type": "number",
+            "instructions": "Google Maps zoom level. 15 shows the surrounding streets.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": { "width": "40", "class": "", "id": "" },
+            "default_value": 15,
+            "min": 1,
+            "max": 21,
+            "step": 1
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "block",
+                "operator": "==",
+                "value": "acf/distributor-location-map"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "",
+    "show_in_rest": 0
+}

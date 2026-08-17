@@ -1,0 +1,235 @@
+// =============================================================================
+// Installer Quote Form
+// Dark-green panel: eyebrow + heading + intro + clickable phone/email buttons on
+// the left; an embedded HubSpot form on the right, restyled to match the theme.
+// =============================================================================
+
+.installer-quote-form {
+    --iqf--light: var(--color--springwood);
+    --iqf--accent: var(--color--olivegreen);
+    --iqf--apple: var(--color--apple, #a0cd4f);
+    --iqf--rule: #{rgba(#151716, 0.18)};
+    --iqf--rule-dk: #{rgba(#f8f4f0, 0.28)};
+
+    padding: clamp(40px, 5vw, 60px) 0;
+    background: var(--color--sustainabilitygreen);
+    color: var(--iqf--light);
+    // This block is the #installer-enquiry anchor target; offset the scroll so
+    // the heading isn't hidden behind the sticky site header.
+    scroll-margin-top: px-to-rem(100);
+
+    &__inner {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: clamp(28px, 4vw, 52px);
+        align-items: center;
+        max-width: var(--width--responsive--l);
+        margin: 0 auto;
+
+        @include mq(large) {
+            grid-template-columns: 1fr 1.15fr;
+        }
+    }
+
+    &__eyebrow {
+        margin: 0 0 px-to-rem(16);
+        @include typestyle-meta;
+
+        letter-spacing: 0.08em;
+        color: var(--iqf--apple);
+    }
+
+    // Inherits the site h2 hierarchy; light on the dark-green background.
+    &__heading {
+        margin: 0 0 px-to-rem(18);
+        color: var(--iqf--light);
+    }
+
+    &__lead {
+        margin: 0 0 px-to-rem(26);
+        line-height: 1.7;
+        color: #{rgba(#f8f4f0, 0.85)};
+    }
+
+    // ---- Contact buttons (phone / email) -------------------------------------
+    &__contact {
+        display: flex;
+        flex-wrap: wrap;
+        gap: px-to-rem(12);
+    }
+
+    &__contact-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: px-to-rem(11);
+        padding: px-to-rem(12) px-to-rem(18);
+        @include typestyle-small;
+        font-weight: 700;
+        text-decoration: none;
+        color: var(--iqf--light);
+        border: 1px solid var(--iqf--rule-dk);
+        transition: border-color 0.24s ease, color 0.24s ease;
+
+        &:hover,
+        &:focus-visible {
+            border-color: var(--iqf--apple);
+            color: var(--iqf--light);
+        }
+    }
+
+    &__contact-icon {
+        flex: none;
+        width: px-to-rem(18);
+        height: px-to-rem(18);
+        color: var(--iqf--apple);
+    }
+
+    // ---- Form panel ----------------------------------------------------------
+    &__panel {
+        padding: clamp(24px, 3vw, 34px);
+        background: var(--iqf--light);
+        color: var(--color--foreground);
+    }
+
+    &__placeholder,
+    &__note {
+        margin: px-to-rem(12) 0 0;
+        @include typestyle-small;
+        color: #{rgba(#151716, 0.6)};
+    }
+
+    // -------------------------------------------------------------------------
+    // HubSpot form — themed via HubSpot's own CSS variables (--hsf-*), which the
+    // embed reads directly. This avoids fighting HubSpot's injected <style> on
+    // specificity. Its fields default to font-size:1em, which resolves against
+    // the site's 20px body (hence the huge text) — we set explicit sizes here.
+    // -------------------------------------------------------------------------
+    &__hs {
+        --hsf-global__font-family: var(--type--1--font-family, "F37 Ginger", Helvetica, Arial, sans-serif);
+        --hsf-global__font-size: #{px-to-rem(16)};
+
+        // Boxed inputs to match the site checkout (visible border all sides).
+        --hsf-field-input__font-size: #{px-to-rem(16)};
+        --hsf-field-input__color: var(--color--foreground);
+        --hsf-field-input__background-color: transparent;
+        --hsf-field-input__border-color: #{rgba(#151716, 0.45)};
+        --hsf-field-input__border-style: solid;
+        --hsf-field-input__border-width: 1px;
+        --hsf-field-input__border-radius: 0;
+        --hsf-field-input__padding: #{px-to-rem(13)} #{px-to-rem(15)};
+
+        --hsf-field-textarea__font-size: #{px-to-rem(16)};
+        --hsf-field-textarea__color: var(--color--foreground);
+        --hsf-field-textarea__background-color: transparent;
+        --hsf-field-textarea__border-color: #{rgba(#151716, 0.45)};
+        --hsf-field-textarea__border-style: solid;
+        --hsf-field-textarea__border-width: 1px;
+        --hsf-field-textarea__border-radius: 0;
+        --hsf-field-textarea__padding: #{px-to-rem(13)} #{px-to-rem(15)};
+
+        // Checkbox — visible border + brand tick (matches the checkout).
+        // Needs its own padding, otherwise it inherits the input's large padding
+        // (HubSpot sizes the box from its padding) and balloons.
+        --hsf-field-checkbox__background-color: #ffffff;
+        --hsf-field-checkbox__border-color: #{rgba(#151716, 0.55)};
+        --hsf-field-checkbox__border-style: solid;
+        --hsf-field-checkbox__border-width: 1px;
+        --hsf-field-checkbox__color: var(--color--olivegreen);
+        --hsf-field-checkbox__padding: #{px-to-rem(9)};
+        --hsf-field-radio__padding: #{px-to-rem(9)};
+
+        // Labels → sentence case, small (like the checkout).
+        --hsf-field-label__font-size: #{px-to-rem(14)};
+        --hsf-field-label__color: var(--color--foreground);
+
+        // Submit button → theme dark, full width.
+        --hsf-button__background-color: var(--color--black);
+        --hsf-button--hover__background-color: #{darken(#151716, 2%)};
+        --hsf-button__color: var(--color--springwood);
+        --hsf-button__font-size: #{px-to-rem(13)};
+        --hsf-button__border-radius: 0;
+        --hsf-button__padding: #{px-to-rem(16)} #{px-to-rem(28)};
+        --hsf-button__width: 100%;
+
+        // Reduce HubSpot's default 40px form padding (we already pad the panel).
+        --hsf-background__padding: 0;
+
+        // Field labels: keep the checkout's sentence case, just weight them.
+        .hsfc-FieldLabel {
+            font-weight: 700;
+        }
+
+        // Submit button: uppercase + tracked to match the theme's buttons.
+        .hsfc-Button {
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+        }
+
+        // Pair fields into two columns from tablet up (stacked one-per-line on
+        // mobile). Done here in CSS, not per-form in the HubSpot editor, so it
+        // applies to every installer's embedded form at once. Each field renders
+        // in its own full-width .hsfc-Row, so we turn the row container into a
+        // 2-col grid and pair just name (first/last) and email/phone; everything
+        // else spans the full width. Below the tablet breakpoint the container is
+        // a normal single column (HubSpot default), so fields stack.
+        @include mq(medium) {
+            // The direct parent of the field rows — matched via :has() so we
+            // don't depend on HubSpot's container class name.
+            *:has(> .hsfc-Row) {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                column-gap: px-to-rem(16);
+            }
+
+            // Full width by default...
+            *:has(> .hsfc-Row) > * {
+                grid-column: 1 / -1;
+            }
+
+            // ...except these, which sit 50/50. Sales have added enough fields that
+            // one field per line made the form very long, so the pairs below follow
+            // the order they already appear in the DOM and simply fall into the two
+            // columns: name, email/phone, who-am-i/company, postcode/category,
+            // size/start-time, reference/how-you-heard.
+            //
+            // The dropdowns (who am I, project size, start time, how did you hear)
+            // have NO name on their visible input — HubSpot renders a combobox and
+            // puts the property on a HIDDEN input inside the same row, which is the
+            // only stable hook. Matched with *= rather than $= because several are
+            // cloned properties whose exact suffix differs between forms.
+            .hsfc-Row:has(input[name$="/firstname"]),
+            .hsfc-Row:has(input[name$="/lastname"]),
+            .hsfc-Row:has(input[type="email"]),
+            .hsfc-Row:has(input[type="tel"]),
+            .hsfc-Row:has(input[name*="who_am_i"]),
+            .hsfc-Row:has(input[name*="/company"]),
+            .hsfc-Row:has(input[name*="/zip"]),
+            .hsfc-Row:has(input[name*="latest_project_category"]),
+            .hsfc-Row:has(input[name*="project_size"]),
+            .hsfc-Row:has(input[name*="project_start_time"]),
+            .hsfc-Row:has(input[name*="project_reference_and_postcode"]),
+            .hsfc-Row:has(input[name*="how_did_you_hear"]) {
+                grid-column: auto;
+            }
+
+            // A row carrying only a hidden field (the installer/distributor routing
+            // address) still occupies a grid cell, which would knock every pair after
+            // it out of step.
+            .hsfc-Row:not(:has(input:not([type="hidden"]), select, textarea)) {
+                display: none;
+            }
+        }
+
+        // Lay the category choices along one line instead of stacking them: three
+        // short options do not need three rows. Scoped to that field so the single
+        // T&Cs and marketing checkboxes keep their own full-width line.
+        .hsfc-Row:has(input[name*="latest_project_category"]) {
+            .hsfc-CheckboxFieldGroup__Options {
+                display: flex;
+                flex-wrap: wrap;
+                gap: px-to-rem(6) px-to-rem(20);
+            }
+        }
+    }
+}

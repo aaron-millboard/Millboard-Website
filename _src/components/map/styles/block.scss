@@ -3,108 +3,342 @@
 @import './map.scss';
 @import './icons.scss';
 
+// =============================================================================
+// Directory finder Ã¢â‚¬â€ cleaner layout (mockup: "Directory Finder Ã¢â‚¬â€œ All Views")
+// Tokens map the mockup's --mb-* / --fg-* / --border-rule to the theme's
+// existing map tokens so installer + distributor finders share one look.
+// =============================================================================
 .map {
     $this: &;
 
+    // Local design tokens (bridge mockup names to theme values).
+    --mb-olive: var(--color--olivegreen);
+    --mb-spring-wood: var(--color--springwood);
+    --mb-ink: var(--mb-tt-ink, #2f292e);
+    --mb-wenge: var(--color--wenge);
+    --mb-muted: var(--mb-tt-muted, #6e6a6c);
+    --mb-rule: var(--mb-tt-rule, rgba(47, 41, 46, 0.18));
+    --mb-rule-strong: var(--mb-tt-rule-strong, rgba(47, 41, 46, 0.32));
+    // Accents with no brand token, taken from the pin artwork so the map pins
+    // and the card badges stay in step.
+    --mb-apple: #a0cd4f; // Experience Centres
+    --mb-gold: #c9a227; // Advanced installers
+
+    // Width of the results panel column. The search box is capped to the same
+    // value so the two align down the left edge, instead of the search running
+    // far wider than the cards beneath it.
+    --map-panel-width: #{px-to-rem(400)};
+
+    // Shared height for the controls on the search row (search box, geolocate
+    // square, distance dropdown) so they line up.
+    --map-control-height: #{px-to-rem(44)};
+
     display: grid;
-    gap: var(--space--xl);
+    gap: var(--space--l);
+    box-sizing: border-box;
+    // Tighten the space above the finder (theme adds a large full-width block
+    // margin); the frame is gone so the vertical padding can be modest too.
+    margin-top: clamp(#{px-to-rem(28)}, 5vw, #{px-to-rem(64)});
+    padding: var(--space--m) clamp(#{px-to-rem(20)}, 4vw, #{px-to-rem(52)});
+    border: 1px solid var(--mb-rule);
+    border-top: 0;
+    border-bottom: 0;
+    border-radius: 0;
+    background: var(--mb-spring-wood);
+    color: var(--mb-ink);
 
     &.has-background {
-        padding-right: 0;
-        padding-left: 0;
+        padding-right: clamp(#{px-to-rem(20)}, 4vw, #{px-to-rem(52)});
+        padding-left: clamp(#{px-to-rem(20)}, 4vw, #{px-to-rem(52)});
     }
 
-    &__map-container,
-    &__table-container {
-        overflow: hidden;
-        border: 0;
-        isolation: isolate;
+    // -------------------------------------------------------------------------
+    // Appointed market distributor
+    //
+    // Millboard is sold through a single appointed distributor in most countries, so a
+    // search there returns that partner alone. These blocks explain why one result is
+    // showing, which is the first question a visitor will have.
+    // -------------------------------------------------------------------------
+    &__territory-banner {
+        // .alignwide sets `margin-inline: auto`, which on a grid item switches the used
+        // width from stretch to fit-content. The banner therefore shrank to its own text
+        // (942px) while the search row and the results/map row below it stayed 1113px,
+        // so it sat visibly inset from both. The max-width is already identical; only the
+        // stretch was missing.
+        width: 100%;
+        margin-bottom: var(--space--m);
+        padding: var(--space--s) var(--space--m);
+        border-left: px-to-rem(3) solid var(--mb-olive);
+        background: var(--color--mist);
+    }
 
-        // Hide and show the table or the map.
-        &[aria-hidden='true'] {
+    &__territory-banner__eyebrow {
+        @include typestyle-h6;
+
+        margin: 0 0 px-to-rem(8);
+        // Deep olive rather than --mb-olive: this sits on mist, which is darker than the
+        // panel, and the mid olive only reaches about 4:1 there, failing AA at this size.
+        color: var(--color--sustainabilitygreen);
+    }
+
+    &__territory-banner__text {
+        @include typestyle-base;
+
+        // Sam's sentence needs 895px on one line and 76ch resolved to 890.6px, so it
+        // wrapped four pixels short and dropped "stockists." on to a line of its own,
+        // inside a banner with 1062px of room. 80ch clears it while keeping a sane
+        // measure.
+        max-width: 80ch;
+        margin: 0;
+        // The six locales all have different lengths, so the fit cannot be tuned per
+        // string: German still needs two lines. This stops any of them ending on a
+        // single orphaned word.
+        text-wrap: pretty;
+    }
+
+    &__territory-subheading {
+        @include typestyle-small;
+
+        // The sidebar has no padding of its own; each child insets itself by 22px. This
+        // line was the one that did not, so "Canada territory, distance filter not used"
+        // sat hard against the panel border while the chips beneath it were indented.
+        margin: px-to-rem(4) 0 0;
+        padding-right: px-to-rem(22);
+        padding-left: px-to-rem(22);
+        color: var(--mb-muted);
+    }
+
+    // The note sits below the results inside the sidebar's flex column, so it competed
+    // with the scrolling results list for space and squeezed it to almost nothing: the
+    // cards vanished behind a stub scrollbar. In territory mode there are only one or two
+    // results, so the list sizes to its content and the note takes what it needs.
+    &--territory {
+        // One scroller, not two. The results list stops scrolling and sizes to its one or
+        // two cards, and the sidebar itself scrolls instead, so the notice below the cards
+        // can be reached. Previously the sidebar was `overflow: hidden` at the map's fixed
+        // height, which cut the notice off with no way to scroll to it at all.
+        //
+        // The sidebar deliberately keeps the map's height rather than growing to fit: at
+        // full height it ran to roughly 1050px beside a 620px map, leaving a large empty
+        // band next to it.
+        #{$this}__sidebar {
+            overflow-y: auto;
+        }
+
+        #{$this}__items {
+            flex: 0 0 auto;
+            max-height: none;
+            overflow: visible;
+        }
+
+        #{$this}__territory-note {
+            flex: none;
+        }
+
+        // One or two results, so the "Show more" toggle has nothing to reveal.
+        #{$this}__show-more-wrap {
             display: none;
-            visibility: hidden;
         }
     }
 
+    // Sits where the remaining result cards would have been, so one result reads as
+    // deliberate rather than as a search that found almost nothing.
+    &__territory-note {
+        margin-top: var(--space--s);
+        padding: var(--space--m) var(--space--s);
+        border-top: 1px dashed var(--mb-rule);
+        text-align: center;
+    }
+
+    // The theme resets `svg { width: 100% }`, so inline icons need an explicit size.
+    &__territory-note__icon {
+        flex: none;
+        width: px-to-rem(26);
+        height: px-to-rem(26);
+        margin-bottom: px-to-rem(12);
+        color: var(--mb-olive);
+    }
+
+    // Deliberately NOT typestyle-h5. That is display type: uppercase, tracked and up to
+    // 28px, which turned this sentence into a shouted headline and made the body copy
+    // beneath it look tiny by comparison. The design shows a modest sentence-case line,
+    // so this takes the theme step directly below body copy.
+    &__territory-note__heading {
+        @include typestyle-large;
+
+        margin: 0 0 px-to-rem(10);
+        font-weight: 700;
+        line-height: 1.4;
+    }
+
+    &__territory-note__text {
+        @include typestyle-base;
+
+        margin: 0 0 px-to-rem(14);
+        line-height: 1.6;
+    }
+
+    &__territory-note__small {
+        @include typestyle-small;
+
+        margin: 0;
+        color: var(--mb-muted);
+    }
+
+    &__territory-note__link {
+        @include typestyle-h6;
+
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        margin-top: var(--space--s);
+        padding: px-to-rem(14) px-to-rem(22);
+        border: 1px solid var(--mb-ink);
+        color: var(--mb-ink);
+        text-decoration: none;
+        transition: border-color var(--dur--base, 240ms) ease, color var(--dur--base, 240ms) ease;
+
+        @include interact {
+            border-color: var(--mb-olive);
+            // Darker olive: --mb-olive as text is about 3.2:1 on this panel.
+            color: #5c7010;
+            text-decoration: none;
+        }
+    }
+
+    // ---- Optional subtitle + olive accent rule (heading stays page-level) ----
+    &__subtitle {
+        @include typestyle-base;
+
+        max-width: 62ch;
+        margin: 0;
+        color: var(--mb-muted);
+    }
+
+    // Finder heading (crosshair + text) with an olive accent rule beneath.
+    &__heading {
+        &::after {
+            display: block;
+            width: px-to-rem(56);
+            height: px-to-rem(2);
+            margin-top: var(--space--m);
+            background: var(--mb-olive);
+            content: '';
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Search + distance controls
+    // -------------------------------------------------------------------------
     &__search {
         width: 100%;
 
         &__form {
-            display: grid;
+            display: flex;
+            flex-wrap: wrap;
             align-items: center;
-            gap: var(--space--l);
+            gap: var(--space--s) var(--space--l);
 
-            @include mq(medium) {
-                grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-            }
-
+            // Desktop: search / geolocate / key / distance on one line. The
+            // search takes exactly the results-panel width and the form gap
+            // matches the body grid gap, so the geolocate box starts on the
+            // map's left edge. The key then absorbs the slack, pushing the
+            // distance control to the right.
             @include mq(large) {
-                grid-template-columns: minmax(0, px-to-rem(400)) minmax(0, 1fr) auto;
+                flex-wrap: nowrap;
             }
         }
 
         &__input-wrapper {
-            display: grid;
-            max-width: px-to-rem(400);
-            grid-template-columns: minmax(0, 1fr) px-to-rem(66);
+            display: flex;
+            align-items: stretch;
+            flex: 1 1 px-to-rem(320);
+            // Match the results panel so the search lines up with the cards.
+            max-width: var(--map-panel-width);
+            min-width: px-to-rem(220);
+            height: var(--map-control-height);
+            overflow: hidden;
+            border: 1px solid var(--mb-rule);
+            border-radius: px-to-rem(2);
+            background: var(--mb-spring-wood);
 
-            + #{$this}__distance {
-                @include mq(medium) {
-                    grid-column-start: 3;
-                }
+            // Fixed at the panel width on desktop, so the control beside it
+            // starts exactly on the map's left edge.
+            @include mq(large) {
+                flex: 0 0 var(--map-panel-width);
             }
         }
 
-        &__label {
-            margin: 0;
-        }
-
         &__input {
-            --input--border-color: black;
-            --input--border-color--focus: black;
+            --input--border-color: transparent;
+            --input--border-color--focus: transparent;
             --input--background-color: transparent;
 
-            border-right: 0;
+            flex: 1;
+            min-width: 0;
+            border: 0;
+            padding: 0 px-to-rem(16);
+            font-weight: var(--fw-light, 300);
             line-height: 1;
         }
 
         &__submit {
-            width: px-to-rem(66);
-            height: px-to-rem(66);
-
-            &::after {
-                --mask-icon--size: 24px;
-
-                mask-image: url(#{asset-path('images/icons/search.svg')});
-            }
-        }
-
-        &__geolocate {
             @include button-reset-hard;
-            @include typestyle-h6;
-            @include mask-icon(before);
 
             display: inline-flex;
             align-items: center;
-            gap: var(--space--2xs);
-            justify-self: start;
-            text-align: left;
+            justify-content: center;
+            flex: none;
+            width: px-to-rem(54);
+            min-height: 100%;
+            padding: 0;
+            border: 0;
+            border-radius: 0;
+            background-color: var(--mb-ink);
+            color: var(--mb-spring-wood);
+            cursor: pointer;
+            transition: background-color var(--dur--base, 240ms) ease;
 
             @include interact {
-                text-decoration: underline;
+                background-color: #1f1a1d;
             }
 
-            @include mq($from: medium, $until: large) {
-                grid-column-end: span 2;
+            svg {
+                flex: none;
+                width: px-to-rem(18);
+                height: px-to-rem(18);
             }
+        }
 
-            @include mq($until: large) {
-                order: -1;
+        // Geolocate trigger: an icon-only square matching the search button, so
+        // it reads as a control rather than a line of text. Its label is kept in
+        // the markup (visually hidden + aria-label) for assistive tech.
+        &__geolocate {
+            @include button-reset-hard;
+            @include mask-icon(before);
+
+            display: inline-flex;
+            flex: none;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            width: var(--map-control-height);
+            height: var(--map-control-height);
+            border: 1px solid var(--mb-rule);
+            border-radius: px-to-rem(2);
+            background: var(--mb-spring-wood);
+            color: var(--mb-ink);
+            cursor: pointer;
+            transition: color var(--dur--base, 240ms) ease, border-color var(--dur--base, 240ms) ease;
+
+            @include interact {
+                border-color: var(--mb-olive);
+                color: var(--mb-olive);
             }
 
             &::before {
-                --mask-icon--size: 24px;
+                --mask-icon--size: #{px-to-rem(18)};
 
                 flex: 0 0 auto;
                 width: var(--mask-icon--size);
@@ -116,61 +350,593 @@
 
     &__distance {
         display: flex;
-        gap: px-to-rem(10);
+        flex: none;
         align-items: center;
-
-        @include mq(medium) {
-            justify-content: flex-end;
-        }
+        gap: var(--space--2xs);
 
         &__label {
+            // Theme's small tracked label step, matching the geolocate control
+            // beside it, rather than a bespoke size.
+            @include typestyle-h6;
+
             flex: 0 0 auto;
             margin: 0;
-            font-size: var(--type--font-size--base);
+            color: var(--mb-muted);
         }
 
         &__input {
-            --input--background-color: transparent;
+            --input--background-color: var(--mb-spring-wood);
 
-            @include mq($until: medium) {
-                max-width: min-content;
+            height: var(--map-control-height);
+            box-sizing: border-box;
+            padding: 0 px-to-rem(42) 0 px-to-rem(16);
+            border: 1px solid var(--mb-rule);
+            border-radius: px-to-rem(2);
+            background-color: var(--mb-spring-wood);
+            background-image: url(#{asset-path('images/icons/chevron-down.svg')});
+            background-repeat: no-repeat;
+            background-position: right px-to-rem(14) center;
+            background-size: px-to-rem(14);
+            // No font-size override: inherit the theme's input type.
+            font-weight: var(--fw-light, 300);
+            appearance: none;
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Body layout: results panel + map
+    // -------------------------------------------------------------------------
+    &__body {
+        display: grid;
+    }
+
+    &__content {
+        display: grid;
+        width: 100%;
+        gap: var(--space--l);
+
+        // Single column (panel above map) up to desktop; two columns only at
+        // large so tablet stacks like the designs.
+        @include mq(large) {
+            height: px-to-rem(620);
+            grid-template-columns: var(--map-panel-width) minmax(0, 1fr);
+        }
+    }
+
+    // ---- Results panel (bordered card: header / scroll body / footer) ----
+    &__sidebar {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        border: 1px solid var(--mb-rule);
+        border-radius: px-to-rem(2);
+        background: var(--mb-spring-wood);
+
+        &__heading {
+            // typestyle-meta is the theme's step for exactly this: an uppercase tracked
+            // micro-label. It carries the size, weight, family and tracking, so none of
+            // those need restating here.
+            @include typestyle-meta;
+
+            flex: none;
+            margin: 0;
+            padding: var(--space--m) px-to-rem(22) var(--space--2xs);
+            color: var(--mb-ink);
+        }
+
+        &__no-content {
+            display: none;
+            padding-top: var(--space--m);
+            font-weight: 700;
+
+            .no-results & {
+                display: block;
             }
         }
     }
 
-    &__tablist {
-        display: grid;
-        width: 100%;
-        background-color: var(--color--brand-1);
-        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    &__items {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        padding: 0 px-to-rem(22) var(--space--2xs);
+        scrollbar-color: var(--mb-rule-strong) transparent;
+        scrollbar-width: thin;
 
-        @include mq(medium) {
+        // When stacked (below desktop) the panel has no fixed height, so cap the
+        // list so a long (expanded) list scrolls instead of dominating the page.
+        @include mq($until: large) {
+            max-height: px-to-rem(520);
+        }
+    }
+
+    // Held back while driving times are being fetched, so the order that is about to
+    // change does not read as the final answer. Dimmed rather than emptied, because
+    // the right branches are already listed and only their order is still settling.
+    &__items--busy {
+        opacity: 0.45;
+        transition: opacity 0.15s ease;
+    }
+
+    // ---- Filter chips ----
+    &__filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space--2xs);
+        padding: 0 px-to-rem(22) var(--space--m);
+        border-bottom: 1px solid var(--mb-rule);
+        margin-bottom: 0;
+
+        // Filters live inside the panel header at every width now (no tabs).
+        &--mobile {
             display: none;
         }
     }
 
-    &__tab {
-        @include typestyle-h6;
+    &__filter {
+        @include button-reset-hard;
+        @include typestyle-meta;
 
-        padding: var(--space--2xs) var(--space--3xs);
-        background-color: var(--color--brand-1);
-        border-top: 1px solid var(--color--brand-1);
-        border-bottom: 1px solid var(--color--brand-4);
+        display: inline-flex;
+        align-items: center;
+        gap: px-to-rem(7);
+        padding: px-to-rem(8) px-to-rem(12);
+        border: 1px solid var(--mb-rule);
+        border-radius: px-to-rem(2);
+        background: transparent;
+        color: var(--mb-ink);
+        // Tighter than the mixin's tracking. Bigger glyphs need less of it, and it keeps
+        // the chip row close to its previous width instead of pushing chips onto a
+        // second line.
+        letter-spacing: 0.08em;
+        transition: color var(--dur--base, 240ms) ease, border-color var(--dur--base, 240ms) ease, background-color var(--dur--base, 240ms) ease;
+
+        @include interact {
+            // The chip is also a .g-button, whose hover paints a dark fill that
+            // button-reset-hard doesn't cover (it only resets the base state).
+            // Hold the background so hover stays a light chip with an olive
+            // outline, rather than imitating the active state.
+            background: transparent;
+            border-color: var(--mb-olive);
+            color: var(--mb-olive);
+        }
+
+        &__count {
+            font-weight: var(--fw-light, 300);
+            color: var(--mb-muted);
+        }
 
         &--active {
-            border-top-color: var(--color--brand-4);
-            border-bottom-color: transparent;
-            background-color: var(--color--brand-2);
+            border-color: var(--mb-ink);
+            background: var(--mb-ink);
+            color: var(--mb-spring-wood);
 
-            &:first-child {
-                border-inline-end: 1px solid var(--color--brand-4);
+            @include interact {
+                border-color: var(--mb-ink);
+                background: var(--mb-ink);
+                color: var(--mb-spring-wood);
             }
 
-            &:last-child {
-                border-inline-start: 1px solid var(--color--brand-4);
+            #{$this}__filter__count {
+                color: var(--mb-spring-wood);
+                opacity: 0.72;
+            }
+        }
+
+        // A category with nothing in the current results. Dimmed and non-interactive
+        // rather than removed, so the row keeps its width and does not jump about as
+        // the visitor changes the distance or searches somewhere new.
+        &--empty {
+            opacity: 0.45;
+
+            &:disabled {
+                cursor: default;
+
+                @include interact {
+                    background: transparent;
+                    border-color: currentcolor;
+                    color: var(--mb-ink);
+                }
             }
         }
     }
+
+    // ---- Category section headers (label + trailing hairline) ----
+    &__items__category {
+        @include typestyle-meta;
+
+        display: flex;
+        align-items: center;
+        gap: var(--space--2xs);
+        margin: 0;
+        padding-top: var(--space--m);
+        color: var(--mb-ink);
+
+        &::after {
+            flex: 1;
+            height: 1px;
+            background: var(--mb-rule);
+            content: '';
+        }
+    }
+
+    // ---- Listing cards ----
+    &__listing {
+        display: flex;
+        flex-direction: column;
+        gap: px-to-rem(9);
+        padding: var(--space--m) 0;
+        border-top: 1px solid var(--mb-rule);
+        cursor: pointer;
+
+        // The panel header / filter bar already ends in a rule, so the first
+        // card's own top border would double it up. Same after a category
+        // heading, which carries its own hairline.
+        &:first-child,
+        #{$this}__items__category + & {
+            border-top: 0;
+        }
+
+        &[hidden] {
+            display: none;
+        }
+
+        &.selected {
+            box-shadow: inset px-to-rem(3) 0 0 var(--mb-olive);
+            padding-left: var(--space--2xs);
+        }
+
+        // Badge and distance stack, so the badge gets the full card width and
+        // stops wrapping onto two lines.
+        &__meta {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: var(--space--3xs);
+        }
+
+        // Type badge: outlined, never solid-filled. Distributors were outlined and
+        // installers were solid, which read as two different components across the two
+        // finders. The outline is the one kept, because it is what Dan's redesigned
+        // pins do (Spring Wood shield, coloured outline and glyph) and what the brand
+        // guide's line-based marks call for.
+        //
+        // Fill and label are fixed here; only the outline and the glyph change per type
+        // (see below).
+        &__type {
+            @include typestyle-meta;
+
+            display: inline-flex;
+            align-items: center;
+            gap: px-to-rem(6);
+            padding: px-to-rem(5) px-to-rem(9);
+            border: 1px solid var(--color--sustainabilitygreen);
+            border-radius: px-to-rem(2);
+            background: var(--mb-spring-wood);
+            color: var(--color--sustainabilitygreen);
+            letter-spacing: 0.08em;
+        }
+
+        &__badge-icon {
+            flex: none;
+            width: px-to-rem(12);
+            height: px-to-rem(12);
+        }
+
+        // ---- Accent per location type: outline and glyph only ----
+        //
+        // The fill and the label are fixed on __type above; only the accent changes.
+        // The label is ALWAYS Sustainable Green, about 11:1 on Spring Wood, because the
+        // accents cannot carry text at this size: olive is roughly 3.0:1 and gold
+        // roughly 2.2:1, both under AA. The accent sits on the outline and the glyph,
+        // beside wording that already names the type, so nothing is signalled by colour
+        // alone.
+        //
+        // The glyphs are drawn with currentColor, so setting `color` is all it takes.
+        //
+        // Distributors need no rule: they take the Sustainable Green default from
+        // __type, which is the colour the artwork gives them.
+
+        // Showrooms: wenge, per the artwork README.
+        &[data-map-item-post-type='showroom'] #{$this}__listing__type {
+            border-color: var(--color--wenge);
+
+            #{$this}__listing__badge-icon {
+                color: var(--color--wenge);
+            }
+        }
+
+        // Approved installers: olive.
+        &[data-map-item-post-type='installer'] #{$this}__listing__type {
+            border-color: var(--color--olivegreen);
+
+            #{$this}__listing__badge-icon {
+                color: var(--color--olivegreen);
+            }
+        }
+
+        // Gold marks out the two that should stand apart: Advanced installers from
+        // Approved, and Experience Centres from the stockists they sit above. The two
+        // never appear on the same page, so there is no ambiguity between them.
+        //
+        // The Advanced selector must come after the installer rule above, because an
+        // Advanced installer carries both attributes.
+        &[data-map-item-advanced-installer='1'] #{$this}__listing__type,
+        &[data-map-item-post-type='experience_centre'] #{$this}__listing__type {
+            border-color: var(--mb-gold);
+
+            #{$this}__listing__badge-icon {
+                color: var(--mb-gold);
+            }
+        }
+
+        &__distance {
+            @include typestyle-small;
+
+            flex: none;
+            color: var(--mb-muted);
+            white-space: nowrap;
+        }
+
+        &__title {
+            margin: 0;
+            font-weight: var(--fw-light, 300);
+            // Brand modular scale (step 1: 18 -> 22.5) rather than a fixed px, so
+            // the installer name tracks the type hierarchy but stays card-compact.
+            @include typestyle-xlarge; // brand type scale
+            line-height: 1.25;
+            letter-spacing: 0;
+            color: var(--mb-ink);
+        }
+
+        &__address {
+            // Theme's small text step: a clear step down from the title so the
+            // two don't blend, without dropping to label size.
+            @include typestyle-small;
+
+            margin: 0;
+            line-height: 1.55;
+            color: var(--mb-muted);
+        }
+
+        &__hours {
+            @include typestyle-small;
+
+            margin: 0;
+            font-weight: var(--fw-light, 300);
+            color: var(--mb-muted);
+
+            &--open {
+                color: var(--mb-olive);
+            }
+
+            &--closed {
+                color: var(--color--error, #b3261e);
+            }
+        }
+
+        &__stock {
+            @include typestyle-small;
+
+            display: inline-flex;
+            align-items: center;
+            gap: px-to-rem(6);
+            margin: 0;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            color: var(--mb-olive);
+
+            &::before {
+                flex: none;
+                width: px-to-rem(7);
+                height: px-to-rem(7);
+                border-radius: 50%;
+                background: var(--mb-olive);
+                content: '';
+            }
+        }
+
+        &__actions {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: px-to-rem(8);
+            margin-top: px-to-rem(4);
+        }
+
+        &__action {
+            @include typestyle-meta;
+
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: px-to-rem(6);
+            box-sizing: border-box;
+            // Was a fixed 34px, which only fitted 12px text. A min-height lets the
+            // button grow if a translated label wraps rather than clipping it.
+            min-height: px-to-rem(38);
+            padding: 0 px-to-rem(12);
+            border: 1px solid var(--mb-rule);
+            border-radius: px-to-rem(2);
+            background: transparent;
+            color: var(--mb-ink);
+            letter-spacing: 0.06em;
+            text-decoration: none;
+            transition: color var(--dur--base, 240ms) ease, border-color var(--dur--base, 240ms) ease;
+
+            @include interact {
+                border-color: var(--mb-olive);
+                color: var(--mb-olive);
+                text-decoration: none;
+            }
+
+            // The global `svg { width: 100% }` reset would otherwise stretch
+            // these inline icons to fill the button.
+            svg {
+                flex: none;
+                width: px-to-rem(15);
+                height: px-to-rem(15);
+            }
+
+            // Square, so it tracks the button height above.
+            &--icon {
+                width: px-to-rem(38);
+                padding: 0;
+            }
+
+            // Revealing a phone number turns an icon-only square into a labelled
+            // button, so it has to be allowed to grow. Without this the number
+            // overflowed the fixed 34px width and collided with the button beside it.
+            &--icon[data-phone-revealed] {
+                width: auto;
+                padding: 0 px-to-rem(10);
+            }
+
+            // The number is not a control label, so it keeps normal casing and spacing
+            // rather than the uppercase tracked treatment of the buttons around it.
+            .partner-phone-number {
+                @include typestyle-small;
+
+                font-weight: 400;
+                letter-spacing: 0;
+                text-transform: none;
+                white-space: nowrap;
+            }
+        }
+    }
+
+    // ---- Show more (full-width) ----
+    &__show-more {
+        @include button-reset-hard;
+        @include typestyle-meta;
+
+        flex: none;
+        width: 100%;
+        margin: 0;
+        padding: var(--space--s);
+        border: 1px solid var(--mb-ink);
+        border-radius: px-to-rem(2);
+        background: transparent;
+        color: var(--mb-ink);
+        transition: color var(--dur--base, 240ms) ease, border-color var(--dur--base, 240ms) ease;
+
+        @include interact {
+            border-color: var(--mb-olive);
+            color: var(--mb-olive);
+        }
+
+        &[hidden] {
+            display: none;
+        }
+    }
+
+    &__show-more-wrap {
+        flex: none;
+        // Pad the bottom as well, so the button isn't flush against the panel's
+        // bottom border.
+        padding: var(--space--m) px-to-rem(22);
+    }
+
+    // Top 3 shown by default; the rest collapse behind "Show more".
+    &__items:not(#{$this}__items--expanded) {
+        #{$this}__listing--overflow {
+            display: none;
+        }
+    }
+
+    // ---- Map panel + Key header ----
+    &__map-panel {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        border: 1px solid var(--mb-rule);
+        border-radius: px-to-rem(2);
+        background: var(--mb-spring-wood);
+
+        #leaflet-map-container {
+            flex: 1 1 auto;
+            height: auto;
+            min-height: px-to-rem(320);
+            max-height: none;
+
+            @include mq(medium) {
+                min-height: px-to-rem(400);
+            }
+        }
+    }
+
+    // Sits inline in the search row (between the geolocate box and the distance
+    // control) and absorbs the slack, so the distance control stays right.
+    &__legend {
+        display: flex;
+        flex: 1 1 auto;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--space--2xs) var(--space--m);
+        padding: 0;
+
+        &__label {
+            @include typestyle-meta;
+
+            color: var(--mb-muted);
+        }
+
+        &__item {
+            @include typestyle-small;
+
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space--3xs);
+            color: var(--mb-ink);
+        }
+
+        &__marker {
+            flex: none;
+            width: px-to-rem(17);
+            height: auto;
+        }
+    }
+
+    &__map-container,
+    &__table-container {
+        overflow: hidden;
+        border: 0;
+        isolation: isolate;
+        flex: 1 1 auto;
+
+        // Stacked (below desktop): map sits ABOVE the list, per the designs.
+        @include mq($until: large) {
+            order: -1;
+        }
+
+        &[aria-hidden='true'] {
+            display: none;
+            visibility: hidden;
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Mobile list / map tabs (unchanged behaviour)
+    // -------------------------------------------------------------------------
+    // The List/Map toggle is not in the designs Ã¢â‚¬â€ the list and map always stack.
+    &__tablist {
+        display: none;
+    }
+
+    &__tab {
+        @include button-reset-hard;
+        @include typestyle-meta;
+
+        padding: var(--space--2xs) var(--space--3xs);
+        background-color: transparent;
+        color: var(--mb-ink);
+
+        &--active {
+            background-color: var(--mb-ink);
+            color: var(--mb-spring-wood);
+        }
+    }
+
     &__tab-panel {
         &[hidden] {
             @include mq($until: medium) {
@@ -179,256 +945,150 @@
         }
     }
 
-    &__body {
-        display: grid;
-    }
-
-    &__content {
-        width: 100%;
-        display: grid;
-        gap: var(--space--xl);
-
-        @include mq($until: medium) {
-            padding-top: var(--space--m);
-        }
-
-        @include mq(medium) {
-            height: px-to-rem(600);
-            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-        }
-
-        @include mq(large) {
-            grid-template-columns: px-to-rem(400) minmax(0, 1fr);
-        }
-    }
-
-    &__map-container {
-        @include mq($until: medium) {
-            height: px-to-rem(500);
-        }
-    }
-
-    &__sidebar {
-        display: grid;
-        overflow: hidden;
-        align-content: start;
-
-        &__heading {
-            @include typestyle-h6;
-        }
-
-        &__no-content {
-            display: none;
-            padding-top: var(--space--m);
-            border-top: 1px solid var(--color--brand-1);
-            font-weight: var(--type--2--font-weight);
-
-            .no-content > & {
-                display: block;
-            }
-        }
-    }
-
-    &__items {
-        overflow: auto;
-        -ms-overflow-style: none;
-        scrollbar-color: var(--color--brand-4) transparent;
-        scrollbar-width: thin;
-    }
-
-    &__listing {
-        display: grid;
-        gap: 0;
-        padding-bottom: var(--space--l);
-        justify-items: start;
-
-        &.selected {
-            border-inline-start: 4px solid var(--color--brand-4);
-            padding-inline-start: var(--space--2xs);
-        }
-
-        &:not(:last-child) {
-            border-bottom: 1px solid var(--color--brand-1);
-            margin-bottom: var(--space--l);
-        }
-
-        &[hidden] {
-            display: none;
-        }
-
-        &__title {
-            @include typestyle-xlarge;
-
-            margin: 0;
-            font-weight: var(--type--2--font-weight);
-            letter-spacing: 0;
-        }
-
-        &__meta {
-            order: -1;
-            display: flex;
-            flex-flow: row wrap;
-            align-items: center;
-            gap: var(--space--3xs);
-
-            &:not(:empty) {
-                margin-bottom: var(--space--s);
-            }
-
-            .g-tag {
-                border-color: var(--color--brand-4);
-            }
-        }
-
-        &__distance {
-            @include typestyle-small;
-
-            font-weight: var(--type--2--font-weight);
-        }
-
-        &__phone,
-        &__address {
-            @include typestyle-small;
-
-            margin-top: var(--space--3xs);
-        }
-
-        &__link {
-            @include typestyle-h6;
-            @include mask-icon;
-
-            display: inline-flex;
-            gap: var(--space--2xs);
-            align-items: center;
-            text-decoration: none;
-            margin-top: var(--space--s);
-
-            @include interact {
-                text-decoration: none;
-            }
-
-            &::after {
-                display: block;
-                width: #{px-to-rem(24)};
-                height: #{px-to-rem(24)};
-                content: '';
-                mask-image: url(#{asset-path('images/icons/chevron-right.svg')});
-                mask-size: #{px-to-rem(24)};
-            }
-        }
-    }
-
-    &__filters {
-        display: flex;
-        gap: var(--space--3xs);
-        flex-wrap: wrap;
-        padding-bottom: var(--space--l);
-        margin-bottom: var(--space--l);
-        border-bottom: 1px solid var(--color--brand-1);
-        width: 100%;
-
-        &--mobile {
-            margin-top: var(--space--l);
-
-            @include mq(medium) {
-                display: none;
-            }
-        }
-
-        &--sidebar {
-            @include mq($until: medium) {
-                display: none;
-            }
-        }
-    }
-
-    &__filter {
-        @include button-reset-hard;
-        @include typestyle-small;
-
-        line-height: 1;
-        display: flex;
-        padding: var(--space--3xs) px-to-rem(12);
-        align-items: flex-start;
-        gap: px-to-rem(10);
-        border: 1px solid var(--color--brand-1);
-
-        @include interact {
-            background-color: var(--color--wenge);
-            color: var(--color--white);
-        }
-
-        &--active {
-            background-color: var(--color--wenge);
-            color: var(--color--white);
-        }
-    }
-
+    // -------------------------------------------------------------------------
+    // Marker popup (unchanged Ã¢â‚¬â€ already brand-spec)
+    // -------------------------------------------------------------------------
     &__marker-tooltip {
-        &__title {
-            @include typestyle-xlarge;
-
-            margin: 0;
-            font-weight: var(--type--2--font-weight);
-            letter-spacing: 0;
+        &__icon {
+            flex: none;
+            width: #{px-to-rem(15)};
+            height: #{px-to-rem(15)};
         }
 
-        &__meta {
-            order: -1;
+        &__badge {
+            @include typestyle-meta;
+
             display: flex;
-            flex-flow: row wrap;
             align-items: center;
-            gap: var(--space--3xs);
+            gap: #{px-to-rem(8)};
+            margin: 0 0 #{px-to-rem(16)};
+            // Wider than the mixin default, kept from the popup design.
+            letter-spacing: 0.16em;
+            color: var(--color--olivegreen);
+        }
 
-            &:not(:empty) {
-                margin-bottom: var(--space--s);
-            }
+        &__badge-dot {
+            flex: none;
+            width: #{px-to-rem(6)};
+            height: #{px-to-rem(6)};
+            border-radius: 50%;
+            background: var(--color--olivegreen);
+        }
 
-            .g-tag {
-                border-color: var(--color--brand-4);
-            }
+        &__title {
+            margin: 0 0 #{px-to-rem(14)};
+            font-weight: 300;
+            // Brand modular scale (step 2: 20.25 -> 28.13) Ã¢â‚¬â€ a step up from the
+            // list card, since the popup title is the focal heading there.
+            @include typestyle-xlarge; // brand type scale
+            line-height: 1.15;
+            letter-spacing: 0.04em;
+            text-transform: none;
+            color: var(--mb-tt-ink);
+            -webkit-text-stroke: 0.2px currentColor;
         }
 
         &__distance {
-            @include typestyle-small;
+            @include typestyle-meta;
 
-            font-weight: var(--type--2--font-weight);
+            display: flex;
+            align-items: center;
+            gap: #{px-to-rem(7)};
+            margin: 0 0 #{px-to-rem(18)};
+            color: var(--mb-tt-ink);
+
+            .map__marker-tooltip__icon {
+                width: #{px-to-rem(16)};
+                height: #{px-to-rem(16)};
+                color: var(--color--olivegreen);
+            }
         }
 
-        &__phone,
+        &__divider {
+            height: 1px;
+            margin: 0 0 #{px-to-rem(18)};
+            border: 0;
+            background: var(--mb-tt-rule);
+        }
+
         &__address {
             @include typestyle-small;
 
-            margin-top: var(--space--3xs);
-            color: var(--link--color);
+            margin: 0 0 #{px-to-rem(22)};
+            font-weight: 300;
+            line-height: 1.65;
+            color: var(--mb-tt-muted);
         }
 
-        &__link {
-            @include typestyle-h6;
-            @include mask-icon;
+        &__stock {
+            @include typestyle-small;
 
-            display: inline-flex;
-            gap: var(--space--2xs);
+            display: flex;
             align-items: center;
+            gap: #{px-to-rem(8)};
+            margin: 0 0 #{px-to-rem(20)};
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            color: var(--color--olivegreen);
+
+            &::before {
+                flex: none;
+                width: #{px-to-rem(7)};
+                height: #{px-to-rem(7)};
+                border-radius: 50%;
+                background: var(--color--olivegreen);
+                content: '';
+            }
+        }
+
+        &__actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: #{px-to-rem(10)};
+        }
+
+        &__btn {
+            @include typestyle-meta;
+
+            // Wider basis than before: at label size the two buttons need more room
+            // side by side, and this makes them stack cleanly instead of squeezing.
+            flex: 1 1 #{px-to-rem(140)};
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: #{px-to-rem(7)};
+            min-height: #{px-to-rem(44)};
+            padding: 0 #{px-to-rem(12)};
+            border-radius: #{px-to-rem(2)};
+            letter-spacing: 0.06em;
             text-decoration: none;
-            margin-top: var(--space--s);
+            transition: opacity 240ms ease, border-color 240ms ease, color 240ms ease;
+        }
+
+        &__btn--primary {
+            background: var(--mb-tt-ink);
+            color: var(--color--springwood);
+            border: 1px solid var(--mb-tt-ink);
 
             @include interact {
-                text-decoration: none;
-            }
-
-            &::after {
-                display: block;
-                width: #{px-to-rem(24)};
-                height: #{px-to-rem(24)};
-                content: '';
-                mask-image: url(#{asset-path('images/icons/chevron-right.svg')});
-                mask-size: #{px-to-rem(24)};
+                opacity: 0.92;
+                color: var(--color--springwood);
             }
         }
 
-        a {
-            color: var(--link--color);
+        &__btn--secondary {
+            background: transparent;
+            color: var(--mb-tt-ink);
+            border: 1px solid var(--mb-tt-rule-strong);
+
+            @include interact {
+                border-color: var(--color--olivegreen);
+                color: var(--color--olivegreen);
+            }
+        }
+
+        &__btn-prefix {
+            display: none;
         }
     }
 }

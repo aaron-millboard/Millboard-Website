@@ -1,0 +1,116 @@
+// =============================================================================
+// Distributor What's On Display
+// Collections a branch has on the floor, as chips grouped by category, beside the
+// branch display photo. Mist background, per the design.
+// =============================================================================
+
+.distributor-whats-on-display {
+    --dwod--olive: var(--color--olivegreen);
+    --dwod--chip-bg: var(--color--springwood);
+    --dwod--body: #{rgba(#151716, 0.76)};
+    --dwod--faint: #{rgba(#151716, 0.45)};
+    --dwod--chip-rule: #{rgba(#151716, 0.25)};
+
+    --block--margin-top: 0;
+    --block--margin-bottom: 0;
+
+    padding-top: clamp(40px, 5vw, 58px);
+    padding-bottom: clamp(40px, 5vw, 58px);
+    // Mist, per the design. This was briefly springwood on the grounds that the hero also
+    // uses mist, but Aaron's call is that the darker band is correct: the two are far enough
+    // apart on the page, with lighter blocks between, to read as distinct.
+    background-color: var(--color--mist);
+
+    &__inner {
+        display: grid;
+        gap: clamp(28px, 4vw, 48px);
+        align-items: center;
+        max-width: var(--width--responsive--l);
+        margin: 0 auto;
+    }
+
+    &--has-image &__inner {
+        @include mq(medium) {
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+        }
+    }
+
+    &__content {
+        min-width: 0;
+    }
+
+    &__rule {
+        display: block;
+        width: px-to-rem(48);
+        height: px-to-rem(2);
+        margin-bottom: px-to-rem(20);
+        background-color: var(--dwod--olive);
+    }
+
+    &__heading {
+        @include typestyle-h3;
+
+        margin: 0 0 px-to-rem(14);
+    }
+
+    &__intro {
+        margin: 0 0 px-to-rem(24);
+        max-width: 52ch;
+        color: var(--dwod--body);
+        line-height: 1.7;
+    }
+
+    // ---- Grouped chips ------------------------------------------------------
+    &__groups {
+        display: flex;
+        flex-direction: column;
+        gap: px-to-rem(18);
+    }
+
+    &__group-heading {
+        @include typestyle-meta;
+
+        margin: 0 0 px-to-rem(9);
+        letter-spacing: 0.1em;
+    }
+
+    &__chips {
+        display: flex;
+        flex-flow: row wrap;
+        gap: px-to-rem(8);
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    &__chip {
+        // The theme's li+li { margin-top: ... } offsets every chip after the
+        // first, which read as the first chip sitting too high.
+        margin-top: 0;
+        margin-bottom: 0;
+        padding: px-to-rem(5) px-to-rem(12);
+        border: 1px solid var(--dwod--chip-rule);
+        background-color: var(--dwod--chip-bg);
+        @include typestyle-small;
+
+        line-height: 1.5;
+    }
+
+    // ---- Media --------------------------------------------------------------
+    &__media {
+        position: relative;
+        overflow: hidden;
+        border: 1px solid #{rgba(#151716, 0.12)};
+
+        @include mq(medium) {
+            height: px-to-rem(360);
+        }
+    }
+
+    &__image {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+}

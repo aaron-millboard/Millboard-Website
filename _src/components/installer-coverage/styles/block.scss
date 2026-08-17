@@ -1,0 +1,190 @@
+// =============================================================================
+// Installer Coverage
+// Map on one side, "Where we work" heading + intro + county/town coverage +
+// optional button on the other. Coverage shows as rows or grouped chips.
+// =============================================================================
+
+.installer-coverage {
+    --ic--accent: var(--color--olivegreen);
+    --ic--muted: #{rgba(#151716, 0.66)};
+    --ic--rule: #{rgba(#151716, 0.14)};
+    --ic--dark: var(--color--black);
+    --ic--light: var(--color--springwood);
+
+    padding: clamp(40px, 5vw, 60px) 0;
+    background: var(--color--mist);
+    color: var(--color--foreground);
+
+    &__inner {
+        max-width: var(--width--responsive--l);
+        margin: 0 auto;
+    }
+
+    &__grid {
+        display: flex;
+        flex-direction: column;
+        gap: clamp(28px, 4vw, 44px);
+
+        @include mq(large) {
+            flex-direction: row;
+            align-items: stretch;
+        }
+    }
+
+    &--map-right &__grid {
+        @include mq(large) {
+            flex-direction: row-reverse;
+        }
+    }
+
+    // ---- Map -----------------------------------------------------------------
+    &__map {
+        position: relative;
+        min-height: clamp(260px, 40vw, 440px);
+        overflow: hidden;
+        border: 1px solid var(--ic--rule);
+
+        @include mq(large) {
+            flex: 1.35 1 0;
+        }
+    }
+
+    &__map-embed,
+    &__map-image {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    &__map-image {
+        object-fit: cover;
+    }
+
+    &__map-embed iframe {
+        display: block;
+        width: 100%;
+        height: 100%;
+        margin: 0; // Override the theme's global iframe margin.
+        border: 0;
+    }
+
+    // ---- Content -------------------------------------------------------------
+    &__content {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+
+        @include mq(large) {
+            flex: 1 1 0;
+        }
+    }
+
+    &__rule {
+        display: block;
+        width: px-to-rem(48);
+        height: 2px;
+        margin-bottom: px-to-rem(20);
+        background: var(--ic--accent);
+    }
+
+    // Inherits the site h2 hierarchy.
+    &__heading {
+        margin: 0 0 px-to-rem(16);
+    }
+
+    &__intro {
+        margin: 0 0 px-to-rem(22);
+        line-height: 1.7;
+        color: var(--ic--muted);
+    }
+
+    // ---- Coverage: rows ------------------------------------------------------
+    &__areas--rows {
+        display: flex;
+        flex-direction: column;
+        gap: px-to-rem(14);
+    }
+
+    &__areas--rows &__area {
+        display: flex;
+        justify-content: space-between;
+        gap: px-to-rem(12);
+        padding-bottom: px-to-rem(12);
+        border-bottom: 1px solid var(--ic--rule);
+
+        &:last-child {
+            padding-bottom: 0;
+            border-bottom: 0;
+        }
+    }
+
+    &__areas--rows &__area-county {
+        flex: none;
+    }
+
+    &__area-county {
+        @include typestyle-meta;
+
+        letter-spacing: 0.08em;
+    }
+
+    &__area-towns {
+        @include typestyle-small;
+        color: var(--ic--muted);
+        text-align: right;
+    }
+
+    // ---- Coverage: chips -----------------------------------------------------
+    &__areas--chips {
+        display: flex;
+        flex-direction: column;
+        gap: px-to-rem(16);
+    }
+
+    &__areas--chips &__area-county {
+        display: block;
+        margin-bottom: px-to-rem(8);
+    }
+
+    &__area-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: px-to-rem(7);
+    }
+
+    &__chip {
+        padding: px-to-rem(6) px-to-rem(12);
+        @include typestyle-small;
+        border: 1px solid var(--ic--rule);
+    }
+
+    // ---- Button --------------------------------------------------------------
+    &__btn {
+        align-self: flex-start;
+        display: inline-flex;
+        align-items: center;
+        gap: px-to-rem(9);
+        margin-top: px-to-rem(26);
+        padding: px-to-rem(14) px-to-rem(26);
+        @include typestyle-meta;
+        letter-spacing: 0.08em;
+        text-decoration: none;
+        background: var(--ic--dark);
+        color: var(--ic--light);
+        transition: background-color 0.24s ease;
+
+        &:hover,
+        &:focus-visible {
+            background: #{darken(#151716, 2%)};
+            color: var(--ic--light);
+            text-decoration: none;
+        }
+    }
+
+    &__arrow {
+        flex: none;
+        width: px-to-rem(15);
+        height: px-to-rem(15);
+    }
+}

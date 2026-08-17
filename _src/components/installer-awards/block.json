@@ -1,0 +1,30 @@
+{
+    "$schema": "https://raw.githubusercontent.com/AdvancedCustomFields/schemas/main/json/block.json",
+    "apiVersion": 2,
+    "name": "acf/installer-awards",
+    "title": "Installer Awards",
+    "category": "granola-blocks",
+    "icon": "awards",
+    "keywords": [ "installer", "awards", "recognition", "profile" ],
+    "acf": {
+        "mode": "auto",
+        "renderCallback": "\\Granola\\Component::acf_render_callback",
+        "postTypes": [
+            "installer"
+        ]
+    },
+    "supports": {
+        "anchor": true,
+        "align": false,
+        "color": {
+            "text": false
+        },
+        "mode": false
+    },
+    "attributes": {
+        "align": {
+            "type": "string",
+            "default": "full"
+        }
+    }
+}
