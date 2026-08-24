@@ -61,6 +61,35 @@ class WriteGuard
     ];
 
     /**
+     * Paths that use a write method but do not write a record, so blocking them
+     * breaks the integration without protecting anything.
+     *
+     * `oauth/v1/token` is the token exchange and refresh. Block it and the stored
+     * access token expires with no way to renew it, the plugin's connection shows
+     * as failed, and the feed screen cannot load its property list. HubSpot refresh
+     * tokens are reusable rather than single-use, so a refresh here does not
+     * invalidate production's. If production's connection ever drops right after a
+     * reconnect elsewhere, that assumption is the thing to re-check.
+     *
+     * Note what is deliberately NOT here: `oauth/v1/refresh-tokens/...`, which the
+     * plugin calls with DELETE to disconnect. Staging shares production's refresh
+     * token because it is a clone, so disconnecting from staging would revoke
+     * production's access. That one stays blocked.
+     */
+    private const PERMITTED_WRITE_PATHS = [
+        '/oauth/v1/token',
+    ];
+
+    /**
+     * HubSpot expresses queries as POST. They read, they do not write, and the
+     * plugin relies on them to decide whether a record already exists, so blocking
+     * them would make staging behave differently from production for no benefit.
+     */
+    private const PERMITTED_WRITE_PATH_SUFFIXES = [
+        '/search',
+    ];
+
+    /**
      * Cap on how much of a blocked body gets logged, so a large payload cannot fill
      * the log file.
      */
@@ -107,6 +136,10 @@ class WriteGuard
             return $preempt;
         }
 
+        if (self::is_permitted_write((string) \wp_parse_url($url, PHP_URL_PATH))) {
+            return $preempt;
+        }
+
         self::log_blocked($method, $url, $args);
 
         return new \WP_Error(
@@ -119,6 +152,32 @@ class WriteGuard
                 self::current_host()
             )
         );
+    }
+
+    /**
+     * Authentication and queries pass, record writes do not.
+     */
+    private static function is_permitted_write(string $path): bool
+    {
+        $path = rtrim(strtolower($path), '/');
+
+        if ($path === '') {
+            return false;
+        }
+
+        foreach (self::PERMITTED_WRITE_PATHS as $permitted) {
+            if ($path === $permitted) {
+                return true;
+            }
+        }
+
+        foreach (self::PERMITTED_WRITE_PATH_SUFFIXES as $suffix) {
+            if (str_ends_with($path, $suffix)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static function is_production(): bool
