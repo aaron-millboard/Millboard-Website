@@ -92,6 +92,7 @@ if (file_exists($autoloader = __DIR__ . '/vendor/autoload.php')) {
 // ----------------------------------------------------
 
 \Theme\WooCommerce\SampleShipping::init();
+\Theme\WooCommerce\ConsentFields::init();
 \Theme\WooCommerce\QuoteShare::init();
 \Theme\WooCommerce\Settings::init();
 \Theme\WooCommerce\ScriptOptimisation::init();

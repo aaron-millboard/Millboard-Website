@@ -208,3 +208,57 @@
         }
     }
 }
+
+// Audience-dependent marketing permission rows.
+//
+// Cosmetic only. The show/hide itself is an inline style set by the component's JS,
+// because Perfmatters Remove Unused CSS strips rules for classes that only ever
+// appear via JS, so nothing structural can live here.
+.woocommerce {
+    .mb-consent {
+        &__fieldset {
+            border: 0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: var(--space--3xs);
+        }
+
+        &__legend {
+            @include typestyle-small;
+
+            padding: 0;
+            margin: 0 0 var(--space--3xs);
+        }
+
+        &__hint {
+            @include typestyle-small;
+
+            color: var(--color--brand-1);
+            margin: 0;
+        }
+
+        &__option {
+            @include typestyle-small;
+
+            display: flex;
+            align-items: center;
+            gap: var(--space--3xs);
+            margin: 0;
+            cursor: pointer;
+
+            input[type='radio'] {
+                width: auto;
+                flex: 0 0 auto;
+                margin: 0;
+            }
+        }
+
+        &__policy {
+            @include typestyle-small;
+
+            margin: 0;
+        }
+    }
+}
