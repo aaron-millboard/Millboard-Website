@@ -104,6 +104,15 @@ class ConsentFields
 
                 // Company name strengthens the record that we approached the person
                 // in a professional capacity, which matters most for sole traders.
+                // Not a translated string on purpose: this renders on the FR checkout
+                // only, and the .po lookup fell back to English "Privacy policy" on a
+                // French consent control.
+                'policy_link_text' => 'politique de confidentialité',
+                // %s is the linked policy text. The link sits on the descriptive words
+                // rather than on "cliquez ici", so the link text still makes sense when
+                // read out of context by a screen reader.
+                'policy_prompt' => 'Cliquez ici pour consulter notre %s.',
+
                 'company_label' => 'Nom de l\'entreprise',
                 'show_company_for_business' => true,
             ],
@@ -299,6 +308,20 @@ class ConsentFields
         $hint = (string) ($args['description'] ?? '');
         $hint_id = $key . '_hint';
 
+        $privacy_url = \get_privacy_policy_url();
+
+        $config = self::config();
+        $hint_html = \esc_html($hint);
+
+        if ($hint !== '' && $privacy_url !== '' && !empty($config['policy_prompt'])) {
+            $link = '<a href="' . \esc_url($privacy_url) . '" target="_blank" rel="noopener">'
+                . \esc_html((string) ($config['policy_link_text'] ?? '')) . '</a>';
+
+            // The pattern is escaped before the anchor goes in, so the only markup that
+            // can reach the page is the anchor this method builds.
+            $hint_html .= ' ' . sprintf(\esc_html((string) $config['policy_prompt']), $link);
+        }
+
         $html = '<div class="form-row ' . \esc_attr(implode(' ', array_unique($classes))) . '"'
             . ' id="' . \esc_attr($key) . '_field"'
             . ' data-priority="' . \esc_attr((string) ($args['priority'] ?? '')) . '">';
@@ -315,10 +338,8 @@ class ConsentFields
         $html .= '</legend>';
 
         if ($hint !== '') {
-            $html .= '<p class="mb-consent__hint" id="' . \esc_attr($hint_id) . '">' . \esc_html($hint) . '</p>';
+            $html .= '<p class="mb-consent__hint" id="' . \esc_attr($hint_id) . '">' . $hint_html . '</p>';
         }
-
-        $privacy_url = \get_privacy_policy_url();
 
         foreach ($options as $option_value => $option_label) {
             $input_id = $key . '_' . \sanitize_html_class((string) $option_value);
@@ -331,11 +352,6 @@ class ConsentFields
                 . \checked((string) $value, (string) $option_value, false)
                 . ' /> <span>' . \esc_html((string) $option_label) . '</span>'
                 . '</label>';
-        }
-
-        if ($privacy_url !== '') {
-            $html .= '<p class="mb-consent__policy"><a href="' . \esc_url($privacy_url) . '" target="_blank" rel="noopener">'
-                . \esc_html__('Privacy policy', 'granola') . '</a></p>';
         }
 
         $html .= '</fieldset></div>';
