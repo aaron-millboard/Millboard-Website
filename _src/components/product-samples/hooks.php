@@ -12,6 +12,11 @@ namespace Granola\Components\ProductSamples;
 // footer to still be printed.
 \add_filter('granola/partial/product-samples/enqueue_script_in_footer', '__return_true');
 
+// Keep the styles for the parts of the basket that only exist after a click.
+// Remove Unused CSS decides what is used from the server-rendered HTML, so
+// anything the script creates later looks unused and gets stripped.
+\add_filter('perfmatters_rucss_excluded_selectors', __NAMESPACE__ . '\\rucss_excluded_selectors');
+
 // Toggle a single sample in the basket without a page reload.
 \add_action('wp_ajax_granola_sample_toggle', __NAMESPACE__ . '\\ajax_toggle_sample');
 \add_action('wp_ajax_nopriv_granola_sample_toggle', __NAMESPACE__ . '\\ajax_toggle_sample');
