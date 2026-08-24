@@ -4,18 +4,6 @@ namespace Theme\WooCommerce;
 
 class SampleShipping
 {
-    private const HOMEOWNER_MATCH_TERMS = [
-        'homeowner',
-        'house owner',
-        'hausbesitzer',
-        'hauseigentuemer',
-        'hauseigentumer',
-        'proprietaire',
-        'proprietario',
-        'propietario',
-        'woningeigenaar',
-        'huis eigenaar',
-    ];
     private const SMALL_SAMPLE_MATCH_TERMS = [
         'small',
         'klein',
@@ -283,32 +271,7 @@ class SampleShipping
 
     private static function is_homeowner_selected_in_request(): bool
     {
-        if (!function_exists('wp_unslash')) {
-            return false;
-        }
-
-        $post_data = $_POST['post_data'] ?? null;
-
-        if (is_string($post_data) && $post_data !== '') {
-            $parsed = [];
-            parse_str((string) wp_unslash($post_data), $parsed);
-
-            if (self::is_homeowner_selected($parsed)) {
-                return true;
-            }
-        }
-
-        $raw_posted = [];
-
-        foreach ($_POST as $key => $value) {
-            if (!is_string($key)) {
-                continue;
-            }
-
-            $raw_posted[$key] = is_string($value) ? wp_unslash($value) : $value;
-        }
-
-        return self::is_homeowner_selected($raw_posted);
+        return Audience::from_request() === Audience::CONSUMER;
     }
 
     private static function cart_contains_small_sample(): bool
@@ -455,78 +418,7 @@ class SampleShipping
      */
     private static function is_homeowner_selected(array $posted_data): bool
     {
-        $possible_keys = [
-            'who-am-i?',
-            'who-am-i',
-            'who_am_i',
-            'billing_who-am-i?',
-            'billing_who-am-i',
-            'billing_who_am_i',
-            'shipping_who-am-i?',
-            'shipping_who-am-i',
-            'shipping_who_am_i',
-        ];
-
-        foreach ($possible_keys as $key) {
-            if (!array_key_exists($key, $posted_data)) {
-                continue;
-            }
-
-            if (self::value_is_homeowner($posted_data[$key])) {
-                return true;
-            }
-        }
-
-        foreach ($posted_data as $key => $value) {
-            $normalized_key = strtolower((string) $key);
-
-            if (!str_contains($normalized_key, 'who') || !str_contains($normalized_key, 'am')) {
-                continue;
-            }
-
-            if (self::value_is_homeowner($value)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private static function value_is_homeowner(mixed $value): bool
-    {
-        if (!is_string($value) || $value === '') {
-            return false;
-        }
-
-        $normalized = self::normalize_match_value($value);
-
-        if ($normalized === '') {
-            return false;
-        }
-
-        $terms = apply_filters('millboard/homeowner_match_terms', self::HOMEOWNER_MATCH_TERMS);
-
-        if (!is_array($terms)) {
-            $terms = self::HOMEOWNER_MATCH_TERMS;
-        }
-
-        foreach ($terms as $term) {
-            if (!is_string($term)) {
-                continue;
-            }
-
-            $normalized_term = self::normalize_match_value($term);
-
-            if ($normalized_term === '') {
-                continue;
-            }
-
-            if (str_contains($normalized, $normalized_term)) {
-                return true;
-            }
-        }
-
-        return false;
+        return Audience::is_homeowner($posted_data);
     }
 
     private static function normalize_match_value(string $value): string
