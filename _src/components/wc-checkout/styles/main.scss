@@ -235,7 +235,9 @@
         &__hint {
             @include typestyle-small;
 
-            color: var(--color--brand-1);
+            // Deliberately not muted. This sentence explains what the consent does
+            // and does not cover, so low contrast here is both a WCAG 1.4.3 failure
+            // and reads as burying the explanation. It is secondary by size only.
             margin: 0;
         }
 
