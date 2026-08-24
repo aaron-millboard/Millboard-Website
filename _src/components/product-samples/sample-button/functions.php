@@ -110,6 +110,10 @@ function filter_args(array $args): ?array
         $args['attributes']['data-sample-label'] = $add_label;
         $args['attributes']['data-sample-dimensions'] = $add_dimensions;
         $args['attributes']['data-sample-price'] = $add_price;
+        // Carried so the analytics event can name the sample. The AJAX add
+        // produces no ?add-to-cart= page view, so this attribute is the only
+        // place the client learns what was chosen.
+        $args['attributes']['data-sample-name'] = $product->get_name();
     }
 
     // Generate a "remove from cart" url for small samples that are already in the cart.

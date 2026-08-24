@@ -175,9 +175,12 @@ function ajax_toggle_sample(): void
     \wc_clear_notices();
 
     if ($toggle === 'add') {
-        // Enforce the limit here rather than relying only on the validation
-        // filter. That filter receives the parent product ID, so its
-        // is_free_sample() check does not recognise a sample and lets it through.
+        // Enforce the limit here rather than relying on the validation filter.
+        // WC_Cart::add_to_cart() does not apply woocommerce_add_to_cart_validation
+        // at all (WooCommerce 10.9.4 fires it from WC_Form_Handler, WC_AJAX,
+        // WC_Cart_Session and the Store API only), so on this path the filter
+        // never runs. Do not remove this check on the assumption it duplicates
+        // the filter.
         if (count(get_cart_sample_positions()) >= MAX_SAMPLES) {
             \wp_send_json_error([
                 'message' => sprintf(

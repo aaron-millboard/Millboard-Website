@@ -83,6 +83,7 @@ export default class SampleBasket {
                 // notice on the button itself, where the visitor is looking.
                 if (response.status === 409) {
                     this.showLimitNotice(button, this.config.i18n.limit);
+                    this.track('sample_limit_reached', button, payload.data && payload.data.state);
                     return;
                 }
 
@@ -91,6 +92,7 @@ export default class SampleBasket {
             }
 
             this.applyState(payload.data);
+            this.track(toggle === 'remove' ? 'sample_removed' : 'sample_added', button, payload.data);
         } catch (error) {
             // Fall back to the plain link so the visitor is never stuck.
             window.location.href = button.getAttribute('href');
@@ -349,6 +351,37 @@ export default class SampleBasket {
             this.bar.classList.remove('product-samples__bar--error');
             this.syncBar();
         }, 4000);
+    }
+
+    /**
+     * Report a sample basket action to the data layer.
+     *
+     * An AJAX add produces no page view, so the ?add-to-cart= URL that every
+     * previous sample measurement was built on disappears the moment this
+     * feature is switched on for a locale. This is the replacement signal.
+     * It is deliberately NOT called add_to_basket: that event already exists,
+     * fires only for sessions that landed on one particular page, and cannot
+     * be compared across landing pages.
+     *
+     * @param {string} event Event name.
+     * @param {HTMLElement} button Button that was pressed.
+     * @param {object|null} state Basket state returned by the server.
+     */
+    track(event, button, state) {
+        // Never let an analytics failure break the basket.
+        try {
+            window.dataLayer = window.dataLayer || [];
+            window.dataLayer.push({
+                event,
+                sample_product_id: Number(button.dataset.sampleProductId) || null,
+                sample_name: button.dataset.sampleName || null,
+                // The server is the source of truth for the count, so a
+                // refusal reports the real basket rather than an optimistic one.
+                sample_basket_count: state && typeof state.count === 'number' ? state.count : null,
+            });
+        } catch (error) {
+            // Swallowed on purpose.
+        }
     }
 
     /**
