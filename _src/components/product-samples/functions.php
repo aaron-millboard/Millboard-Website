@@ -344,12 +344,12 @@ function sample_product_add_to_cart_validation($add_to_cart, $product_id = 0, $q
     $variation_id = \absint($variation_id);
     $qty          = (int) $qty;
 
-    // Scoped to the German pilot. While the toggle is off every other locale
-    // keeps exactly the behaviour it has today, so enabling the pilot can never
-    // change add-to-cart anywhere it has not been switched on.
-    if (!ajax_sample_basket_enabled()) {
-        return $add_to_cart;
-    }
+    // Deliberately NOT gated behind the German pilot. The three sample cap is a
+    // commercial rule for every locale, and gating it here meant only Germany
+    // enforced it. The gate existed solely to contain the 5 Aug 2026 TypeError,
+    // which the untyped signature above and the instanceof guard below fix at
+    // source. Do not reintroduce it without also finding somewhere else to put
+    // the cap.
 
     // WooCommerce passes the parent ID as $product_id for variable products, so
     // prefer the variation when one is supplied. Without this the check below
