@@ -34,7 +34,17 @@ build:
     - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
     - php -v && composer --version && node -v
   script:
-    - composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+    # api.github.com serves the dist zipballs and 504s intermittently. --prefer-dist
+    # turns off Composer's source fallback ("Source fallback is disabled. Not trying
+    # alternative sources."), so one failed download fails the whole build and blocks
+    # every deploy. Three attempts on 24 Aug 2026 died on three different packages.
+    # Retry dist once, then clone from source, which does not touch that endpoint.
+    - |
+      composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader \
+        || (echo "composer dist install failed, retrying" \
+            && composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader) \
+        || (echo "dist still failing, falling back to source" \
+            && composer install --no-dev --no-interaction --prefer-source --optimize-autoloader)
     - npm ci
     # Equivalent of `npm run build`, but pass --allow-root to pot (CI runs as root) so wp-cli doesn't bail.
     - npm run pot -- --allow-root
