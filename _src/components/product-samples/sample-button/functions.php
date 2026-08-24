@@ -84,7 +84,17 @@ function filter_args(array $args): ?array
     // Hooks for the AJAX toggle. The button identifies itself and its current
     // state so the script can flip it without a page load. Only added when the
     // feature is on, so the markup is unchanged for sites still opted out.
-    $ajax_basket = \Granola\Components\ProductSamples\ajax_sample_basket_enabled();
+    //
+    // Free samples ONLY. ajax_toggle_sample() rejects anything that is not a
+    // free sample with "That product is not a sample.", so attaching these
+    // attributes to a paid large sample made the button swallow the click: the
+    // script cancelled the link, the endpoint refused, the error flashed in the
+    // sticky bar for four seconds and the sample was never added. That is the
+    // paid product, so it was losing orders on every locale with the feature on.
+    // Paid samples keep the plain ?add-to-cart= link, which is exactly how they
+    // behave with the feature off.
+    $ajax_basket = \Granola\Components\ProductSamples\ajax_sample_basket_enabled()
+        && \Theme\WooCommerce\Utils::is_free_sample($product);
 
     // The three pieces of the addable label. Held separately so they can also be
     // handed to the script, which needs to rebuild this state after a removal -
