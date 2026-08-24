@@ -257,12 +257,26 @@ class ConsentFields
             'label' => $config['company_label'] ?? \__('Company name', 'granola'),
             'required' => false,
             'autocomplete' => 'section-billing billing organization',
-            'priority' => (int) ($billing['billing_phone']['priority'] ?? 80) + 5,
+            // Sits immediately above the permission question rather than up with the
+            // address fields, so it reads as a follow-up to "I am an installer" and
+            // does not pop in above the answer that triggered it. Also keeps it out
+            // of the two-column pairing of the qualifying questions.
+            'priority' => self::company_priority($billing),
             'class' => ['form-row-wide', 'mb-consent', 'mb-consent--business'],
             'validate' => [],
         ];
 
         return $billing;
+    }
+
+    /**
+     * @param array<string, array<string, mixed>> $billing
+     */
+    private static function company_priority(array $billing): int
+    {
+        $objection_priority = (int) ($billing[self::OBJECTION_FIELD]['priority'] ?? 160);
+
+        return $objection_priority - 8;
     }
 
     /**
