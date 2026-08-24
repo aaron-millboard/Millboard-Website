@@ -106,4 +106,5 @@ if (file_exists($autoloader = __DIR__ . '/vendor/autoload.php')) {
 // ----------------------------------------------------
 // Other custom functionality.
 // ----------------------------------------------------
+\Theme\Hubspot\WriteGuard::init();
 \Theme\Hubspot\Attribution::init();
