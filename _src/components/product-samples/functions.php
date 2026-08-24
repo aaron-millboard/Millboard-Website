@@ -61,6 +61,43 @@ function sample_tile_add_focus(): bool
 }
 
 /**
+ * Protect the sample basket styles from Remove Unused CSS.
+ *
+ * The sticky bar, the limit notice and the in-flight button state are all
+ * created or toggled by the script, so none of them appear in the HTML that
+ * Perfmatters inspects. Left alone it strips every rule for them and the sticky
+ * bar renders as unstyled static content thousands of pixels down the page.
+ *
+ * Each class has to be listed in full. Perfmatters only accepts a match that
+ * ends at a boundary (whitespace, `.`, `:`, `,`, `[` or end of selector), so a
+ * prefix never matches: `.product-samples__bar` does not cover
+ * `.product-samples__bar--error`, and this is why the older `.map__` and
+ * `.cky-` style entries in the plugin settings match nothing at all.
+ *
+ * Registered unconditionally rather than behind ajax_sample_basket_enabled().
+ * The cost on a locale with the feature off is a handful of retained rules, and
+ * the alternative is a silent breakage the next time a toggle is flipped.
+ *
+ * NOTE: Perfmatters caches used CSS per URL, so flipping a toggle needs the
+ * used CSS cleared before the change shows.
+ *
+ * @param array $selectors Selectors Perfmatters has been told to keep.
+ * @return array
+ */
+function rucss_excluded_selectors($selectors)
+{
+    return array_merge((array) $selectors, [
+        '.product-samples__bar',
+        '.product-samples__bar--error',
+        '.product-samples__bar__count',
+        '.product-samples__bar__link',
+        '.product-samples__button--pending',
+        '.product-samples__limit',
+        '.product-samples__limit--below',
+    ]);
+}
+
+/**
  * Enqueue and configure the sample basket script.
  *
  * Called from the sample button rather than a component render hook, because on
