@@ -817,6 +817,11 @@ class OrderEssentials
                 'in_cart_qty' => $in_cart_qty,
                 'missing_qty' => $missing_qty,
                 'default_add_qty' => $missing_qty > 0 ? $missing_qty : 1,
+                // Required to install, or recommended to finish and maintain. Taken
+                // from the calculator matrix's own Section column: everything it
+                // files under Accessories is the finishing group, everything under
+                // Boards, Fascia, Subframe, Fixings and Trims is structural.
+                'group' => self::normalise_group((string) ($rule['group'] ?? '')),
             ];
         }
 
@@ -914,6 +919,7 @@ class OrderEssentials
                 // How the multiplier is applied: per unit of the source (default),
                 // per m2 of derived project area, or once per project.
                 'basis' => self::normalise_basis((string) ($rule['basis'] ?? '')),
+                'group' => self::normalise_group((string) ($rule['group'] ?? '')),
                 'apply_waste' => !empty($rule['apply_waste']),
                 'requires_category_slugs' => self::normalise_slug_array($rule['requires_category_slugs'] ?? []),
                 'excludes_category_slugs' => self::normalise_slug_array($rule['excludes_category_slugs'] ?? []),
@@ -963,6 +969,7 @@ class OrderEssentials
                     'residential_multiplier' => $recommendation['residential_multiplier'] ?? 0,
                     'commercial_multiplier' => $recommendation['commercial_multiplier'] ?? 0,
                     'basis' => $recommendation['basis'] ?? 'per_unit',
+                    'group' => $recommendation['group'] ?? 'required',
                     'apply_waste' => !empty($recommendation['apply_waste']),
                     // Conditions live on the SOURCE row: they describe the basket as
                     // a whole, not an individual recommendation.
@@ -1570,6 +1577,16 @@ class OrderEssentials
         $basis = strtolower(trim($basis));
 
         return \in_array($basis, ['per_sqm', 'per_project'], true) ? $basis : 'per_unit';
+    }
+
+    /**
+     * Which group a recommendation belongs to. Defaults to required, so a rule that
+     * predates this field keeps behaving as it did rather than quietly becoming
+     * optional and losing its tick.
+     */
+    private static function normalise_group(string $group): string
+    {
+        return $group === 'optional' ? 'optional' : 'required';
     }
 
     /**

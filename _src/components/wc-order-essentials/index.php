@@ -175,7 +175,31 @@ if ($count === 0) {
                     <p class="cart__order-essentials__recommendation-source"><?php echo esc_html($essentials_recommendation_source_label); ?></p>
                 <?php endif; ?>
 
-                <?php foreach ($essentials_recommendations as $essentials_item) :
+                <?php
+                // Two groups, so the customer can see at a glance what the install
+                // actually needs versus what finishes and maintains it. Only the
+                // required group is ticked for them.
+                $essentials_grouped = ['required' => [], 'optional' => []];
+
+                foreach ($essentials_recommendations as $essentials_row) {
+                    $essentials_grouped[($essentials_row['group'] ?? 'required') === 'optional' ? 'optional' : 'required'][] = $essentials_row;
+                }
+
+                $essentials_group_headings = [
+                    'required' => __('Required to install', 'granola'),
+                    'optional' => __('Recommended to finish and maintain', 'granola'),
+                ];
+
+                foreach ($essentials_grouped as $essentials_group_key => $essentials_group_rows) :
+                    if (empty($essentials_group_rows)) {
+                        continue;
+                    }
+                    ?>
+                    <h3 class="cart__order-essentials__group-heading">
+                        <?php echo esc_html($essentials_group_headings[$essentials_group_key]); ?>
+                    </h3>
+                    <?php
+                foreach ($essentials_group_rows as $essentials_item) :
                     $essentials_product_id = isset($essentials_item['product_id']) ? (int) $essentials_item['product_id'] : 0;
                     $essentials_name = isset($essentials_item['product_name']) ? (string) $essentials_item['product_name'] : '';
                     $essentials_url = isset($essentials_item['product_url']) ? (string) $essentials_item['product_url'] : '';
@@ -185,13 +209,14 @@ if ($count === 0) {
                     $essentials_missing_qty = isset($essentials_item['missing_qty']) ? (int) $essentials_item['missing_qty'] : 0;
                     $essentials_default_add_qty = isset($essentials_item['default_add_qty']) ? (int) $essentials_item['default_add_qty'] : 0;
                     $essentials_unit_price = \Granola\Components\WC_OrderEssentials\resolve_unit_price($essentials_product_id);
-                    // Only pre-tick what is actually still MISSING. Including
-                    // already-in-basket lines meant that after adding everything,
-                    // every row stayed ticked with a default quantity of 1, so a
-                    // second press of "Add selected to basket" silently added one
-                    // more of each. Someone who genuinely wants extras can still
-                    // tick a satisfied row and set a quantity.
-                    $essentials_is_selected = $essentials_missing_qty > 0;
+                    // Only pre-tick what is actually still MISSING, and only in the
+                    // required group. Including already-in-basket lines meant that
+                    // after adding everything, every row stayed ticked with a default
+                    // quantity of 1, so a second press of "Add selected to basket"
+                    // silently added one more of each. Someone who wants an optional
+                    // item, or extras of something satisfied, can still tick it.
+                    $essentials_row_group = ($essentials_item['group'] ?? 'required') === 'optional' ? 'optional' : 'required';
+                    $essentials_is_selected = $essentials_missing_qty > 0 && $essentials_row_group === 'required';
                     $essentials_is_in_basket = $essentials_in_cart_qty > 0;
                     $essentials_qty_to_add = max(0, $essentials_default_add_qty);
 
@@ -296,6 +321,7 @@ if ($count === 0) {
                         </div>
                     </article>
                 <?php endforeach; ?>
+                <?php endforeach; ?>
             </div>
 
             <div class="cart__order-essentials__summary" aria-live="polite">
@@ -334,7 +360,9 @@ if ($count === 0) {
             <?php endif; ?>
 
             <div class="cart__order-essentials__actions">
-                <button type="submit" class="g-button" name="millboard_add_all_essentials" value="1" <?php disabled(!$has_outstanding_essentials); ?>><?php esc_html_e('Add ALL essentials', 'granola'); ?></button>
+<?php // "Add ALL essentials" removed Aug 2026: with rows pre-ticked only when
+                // something is missing, "Add selected to basket" already does exactly
+                // what it did, so the two were competing for the same click. ?>
                 <button type="submit" class="g-button g-button--solid cart__order-essentials__action-primary" name="millboard_add_selected_essentials" value="1" <?php disabled(!$has_outstanding_essentials); ?>><?php esc_html_e('Add selected to basket', 'granola'); ?></button>
                 <button type="submit" class="g-button g-button--secondary cart__order-essentials__action-secondary" name="millboard_continue_to_basket" value="1" data-essentials-open-modal="continue"><?php esc_html_e('Continue without essentials', 'granola'); ?></button>
             </div>
@@ -374,47 +402,25 @@ if ($count === 0) {
                         </h2>
                         <p class="cart__order-essentials-modal__intro">
                             <?php
-                            // The parts differ by product. Only mention a sub-frame when
-                            // there is decking in the basket, since cladding has none,
-                            // and a mixed basket does need one.
-                            switch ($essentials_basket_kind) {
-                                case 'decking':
-                                    esc_html_e('Decking needs the right fixings, sub-frame and finishing pieces to install correctly.', 'granola');
-                                    break;
-                                case 'cladding':
-                                    esc_html_e('Cladding needs the right fixings and finishing pieces to install correctly.', 'granola');
-                                    break;
-                                case 'both':
-                                    esc_html_e('Decking and cladding both need the right fixings and finishing pieces to install correctly, and your deck needs a sub-frame.', 'granola');
-                                    break;
-                                default:
-                                    esc_html_e('Your project needs the right fixings and finishing pieces to install correctly.', 'granola');
-                            }
+                            // James, Aug 2026: the sentence naming what each product type
+                            // needs came out, and so did the "Heads up" block that used to
+                            // sit below this panel. The acknowledgement carries the point
+                            // now, so the modal states the choice once instead of arguing
+                            // it three times.
+                            esc_html_e('You can carry on without adding our suggested essentials. We just want to make sure you have considered it.', 'granola');
                             ?>
-                            <?php esc_html_e('You can carry on without adding our suggested essentials. We just want to make sure you have considered it.', 'granola'); ?>
                         </p>
                     </div>
-
-                    <?php if ($has_outstanding_essentials && $names_array !== '') : ?>
-                        <div class="cart__order-essentials-modal__warning">
-                            <span class="cart__order-essentials-modal__warning-icon" aria-hidden="true">!</span>
-                            <span>
-                                <strong><?php esc_html_e('Heads up.', 'granola'); ?></strong>
-                                <?php echo wp_kses_post(sprintf(__('Without %s your order may not meet our installation guidelines and the Millboard warranty.', 'granola'), $names_array)); ?>
-                            </span>
-                        </div>
-                    <?php endif; ?>
 
                     <?php if ($has_outstanding_essentials) : ?>
                         <label class="cart__order-essentials-modal__ack">
                             <input type="checkbox" data-essentials-modal-ack>
                             <span>
                                 <?php
-                                if ($essentials_basket_kind === 'cladding') {
-                                    esc_html_e('I understand the recommended essentials have not been added to my order, and accept responsibility for sourcing the correct fixings for my project. This note will be saved against my order.', 'granola');
-                                } else {
-                                    esc_html_e('I understand the recommended essentials have not been added to my order, and accept responsibility for sourcing the correct fixing and sub-frame for my project. This note will be saved against my order.', 'granola');
-                                }
+                                // James, Aug 2026. One wording for every basket now: the
+                                // old pair named fixings and sub-frames, which meant
+                                // maintaining a variant per product type for no gain.
+                                esc_html_e('I understand the recommended essentials have not been added to my order, and accept responsibility for ensuring that my project is installed in accordance with Millboard installation guidance.', 'granola');
                                 ?>
                             </span>
                         </label>

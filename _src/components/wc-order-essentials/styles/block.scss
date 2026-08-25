@@ -366,7 +366,22 @@
                 }
             }
 
-            &__notice {
+            &__group-heading {
+            @include typestyle-h6;
+
+            font-weight: 400;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin: var(--space--l) 0 var(--space--s);
+            padding-bottom: #{px-to-rem(8)};
+            border-bottom: 1px solid var(--color--brand-1);
+
+            &:first-child {
+                margin-top: 0;
+            }
+        }
+
+        &__notice {
                 @include typestyle-base;
 
                 margin: var(--space--l) 0 var(--space--m);

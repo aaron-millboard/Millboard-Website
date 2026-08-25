@@ -251,6 +251,20 @@ class Settings
                                     'allow_null' => 0,
                                 ],
                                 [
+                                    'key' => 'field_order_essentials_group',
+                                    'label' => 'Group',
+                                    'name' => 'group',
+                                    'type' => 'select',
+                                    'instructions' => 'Required to install is ticked for the customer by default; recommended to finish and maintain is not. Follow the calculator matrix\'s own Section column: anything it files under Accessories is a finishing item, anything under Boards, Fascia, Subframe, Fixings or Trims is structural.',
+                                    'choices' => [
+                                        'required' => 'Required to install',
+                                        'optional' => 'Recommended to finish and maintain',
+                                    ],
+                                    'default_value' => 'required',
+                                    'ui' => 1,
+                                    'return_format' => 'value',
+                                ],
+                                [
                                     'key' => 'field_order_essentials_apply_waste',
                                     'label' => 'Apply waste allowance',
                                     'name' => 'apply_waste',
