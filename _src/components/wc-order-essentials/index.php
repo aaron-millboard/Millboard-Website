@@ -90,6 +90,9 @@ if ($count === 0) {
         </header>
 
         <?php if ($has_essentials) : ?>
+            <?php // The two questions sit side by side on wider screens: stacked they
+            // were 340px of the 762px above the first product row. ?>
+            <div class="cart__order-essentials__questions">
             <fieldset class="cart__order-essentials__project-type">
                 <div class="cart__order-essentials__project-type-legend">
                     <span class="cart__order-essentials__project-type-legend-label">
@@ -164,6 +167,7 @@ if ($count === 0) {
                     </div>
                 </fieldset>
             <?php endif; ?>
+            </div>
 
             <?php // DuoLift parts in the basket but no joist to say which build it is. ?>
             <?php if (!empty($essentials_context['subframe_incomplete'])) : ?>
