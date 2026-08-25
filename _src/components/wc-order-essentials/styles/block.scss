@@ -373,64 +373,6 @@
                 }
             }
 
-            // Subframe question. Same treatment as the finished floor level box, since
-        // they are the same kind of ask.
-        &__subframe {
-            margin: 0 0 var(--space--m);
-            padding: 0;
-            border: 0;
-            width: 100%;
-        }
-
-        &__subframe-inner {
-            border: 1px solid var(--color--brand-1);
-            padding: var(--space--s);
-            display: grid;
-            gap: var(--space--2xs);
-            max-width: #{px-to-rem(560)};
-        }
-
-        &__subframe-label {
-            @include typestyle-h6;
-
-            text-transform: uppercase;
-        }
-
-        &__subframe-help,
-        &__subframe-notice {
-            @include typestyle-small;
-
-            margin: 0;
-        }
-
-        &__subframe-input {
-            max-width: 100%;
-        }
-
-        &__group-heading {
-            @include typestyle-h6;
-
-            font-weight: 400;
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            margin: var(--space--l) 0 var(--space--s);
-            padding-bottom: #{px-to-rem(8)};
-            border-bottom: 1px solid var(--color--brand-1);
-
-            &:first-child {
-                margin-top: 0;
-            }
-        }
-
-        &__notice {
-                @include typestyle-base;
-
-                margin: var(--space--l) 0 var(--space--m);
-                padding: var(--space--s);
-                border-top: 4px solid #78920f;
-                background-color: #eef2dd;
-            }
-
             &__title {
                 @include typestyle-h2;
 
@@ -546,6 +488,66 @@
 
             &--warning {
                 border-left: 3px solid var(--color--brand-1);
+            }
+        }
+
+        // Subframe question, given the same bordered-box treatment as the finished
+        // floor level ask, because they are the same kind of question.
+        &__subframe {
+            margin: 0 0 var(--space--l);
+            padding: 0;
+            border: 0;
+            width: 100%;
+        }
+
+        &__subframe-inner {
+            border: 1px solid var(--color--brand-1);
+            padding: var(--space--s);
+            display: grid;
+            gap: var(--space--2xs);
+            max-width: #{px-to-rem(560)};
+        }
+
+        &__subframe-label {
+            @include typestyle-h6;
+
+            text-transform: uppercase;
+        }
+
+        &__subframe-help {
+            @include typestyle-small;
+
+            margin: 0;
+        }
+
+        &__subframe-input {
+            --input--background-color: transparent;
+
+            max-width: 100%;
+        }
+
+        &__subframe-notice {
+            @include typestyle-small;
+
+            margin: 0;
+            font-weight: var(--type--2--font-weight);
+        }
+
+        // Matches &__recommendation-source, so the two group titles read as the same
+        // kind of heading as "Recommendations based on". The rule above the second
+        // group is what separates required from optional, so the first one drops it.
+        &__group-heading {
+            @include typestyle-h5;
+
+            font-weight: 400;
+            margin: var(--space--2xl) 0 var(--space--m);
+            padding-top: var(--space--l);
+            border-top: 2px solid var(--color--brand-1);
+
+            &:first-of-type {
+                margin-top: 0;
+                padding-top: 0;
+                border-top: 0;
             }
         }
 
