@@ -332,6 +332,11 @@ class OrderEssentials
                     }
                 }
 
+                // Category and product names are stored HTML-encoded, so
+                // "Board &amp; Batten+" would be escaped a second time by the
+                // template and reach the customer with the entity showing.
+                $label = \html_entity_decode($label, ENT_QUOTES, 'UTF-8');
+
                 if ($label !== '' && !\in_array($label, $labels, true)) {
                     $labels[] = $label;
                 }
