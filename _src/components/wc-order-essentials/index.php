@@ -71,6 +71,19 @@ if ($count === 0) {
             <p class="cart__order-essentials__intro">
                 <?php esc_html_e('Based on the items in your basket we have identified products and quantities commonly required to complete your project.', 'granola'); ?>
             </p>
+
+            <?php
+            // Show the area we worked from. Every square-metre quantity below derives
+            // from it, so without it the customer has to take the numbers on trust.
+            if (!empty($essentials_context['project_area'])) : ?>
+                <p class="cart__order-essentials__area">
+                    <?php echo esc_html(sprintf(
+                        /* translators: %s: project area in square metres. */
+                        __('Worked out from %s m² of boards in your basket.', 'granola'),
+                        (string) $essentials_context['project_area']
+                    )); ?>
+                </p>
+            <?php endif; ?>
         </header>
 
         <?php if ($has_essentials) : ?>
@@ -310,6 +323,18 @@ if ($count === 0) {
                                             get_woocommerce_currency_symbol() . number_format($essentials_unit_price, 2)
                                         )
                                     );
+
+                                    // A line total, so the customer can check the
+                                    // arithmetic instead of trusting it. Only worth
+                                    // printing when the quantity is more than one.
+                                    if ($essentials_recommended_qty > 1 && $essentials_unit_price > 0) {
+                                        echo ' &middot; ' . esc_html(sprintf(
+                                            /* translators: 1: quantity, 2: line total with currency symbol. */
+                                            __('%1$d for %2$s', 'granola'),
+                                            $essentials_recommended_qty,
+                                            get_woocommerce_currency_symbol() . number_format($essentials_unit_price * $essentials_recommended_qty, 2)
+                                        ));
+                                    }
                                     ?>
                                 </div>
 
