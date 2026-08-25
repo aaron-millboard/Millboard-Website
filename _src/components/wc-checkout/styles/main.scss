@@ -250,7 +250,8 @@
             margin: 0;
             cursor: pointer;
 
-            input[type='radio'] {
+            input[type='radio'],
+            input[type='checkbox'] {
                 width: auto;
                 flex: 0 0 auto;
                 margin: 0;

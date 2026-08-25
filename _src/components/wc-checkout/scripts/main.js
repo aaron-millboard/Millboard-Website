@@ -102,11 +102,8 @@ jQuery(document.body).on('change', '#who-am-i, #billing_who-am-i, [name="who-am-
       setRowState($('.mb-consent--consumer'), answered && isConsumer);
       setRowState($('.mb-consent--business'), answered && !isConsumer);
 
-      // Mirror the server's conditional requirement for the browser's own validation.
-      $('.mb-consent--consumer')
-         .toggleClass('validate-required', answered && isConsumer)
-         .find('input[type="radio"]')
-         .attr('aria-required', answered && isConsumer ? 'true' : null);
+      // Nothing in either branch is required: for a consumer, no boxes ticked is a
+      // refusal of every channel, which is a valid answer. So no required mirroring.
    }
 
    $(function () {
