@@ -107,6 +107,21 @@ if ($count === 0) {
                     </div>
                     <button type="submit" class="button" name="millboard_refresh_essentials" value="1" hidden><?php esc_html_e('Update recommendations', 'granola'); ?></button>
                 </div>
+
+                <?php
+                // Ed Lumb: switching this silently moved the screws from 4 boxes to 5
+                // with no explanation. Say what it does, and say which one is applied,
+                // because the choice persists across visits.
+                ?>
+                <p class="cart__order-essentials__project-type-note">
+                    <?php
+                    if ($essentials_project_type === 'commercial') {
+                        esc_html_e('Commercial is selected. Commercial projects are fixed at closer centres, so fixing quantities are higher than residential.', 'granola');
+                    } else {
+                        esc_html_e('Residential is selected. Switch to commercial if this is a commercial project: they are fixed at closer centres, so fixing quantities go up.', 'granola');
+                    }
+                    ?>
+                </p>
             </fieldset>
 
             <?php
