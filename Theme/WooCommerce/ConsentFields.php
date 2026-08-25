@@ -5,11 +5,16 @@ namespace Theme\WooCommerce;
 /**
  * Audience-dependent marketing permission at checkout.
  *
- * France's telemarketing rules (effective August 2026) mean a consumer cannot be
- * called without prior opt-in consent recorded with a date, while a business contact
- * can still be called on legitimate interest provided they are informed and can
- * object easily. The two need different questions, so which question is asked is
- * driven by the "Who am I?" answer.
+ * France's 2026 rules mean a consumer needs prior opt-in consent, recorded with a
+ * date, before we contact them for marketing by telephone OR e-mail, while a business
+ * contact can still be contacted on legitimate interest provided they are informed
+ * and can object easily. The two need different questions, so which question is
+ * asked is driven by the "Who am I?" answer.
+ *
+ * The consumer question is per channel, because bundling channels into one yes/no
+ * is the weaker position and someone who wants e-mail but not calls has to be able
+ * to say so. Nothing is ticked by default and nothing is required: no ticks is a
+ * refusal of everything, which is both a valid answer and the safe reading.
  *
  * The Checkout Field Editor plugin (v1.7.25) has no conditional logic, and it owns
  * the checkout field array via `woocommerce_billing_fields` (priority 1) and
@@ -30,8 +35,13 @@ class ConsentFields
 {
     /**
      * Checkout field key for the consumer opt-in question.
+     *
+     * Posted as an array, one entry per channel the customer ticked.
      */
-    public const CONSENT_FIELD = 'phone-contact-consent';
+    public const CONSENT_FIELD = 'contact-consent-channels';
+
+    public const CHANNEL_EMAIL = 'email';
+    public const CHANNEL_PHONE = 'phone';
 
     /**
      * Existing Checkout Field Editor key for the legitimate-interest objection.
@@ -68,6 +78,7 @@ class ConsentFields
      * recorded separately or the two get conflated.
      */
     public const META_PERMITTED = 'phone-contact-permitted';
+    public const META_EMAIL_PERMITTED = 'email-contact-permitted';
     public const META_BASIS = 'phone-contact-basis';
     public const META_RECORDED = 'phone-contact-recorded';
     public const META_AUDIENCE = 'phone-contact-audience';
@@ -78,7 +89,8 @@ class ConsentFields
      *
      * `wording` is stamped onto every order so that a later change to the copy does
      * not invalidate the evidence for orders taken under the previous wording. Bump
-     * it whenever `consumer_legend`, `consumer_options` or `business_label` change.
+     * it whenever `consumer_legend`, `consumer_hint`, `consumer_options` or
+     * `business_label` change.
      *
      * @return array<string, array<string, mixed>>
      */
@@ -86,16 +98,18 @@ class ConsentFields
     {
         $locales = [
             'fr_FR' => [
-                'wording' => 'fr-2026-08-v1',
+                'wording' => 'fr-2026-08-v2',
 
-                // Consumer branch: explicit opt-in, telephone only. Both answers are
-                // acceptable, so requiring an answer forces a deliberate choice
-                // without making consent a condition of purchase.
-                'consumer_legend' => 'Souhaitez-vous que Millboard vous contacte par téléphone au sujet de votre projet ?',
-                'consumer_hint' => 'Votre réponse ne modifie ni votre commande ni les e-mails relatifs à celle-ci. Vous pouvez changer d\'avis à tout moment.',
+                // Consumer branch: explicit opt-in, one box per channel. Granular
+                // rather than a single yes/no, because bundling channels is the weaker
+                // position and someone who wants e-mail but not calls has to be able
+                // to say so. Nothing is ticked and nothing is required: no ticks is a
+                // refusal of everything, which is a valid answer and the safe reading.
+                'consumer_legend' => 'Souhaitez-vous recevoir des informations de Millboard au sujet de votre projet ?',
+                'consumer_hint' => 'Cochez les moyens de contact que vous acceptez. Les e-mails relatifs à votre commande ne sont pas concernés. Vous pouvez changer d\'avis à tout moment.',
                 'consumer_options' => [
-                    self::PERMITTED_YES => 'Oui, vous pouvez m\'appeler',
-                    self::PERMITTED_NO => 'Non, ne m\'appelez pas',
+                    self::CHANNEL_EMAIL => 'Par e-mail',
+                    self::CHANNEL_PHONE => 'Par téléphone',
                 ],
 
                 // Business branch: legitimate interest, with the channels named and
@@ -131,7 +145,6 @@ class ConsentFields
         \add_filter('woocommerce_checkout_fields', [__CLASS__, 'add_fields'], 1001);
         \add_filter('woocommerce_form_field_' . self::FIELD_TYPE, [__CLASS__, 'render_field'], 10, 4);
         \add_filter('woocommerce_checkout_posted_data', [__CLASS__, 'discard_inapplicable_branch']);
-        \add_action('woocommerce_after_checkout_validation', [__CLASS__, 'validate'], 10, 2);
         \add_action('woocommerce_checkout_create_order', [__CLASS__, 'record_permission'], 10, 2);
         \add_action('woocommerce_admin_order_data_after_billing_address', [__CLASS__, 'render_admin_summary']);
     }
@@ -175,7 +188,7 @@ class ConsentFields
             'label' => $config['consumer_legend'],
             'description' => $config['consumer_hint'] ?? '',
             'options' => $config['consumer_options'],
-            'required' => false, // Enforced conditionally in validate().
+            'required' => false, // Nothing is required: no ticks is a valid refusal.
             'priority' => $objection_priority - 5,
             'class' => ['form-row-wide', 'mb-consent', 'mb-consent--consumer'],
             'validate' => [],
@@ -289,7 +302,7 @@ class ConsentFields
     }
 
     /**
-     * Render the consumer opt-in as a radio group.
+     * Render the consumer opt-in as a checkbox group, one box per channel.
      *
      * @param string $field Markup built by WooCommerce, discarded.
      * @param string $key
@@ -341,15 +354,18 @@ class ConsentFields
             $html .= '<p class="mb-consent__hint" id="' . \esc_attr($hint_id) . '">' . $hint_html . '</p>';
         }
 
+        $ticked = is_array($value) ? array_map('strval', $value) : array_filter([(string) $value]);
+
         foreach ($options as $option_value => $option_label) {
-            $input_id = $key . '_' . \sanitize_html_class((string) $option_value);
+            $option_value = (string) $option_value;
+            $input_id = $key . '_' . \sanitize_html_class($option_value);
 
             $html .= '<label class="mb-consent__option" for="' . \esc_attr($input_id) . '">'
-                . '<input type="radio"'
+                . '<input type="checkbox"'
                 . ' id="' . \esc_attr($input_id) . '"'
-                . ' name="' . \esc_attr($key) . '"'
-                . ' value="' . \esc_attr((string) $option_value) . '"'
-                . \checked((string) $value, (string) $option_value, false)
+                . ' name="' . \esc_attr($key) . '[]"'
+                . ' value="' . \esc_attr($option_value) . '"'
+                . (in_array($option_value, $ticked, true) ? ' checked="checked"' : '')
                 . ' /> <span>' . \esc_html((string) $option_label) . '</span>'
                 . '</label>';
         }
@@ -373,56 +389,36 @@ class ConsentFields
         $audience = Audience::from_posted_data($data);
 
         if ($audience === Audience::CONSUMER) {
-            $data[self::OBJECTION_FIELD] = '';
             $data['billing_company'] = '';
+
+            // The existing chain treats an EMPTY objection field as "accepted", so
+            // clearing it here would silently opt every homeowner in to email. Drive
+            // it from the email tick instead, inverted, which lets the whole existing
+            // email chain (4278768829 then 3978160366) keep working untouched.
+            $data[self::OBJECTION_FIELD] = self::channel_ticked($data, self::CHANNEL_EMAIL) ? '' : '1';
 
             return $data;
         }
 
         if ($audience === Audience::BUSINESS) {
-            $data[self::CONSENT_FIELD] = '';
+            $data[self::CONSENT_FIELD] = [];
         }
 
         return $data;
     }
 
     /**
-     * A consumer has to answer the question. Both answers are acceptable, so this
-     * blocks an unanswered question rather than a refusal.
-     *
-     * Required-ness cannot live in the field definition because the audience is not
-     * known when the form is built.
-     *
      * @param array<string, mixed> $data
-     * @param \WP_Error $errors
      */
-    public static function validate($data, $errors): void
+    private static function channel_ticked(array $data, string $channel): bool
     {
-        if (!is_array($data) || !$errors instanceof \WP_Error) {
-            return;
+        $ticked = $data[self::CONSENT_FIELD] ?? [];
+
+        if (!is_array($ticked)) {
+            $ticked = $ticked === '' ? [] : [$ticked];
         }
 
-        if (Audience::from_posted_data($data) !== Audience::CONSUMER) {
-            return;
-        }
-
-        $answer = (string) ($data[self::CONSENT_FIELD] ?? '');
-
-        if (in_array($answer, [self::PERMITTED_YES, self::PERMITTED_NO], true)) {
-            return;
-        }
-
-        $config = self::config();
-
-        $errors->add(
-            self::CONSENT_FIELD . '_required',
-            \sprintf(
-                /* translators: %s: the telephone contact question shown at checkout. */
-                \esc_html__('Please answer: %s', 'granola'),
-                (string) ($config['consumer_legend'] ?? '')
-            ),
-            ['id' => self::CONSENT_FIELD]
-        );
+        return in_array($channel, array_map('strval', $ticked), true);
     }
 
     /**
@@ -450,22 +446,33 @@ class ConsentFields
         $audience = Audience::from_posted_data($data);
 
         if ($audience === Audience::CONSUMER) {
-            $permitted = ((string) ($data[self::CONSENT_FIELD] ?? '')) === self::PERMITTED_YES
-                ? self::PERMITTED_YES
-                : self::PERMITTED_NO;
-            $basis = $permitted === self::PERMITTED_YES ? self::BASIS_CONSENT : self::BASIS_NONE;
+            // Per channel, from what they actually ticked. Nothing ticked is a
+            // refusal of everything, which is the safe reading and a valid answer.
+            $phone = self::channel_ticked($data, self::CHANNEL_PHONE);
+            $email = self::channel_ticked($data, self::CHANNEL_EMAIL);
+
+            $permitted = $phone ? self::PERMITTED_YES : self::PERMITTED_NO;
+            $email_permitted = $email ? self::PERMITTED_YES : self::PERMITTED_NO;
+
+            // One basis describes the consent event, not the channel: for a consumer
+            // anything ticked is consent, and nothing ticked leaves us no basis.
+            $basis = ($phone || $email) ? self::BASIS_CONSENT : self::BASIS_NONE;
         } elseif ($audience === Audience::BUSINESS) {
-            // The objection checkbox is an opt-out: ticked means do not contact.
+            // One legitimate-interest statement covering e-mail, post and telephone,
+            // with one objection, so the objection applies to every channel at once.
             $objected = !empty($data[self::OBJECTION_FIELD]);
             $permitted = $objected ? self::PERMITTED_NO : self::PERMITTED_YES;
+            $email_permitted = $permitted;
             $basis = $objected ? self::BASIS_NONE : self::BASIS_LEGITIMATE_INTEREST;
         } else {
             // Should be unreachable: "Who am I?" is a required field. Fail closed.
             $permitted = self::PERMITTED_NO;
+            $email_permitted = self::PERMITTED_NO;
             $basis = self::BASIS_NONE;
         }
 
         $order->update_meta_data(self::META_PERMITTED, $permitted);
+        $order->update_meta_data(self::META_EMAIL_PERMITTED, $email_permitted);
         $order->update_meta_data(self::META_BASIS, $basis);
         $order->update_meta_data(self::META_RECORDED, \gmdate('c'));
         $order->update_meta_data(self::META_AUDIENCE, $audience);
@@ -490,8 +497,13 @@ class ConsentFields
             return;
         }
 
+        $email_permitted = (string) $order->get_meta(self::META_EMAIL_PERMITTED);
+
         $rows = [
             \__('Telephone contact', 'granola') => $permitted === self::PERMITTED_YES
+                ? \__('Permitted', 'granola')
+                : \__('Not permitted', 'granola'),
+            \__('Email marketing', 'granola') => $email_permitted === self::PERMITTED_YES
                 ? \__('Permitted', 'granola')
                 : \__('Not permitted', 'granola'),
             \__('Lawful basis', 'granola') => (string) $order->get_meta(self::META_BASIS),
