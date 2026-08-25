@@ -447,9 +447,8 @@ const isAdvancedInstaller = el.dataset.mapItemAdvancedInstaller === '1';
 // PHP resolves the pin (including its cache-busting version), so prefer that.
 // The fallback keeps older markup working if the attribute is ever absent.
 const markerFile = isAdvancedInstaller ? 'installer-advanced' : markerType;
-// The two installer pins are the accreditation badges and ship as PNG; the three
-// location pins are flat shields and ship as SVG. Mirrors marker_icon_url() in PHP.
-const SVG_PIN_TYPES = ['distributor', 'experience_centre', 'showroom'];
+// Every pin ships as SVG. Mirrors marker_icon_url() in PHP.
+const SVG_PIN_TYPES = ['distributor', 'experience_centre', 'showroom', 'installer', 'installer-advanced'];
 const markerExtension = SVG_PIN_TYPES.includes(markerFile) ? 'svg' : 'png';
 const markerIconUrl = el.dataset.mapItemMarkerUrl
     || `/wp-content/themes/millboard/assets/images/icons/${markerFile}-marker.${markerExtension}`;
@@ -462,9 +461,13 @@ const markerIconUrl = el.dataset.mapItemMarkerUrl
 // pin's tip actually sits on, which is NOT the image height for the shields: they
 // carry two pixels of shadow below the point, so anchoring at 42 floated them off
 // their own coordinates.
+// The installer heights are the Favicon marks' own proportions. Those files ship
+// exactly as the design team supply them, with the shadow applied in CSS rather
+// than drawn into the artwork, so the anchor is simply the bottom edge, which is
+// the point of the last chevron.
 const PIN_SIZES = {
-    'installer': [36, 55, 55],
-    'installer-advanced': [36, 62, 62],
+    'installer': [36, 42, 42],
+    'installer-advanced': [36, 49, 49],
 };
 const [markerWidth, markerHeight, markerAnchorY] = PIN_SIZES[markerFile] || [32, 42, 40];
 

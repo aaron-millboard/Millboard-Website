@@ -563,7 +563,7 @@ function marker_icon_url(string $marker, string $variant = 'marker'): string
     // The two installer pins are the accreditation badges and ship as PNG; the three
     // location pins are flat shields and ship as SVG. Keep this in step with
     // SVG_PIN_TYPES in Map.js, which makes the same decision for the fallback path.
-    $has_svg = in_array($marker, ['distributor', 'experience_centre', 'showroom'], true);
+    $has_svg = in_array($marker, ['distributor', 'experience_centre', 'showroom', 'installer', 'installer-advanced'], true);
     $extension = $has_svg ? 'svg' : 'png';
     $file = $marker . '-marker.' . $extension;
     $url = \get_template_directory_uri() . '/assets/images/icons/' . $file;
