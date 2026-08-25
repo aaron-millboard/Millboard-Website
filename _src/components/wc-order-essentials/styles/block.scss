@@ -48,7 +48,10 @@
             margin-bottom: var(--space--m);
 
             @include mq('medium') {
-                grid-template-columns: auto minmax(0, 1fr);
+                // Cap the first column. Sizing it "auto" let the project type take
+                // 970px of 1,183px and squeezed the subframe into 213px, which wrapped
+                // its two inner columns into one tall one and made the step LONGER.
+                grid-template-columns: minmax(0, #{px-to-rem(320)}) minmax(0, 1fr);
                 column-gap: var(--space--l);
             }
         }
