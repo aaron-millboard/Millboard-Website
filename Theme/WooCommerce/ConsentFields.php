@@ -80,6 +80,7 @@ class ConsentFields
     public const META_PERMITTED = 'phone-contact-permitted';
     public const META_EMAIL_PERMITTED = 'email-contact-permitted';
     public const META_BASIS = 'phone-contact-basis';
+    public const META_EMAIL_BASIS = 'email-contact-basis';
     public const META_RECORDED = 'phone-contact-recorded';
     public const META_AUDIENCE = 'phone-contact-audience';
     public const META_WORDING = 'phone-contact-wording';
@@ -496,9 +497,13 @@ class ConsentFields
             $permitted = $phone ? self::PERMITTED_YES : self::PERMITTED_NO;
             $email_permitted = $email ? self::PERMITTED_YES : self::PERMITTED_NO;
 
-            // One basis describes the consent event, not the channel: for a consumer
-            // anything ticked is consent, and nothing ticked leaves us no basis.
-            $basis = ($phone || $email) ? self::BASIS_CONSENT : self::BASIS_NONE;
+            // Basis is per channel, not per consent event. A refused channel has no
+            // basis at all, so it is `none`. Aaron caught the earlier version writing
+            // `consent` to the phone basis for someone who had refused the phone,
+            // which reads on the record as "we may call them" and is exactly the
+            // wrong conclusion for a reader to draw.
+            $basis = $phone ? self::BASIS_CONSENT : self::BASIS_NONE;
+            $email_basis = $email ? self::BASIS_CONSENT : self::BASIS_NONE;
         } elseif ($audience === Audience::BUSINESS) {
             // One legitimate-interest statement covering e-mail, post and telephone,
             // with one objection, so the objection applies to every channel at once.
@@ -506,16 +511,19 @@ class ConsentFields
             $permitted = $objected ? self::PERMITTED_NO : self::PERMITTED_YES;
             $email_permitted = $permitted;
             $basis = $objected ? self::BASIS_NONE : self::BASIS_LEGITIMATE_INTEREST;
+            $email_basis = $basis;
         } else {
             // Should be unreachable: "Who am I?" is a required field. Fail closed.
             $permitted = self::PERMITTED_NO;
             $email_permitted = self::PERMITTED_NO;
             $basis = self::BASIS_NONE;
+            $email_basis = self::BASIS_NONE;
         }
 
         $order->update_meta_data(self::META_PERMITTED, $permitted);
         $order->update_meta_data(self::META_EMAIL_PERMITTED, $email_permitted);
         $order->update_meta_data(self::META_BASIS, $basis);
+        $order->update_meta_data(self::META_EMAIL_BASIS, $email_basis);
         $order->update_meta_data(self::META_RECORDED, \gmdate('c'));
 
         // A real date alongside the ISO string. The string is the evidence, including
@@ -554,7 +562,8 @@ class ConsentFields
             \__('Email marketing', 'granola') => $email_permitted === self::PERMITTED_YES
                 ? \__('Permitted', 'granola')
                 : \__('Not permitted', 'granola'),
-            \__('Lawful basis', 'granola') => (string) $order->get_meta(self::META_BASIS),
+            \__('Telephone basis', 'granola') => (string) $order->get_meta(self::META_BASIS),
+            \__('Email basis', 'granola') => (string) $order->get_meta(self::META_EMAIL_BASIS),
             \__('Recorded', 'granola') => (string) $order->get_meta(self::META_RECORDED),
             \__('Audience', 'granola') => (string) $order->get_meta(self::META_AUDIENCE),
             \__('Wording shown', 'granola') => (string) $order->get_meta(self::META_WORDING),
