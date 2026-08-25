@@ -93,6 +93,47 @@ if ($count === 0) {
                 </div>
             </fieldset>
 
+            <?php
+            // The subframe is a customer choice, not something boards imply, and
+            // every DuoLift and post quantity depends on it. Asked only when there is
+            // decking in the basket.
+            if (!empty($essentials_context['subframe_needed'])) :
+                $essentials_subframe_choice = (string) ($essentials_context['subframe_choice'] ?? '');
+                $essentials_subframe_choices = (array) ($essentials_context['subframe_choices'] ?? []);
+                ?>
+                <fieldset class="cart__order-essentials__subframe">
+                    <div class="cart__order-essentials__subframe-inner">
+                        <label class="cart__order-essentials__subframe-label" for="millboard-order-essentials-subframe">
+                            <?php esc_html_e('Which subframe are you using?', 'granola'); ?>
+                        </label>
+
+                        <p class="cart__order-essentials__subframe-help">
+                            <?php esc_html_e('Boards cannot be laid straight onto the ground. Tell us your system and we will work out the joists, fixings and supports it needs.', 'granola'); ?>
+                        </p>
+
+                        <select
+                            id="millboard-order-essentials-subframe"
+                            class="cart__order-essentials__subframe-input"
+                            name="millboard_order_essentials_subframe"
+                            onchange="this.form.querySelector('[name=millboard_refresh_essentials]').click()"
+                        >
+                            <option value=""><?php esc_html_e('Please choose', 'granola'); ?></option>
+                            <?php foreach ($essentials_subframe_choices as $essentials_choice_key => $essentials_choice_label) : ?>
+                                <option value="<?php echo esc_attr($essentials_choice_key); ?>" <?php selected($essentials_subframe_choice, $essentials_choice_key); ?>>
+                                    <?php echo esc_html($essentials_choice_label); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+
+                        <?php if ($essentials_subframe_choice === '') : ?>
+                            <p class="cart__order-essentials__subframe-notice" role="status">
+                                <?php esc_html_e('Until you choose, we cannot include a subframe or its supports.', 'granola'); ?>
+                            </p>
+                        <?php endif; ?>
+                    </div>
+                </fieldset>
+            <?php endif; ?>
+
             <?php // DuoLift parts in the basket but no joist to say which build it is. ?>
             <?php if (!empty($essentials_context['subframe_incomplete'])) : ?>
                 <p class="cart__order-essentials__notice cart__order-essentials__notice--warning" role="status">

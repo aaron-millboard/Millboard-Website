@@ -8,6 +8,7 @@ class OrderEssentials
     private const SESSION_PROJECT_TYPE = 'millboard_order_essentials_project_type';
     private const SESSION_FFL = 'millboard_order_essentials_ffl';
     private const SESSION_ACOUSTIC_PADS = 'millboard_order_essentials_acoustic_pads';
+    private const SESSION_SUBFRAME = 'millboard_order_essentials_subframe';
 
     /**
      * Finished floor level lookups, from the internal calculator sections 5.6 and
@@ -64,6 +65,64 @@ class OrderEssentials
         'pp125' => 'P1205B300',
         'ds51' => 'K5168J360',
         'ds99' => 'K9968J360',
+    ];
+
+    /**
+     * The eight subframe systems the calculator offers, and the structural parts
+     * each one needs per m2 of deck, residential then commercial.
+     *
+     * The customer has to tell us which system they want: it is a choice, not
+     * something a basket of boards implies, and every DuoLift and post quantity
+     * depends on it. Rates are from the calculator matrix, already divided by the
+     * piece length where the matrix divides (a 3m joist is "3.6 metres of joist per
+     * m2, over 3", so 1.2 pieces). Waste is NOT applied, because the project area is
+     * derived from a board count that already carries it.
+     *
+     * 'parts' maps SKU => [residential, commercial]. Where a system uses the same
+     * SKU for joists and beams, the two rates are already summed.
+     */
+    private const SUBFRAME_CHOICES = [
+        'none' => [
+            'label' => 'No subframe, I have my own',
+            'config' => null,
+            'parts' => [],
+        ],
+        'pp50dl' => [
+            'label' => 'Plas-Pro 50x50 with DuoLift',
+            'config' => 'pp50',
+            'parts' => ['P0505B240' => [1.5, 1.8]],
+        ],
+        'pp125dl' => [
+            'label' => 'Plas-Pro 125x50 with DuoLift',
+            'config' => 'pp125',
+            'parts' => ['P1205B300' => [1.2, 1.4333]],
+        ],
+        'pp125p' => [
+            // Joists 3.6/3 plus beams 1.5/3, same SKU, so summed.
+            'label' => 'Plas-Pro 125x50 with posts',
+            'config' => 'pp125',
+            'parts' => ['P1205B300' => [1.7, 2.1]],
+        ],
+        'pp60' => [
+            'label' => 'Plas-Pro 60x30',
+            'config' => null,
+            'parts' => ['P0603H280' => [1.16, 1.44]],
+        ],
+        'ds51dl' => [
+            'label' => 'DuoSpan 51mm with DuoLift',
+            'config' => 'ds51',
+            'parts' => ['K5168J360' => [0.9, 1.12]],
+        ],
+        'ds99dl' => [
+            'label' => 'DuoSpan 99mm with DuoLift',
+            'config' => 'ds99',
+            'parts' => ['K9968J360' => [0.9, 1.12]],
+        ],
+        'ds99p' => [
+            'label' => 'DuoSpan 99mm with posts',
+            'config' => 'ds99',
+            'parts' => ['K9968J360' => [0.9, 1.12], 'K1363B360' => [0.26, 0.32]],
+        ],
     ];
 
     /** DuoLift component SKUs (5.7). */
@@ -232,7 +291,15 @@ class OrderEssentials
             // switching the board screw to 45mm, so the step behaved as though it
             // knew there was a subframe for one rule and not the other. Now it says
             // so.
-            'subframe_incomplete' => self::basket_has_category($source_lines, 'duolift') && $config === null,
+            'subframe_incomplete' => self::basket_has_category($source_lines, 'duolift')
+                && $config === null
+                && self::get_subframe_choice() === '',
+            // Asked only when there is decking in the basket: cladding has no
+            // subframe, and without the answer we cannot recommend one or work out
+            // any DuoLift or post quantity.
+            'subframe_choice' => self::get_subframe_choice(),
+            'subframe_choices' => self::get_subframe_choice_labels(),
+            'subframe_needed' => \in_array(self::detect_basket_kind($source_lines), ['decking', 'both'], true),
             'acoustic_pads' => self::acoustic_pads_enabled(),
             // Only worth asking about on a DuoLift build, and never in France.
             'acoustic_pads_offered' => $ffl_needs['duolift'] && self::acoustic_pads_available(),
@@ -404,6 +471,10 @@ class OrderEssentials
         // presence marks a settings submission. An unticked checkbox is not posted at
         // all, hence reading it only when the FFL came with it - otherwise the option
         // would be cleared by every "add to basket" post.
+        if (isset($_POST[self::SESSION_SUBFRAME])) {
+            self::set_subframe_choice(\sanitize_text_field(\wp_unslash((string) $_POST[self::SESSION_SUBFRAME])));
+        }
+
         if (isset($_POST[self::SESSION_FFL])) {
             self::set_ffl((int) \wc_stock_amount(\wp_unslash((string) $_POST[self::SESSION_FFL])));
             self::set_acoustic_pads(isset($_POST[self::SESSION_ACOUSTIC_PADS]));
@@ -768,15 +839,29 @@ class OrderEssentials
         // rather than flat rates, so they are computed rather than configured. They
         // need a $target_rules entry too: the output loop below drops any target
         // without one, which would silently discard them.
-        foreach (self::get_ffl_requirements($source_lines, $project_area, $project_type) as $ffl_target_id => $ffl_quantity) {
-            if ($ffl_quantity <= 0) {
+        // Summed, not array-merged: "+" on integer keys keeps the left side and
+        // silently drops the right, so a product appearing in both lookups would
+        // lose one of its quantities.
+        $code_computed = [];
+
+        foreach ([
+            self::get_ffl_requirements($source_lines, $project_area, $project_type),
+            self::get_subframe_requirements($project_area, $project_type),
+        ] as $lookup) {
+            foreach ($lookup as $lookup_target_id => $lookup_quantity) {
+                $code_computed[$lookup_target_id] = ($code_computed[$lookup_target_id] ?? 0) + $lookup_quantity;
+            }
+        }
+
+        foreach ($code_computed as $extra_target_id => $extra_quantity) {
+            if ($extra_quantity <= 0) {
                 continue;
             }
 
-            $target_requirements[$ffl_target_id] = ($target_requirements[$ffl_target_id] ?? 0) + $ffl_quantity;
+            $target_requirements[$extra_target_id] = ($target_requirements[$extra_target_id] ?? 0) + $extra_quantity;
 
-            if (!isset($target_rules[$ffl_target_id])) {
-                $target_rules[$ffl_target_id] = ['target_product_id' => $ffl_target_id, 'source' => 'ffl_lookup'];
+            if (!isset($target_rules[$extra_target_id])) {
+                $target_rules[$extra_target_id] = ['target_product_id' => $extra_target_id, 'source' => 'lookup'];
             }
         }
 
@@ -1133,6 +1218,90 @@ class OrderEssentials
     }
 
     /**
+     * The subframe system the customer has told us they are using, or '' if they
+     * have not said. One of the SUBFRAME_CHOICES keys.
+     */
+    public static function get_subframe_choice(): string
+    {
+        if (!\function_exists('WC') || !\WC()->session instanceof \WC_Session) {
+            return '';
+        }
+
+        $value = (string) \WC()->session->get(self::SESSION_SUBFRAME, '');
+
+        return isset(self::SUBFRAME_CHOICES[$value]) ? $value : '';
+    }
+
+    /**
+     * @return array<string, string> choice key => label
+     */
+    private static function get_subframe_choice_labels(): array
+    {
+        $labels = [];
+
+        foreach (self::SUBFRAME_CHOICES as $key => $choice) {
+            $labels[$key] = (string) $choice['label'];
+        }
+
+        return $labels;
+    }
+
+    private static function set_subframe_choice(string $choice): void
+    {
+        if (!\function_exists('WC') || !\WC()->session instanceof \WC_Session) {
+            return;
+        }
+
+        \WC()->session->set(
+            self::SESSION_SUBFRAME,
+            isset(self::SUBFRAME_CHOICES[$choice]) ? $choice : ''
+        );
+    }
+
+    /**
+     * The structural subframe parts for the chosen system, as product id =>
+     * quantity. Empty when no system has been chosen, or the customer said they
+     * already have one.
+     *
+     * Only the joists and beams are computed here. Their fixings, inserts,
+     * brackets, connectors and clips are configured rules sourced from the joist,
+     * so they appear once the joist is actually in the basket. That is deliberate:
+     * duplicating them here would double-count against the config.
+     *
+     * @return array<int, float>
+     */
+    private static function get_subframe_requirements(float $area, string $project_type): array
+    {
+        $choice = self::get_subframe_choice();
+
+        if ($choice === '' || $area <= 0) {
+            return [];
+        }
+
+        $parts = self::SUBFRAME_CHOICES[$choice]['parts'] ?? [];
+        $commercial = ($project_type === 'commercial');
+        $required = [];
+
+        foreach ($parts as $sku => $rates) {
+            $id = \wc_get_product_id_by_sku((string) $sku);
+
+            if (!$id) {
+                continue;
+            }
+
+            $rate = (float) ($commercial ? $rates[1] : $rates[0]);
+
+            if ($rate <= 0) {
+                continue;
+            }
+
+            $required[(int) $id] = ($required[(int) $id] ?? 0) + ($area * $rate);
+        }
+
+        return $required;
+    }
+
+    /**
      * The FFL the DuoLift band is matched on.
      *
      * A UK acoustic pad sits 3mm under each cradle, so the DuoLift hardware only
@@ -1186,6 +1355,15 @@ class OrderEssentials
      */
     private static function detect_subframe_config(array $source_lines): ?string
     {
+        // What the customer told us wins over what we can infer. This is also what
+        // lets a DuoLift-parts-but-no-joist basket work at all: the band tables are
+        // per joist type, so without the choice there was nothing to look up.
+        $choice = self::get_subframe_choice();
+
+        if ($choice !== '') {
+            return self::SUBFRAME_CHOICES[$choice]['config'];
+        }
+
         foreach (self::CONFIG_JOIST_SKUS as $config => $joist_sku) {
             $joist_id = \wc_get_product_id_by_sku($joist_sku);
 
@@ -1624,6 +1802,15 @@ class OrderEssentials
             foreach ((array) $line['category_slugs'] as $slug) {
                 $basket_slugs[$slug] = true;
             }
+        }
+
+        // Choosing a subframe counts as having one, so the board screw switches to
+        // 45mm as soon as the customer says they are using a system, rather than
+        // waiting for the joist to reach the basket.
+        $choice = self::get_subframe_choice();
+
+        if ($choice !== '' && $choice !== 'none') {
+            $basket_slugs['subframes'] = true;
         }
 
         $basket_slugs = array_keys($basket_slugs);

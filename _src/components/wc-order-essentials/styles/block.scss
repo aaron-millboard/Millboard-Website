@@ -366,7 +366,41 @@
                 }
             }
 
-            &__group-heading {
+            // Subframe question. Same treatment as the finished floor level box, since
+        // they are the same kind of ask.
+        &__subframe {
+            margin: 0 0 var(--space--m);
+            padding: 0;
+            border: 0;
+            width: 100%;
+        }
+
+        &__subframe-inner {
+            border: 1px solid var(--color--brand-1);
+            padding: var(--space--s);
+            display: grid;
+            gap: var(--space--2xs);
+            max-width: #{px-to-rem(560)};
+        }
+
+        &__subframe-label {
+            @include typestyle-h6;
+
+            text-transform: uppercase;
+        }
+
+        &__subframe-help,
+        &__subframe-notice {
+            @include typestyle-small;
+
+            margin: 0;
+        }
+
+        &__subframe-input {
+            max-width: 100%;
+        }
+
+        &__group-heading {
             @include typestyle-h6;
 
             font-weight: 400;
