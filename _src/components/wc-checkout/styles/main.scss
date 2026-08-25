@@ -246,6 +246,13 @@
         // type size is specific to this field, so nothing here re-declares flex, gap
         // or width. The old `width: auto` override in particular would have fought
         // the shared 20px box depending on stylesheet order.
+        &__terms,
+        &__policy {
+            @include typestyle-small;
+
+            margin: 0;
+        }
+
         &__option {
             @include typestyle-small;
 

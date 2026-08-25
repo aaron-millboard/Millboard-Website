@@ -83,6 +83,7 @@ class ConsentFields
     public const META_RECORDED = 'phone-contact-recorded';
     public const META_AUDIENCE = 'phone-contact-audience';
     public const META_WORDING = 'phone-contact-wording';
+    public const META_CONSENT_DATE = 'phone-consent-date';
 
     /**
      * Per-locale configuration. Locales absent from this list are untouched.
@@ -98,32 +99,55 @@ class ConsentFields
     {
         $locales = [
             'fr_FR' => [
-                'wording' => 'fr-2026-08-v2',
+                'wording' => 'fr-2026-08-v3',
 
                 // Consumer branch: explicit opt-in, one box per channel. Granular
                 // rather than a single yes/no, because bundling channels is the weaker
                 // position and someone who wants e-mail but not calls has to be able
                 // to say so. Nothing is ticked and nothing is required: no ticks is a
                 // refusal of everything, which is a valid answer and the safe reading.
-                'consumer_legend' => 'Souhaitez-vous recevoir des informations de Millboard au sujet de votre projet ?',
-                'consumer_hint' => 'Cochez les moyens de contact que vous acceptez. Les e-mails relatifs à votre commande ne sont pas concernés. Vous pouvez changer d\'avis à tout moment.',
+                //
+                // Wording supplied by James Etheridge (Head of Compliance), Aug 2026.
+                // Do not reword any of the four strings below without bumping `wording`,
+                // or orders stop pointing at the text their customer actually saw.
+                'consumer_legend' => 'Restons en contact avec Millboard',
+                'consumer_hint' => 'Millboard France SAS souhaite vous envoyer des informations sur ses produits de terrasse et de bardage, notamment les nouveaux produits, de l\'inspiration et des offres.',
                 'consumer_options' => [
                     self::CHANNEL_EMAIL => 'Par e-mail',
                     self::CHANNEL_PHONE => 'Par téléphone',
                 ],
 
+                // Rendered after the checkboxes. %1$s is the withdrawal e-mail address
+                // and %2$s the telephone number, injected as escaped values into an
+                // already-escaped pattern so config cannot introduce markup.
+                //
+                // The 12 month duration is not decoration: it means consent has to age
+                // off the call list on its own, which is why `phone-consent-date` is
+                // written as a real date and the FR call list filters on
+                // "less than 365 days ago". Change the duration here and that filter
+                // has to change with it.
+                'consumer_terms' => 'Si vous cochez « Par téléphone », vous consentez à être appelé à des '
+                    . 'fins de prospection concernant nos produits de terrasse et de bardage pendant '
+                    . '12 mois à compter de ce jour. Ce consentement ne sera pas renouvelé '
+                    . 'automatiquement, nous vous le redemanderons. Vous pouvez retirer votre '
+                    . 'consentement à tout moment en écrivant à %1$s ou en appelant le %2$s, et vous '
+                    . 'pouvez à tout moment nous demander la preuve de votre consentement. Les '
+                    . 'messages relatifs à votre demande ou à votre commande ne constituent pas de '
+                    . 'la prospection et continueront de vous être envoyés.',
+                'withdraw_email' => 'dataprotection@millboard.com',
+                'withdraw_phone' => '05.25.53.00.28',
+                'consent_months' => 12,
+
                 // Business branch: legitimate interest, with the channels named and
                 // an easy objection, which is what the exemption is conditional on.
                 'business_label' => 'Nous traitons vos données professionnelles sur la base de l\'intérêt légitime afin de vous adresser des informations pertinentes par e-mail, par courrier et par téléphone, conformément à notre politique de confidentialité. Si vous ne souhaitez pas être contacté à des fins de prospection, cochez cette case.',
 
-                // No privacy policy link here on purpose. WooCommerce already renders
-                // one in its own privacy block directly above the Order button, and two
-                // links to the same page a few hundred pixels apart is clutter.
-                // ⚠️ That means this consent statement now DEPENDS on WooCommerce's
-                // privacy text existing. If `woocommerce_checkout_privacy_policy_text`
-                // is ever emptied, or the privacy page is unset so
-                // get_privacy_policy_url() goes blank again, the consent question loses
-                // its link to the policy entirely and this needs putting back.
+                // The policy link is back, at James's request. It duplicates the one in
+                // WooCommerce's own privacy block above the Order button, deliberately:
+                // his wording ends with an explicit route to the notice, and a consent
+                // statement that relies on boilerplate elsewhere on the page is weaker.
+                'policy_link_text' => 'politique de confidentialité',
+                'policy_prompt' => 'Comment nous utilisons vos données : %s',
 
                 // Company name strengthens the record that we approached the person
                 // in a professional capacity, which matters most for sole traders.
@@ -356,6 +380,38 @@ class ConsentFields
                 . '</label>';
         }
 
+        $config = self::config();
+        $terms = (string) ($config['consumer_terms'] ?? '');
+
+        if ($terms !== '') {
+            // The pattern is escaped first, then the address and number go in as
+            // escaped values, so nothing in config can inject markup. The e-mail is a
+            // mailto because it is the primary withdrawal route; the number is left as
+            // plain text, matching the site's existing choice not to link telephone
+            // numbers.
+            $email = (string) ($config['withdraw_email'] ?? '');
+            $phone = (string) ($config['withdraw_phone'] ?? '');
+
+            $email_html = $email === ''
+                ? ''
+                : '<a href="mailto:' . \esc_attr($email) . '">' . \esc_html($email) . '</a>';
+
+            $html .= '<p class="mb-consent__terms">'
+                . sprintf(\esc_html($terms), $email_html, \esc_html($phone))
+                . '</p>';
+        }
+
+        $privacy_url = \get_privacy_policy_url();
+
+        if ($privacy_url !== '' && !empty($config['policy_prompt'])) {
+            $link = '<a href="' . \esc_url($privacy_url) . '" target="_blank" rel="noopener">'
+                . \esc_html((string) ($config['policy_link_text'] ?? '')) . '</a>';
+
+            $html .= '<p class="mb-consent__policy">'
+                . sprintf(\esc_html((string) $config['policy_prompt']), $link)
+                . '</p>';
+        }
+
         $html .= '</fieldset></div>';
 
         return $html;
@@ -461,6 +517,12 @@ class ConsentFields
         $order->update_meta_data(self::META_EMAIL_PERMITTED, $email_permitted);
         $order->update_meta_data(self::META_BASIS, $basis);
         $order->update_meta_data(self::META_RECORDED, \gmdate('c'));
+
+        // A real date alongside the ISO string. The string is the evidence, including
+        // the time; this is what HubSpot can actually filter on, because relative date
+        // filters do not work against a text property. It is what makes consent age
+        // off the FR call list after 12 months without anything having to run.
+        $order->update_meta_data(self::META_CONSENT_DATE, \gmdate('Y-m-d'));
         $order->update_meta_data(self::META_AUDIENCE, $audience);
         $order->update_meta_data(self::META_WORDING, (string) $config['wording']);
     }
