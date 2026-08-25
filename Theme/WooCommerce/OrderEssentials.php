@@ -754,6 +754,8 @@ class OrderEssentials
         $target_requirements = [];
         $target_rules = [];
         $target_ids = [];
+        // target id => ['decking' => true, 'cladding' => true], for the row badge.
+        $target_kinds = [];
 
         foreach ($matrix as $rule) {
             $target_id = (int) $rule['target_product_id'];
@@ -798,6 +800,15 @@ class OrderEssentials
 
                 $matched = true;
                 $matched_quantity += (int) $line['quantity'];
+
+                // Remember which part of the job asked for this, so each row can be
+                // badged. A mixed basket interleaves decking and cladding items, and
+                // without it there is nothing on the row to say which is which.
+                $line_kind = self::product_kind((int) $line['source_id']);
+
+                if ($line_kind !== '') {
+                    $target_kinds[$target_id][$line_kind] = true;
+                }
             }
 
             if (!$matched) {
@@ -863,6 +874,9 @@ class OrderEssentials
             if (!isset($target_rules[$extra_target_id])) {
                 $target_rules[$extra_target_id] = ['target_product_id' => $extra_target_id, 'source' => 'lookup'];
             }
+
+            // Subframes, DuoLift and posts only exist under decking.
+            $target_kinds[$extra_target_id]['decking'] = true;
         }
 
         if (empty($target_requirements)) {
@@ -907,6 +921,7 @@ class OrderEssentials
                 // files under Accessories is the finishing group, everything under
                 // Boards, Fascia, Subframe, Fixings and Trims is structural.
                 'group' => self::normalise_group((string) ($rule['group'] ?? '')),
+                'kinds' => array_keys($target_kinds[$target_id] ?? []),
             ];
         }
 
@@ -1399,12 +1414,49 @@ class OrderEssentials
         $cladding = false;
 
         foreach ($source_lines as $line) {
-            $terms = \get_the_terms((int) $line['source_id'], 'product_cat');
+            $kind = self::product_kind((int) $line['source_id']);
 
-            if (!\is_array($terms)) {
-                continue;
+            if ($kind === 'decking' || $kind === 'both') {
+                $decking = true;
             }
 
+            if ($kind === 'cladding' || $kind === 'both') {
+                $cladding = true;
+            }
+        }
+
+        if ($decking && $cladding) {
+            return 'both';
+        }
+
+        if ($decking) {
+            return 'decking';
+        }
+
+        return $cladding ? 'cladding' : '';
+    }
+
+    /**
+     * Whether one product belongs to decking, cladding, or both.
+     *
+     * Walks the category ANCESTRY, because a product carries its own leaf terms
+     * (enhanced-grain, board-batten) rather than the top-level range. Results are
+     * memoised: a mixed basket asks this for every line of every matching rule, and
+     * each miss is a term lookup per ancestor.
+     */
+    private static function product_kind(int $product_id): string
+    {
+        static $cache = [];
+
+        if (isset($cache[$product_id])) {
+            return $cache[$product_id];
+        }
+
+        $terms = \get_the_terms($product_id, 'product_cat');
+        $decking = false;
+        $cladding = false;
+
+        if (\is_array($terms)) {
             foreach ($terms as $term) {
                 if (!$term instanceof \WP_Term) {
                     continue;
@@ -1431,14 +1483,14 @@ class OrderEssentials
         }
 
         if ($decking && $cladding) {
-            return 'both';
+            return $cache[$product_id] = 'both';
         }
 
         if ($decking) {
-            return 'decking';
+            return $cache[$product_id] = 'decking';
         }
 
-        return $cladding ? 'cladding' : '';
+        return $cache[$product_id] = $cladding ? 'cladding' : '';
     }
 
     /**

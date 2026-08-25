@@ -439,17 +439,17 @@ const markerType = listingData.postType
     .replace(/\s+/g, '-');
 
 // Example:
-// Installer -> installer-marker.svg
-// Experience Centre -> experience_centre-marker.svg
-// Advanced installers get their own pin, so the map matches the "Approved /
-// Advanced" key the same way the distributor types do. The two differ by chevron
-// count, two and three, which is how the accreditation itself distinguishes them.
+// Installer -> installer-marker.png
+// Experience Centre -> experience-centre-marker.png
+// Advanced installers get their own gold "AI" pin, so the map matches the
+// "Approved / Advanced" key the same way the distributor types do.
 const isAdvancedInstaller = el.dataset.mapItemAdvancedInstaller === '1';
 // PHP resolves the pin (including its cache-busting version), so prefer that.
 // The fallback keeps older markup working if the attribute is ever absent.
 const markerFile = isAdvancedInstaller ? 'installer-advanced' : markerType;
-// Every pin ships as SVG. Mirrors marker_icon_url() in PHP.
-const SVG_PIN_TYPES = ['distributor', 'experience_centre', 'showroom', 'installer', 'installer-advanced'];
+// The two installer pins are the accreditation badges and ship as PNG; the three
+// location pins are flat shields and ship as SVG. Mirrors marker_icon_url() in PHP.
+const SVG_PIN_TYPES = ['distributor', 'experience_centre', 'showroom'];
 const markerExtension = SVG_PIN_TYPES.includes(markerFile) ? 'svg' : 'png';
 const markerIconUrl = el.dataset.mapItemMarkerUrl
     || `/wp-content/themes/millboard/assets/images/icons/${markerFile}-marker.${markerExtension}`;
@@ -458,17 +458,13 @@ const markerIconUrl = el.dataset.mapItemMarkerUrl
 // height. The badge pins are taller than the shields because they carry the
 // wordmark and the chevrons (two for Approved, three for Advanced), and forcing
 // them to the shields' height shrank the lettering below legibility.
-// [width, height, anchorY]. anchorY is the row the pin's tip actually sits on,
-// which is NOT the image height for the shields: they carry two pixels of shadow
-// below the point, so anchoring at 42 floated them off their own coordinates.
-//
-// The installer heights come from the proportions of the Favicon marks plus the
-// keyline built onto them, so the pins are never stretched. That artwork has no
-// shadow, so the anchor is the bottom edge, which is the point of the last chevron.
-// Re-derive these if the artwork is reissued; the build script prints the values.
+// [width, height, anchorY], all from the artwork README. anchorY is the row the
+// pin's tip actually sits on, which is NOT the image height for the shields: they
+// carry two pixels of shadow below the point, so anchoring at 42 floated them off
+// their own coordinates.
 const PIN_SIZES = {
-    'installer': [36, 42, 42],
-    'installer-advanced': [36, 48, 48],
+    'installer': [36, 55, 55],
+    'installer-advanced': [36, 62, 62],
 };
 const [markerWidth, markerHeight, markerAnchorY] = PIN_SIZES[markerFile] || [32, 42, 40];
 

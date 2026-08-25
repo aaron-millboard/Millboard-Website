@@ -15,7 +15,7 @@
         &__title {
             @include typestyle-h6;
 
-            margin: var(--space--xl) 0 var(--space--2xs);
+            margin: var(--space--m) 0 var(--space--2xs);
             text-transform: uppercase;
             color: var(--color--foreground);
         }
@@ -29,19 +29,19 @@
         &__intro {
             @include typestyle-base;
 
-            margin: var(--space--2xs) 0 var(--space--l);
+            margin: var(--space--2xs) 0 var(--space--s);
             max-width: #{px-to-rem(720)};
         }
 
         &__area {
             @include typestyle-small;
 
-            margin: calc(-1 * var(--space--s)) 0 var(--space--l);
+            margin: 0 0 var(--space--m);
             font-weight: var(--type--2--font-weight);
         }
 
         &__project-type {
-            margin: var(--space--m) 0 var(--space--m);
+            margin: var(--space--s) 0 var(--space--m);
             padding: 0;
             border-bottom: 1px solid var(--color--brand-1);
             background-color: var(--color--background);
@@ -206,7 +206,7 @@
             @include typestyle-small;
 
             font-weight: 700;
-            margin-top: var(--space--xl);
+            margin-top: var(--space--m);
             margin-bottom: 0;
         }
 
@@ -215,7 +215,7 @@
 
             font-weight: 400;
             margin-top: 0;
-            margin-bottom: var(--space--xl);
+            margin-bottom: var(--space--m);
         }
 
         &__item {
@@ -476,6 +476,20 @@
         // The unit price. Matches the basket, which sets .product-price to
         // typestyle-small; without this it inherits the larger body size and the
         // same price reads at a different size either side of the step.
+        // Which part of the job the row belongs to.
+        &__item-kind {
+            @include typestyle-small;
+
+            display: inline-block;
+            margin: 0 0 var(--space--3xs);
+            padding: #{px-to-rem(2)} var(--space--2xs);
+            border: 1px solid var(--color--brand-1);
+            font-size: #{px-to-rem(12)};
+            line-height: 1.4;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
         &__item-meta {
             @include typestyle-small;
         }
@@ -500,7 +514,7 @@
         // Subframe question, given the same bordered-box treatment as the finished
         // floor level ask, because they are the same kind of question.
         &__subframe {
-            margin: 0 0 var(--space--l);
+            margin: 0 0 var(--space--m);
             padding: 0;
             border: 0;
             width: 100%;
@@ -578,8 +592,8 @@
             @include typestyle-h5;
 
             font-weight: 400;
-            margin: var(--space--2xl) 0 var(--space--m);
-            padding-top: var(--space--l);
+            margin: var(--space--xl) 0 var(--space--s);
+            padding-top: var(--space--m);
             border-top: 2px solid var(--color--brand-1);
 
             &:first-of-type {

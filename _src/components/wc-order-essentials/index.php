@@ -328,6 +328,35 @@ if ($count === 0) {
                                     <?php endif; ?>
                                 </div>
 
+                                <?php
+                                // Which part of the job asked for this. A mixed
+                                // basket interleaves decking and cladding items, so
+                                // without a badge on the row there is nothing to say
+                                // which belongs to which.
+                                $essentials_row_kinds = isset($essentials_item['kinds']) && is_array($essentials_item['kinds'])
+                                    ? $essentials_item['kinds']
+                                    : [];
+                                sort($essentials_row_kinds);
+
+                                $essentials_kind_labels = [
+                                    'decking' => __('Decking', 'granola'),
+                                    'cladding' => __('Cladding', 'granola'),
+                                ];
+
+                                if (count($essentials_row_kinds) > 1) {
+                                    $essentials_kind_text = __('Decking and cladding', 'granola');
+                                } elseif ($essentials_row_kinds) {
+                                    $essentials_kind_text = $essentials_kind_labels[$essentials_row_kinds[0]] ?? '';
+                                } else {
+                                    $essentials_kind_text = '';
+                                }
+
+                                if ($essentials_kind_text !== '') : ?>
+                                    <p class="cart__order-essentials__item-kind">
+                                        <?php echo esc_html($essentials_kind_text); ?>
+                                    </p>
+                                <?php endif; ?>
+
                                 <div class="cart__order-essentials__item-meta">
                                     <?php
                                     // number_format already returns a string with
