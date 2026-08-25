@@ -62,7 +62,8 @@
 
         &__icon-container {
             display: flex;
-            overflow: hidden;
+            // Was hidden, which cropped the pin's shadow off at its own edge.
+            overflow: visible;
             width: 100%;
             height: 100%;
             align-items: center;
@@ -107,6 +108,11 @@
 
             width: 100%;
             height: 100%;
+            // Lifts the pin off a pale map so a cluster stays separable. drop-shadow
+            // follows the badge's own silhouette, unlike box-shadow which would draw a
+            // rectangle, and it sits outside the mark rather than outlining the shapes
+            // within it.
+            filter: drop-shadow(0 #{px-to-rem(1)} #{px-to-rem(1.5)} rgba(0, 0, 0, 0.35));
         }
     }
 

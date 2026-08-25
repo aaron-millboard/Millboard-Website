@@ -463,13 +463,13 @@ const markerIconUrl = el.dataset.mapItemMarkerUrl
 // which is NOT the image height for the shields: they carry two pixels of shadow
 // below the point, so anchoring at 42 floated them off their own coordinates.
 //
-// The installer heights come from the proportions of the Favicon marks plus the
-// keyline built onto them, so the pins are never stretched. That artwork has no
-// shadow, so the anchor is the bottom edge, which is the point of the last chevron.
-// Re-derive these if the artwork is reissued; the build script prints the values.
+// The installer heights are the Favicon marks' own proportions. Those files ship
+// exactly as the design team supply them, with the shadow applied in CSS rather
+// than drawn into the artwork, so the anchor is simply the bottom edge, which is
+// the point of the last chevron. Re-derive if the artwork is reissued.
 const PIN_SIZES = {
     'installer': [36, 42, 42],
-    'installer-advanced': [36, 48, 48],
+    'installer-advanced': [36, 49, 49],
 };
 const [markerWidth, markerHeight, markerAnchorY] = PIN_SIZES[markerFile] || [32, 42, 40];
 
