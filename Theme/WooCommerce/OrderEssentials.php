@@ -225,6 +225,14 @@ class OrderEssentials
             'ffl_needed' => $ffl_needed,
             'ffl_missing' => $ffl_needed && $ffl < 1,
             'ffl_out_of_range' => self::ffl_is_out_of_range($source_lines),
+            // A basket can contain DuoLift parts without the joist that says WHICH
+            // DuoLift build it is, and every component count comes from a band
+            // table chosen by joist type. Previously that combination silently
+            // produced no FFL prompt and no DuoLift components at all, while still
+            // switching the board screw to 45mm, so the step behaved as though it
+            // knew there was a subframe for one rule and not the other. Now it says
+            // so.
+            'subframe_incomplete' => self::basket_has_category($source_lines, 'duolift') && $config === null,
             'acoustic_pads' => self::acoustic_pads_enabled(),
             // Only worth asking about on a DuoLift build, and never in France.
             'acoustic_pads_offered' => $ffl_needs['duolift'] && self::acoustic_pads_available(),
@@ -246,7 +254,7 @@ class OrderEssentials
         }
 
         $matched_source_ids = [];
-        $single_source_label = '';
+        $labels = [];
         $target_ids = [];
 
         foreach ($matrix as $rule) {
@@ -283,11 +291,6 @@ class OrderEssentials
                 }
 
                 $matched_source_ids[$source_id] = true;
-
-                if (count($matched_source_ids) > 1) {
-                    return __('the products in your basket', 'granola');
-                }
-
                 $label = '';
 
                 $rule_product_ids = isset($rule['source_product_ids']) && \is_array($rule['source_product_ids'])
@@ -329,15 +332,34 @@ class OrderEssentials
                     }
                 }
 
-                if ($single_source_label === '' && $label !== '') {
-                    $single_source_label = $label;
+                if ($label !== '' && !\in_array($label, $labels, true)) {
+                    $labels[] = $label;
                 }
 
                 break;
             }
         }
 
-        return $single_source_label;
+        // Name the areas rather than saying "the products in your basket". A mixed
+        // basket used to collapse to that phrase the moment a second source
+        // matched, which told the customer less than the basket already showed
+        // them. Beyond three it does get vague, so fall back then.
+        if (count($labels) > 3) {
+            return __('the products in your basket', 'granola');
+        }
+
+        if (count($labels) < 2) {
+            return (string) ($labels[0] ?? '');
+        }
+
+        $last = array_pop($labels);
+
+        return sprintf(
+            /* translators: 1: comma-separated product areas, 2: the last one. */
+            __('%1$s and %2$s', 'granola'),
+            implode(__(', ', 'granola'), $labels),
+            $last
+        );
     }
 
     private static function get_category_name_by_slug(string $slug): string

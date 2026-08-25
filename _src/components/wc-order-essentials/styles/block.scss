@@ -476,6 +476,23 @@
             @include typestyle-small;
         }
 
+        // Secondary line under the price, same treatment.
+        &__item-status {
+            @include typestyle-small;
+        }
+
+        &__notice {
+            @include typestyle-small;
+
+            padding: var(--space--s) var(--space--m);
+            margin: 0 0 var(--space--m);
+            background: var(--color--neutral-2, #f4f2ee);
+
+            &--warning {
+                border-left: 3px solid var(--color--brand-1);
+            }
+        }
+
         &__item-name {
             @include typestyle-h6;
 

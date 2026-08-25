@@ -93,6 +93,13 @@ if ($count === 0) {
                 </div>
             </fieldset>
 
+            <?php // DuoLift parts in the basket but no joist to say which build it is. ?>
+            <?php if (!empty($essentials_context['subframe_incomplete'])) : ?>
+                <p class="cart__order-essentials__notice cart__order-essentials__notice--warning" role="status">
+                    <?php esc_html_e('Your basket has DuoLift parts but not the joist they fix to, so we cannot work out the rest of your subframe yet. Add your joist and we will complete the list, or contact us and we will size it for you.', 'granola'); ?>
+                </p>
+            <?php endif; ?>
+
             <?php
             // DuoLift component counts and post heights come from a lookup on the
             // finished floor level, which cannot be derived from the basket. Only ask
@@ -178,7 +185,13 @@ if ($count === 0) {
                     $essentials_missing_qty = isset($essentials_item['missing_qty']) ? (int) $essentials_item['missing_qty'] : 0;
                     $essentials_default_add_qty = isset($essentials_item['default_add_qty']) ? (int) $essentials_item['default_add_qty'] : 0;
                     $essentials_unit_price = \Granola\Components\WC_OrderEssentials\resolve_unit_price($essentials_product_id);
-                    $essentials_is_selected = $essentials_missing_qty > 0 || $essentials_in_cart_qty > 0;
+                    // Only pre-tick what is actually still MISSING. Including
+                    // already-in-basket lines meant that after adding everything,
+                    // every row stayed ticked with a default quantity of 1, so a
+                    // second press of "Add selected to basket" silently added one
+                    // more of each. Someone who genuinely wants extras can still
+                    // tick a satisfied row and set a quantity.
+                    $essentials_is_selected = $essentials_missing_qty > 0;
                     $essentials_is_in_basket = $essentials_in_cart_qty > 0;
                     $essentials_qty_to_add = max(0, $essentials_default_add_qty);
 
@@ -322,7 +335,7 @@ if ($count === 0) {
 
             <div class="cart__order-essentials__actions">
                 <button type="submit" class="g-button" name="millboard_add_all_essentials" value="1" <?php disabled(!$has_outstanding_essentials); ?>><?php esc_html_e('Add ALL essentials', 'granola'); ?></button>
-                <button type="submit" class="g-button g-button--solid cart__order-essentials__action-primary" name="millboard_add_selected_essentials" value="1"><?php esc_html_e('Add selected to basket', 'granola'); ?></button>
+                <button type="submit" class="g-button g-button--solid cart__order-essentials__action-primary" name="millboard_add_selected_essentials" value="1" <?php disabled(!$has_outstanding_essentials); ?>><?php esc_html_e('Add selected to basket', 'granola'); ?></button>
                 <button type="submit" class="g-button g-button--secondary cart__order-essentials__action-secondary" name="millboard_continue_to_basket" value="1" data-essentials-open-modal="continue"><?php esc_html_e('Continue without essentials', 'granola'); ?></button>
             </div>
 
