@@ -54,9 +54,20 @@
 
             countEl.textContent = String(selectedCount);
             labelEl.textContent = selectedCount === 1
-                ? (labelEl.dataset.singular || 'selected item')
-                : (labelEl.dataset.plural || 'selected items');
+                ? (labelEl.dataset.singular || 'item ticked to add')
+                : (labelEl.dataset.plural || 'items ticked to add');
             totalEl.textContent = formatCurrency.format(total);
+
+            // Nothing ticked means the primary action can only fail with "no
+            // essentials were added", so do not offer it. This matters now that
+            // optional items start unticked: a customer who has already added the
+            // required ones would otherwise be left with an enabled button that
+            // does nothing.
+            const addSelected = form.querySelector('[name="millboard_add_selected_essentials"]');
+
+            if (addSelected) {
+                addSelected.disabled = selectedCount === 0;
+            }
         };
 
         const queueUpdate = () => {

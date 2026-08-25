@@ -11,8 +11,11 @@ $essentials_recommendation_source_label = isset($essentials_context['recommendat
 $essentials_disclaimer_url = isset($essentials_context['disclaimer_url']) ? (string) $essentials_context['disclaimer_url'] : '';
 $essentials_show_added_modal = !empty($essentials_context['show_added_modal']);
 $essentials_basket_kind = isset($essentials_context['basket_kind']) ? (string) $essentials_context['basket_kind'] : '';
-$essentials_summary_label_singular = __('selected item', 'granola');
-$essentials_summary_label_plural = __('selected items', 'granola');
+// "to add" matters: the bar totals what ticking will put IN the basket, not what is
+// already there. Without it, a customer who has already added everything reads
+// "0 selected items, total GBP 0.00" as the step having lost their basket.
+$essentials_summary_label_singular = __('item ticked to add', 'granola');
+$essentials_summary_label_plural = __('items ticked to add', 'granola');
 $essentials_selected_count = 0;
 $essentials_selected_total = 0.0;
 
@@ -378,10 +381,20 @@ if ($count === 0) {
                                     </div>
                                 </div>
                                     
-                                <?php if ($essentials_is_in_basket) : ?>
-                                    <button type="submit" class="g-button g-button--solid cart__order-essentials__item-action" name="millboard_remove_essential_item" value="<?php echo esc_attr($essentials_product_id); ?>"><?php esc_html_e('Remove', 'granola'); ?></button>
+                                <?php
+                                // The button offers whatever is still useful. A row
+                                // that is short of the recommended quantity offers to
+                                // add the rest, even when some is already in the
+                                // basket; only a fully satisfied row offers Remove.
+                                // Keying this on "is any of it in the basket" meant a
+                                // row needing 2 with 1 in the basket showed Remove and
+                                // no way to add the second.
+                                if ($essentials_missing_qty > 0) : ?>
+                                    <button type="submit" class="g-button cart__order-essentials__item-action" name="millboard_add_essential_item" value="<?php echo esc_attr($essentials_product_id); ?>">
+                                        <?php echo esc_html($essentials_is_in_basket ? __('Add the rest', 'granola') : __('Add item', 'granola')); ?>
+                                    </button>
                                 <?php else : ?>
-                                    <button type="submit" class="g-button cart__order-essentials__item-action" name="millboard_add_essential_item" value="<?php echo esc_attr($essentials_product_id); ?>"><?php esc_html_e('Add item', 'granola'); ?></button>
+                                    <button type="submit" class="g-button g-button--solid cart__order-essentials__item-action" name="millboard_remove_essential_item" value="<?php echo esc_attr($essentials_product_id); ?>"><?php esc_html_e('Remove', 'granola'); ?></button>
                                 <?php endif; ?>
                             </div>
                         </div>
@@ -398,7 +411,7 @@ if ($count === 0) {
                         data-singular="<?php echo esc_attr($essentials_summary_label_singular); ?>"
                         data-plural="<?php echo esc_attr($essentials_summary_label_plural); ?>"
                     >
-                        <?php echo esc_html(_n('selected item', 'selected items', $essentials_selected_count, 'granola')); ?>
+                        <?php echo esc_html(_n('item ticked to add', 'items ticked to add', $essentials_selected_count, 'granola')); ?>
                     </span>
                 </p>
                 <p class="cart__order-essentials__summary-total">
