@@ -250,10 +250,20 @@
                 margin: 0;
             }
 
+            // WooCommerce's privacy notice sat at body size while the terms label
+            // next to it and the consent question above it are both at small, so it
+            // read as the loudest thing in the footer. Narrow selector on purpose:
+            // other paragraphs in these wrappers keep body size.
+            .woocommerce-privacy-policy-text p {
+                @include typestyle-small;
+            }
+
             label {
                 @include typestyle-base;
+                // Was the hand-written compiled output of typestyle-small. Same value,
+                // now via the mixin so it moves if the scale ever does.
+                @include typestyle-small;
                 margin: 0;
-                font-size: calc(16/16*1rem + (16 - 16)*var(--fluid-bp));
             }
 
             .woocommerce-terms-and-conditions {
