@@ -241,21 +241,15 @@
             margin: 0;
         }
 
+        // Layout, spacing and the box styling itself come from the shared checkbox
+        // rule in block.scss, which matches every checkbox on the checkout. Only the
+        // type size is specific to this field, so nothing here re-declares flex, gap
+        // or width. The old `width: auto` override in particular would have fought
+        // the shared 20px box depending on stylesheet order.
         &__option {
             @include typestyle-small;
 
-            display: flex;
-            align-items: center;
-            gap: var(--space--3xs);
             margin: 0;
-            cursor: pointer;
-
-            input[type='radio'],
-            input[type='checkbox'] {
-                width: auto;
-                flex: 0 0 auto;
-                margin: 0;
-            }
         }
     }
 }

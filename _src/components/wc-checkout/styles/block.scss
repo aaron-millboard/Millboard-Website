@@ -35,6 +35,67 @@
             display: none;
         }
 
+        // Checkboxes, all of them, in one place.
+        //
+        // The checkout renders checkboxes from four different templates: the theme's
+        // own form-checkout (create account, ship to a different address), the theme's
+        // terms.php, the Checkout Field Editor (lookbook, marketing opt-out), and
+        // ConsentFields. They had inconsistent spacing because the labels are flex
+        // containers, which collapses the whitespace the markup relies on, and only
+        // the ConsentFields one set a gap. And they were left as browser defaults,
+        // which looked unstyled next to the inputs and the shipping-method radios.
+        //
+        // Deliberately matched to the #shipping_method radios below: same 20px box,
+        // same 1px foreground border, same background token. A tick drawn with
+        // borders rather than an SVG, because the global `svg { width: 100% }` reset
+        // makes inline icons unpredictable.
+        label:has(> input[type='checkbox']),
+        label.checkbox,
+        label.woocommerce-form__label-for-checkbox {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--space--2xs);
+            cursor: pointer;
+        }
+
+        input[type='checkbox'] {
+            flex-shrink: 0;
+            appearance: none;
+            position: relative;
+            width: 20px;
+            height: 20px;
+            margin: 0;
+            // Aligns the box with the first line of a label that wraps, which the
+            // legitimate-interest notice does. Replaces the global translateY.
+            margin-top: 0.125rem;
+            transform: none;
+            border: 1px solid var(--color--foreground);
+            border-radius: 2px;
+            background-color: var(--color--background);
+            cursor: pointer;
+
+            &:checked {
+                background-color: var(--color--foreground);
+
+                &::after {
+                    content: '';
+                    position: absolute;
+                    top: 45%;
+                    left: 50%;
+                    width: 10px;
+                    height: 5px;
+                    border: solid var(--color--background);
+                    border-width: 0 0 2px 2px;
+                    transform: translate(-50%, -50%) rotate(-45deg);
+                }
+            }
+
+            &:focus-visible {
+                outline: 1px solid var(--color--foreground);
+                outline-offset: 2px;
+            }
+        }
+
         .woocommerce-NoticeGroup {
             ul {
                 margin: 0;
