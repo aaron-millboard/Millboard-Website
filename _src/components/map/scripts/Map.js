@@ -458,13 +458,18 @@ const markerIconUrl = el.dataset.mapItemMarkerUrl
 // height. The badge pins are taller than the shields because they carry the
 // wordmark and the chevrons (two for Approved, three for Advanced), and forcing
 // them to the shields' height shrank the lettering below legibility.
-// [width, height, anchorY], all from the artwork README. anchorY is the row the
-// pin's tip actually sits on, which is NOT the image height for the shields: they
-// carry two pixels of shadow below the point, so anchoring at 42 floated them off
-// their own coordinates.
+//
+// [width, height, anchorY]. anchorY is the row the pin's tip actually sits on,
+// which is NOT the image height for the shields: they carry two pixels of shadow
+// below the point, so anchoring at 42 floated them off their own coordinates.
+//
+// The installer heights come from the proportions of the marketing artwork itself
+// (Approved 229x305, Advanced 229x349), so the badges are never stretched. Those
+// files have no shadow, so their anchor is the bottom edge, which is the point of
+// the last chevron. Re-derive these if the artwork is ever reissued.
 const PIN_SIZES = {
-    'installer': [36, 55, 55],
-    'installer-advanced': [36, 62, 62],
+    'installer': [36, 48, 48],
+    'installer-advanced': [36, 55, 55],
 };
 const [markerWidth, markerHeight, markerAnchorY] = PIN_SIZES[markerFile] || [32, 42, 40];
 
