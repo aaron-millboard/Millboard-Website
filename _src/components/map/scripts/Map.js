@@ -463,13 +463,14 @@ const markerIconUrl = el.dataset.mapItemMarkerUrl
 // which is NOT the image height for the shields: they carry two pixels of shadow
 // below the point, so anchoring at 42 floated them off their own coordinates.
 //
-// The installer heights come from the proportions of the marketing artwork itself
-// (Approved 229x305, Advanced 229x349), so the badges are never stretched. Those
-// files have no shadow, so their anchor is the bottom edge, which is the point of
-// the last chevron. Re-derive these if the artwork is ever reissued.
+// The installer heights come from the proportions of the marketing artwork itself,
+// plus the keyline that is added when it is rendered, so the badges are never
+// stretched. That artwork has no shadow, so the anchor is the bottom edge, which is
+// the point of the last chevron. Re-derive these if the artwork is ever reissued;
+// the render script records the values it produces.
 const PIN_SIZES = {
     'installer': [36, 48, 48],
-    'installer-advanced': [36, 55, 55],
+    'installer-advanced': [36, 54, 54],
 };
 const [markerWidth, markerHeight, markerAnchorY] = PIN_SIZES[markerFile] || [32, 42, 40];
 
