@@ -116,17 +116,17 @@ class ConsentFields
                 // an easy objection, which is what the exemption is conditional on.
                 'business_label' => 'Nous traitons vos données professionnelles sur la base de l\'intérêt légitime afin de vous adresser des informations pertinentes par e-mail, par courrier et par téléphone, conformément à notre politique de confidentialité. Si vous ne souhaitez pas être contacté à des fins de prospection, cochez cette case.',
 
+                // No privacy policy link here on purpose. WooCommerce already renders
+                // one in its own privacy block directly above the Order button, and two
+                // links to the same page a few hundred pixels apart is clutter.
+                // ⚠️ That means this consent statement now DEPENDS on WooCommerce's
+                // privacy text existing. If `woocommerce_checkout_privacy_policy_text`
+                // is ever emptied, or the privacy page is unset so
+                // get_privacy_policy_url() goes blank again, the consent question loses
+                // its link to the policy entirely and this needs putting back.
+
                 // Company name strengthens the record that we approached the person
                 // in a professional capacity, which matters most for sole traders.
-                // Not a translated string on purpose: this renders on the FR checkout
-                // only, and the .po lookup fell back to English "Privacy policy" on a
-                // French consent control.
-                'policy_link_text' => 'politique de confidentialité',
-                // %s is the linked policy text. The link sits on the descriptive words
-                // rather than on "cliquez ici", so the link text still makes sense when
-                // read out of context by a screen reader.
-                'policy_prompt' => 'Cliquez ici pour consulter notre %s.',
-
                 'company_label' => 'Nom de l\'entreprise',
                 'show_company_for_business' => true,
             ],
@@ -321,20 +321,6 @@ class ConsentFields
         $hint = (string) ($args['description'] ?? '');
         $hint_id = $key . '_hint';
 
-        $privacy_url = \get_privacy_policy_url();
-
-        $config = self::config();
-        $hint_html = \esc_html($hint);
-
-        if ($hint !== '' && $privacy_url !== '' && !empty($config['policy_prompt'])) {
-            $link = '<a href="' . \esc_url($privacy_url) . '" target="_blank" rel="noopener">'
-                . \esc_html((string) ($config['policy_link_text'] ?? '')) . '</a>';
-
-            // The pattern is escaped before the anchor goes in, so the only markup that
-            // can reach the page is the anchor this method builds.
-            $hint_html .= ' ' . sprintf(\esc_html((string) $config['policy_prompt']), $link);
-        }
-
         $html = '<div class="form-row ' . \esc_attr(implode(' ', array_unique($classes))) . '"'
             . ' id="' . \esc_attr($key) . '_field"'
             . ' data-priority="' . \esc_attr((string) ($args['priority'] ?? '')) . '">';
@@ -351,7 +337,7 @@ class ConsentFields
         $html .= '</legend>';
 
         if ($hint !== '') {
-            $html .= '<p class="mb-consent__hint" id="' . \esc_attr($hint_id) . '">' . $hint_html . '</p>';
+            $html .= '<p class="mb-consent__hint" id="' . \esc_attr($hint_id) . '">' . \esc_html($hint) . '</p>';
         }
 
         $ticked = is_array($value) ? array_map('strval', $value) : array_filter([(string) $value]);
