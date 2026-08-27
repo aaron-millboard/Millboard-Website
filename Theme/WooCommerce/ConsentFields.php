@@ -44,9 +44,6 @@ class ConsentFields
      */
     public const CONSENT_FIELD = 'contact-consent-channels';
 
-    public const CHANNEL_EMAIL = 'email';
-    public const CHANNEL_PHONE = 'phone';
-
     /**
      * Existing Checkout Field Editor key for the legitimate-interest objection.
      */
