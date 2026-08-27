@@ -270,6 +270,48 @@ body {
         }
     }
 
+    // The header call to action ("Order FREE Samples" and its per-market
+    // equivalents), set per site on the Header options page. It is a child of
+    // __inner rather than of __top-navigation so that each of the three header
+    // layouts can place it on its own terms, and so its width is never bound by
+    // a label that is a different length in every locale.
+    &__call-to-action-1 {
+        --button--font-size: #{px-to-rem(13)};
+        --button--padding-y: #{px-to-rem(7)};
+        --button--padding-x: #{px-to-rem(12)};
+
+        // Phones get nothing: the audience tabs alone take 300px of a 375px
+        // viewport, and the row below them is full with the logo and buttons.
+        // A phone treatment needs its own design rather than a squeeze.
+        display: none;
+
+        z-index: $internal-z-index * 4;
+        letter-spacing: 1.5px;
+        white-space: nowrap;
+
+        // Tablet: the audience tabs, logo and buttons already fill the single
+        // line, so the call to action gets the row below them. The header keeps
+        // its height, which has room for a second row.
+        @include mq($from: 'medium', $until: 'site-header') {
+            display: inline-flex;
+            grid-row: 2;
+            grid-column: 1 / -1;
+            justify-self: end;
+        }
+
+        // Desktop: sit in the top strip, immediately left of the basket,
+        // account and search buttons. Those are positioned against __inner
+        // (right: 0, 50 and 110), so 152px clears all three and 160px leaves a
+        // gap. Positioning rather than flowing it keeps a long label growing
+        // leftwards into the empty strip instead of displacing the buttons.
+        @include mq('site-header') {
+            display: inline-flex;
+            position: absolute;
+            top: 0;
+            right: px-to-rem(160);
+        }
+    }
+
     &__top {
         display: flex;
         align-items: center;

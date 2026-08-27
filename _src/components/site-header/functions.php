@@ -24,6 +24,7 @@ function filter_args(array $args): ?array
         $args['content']['call_to_action_1'] = $header_call_to_action_1;
         $args['content']['call_to_action_1']['classes'] = [
             'g-button',
+            'g-button--solid',
             'site-header__call-to-action-1',
         ];
     }
