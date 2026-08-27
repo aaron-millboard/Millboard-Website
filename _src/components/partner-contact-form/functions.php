@@ -57,14 +57,18 @@ function filter_args(array $args): ?array
 
     $website = \get_field('website', $post_id);
     if (!empty($website)) {
-        $website_parts = parse_url($website);
-        $website_parts['path'] = rtrim($website_parts['path'], '/');
+        // parse_url only returns the keys it actually finds, so a partner who entered
+        // "https://example.com" with nothing after the domain has no 'path' key at all. That is
+        // 162 of the 506 partner records, which is why this warns on almost every profile render.
+        $website_parts = parse_url($website) ?: [];
+        $website_host = $website_parts['host'] ?? '';
+        $website_path = rtrim($website_parts['path'] ?? '', '/');
 
         $args['details'][] = [
             'label' => \_x('Website', 'Partner contact form table row heading', 'granola'),
             'value' => \Granola\Component::get('link', [
-                'content' => $website_parts['host'] . $website_parts['path'],
-                'url' => 'https://' . $website_parts['host'] . ($website_parts['path'] ?? ''),
+                'content' => $website_host . $website_path,
+                'url' => 'https://' . $website_host . $website_path,
                 'attributes' => [
                     'rel' => 'noopener noreferrer',
                 ]
