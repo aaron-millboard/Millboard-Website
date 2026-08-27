@@ -11,10 +11,13 @@ namespace Theme\WooCommerce;
  * and can object easily. The two need different questions, so which question is
  * asked is driven by the "Who am I?" answer.
  *
- * The consumer question is per channel, because bundling channels into one yes/no
- * is the weaker position and someone who wants e-mail but not calls has to be able
- * to say so. Nothing is ticked by default and nothing is required: no ticks is a
- * refusal of everything, which is both a valid answer and the safe reading.
+ * The consumer question is a single required yes/no covering both channels, which is
+ * how Millboard's lawyers and compliance team worded it, received 27 Aug 2026, replacing an
+ * earlier per-channel version. One grant at the point of collection, with independent
+ * withdrawal afterwards through the preference form, which the copy explicitly
+ * promises. So someone who wants e-mail but not calls agrees here and withdraws the
+ * telephone channel there. Required, because an unanswered pair of radios is an
+ * unanswered question rather than a refusal, and nothing here should have a default.
  *
  * The Checkout Field Editor plugin (v1.7.25) has no conditional logic, and it owns
  * the checkout field array via `woocommerce_billing_fields` (priority 1) and
@@ -36,12 +39,10 @@ class ConsentFields
     /**
      * Checkout field key for the consumer opt-in question.
      *
-     * Posted as an array, one entry per channel the customer ticked.
+     * Posted as a single value, `yes` or `no`. It was briefly an array with one entry
+     * per channel, so every read path still tolerates one.
      */
     public const CONSENT_FIELD = 'contact-consent-channels';
-
-    public const CHANNEL_EMAIL = 'email';
-    public const CHANNEL_PHONE = 'phone';
 
     /**
      * Existing Checkout Field Editor key for the legitimate-interest objection.
@@ -100,26 +101,40 @@ class ConsentFields
     {
         $locales = [
             'fr_FR' => [
-                'wording' => 'fr-2026-08-v3',
+                'wording' => 'fr-2026-08-v4',
 
-                // Consumer branch: explicit opt-in, one box per channel. Granular
-                // rather than a single yes/no, because bundling channels is the weaker
-                // position and someone who wants e-mail but not calls has to be able
-                // to say so. Nothing is ticked and nothing is required: no ticks is a
-                // refusal of everything, which is a valid answer and the safe reading.
+                // Consumer branch: a single required yes/no covering BOTH channels.
                 //
-                // Wording supplied by James Etheridge (Head of Compliance), Aug 2026.
-                // Do not reword any of the four strings below without bumping `wording`,
+                // Wording from Millboard's lawyers and compliance team, received via Aaron
+                // on 27 Aug 2026 (the date they drafted it is not recorded here),
+                // superseding the per-channel version. Their decision, deliberately
+                // bundled at the point of collection: one grant covering e-mail and
+                // telephone, with INDEPENDENT withdrawal afterwards, which the
+                // preference form provides via its two separate radios. The copy
+                // promises that independence, so the form must keep offering it.
+                //
+                // Required, so both answers are a deliberate act and neither is a
+                // default. Both answers are acceptable and neither blocks the order.
+                //
+                // Do not reword any of the strings below without bumping `wording`,
                 // or orders stop pointing at the text their customer actually saw.
-                'consumer_legend' => 'Restons en contact avec Millboard',
-                'consumer_hint' => 'Millboard France SAS souhaite vous envoyer des informations sur ses produits de terrasse et de bardage, notamment les nouveaux produits, de l\'inspiration et des offres.',
+                'consumer_legend' => 'Restons en contact',
+                'consumer_hint' => 'Millboard France SAS souhaite vous contacter par e-mail et par téléphone au sujet de votre projet et de ses produits de terrasse et de bardage : conseils, inspiration, nouveaux produits et offres.',
                 'consumer_options' => [
-                    self::CHANNEL_EMAIL => 'Par e-mail',
-                    self::CHANNEL_PHONE => 'Par téléphone',
+                    self::PERMITTED_YES => 'Oui, j\'accepte',
+                    self::PERMITTED_NO => 'Non, merci',
                 ],
 
-                // Rendered after the checkboxes. %1$s is the withdrawal e-mail address
-                // and %2$s the telephone number, injected as escaped values into an
+                // No preselected answer, and an answer is required, so both outcomes
+                // are a deliberate act rather than a default. Enforced in validate()
+                // rather than by the field array, because WooCommerce applies
+                // `required` to every checkout and the business branch never sees this
+                // question at all.
+                'consumer_required' => true,
+                'consumer_required_error' => 'Veuillez indiquer si vous acceptez d\'être contacté par e-mail et par téléphone.',
+
+                // Rendered after the options. %1$s is the withdrawal e-mail address and
+                // %2$s the telephone number, injected as escaped values into an
                 // already-escaped pattern so config cannot introduce markup.
                 //
                 // The 12 month duration is not decoration: it means consent has to age
@@ -127,16 +142,13 @@ class ConsentFields
                 // written as a real date and the FR call list filters on
                 // "less than 365 days ago". Change the duration here and that filter
                 // has to change with it.
-                'consumer_terms' => 'Si vous cochez « Par téléphone », vous consentez à être appelé à des '
-                    . 'fins de prospection concernant nos produits de terrasse et de bardage pendant '
-                    . '12 mois à compter de ce jour. Ce consentement ne sera pas renouvelé '
-                    . 'automatiquement, nous vous le redemanderons. Vous pouvez retirer votre '
-                    . 'consentement à tout moment en écrivant à %1$s ou en appelant le %2$s, et vous '
-                    . 'pouvez à tout moment nous demander la preuve de votre consentement. Les '
-                    . 'messages relatifs à votre demande ou à votre commande ne constituent pas de '
-                    . 'la prospection et continueront de vous être envoyés.',
+                'consumer_terms' => 'Le consentement téléphonique est valable 12 mois, sans '
+                    . 'renouvellement automatique. Vous pouvez retirer votre consentement '
+                    . 'téléphonique ou par e-mail indépendamment, ou demander la preuve de votre '
+                    . 'consentement, à tout moment à %1$s ou au %2$s. Les messages relatifs à '
+                    . 'votre commande vous seront toujours envoyés.',
                 'withdraw_email' => 'dataprotection@millboard.com',
-                'withdraw_phone' => '05.25.53.00.28',
+                'withdraw_phone' => '05 25 53 00 28',
                 'consent_months' => 12,
 
                 // Business branch: legitimate interest, with the channels named and
@@ -148,7 +160,7 @@ class ConsentFields
                 // his wording ends with an explicit route to the notice, and a consent
                 // statement that relies on boilerplate elsewhere on the page is weaker.
                 'policy_link_text' => 'politique de confidentialité',
-                'policy_prompt' => 'Comment nous utilisons vos données : %s',
+                'policy_prompt' => 'Consultez notre %s.',
 
                 // Company name strengthens the record that we approached the person
                 // in a professional capacity, which matters most for sole traders.
@@ -170,6 +182,7 @@ class ConsentFields
         \add_filter('woocommerce_checkout_fields', [__CLASS__, 'add_fields'], 1001);
         \add_filter('woocommerce_form_field_' . self::FIELD_TYPE, [__CLASS__, 'render_field'], 10, 4);
         \add_filter('woocommerce_checkout_posted_data', [__CLASS__, 'discard_inapplicable_branch']);
+        \add_action('woocommerce_after_checkout_validation', [__CLASS__, 'validate'], 10, 2);
         \add_action('woocommerce_checkout_create_order', [__CLASS__, 'record_permission'], 10, 2);
         \add_action('woocommerce_admin_order_data_after_billing_address', [__CLASS__, 'render_admin_summary']);
     }
@@ -213,7 +226,8 @@ class ConsentFields
             'label' => $config['consumer_legend'],
             'description' => $config['consumer_hint'] ?? '',
             'options' => $config['consumer_options'],
-            'required' => false, // Nothing is required: no ticks is a valid refusal.
+            'required' => false, // Enforced conditionally in validate(): the audience is
+                                 // not known when the field array is built.
             'priority' => $objection_priority - 5,
             'class' => ['form-row-wide', 'mb-consent', 'mb-consent--consumer'],
             'validate' => [],
@@ -327,7 +341,7 @@ class ConsentFields
     }
 
     /**
-     * Render the consumer opt-in as a checkbox group, one box per channel.
+     * Render the consumer opt-in as a required pair of radios: one grant, both channels.
      *
      * @param string $field Markup built by WooCommerce, discarded.
      * @param string $key
@@ -337,10 +351,13 @@ class ConsentFields
     public static function render_field($field, $key, $args, $value): string
     {
         $classes = (array) ($args['class'] ?? []);
+        $config = self::config();
 
-        if (!empty($args['required'])) {
-            $classes[] = 'validate-required';
-        }
+        // Not read from $args['required'], which is deliberately false so that
+        // WooCommerce's blanket check does not fire this question at business
+        // customers who never see it. The fieldset is only ever shown to consumers,
+        // for whom it is required, so the marker is decided here instead.
+        $required = !empty($config['consumer_required']);
 
         $options = (array) ($args['options'] ?? []);
         $hint = (string) ($args['description'] ?? '');
@@ -355,7 +372,7 @@ class ConsentFields
 
         $html .= '<legend class="mb-consent__legend">' . \esc_html((string) ($args['label'] ?? ''));
 
-        if (!empty($args['required'])) {
+        if ($required) {
             $html .= '&nbsp;<span class="required" aria-hidden="true">*</span>';
         }
 
@@ -365,23 +382,24 @@ class ConsentFields
             $html .= '<p class="mb-consent__hint" id="' . \esc_attr($hint_id) . '">' . \esc_html($hint) . '</p>';
         }
 
-        $ticked = is_array($value) ? array_map('strval', $value) : array_filter([(string) $value]);
+        // Single-value radios: the lawyers' wording is one grant covering both
+        // channels, so one answer, not a box per channel.
+        $chosen = is_array($value) ? (string) reset($value) : (string) $value;
 
         foreach ($options as $option_value => $option_label) {
             $option_value = (string) $option_value;
             $input_id = $key . '_' . \sanitize_html_class($option_value);
 
             $html .= '<label class="mb-consent__option" for="' . \esc_attr($input_id) . '">'
-                . '<input type="checkbox"'
+                . '<input type="radio"'
                 . ' id="' . \esc_attr($input_id) . '"'
-                . ' name="' . \esc_attr($key) . '[]"'
+                . ' name="' . \esc_attr($key) . '"'
                 . ' value="' . \esc_attr($option_value) . '"'
-                . (in_array($option_value, $ticked, true) ? ' checked="checked"' : '')
+                . \checked($chosen, $option_value, false)
                 . ' /> <span>' . \esc_html((string) $option_label) . '</span>'
                 . '</label>';
         }
 
-        $config = self::config();
         $terms = (string) ($config['consumer_terms'] ?? '');
 
         if ($terms !== '') {
@@ -438,30 +456,82 @@ class ConsentFields
             // clearing it here would silently opt every homeowner in to email. Drive
             // it from the email tick instead, inverted, which lets the whole existing
             // email chain (4278768829 then 3978160366) keep working untouched.
-            $data[self::OBJECTION_FIELD] = self::channel_ticked($data, self::CHANNEL_EMAIL) ? '' : '1';
+            $data[self::OBJECTION_FIELD] = self::consumer_agreed($data) ? '' : '1';
 
             return $data;
         }
 
         if ($audience === Audience::BUSINESS) {
-            $data[self::CONSENT_FIELD] = [];
+            $data[self::CONSENT_FIELD] = '';
         }
 
         return $data;
     }
 
     /**
+     * Did the consumer agree? One answer now covers both channels.
+     *
+     * Tolerates an array because the field was briefly a checkbox group, so an
+     * in-flight session or a replayed request cannot produce a wrong answer.
+     *
      * @param array<string, mixed> $data
      */
-    private static function channel_ticked(array $data, string $channel): bool
+    private static function consumer_agreed(array $data): bool
     {
-        $ticked = $data[self::CONSENT_FIELD] ?? [];
+        $answer = $data[self::CONSENT_FIELD] ?? '';
 
-        if (!is_array($ticked)) {
-            $ticked = $ticked === '' ? [] : [$ticked];
+        if (is_array($answer)) {
+            $answer = (string) reset($answer);
         }
 
-        return in_array($channel, array_map('strval', $ticked), true);
+        return (string) $answer === self::PERMITTED_YES;
+    }
+
+    /**
+     * Require an answer from consumers, and only from consumers.
+     *
+     * `required` on the field array cannot do this. WooCommerce validates it for every
+     * checkout, and the business branch has this question discarded by
+     * `discard_inapplicable_branch` before validation runs, so every business order
+     * would fail on a question its customer was never shown.
+     *
+     * Both answers pass. Only the absence of an answer is rejected.
+     *
+     * @param array<string, mixed> $data Posted data, already resolved by
+     *                                   `discard_inapplicable_branch`.
+     * @param \WP_Error $errors
+     */
+    public static function validate($data, $errors): void
+    {
+        if (!is_array($data) || !$errors instanceof \WP_Error) {
+            return;
+        }
+
+        $config = self::config();
+
+        if ($config === null || empty($config['consumer_required'])) {
+            return;
+        }
+
+        if (Audience::from_posted_data($data) !== Audience::CONSUMER) {
+            return;
+        }
+
+        $answer = $data[self::CONSENT_FIELD] ?? '';
+
+        if (is_array($answer)) {
+            $answer = (string) reset($answer);
+        }
+
+        if (in_array((string) $answer, [self::PERMITTED_YES, self::PERMITTED_NO], true)) {
+            return;
+        }
+
+        $errors->add(
+            'required-field',
+            (string) ($config['consumer_required_error'] ?? ''),
+            ['id' => self::CONSENT_FIELD]
+        );
     }
 
     /**
@@ -489,21 +559,18 @@ class ConsentFields
         $audience = Audience::from_posted_data($data);
 
         if ($audience === Audience::CONSUMER) {
-            // Per channel, from what they actually ticked. Nothing ticked is a
-            // refusal of everything, which is the safe reading and a valid answer.
-            $phone = self::channel_ticked($data, self::CHANNEL_PHONE);
-            $email = self::channel_ticked($data, self::CHANNEL_EMAIL);
+            // One answer, both channels. The lawyers' wording grants e-mail and
+            // telephone together, so the two cannot diverge here. They diverge later
+            // via the preference form, which is what the copy's "withdraw
+            // independently" promise rests on.
+            $agreed = self::consumer_agreed($data);
 
-            $permitted = $phone ? self::PERMITTED_YES : self::PERMITTED_NO;
-            $email_permitted = $email ? self::PERMITTED_YES : self::PERMITTED_NO;
+            $permitted = $agreed ? self::PERMITTED_YES : self::PERMITTED_NO;
+            $email_permitted = $permitted;
 
-            // Basis is per channel, not per consent event. A refused channel has no
-            // basis at all, so it is `none`. Aaron caught the earlier version writing
-            // `consent` to the phone basis for someone who had refused the phone,
-            // which reads on the record as "we may call them" and is exactly the
-            // wrong conclusion for a reader to draw.
-            $basis = $phone ? self::BASIS_CONSENT : self::BASIS_NONE;
-            $email_basis = $email ? self::BASIS_CONSENT : self::BASIS_NONE;
+            // A refused channel has no basis, so `none` rather than `consent`.
+            $basis = $agreed ? self::BASIS_CONSENT : self::BASIS_NONE;
+            $email_basis = $basis;
         } elseif ($audience === Audience::BUSINESS) {
             // One legitimate-interest statement covering e-mail, post and telephone,
             // with one objection, so the objection applies to every channel at once.

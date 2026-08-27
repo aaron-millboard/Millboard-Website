@@ -51,7 +51,8 @@
         // makes inline icons unpredictable.
         label:has(> input[type='checkbox']),
         label.checkbox,
-        label.woocommerce-form__label-for-checkbox {
+        label.woocommerce-form__label-for-checkbox,
+        .mb-consent__option {
             display: flex;
             align-items: flex-start;
             gap: var(--space--2xs);
@@ -88,6 +89,46 @@
                     border-width: 0 0 2px 2px;
                     transform: translate(-50%, -50%) rotate(-45deg);
                 }
+            }
+
+            &:focus-visible {
+                outline: 1px solid var(--color--foreground);
+                outline-offset: 2px;
+            }
+        }
+
+        // The consent question renders radios rather than checkboxes, because the
+        // lawyers' wording is one grant with two answers. Same box treatment as the
+        // #shipping_method radios below, round instead of square.
+        //
+        // Scoped to .mb-consent on purpose. The shipping-method and payment radios
+        // have the input as a sibling of the label rather than a child, and they
+        // carry their own rules, so generalising this selector would quietly change
+        // layouts that have nothing to do with this question.
+        .mb-consent input[type='radio'] {
+            flex-shrink: 0;
+            appearance: none;
+            position: relative;
+            width: 20px;
+            height: 20px;
+            margin: 0;
+            margin-top: 0.125rem;
+            transform: none;
+            border: 1px solid var(--color--foreground);
+            border-radius: 50%;
+            background-color: var(--color--background);
+            cursor: pointer;
+
+            &:checked::after {
+                content: '';
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+                background-color: var(--color--foreground);
             }
 
             &:focus-visible {

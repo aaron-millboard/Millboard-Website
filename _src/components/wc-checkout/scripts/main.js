@@ -102,8 +102,17 @@ jQuery(document.body).on('change', '#who-am-i, #billing_who-am-i, [name="who-am-
       setRowState($('.mb-consent--consumer'), answered && isConsumer);
       setRowState($('.mb-consent--business'), answered && !isConsumer);
 
-      // Nothing in either branch is required: for a consumer, no boxes ticked is a
-      // refusal of every channel, which is a valid answer. So no required mirroring.
+      // The consumer question is a required yes/no now, so mirror that onto its
+      // radios. Native constraint validation then catches an unanswered pair before
+      // the request is made, which is nicer than a round trip to the top of the page.
+      //
+      // Taken off the hidden ones as well as disabled. Disabled inputs are already
+      // exempt, but a required hidden input is the classic way to make a form refuse
+      // to submit with a validation bubble nobody can see, so both, not either.
+      // ConsentFields::validate() enforces it server side regardless.
+      $('.mb-consent--consumer')
+         .find('input[type="radio"]')
+         .prop('required', answered && isConsumer);
    }
 
    $(function () {
