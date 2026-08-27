@@ -304,10 +304,12 @@ body {
         // (right: 0, 50 and 110), so 152px clears all three and 160px leaves a
         // gap. Positioning rather than flowing it keeps a long label growing
         // leftwards into the empty strip instead of displacing the buttons.
+        // The 3px lifts it off the very top edge so it reads as sitting in the
+        // strip rather than hanging from it (Aaron's tuning on staging).
         @include mq('site-header') {
             display: inline-flex;
             position: absolute;
-            top: 0;
+            top: px-to-rem(3);
             right: px-to-rem(160);
         }
     }
