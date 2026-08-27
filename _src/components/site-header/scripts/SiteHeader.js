@@ -15,6 +15,7 @@ export default class SiteHeader {
         this.burgerEl = this.el.querySelector('.site-header__burger');
         this.headerTogglerEls = this.el.querySelectorAll('.js-site-header-toggle');
         this.searchEl = this.el.querySelector('.header-search');
+        this.callToActionEl = this.el.querySelector('.site-header__call-to-action-1');
         this.currentPageAnchorEls = this.el.querySelectorAll('.current-menu-item > [href*="#"]');
 
         this.subMenuExpandableEls = {};
@@ -70,6 +71,15 @@ export default class SiteHeader {
                 link.addEventListener('click', () => {
                     this.closeHeader(true);
                 });
+            });
+        }
+
+        // ---------------------------------------------------------------------
+        // Track clicks on the header call to action.
+        // ---------------------------------------------------------------------
+        if (this.callToActionEl) {
+            this.callToActionEl.addEventListener('click', () => {
+                this.pushCallToActionClick();
             });
         }
 
@@ -155,6 +165,23 @@ export default class SiteHeader {
             if (parentItem) {
                 parentItem.classList.add('is-submenu-expanded');
             }
+        });
+    }
+
+    /**
+     * Tracks clicks on the header call to action by pushing a `header_cta_click`
+     * custom event to the GTM dataLayer (which forwards it to GA4), the same way
+     * the map and partner phone reveal report their clicks.
+     *
+     * `link_url` is already a registered GA4 custom dimension, so the
+     * destination is reportable without any new setup; the label and locale are
+     * both recoverable from the page path, so neither is sent.
+     */
+    pushCallToActionClick() {
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({
+            event: 'header_cta_click',
+            link_url: this.callToActionEl.getAttribute('href') || '',
         });
     }
 
