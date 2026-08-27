@@ -12,7 +12,7 @@ namespace Theme\WooCommerce;
  * asked is driven by the "Who am I?" answer.
  *
  * The consumer question is a single required yes/no covering both channels, which is
- * how Millboard's lawyers and compliance team worded it on 25 Aug 2026, replacing an
+ * how Millboard's lawyers and compliance team worded it, received 27 Aug 2026, replacing an
  * earlier per-channel version. One grant at the point of collection, with independent
  * withdrawal afterwards through the preference form, which the copy explicitly
  * promises. So someone who wants e-mail but not calls agrees here and withdraws the
@@ -108,7 +108,8 @@ class ConsentFields
 
                 // Consumer branch: a single required yes/no covering BOTH channels.
                 //
-                // Wording from Millboard's lawyers and compliance team, 25 Aug 2026,
+                // Wording from Millboard's lawyers and compliance team, received via Aaron
+                // on 27 Aug 2026 (the date they drafted it is not recorded here),
                 // superseding the per-channel version. Their decision, deliberately
                 // bundled at the point of collection: one grant covering e-mail and
                 // telephone, with INDEPENDENT withdrawal afterwards, which the
