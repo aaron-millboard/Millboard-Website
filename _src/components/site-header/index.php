@@ -13,6 +13,15 @@
             <?= \Granola\Component::get('language/switcher'); ?>
         </div>
 
+        <?php if (!empty($args['content']['call_to_action_1'])) : ?>
+            <?= \Granola\Component::get('link', [
+                'url' => $args['content']['call_to_action_1']['url'],
+                'content' => $args['content']['call_to_action_1']['title'],
+                'target' => $args['content']['call_to_action_1']['target'] ?? '',
+                'classes' => $args['content']['call_to_action_1']['classes'],
+            ]); ?>
+        <?php endif; ?>
+
         <div class="site-header__top">
             <?= \Granola\Component::get('link', [
                 'url' => home_url('/'),
