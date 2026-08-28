@@ -388,17 +388,28 @@ class Map {
         //     console.log(event.target.getCenter());
         // });
 
-        // CARTO Voyager: a clean but warmer, more detailed basemap than the raw
-        // OpenStreetMap tiles, without the washed-out look of Positron.
-        const mapTileProvider = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+        // OpenStreetMap standard raster tiles: no API key, so nothing can be
+        // watermarked out from under us. This was CARTO Voyager until Aug 2026,
+        // when CARTO began stamping "API KEY REQUIRED" across every keyless tile.
+        // Their free key is offered for non-commercial use and the raster service
+        // is being retired, so a key is not a fix. If we want the Voyager look
+        // back, move to a provider with commercial terms (MapTiler) or to vector
+        // tiles (OpenFreeMap via MapLibre) rather than re-pointing at CARTO.
+        // detectRetina is deliberately off: OSM serves no @2x tiles, so it would
+        // just quadruple our tile requests against a donated tile server.
+        const mapTileProvider = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
         const tileLayer = L.tileLayer(mapTileProvider, {
-            maxZoom: 20,
-            subdomains: 'abcd',
-            // Load @2x tiles on high-DPI screens so the map stays crisp.
-            detectRetina: true,
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
         });
         this.lmap.addLayer(tileLayer);
+
+        // OpenStreetMap's licence requires visible credit, and the map was
+        // rendering none. Added after the tile layer so the control picks it up.
+        this.lmap.addControl(L.control.attribution({
+            position: 'bottomright',
+            prefix: false,
+        }));
 
         const lmapFullScreenControl = new FullScreen({
             position: 'topright',
