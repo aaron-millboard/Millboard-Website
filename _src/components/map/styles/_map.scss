@@ -254,6 +254,20 @@
         }
     }
 
+    // Tile-provider credit. Leaflet's default is unstyled and the site's 20px body
+    // font makes it shout, so pin it small and quiet.
+    .leaflet-control-attribution {
+        margin: 0;
+        padding: #{px-to-rem(2)} #{px-to-rem(6)};
+        background-color: hsla(var(--color--white--hsl), 70%);
+        font-size: #{px-to-rem(11)};
+        line-height: 1.5;
+
+        a {
+            color: inherit;
+        }
+    }
+
     .leaflet-control-zoom-fullscreen {
         --mask-icon--size: #{px-to-rem(28)};
 
