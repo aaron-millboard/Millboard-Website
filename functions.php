@@ -109,3 +109,8 @@ if (file_exists($autoloader = __DIR__ . '/vendor/autoload.php')) {
 // ----------------------------------------------------
 \Theme\Hubspot\WriteGuard::init();
 \Theme\Hubspot\Attribution::init();
+
+// ----------------------------------------------------
+// Analytics guards.
+// ----------------------------------------------------
+\Theme\Analytics\TagManagerGuard::init();
