@@ -111,6 +111,7 @@ if (file_exists($autoloader = __DIR__ . '/vendor/autoload.php')) {
 \Theme\Hubspot\Attribution::init();
 
 // ----------------------------------------------------
-// Analytics guards.
+// Analytics guards and server-side conversions.
 // ----------------------------------------------------
 \Theme\Analytics\TagManagerGuard::init();
+\Theme\Analytics\ConversionEmitter::init();
