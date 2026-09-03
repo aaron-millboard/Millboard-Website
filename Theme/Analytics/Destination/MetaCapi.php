@@ -78,6 +78,8 @@ class MetaCapi
             'event_time'    => (int) $payload['occurred_at'],
             'event_id'      => (string) $payload['event_id'],
             'action_source' => 'website',
+            // Without this, any custom conversion defined by a URL rule silently fails to match.
+            'event_source_url' => (string) ($payload['page_url'] ?? ''),
             'user_data'     => $user_data,
             'custom_data'   => array_filter([
                 'currency'     => $payload['currency'],

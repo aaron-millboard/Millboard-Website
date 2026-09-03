@@ -73,6 +73,12 @@ class Ga4Measurement
             'engagement_time_msec' => 1,
         ];
 
+        if (! empty($payload['page_url'])) {
+            // Keeps URL-scoped audiences, created events and reporting matching the server
+            // event exactly as they matched the browser one.
+            $params['page_location'] = (string) $payload['page_url'];
+        }
+
         if (! empty($identifiers['session_id'])) {
             $params['session_id'] = (string) $identifiers['session_id'];
         }

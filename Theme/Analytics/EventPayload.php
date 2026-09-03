@@ -88,6 +88,11 @@ class EventPayload
             'order_number' => (string) $order->get_order_number(),
 
             'occurred_at'  => $created ? $created->getTimestamp() : time(),
+
+            // Meta custom conversions and GA4 audiences are routinely defined by URL rules. A
+            // server event with no URL never matches them, so they would keep counting browser
+            // events right up to cutover and then silently stop.
+            'page_url'     => self::page_url($order),
             'items'        => self::items($order),
             'user'         => self::hashed_user($order),
 
@@ -117,6 +122,25 @@ class EventPayload
     /**
      * @return array<int, array<string, mixed>>
      */
+    /**
+     * The order-received URL, WITHOUT its query string.
+     *
+     * WooCommerce appends `?key=wc_order_...`, which is the order key - the token that lets
+     * anyone holding it view that order. It has no business being sent to an ad platform, and a
+     * URL rule only ever matches on the path anyway.
+     */
+    private static function page_url($order): string
+    {
+        if (! method_exists($order, 'get_checkout_order_received_url')) {
+            return '';
+        }
+
+        $url = (string) $order->get_checkout_order_received_url();
+        $pos = strpos($url, '?');
+
+        return false === $pos ? $url : substr($url, 0, $pos);
+    }
+
     private static function items($order): array
     {
         $out = [];
