@@ -46,6 +46,12 @@
             border-bottom: 1px solid var(--color--brand-1);
             background-color: var(--color--background);
             width: 100%;
+
+            // A fieldset defaults to min-inline-size: min-content, so it ignores
+            // width: 100% and grows to fit its widest unbreakable content. On a
+            // 375px phone that made this box 382px and pushed it, and its note,
+            // off the right edge of the screen.
+            min-inline-size: 0;
         }
 
         // Finished floor level, asked for only when the basket contains a DuoLift
@@ -116,9 +122,9 @@
             display: inline-flex;
             gap: 1rem;
             align-items: center;
-            white-space: nowrap;
             flex-wrap: wrap;
             justify-content: center;
+            max-width: 100%;
 
             &-label {
                 @include typestyle-small;
@@ -136,6 +142,7 @@
 
         &__project-type-options {
             display: flex;
+            flex-wrap: wrap;
             gap: 0.5rem;
         }
 
