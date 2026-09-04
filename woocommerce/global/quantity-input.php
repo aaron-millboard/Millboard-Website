@@ -64,7 +64,7 @@ $label = ! empty($args['product_name']) ? sprintf(esc_html__('%s quantity', 'woo
         ?>
         <button type="button" class="quantity-button quantity-minus" aria-label="<?php esc_attr_e('Decrease quantity', 'woocommerce'); ?>">−</button>
 
-        <label class="screen-reader-text" for="<?php echo esc_attr($input_id); ?>"><?php echo esc_attr($label); ?></label>
+        <label class="visually-hidden" for="<?php echo esc_attr($input_id); ?>"><?php echo esc_attr($label); ?></label>
         <input
             type="<?php echo esc_attr($type); ?>"
             <?php echo $readonly ? 'readonly="readonly"' : ''; ?>
