@@ -732,7 +732,12 @@
             }
 
             &__project-type-option {
-                flex: 1 1 50%;
+                // Side by side was the intent here, but it cannot work on a
+                // phone: 50% + 50% + the gap never fits, and even with the gap
+                // accounted for the two labels need 316px of min-content in a
+                // 302px row. Stack them instead, which also gives a full-width
+                // tap target rather than two cramped ones.
+                flex: 1 1 100%;
             }
 
             &__project-type-label {
