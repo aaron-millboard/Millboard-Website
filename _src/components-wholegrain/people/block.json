@@ -1,6 +1,6 @@
 {
     "$schema": "https://raw.githubusercontent.com/AdvancedCustomFields/schemas/main/json/block.json",
-    "apiVersion": 2,
+    "apiVersion": 3,
     "name": "acf/people",
     "title": "People",
     "category": "users",
@@ -12,6 +12,9 @@
     ],
     "acf": {
         "mode": "preview",
+        "blockVersion": 3,
+        "autoInlineEditing": false,
+        "hideFieldsInSidebar": false,
         "renderCallback": "\\Granola\\Component::acf_render_callback"
     },
     "supports": {

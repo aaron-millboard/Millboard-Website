@@ -1,6 +1,6 @@
 {
     "$schema": "https://raw.githubusercontent.com/AdvancedCustomFields/schemas/main/json/block.json",
-    "apiVersion": 2,
+    "apiVersion": 3,
     "name": "acf/partner-contact-form",
     "title": "Partner Contact Form",
     "description": "Display a Hubspot Form alongside installer/distributor content",
@@ -15,6 +15,9 @@
     ],
     "acf": {
         "mode": "auto",
+        "blockVersion": 3,
+        "autoInlineEditing": false,
+        "hideFieldsInSidebar": false,
         "renderCallback": "\\Granola\\Component::acf_render_callback",
         "postTypes": [
             "installer",

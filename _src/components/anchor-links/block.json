@@ -1,6 +1,6 @@
 {
     "$schema": "https://raw.githubusercontent.com/AdvancedCustomFields/schemas/main/json/block.json",
-    "apiVersion": 2,
+    "apiVersion": 3,
     "name": "acf/anchor-links",
     "title": "Anchor Links",
     "category": "granola-blocks",
@@ -12,6 +12,9 @@
     ],
     "acf": {
         "mode": "edit",
+        "blockVersion": 3,
+        "autoInlineEditing": false,
+        "hideFieldsInSidebar": false,
         "renderCallback": "\\Granola\\Component::acf_render_callback"
     },
     "supports": {
