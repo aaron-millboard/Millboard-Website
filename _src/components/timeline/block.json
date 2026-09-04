@@ -1,6 +1,6 @@
 {
     "$schema": "https://raw.githubusercontent.com/AdvancedCustomFields/schemas/main/json/block.json",
-    "apiVersion": 2,
+    "apiVersion": 3,
     "name": "acf/timeline",
     "title": "Timeline",
     "description": "Display timeline with scroll-based animations",
@@ -13,6 +13,9 @@
     ],
     "acf": {
         "mode": "auto",
+        "blockVersion": 3,
+        "autoInlineEditing": false,
+        "hideFieldsInSidebar": false,
         "renderCallback": "\\Granola\\Component::acf_render_callback"
     },
     "supports": {

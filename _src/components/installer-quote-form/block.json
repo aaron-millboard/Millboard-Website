@@ -1,6 +1,6 @@
 {
     "$schema": "https://raw.githubusercontent.com/AdvancedCustomFields/schemas/main/json/block.json",
-    "apiVersion": 2,
+    "apiVersion": 3,
     "name": "acf/installer-quote-form",
     "title": "Partner Enquiry Form",
     "category": "granola-blocks",
@@ -8,6 +8,9 @@
     "keywords": [ "installer", "distributor", "partner", "quote", "enquiry", "contact", "form", "hubspot" ],
     "acf": {
         "mode": "auto",
+        "blockVersion": 3,
+        "autoInlineEditing": false,
+        "hideFieldsInSidebar": false,
         "renderCallback": "\\Granola\\Component::acf_render_callback",
         "postTypes": [
             "installer",

@@ -1,6 +1,6 @@
 {
     "$schema": "https://raw.githubusercontent.com/AdvancedCustomFields/schemas/main/json/block.json",
-    "apiVersion": 2,
+    "apiVersion": 3,
     "name": "acf/case-study-details",
     "title": "Case Study Details",
     "category": "granola-blocks",
@@ -8,6 +8,9 @@
     "keywords": [ ],
     "acf": {
         "mode": "auto",
+        "blockVersion": 3,
+        "autoInlineEditing": false,
+        "hideFieldsInSidebar": false,
         "renderCallback": "\\Granola\\Component::acf_render_callback",
         "postTypes": [
             "case-study"
