@@ -720,3 +720,34 @@
         }
     }
 }
+
+//
+// International Conference page, HubSpot form e93ce7f2-8304-46c2-997d-a393d349f978.
+// Scoped to this one form by its HubSpot form id and field ids so no other
+// HubSpot embed is affected.
+//
+// 1. HubSpot's embed stylesheet caps full-width fields at 95% and puts an 8px
+//    gutter on every field wrapper, so email and company stop ~33px short of
+//    the fieldset. An id selector outranks both of those class selectors.
+// 2. The .hbspt-form treatment above only targets input and textarea, so the
+//    two date selects keep a white fill instead of letting the block colour
+//    through like every other field on the block.
+//
+#hsForm_e93ce7f2-8304-46c2-997d-a393d349f978 {
+    .hs-input:not([type='checkbox']):not([type='radio']) {
+        width: 100%;
+    }
+
+    fieldset.form-columns-1 .input {
+        margin-right: 0;
+    }
+
+    #n1st_preferred_date-e93ce7f2-8304-46c2-997d-a393d349f978,
+    #n2nd_preferred_date-e93ce7f2-8304-46c2-997d-a393d349f978 {
+        --input--background-color: transparent;
+        --input--border-color: var(--color--foreground);
+        --input--border-color--focus: var(--color--brand-4);
+        --input--color: var(--color--foreground);
+        --input--border-width--focus: 1px;
+    }
+}
