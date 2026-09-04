@@ -1,6 +1,6 @@
 {
     "$schema": "https://raw.githubusercontent.com/AdvancedCustomFields/schemas/main/json/block.json",
-    "apiVersion": 2,
+    "apiVersion": 3,
     "name": "acf/call-to-action",
     "title": "Call to Action",
     "description": "Call to action block with button",
@@ -9,6 +9,9 @@
     "keywords": [ ],
     "acf": {
         "mode": "edit",
+        "blockVersion": 3,
+        "autoInlineEditing": false,
+        "hideFieldsInSidebar": false,
         "renderCallback": "\\Granola\\Component::acf_render_callback",
         "postTypes": [
             "page",
