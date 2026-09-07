@@ -256,7 +256,10 @@
             gap: var(--space--xl);
         }
 
-        button[type='submit'] {
+        // Quantity changes are posted by clicking the hidden update button (see
+        // wc-global/scripts/main.js), so the cart's submit buttons stay out of the way.
+        // The voucher's Apply is the exception: it is the one a customer has to press.
+        button[type='submit']:not([name='apply_coupon']) {
             display: none;
         }
 
@@ -296,6 +299,38 @@
             }
         }
 
+        // Voucher entry, in the totals column so the code is typed next to the figures it
+        // changes. Applying posts the cart form the same way a quantity change does, so
+        // no JS is involved and the discount row above comes back rendered.
+        &__coupon {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space--xs);
+            padding-top: var(--space--s);
+            border-top: 1px solid var(--color--brand-5);
+
+            &__label {
+                @include typestyle-h6;
+                @include typestyle-xlarge;
+
+                // The gap does the spacing; the base label margin would double it.
+                margin-bottom: 0;
+            }
+
+            &__field {
+                display: flex;
+                flex-direction: column;
+                gap: var(--space--xs);
+            }
+
+            button[type='submit'] {
+                @include button;
+                @include button--interaction;
+
+                width: fit-content;
+            }
+        }
+
         &__totals {
             display: flex;
             flex-direction: column;
@@ -325,6 +360,17 @@
                 &.order-total {
                     border-top: 2px solid var(--color--brand-1);
                     padding-top: var(--space--s);
+                }
+
+                // Woo appends a Remove link to the discount amount; without this it
+                // inherits the totals' uppercase h6 and reads as a second heading.
+                .woocommerce-remove-coupon {
+                    @include typestyle-small;
+
+                    margin-left: var(--space--2xs);
+                    font-weight: normal;
+                    letter-spacing: normal;
+                    text-transform: none;
                 }
             }
         }
