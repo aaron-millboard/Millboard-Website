@@ -48,10 +48,19 @@ class Schema
         }
 
         if (\is_singular(self::PARTNER_POST_TYPES)) {
-            return self::add_local_business($graph);
+            $post_id = (int) \get_the_ID();
+
+            return $post_id ? self::add_local_business($graph, $post_id, $post_id) : $graph;
         }
 
         if (\is_page()) {
+            $page_id = (int) \get_the_ID();
+            $record_id = $page_id ? self::partner_record_for_page($page_id) : 0;
+
+            if ($record_id) {
+                $graph = self::add_local_business($graph, $record_id, $page_id);
+            }
+
             return self::add_directory_item_list($graph);
         }
 
@@ -61,64 +70,78 @@ class Schema
     /**
      * Adds a LocalBusiness for the partner being viewed, and points the
      * WebPage's mainEntity at it.
+     *
+     * The record holding the Partner Details and the page a customer lands on
+     * are the same post for a distributor, and two different posts for an
+     * Experience Centre (see partner_record_for_page()). So every field is read
+     * from $record_id, while every URL comes from $page_id.
      */
-    private static function add_local_business(array $graph): array
+    private static function add_local_business(array $graph, int $record_id, int $page_id): array
     {
-        $post_id = \get_the_ID();
+        $permalink = (string) \get_permalink($page_id);
 
-        if (empty($post_id)) {
+        if ($permalink === '') {
             return $graph;
         }
 
-        $permalink = \get_permalink($post_id);
         $id = $permalink . '#localbusiness';
 
         $business = [
             '@type' => 'LocalBusiness',
             '@id' => $id,
-            'name' => \get_the_title($post_id),
+            'name' => \get_the_title($record_id),
             'url' => $permalink,
         ];
 
-        $address = self::build_postal_address($post_id);
+        $address = self::build_postal_address($record_id);
 
         if (!empty($address)) {
             $business['address'] = $address;
         }
 
-        $geo = self::build_geo($post_id);
+        $geo = self::build_geo($record_id);
 
         if (!empty($geo)) {
             $business['geo'] = $geo;
         }
 
-        $phone = self::field($post_id, 'phone');
+        $phone = self::field($record_id, 'phone');
 
         if ($phone !== '') {
             $business['telephone'] = $phone;
         }
 
-        $email = self::field($post_id, 'email');
+        $email = self::field($record_id, 'email');
 
         if ($email !== '') {
             $business['email'] = $email;
         }
 
+        $hours = self::build_opening_hours($record_id);
+
+        if (!empty($hours)) {
+            $business['openingHoursSpecification'] = $hours;
+        }
+
         // The partner's own site, where they have one, is the authoritative
         // entity — sameAs rather than url, which points at this profile.
-        $website = self::field($post_id, 'website');
+        $website = self::field($record_id, 'website');
 
         if ($website !== '') {
             $business['sameAs'] = $website;
         }
 
-        $image = \get_the_post_thumbnail_url($post_id, 'large');
+        // The record carries the branch photography. An Experience Centre keeps
+        // its imagery on its page instead, so fall back to that rather than
+        // describe a business with no image at all.
+        $image = \get_the_post_thumbnail_url($record_id, 'large')
+            ?: \get_the_post_thumbnail_url($page_id, 'large');
 
         if (!empty($image)) {
             $business['image'] = $image;
         }
 
-        $description = self::partner_type_label($post_id);
+        $description = self::partner_type_label($record_id);
 
         if ($description !== '') {
             $business['description'] = $description;
@@ -148,8 +171,10 @@ class Schema
     }
 
     /**
-     * Adds an ItemList naming what a directory page lists, in the order the
-     * finder renders them. Only runs on pages that actually carry a map block.
+     * Adds an ItemList naming what a directory page lists, alphabetically. Only
+     * runs on pages that actually carry a map block. The finder itself orders by
+     * distance from the visitor, which is decided per request and so cannot be
+     * described in markup the page cache serves to everyone.
      */
     private static function add_directory_item_list(array $graph): array
     {
@@ -168,7 +193,7 @@ class Schema
         $listings = \get_posts([
             'post_type' => $post_types,
             'post_status' => 'publish',
-            'posts_per_page' => 200,
+            'posts_per_page' => 500,
             'orderby' => 'title',
             'order' => 'ASC',
             'fields' => 'ids',
@@ -188,7 +213,7 @@ class Schema
                 '@type' => 'ListItem',
                 'position' => $position,
                 'name' => \get_the_title($listing_id),
-                'url' => \get_permalink($listing_id),
+                'url' => self::partner_public_url($listing_id),
             ];
 
             $position++;
@@ -307,6 +332,202 @@ class Schema
             'latitude' => (float) $lat,
             'longitude' => (float) $lng,
         ];
+    }
+
+    /**
+     * Opening hours as OpeningHoursSpecification, built from the record's own
+     * `opening_hours` repeater so nothing needs re-entering.
+     *
+     * Days sharing a range are grouped into one specification, which is both
+     * the convention and much smaller than seven separate pieces. A day flagged
+     * closed is published as 00:00 to 00:00, which is how Google documents
+     * "closed all day"; leaving it out instead would say only that the hours
+     * are unknown.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private static function build_opening_hours(int $post_id): array
+    {
+        $rows = \get_field('opening_hours', $post_id);
+
+        if (empty($rows) || !is_array($rows)) {
+            return [];
+        }
+
+        // Monday first, whatever order the repeater was filled in, so a grouped
+        // specification reads as a week.
+        $days = [
+            'Monday' => 'https://schema.org/Monday',
+            'Tuesday' => 'https://schema.org/Tuesday',
+            'Wednesday' => 'https://schema.org/Wednesday',
+            'Thursday' => 'https://schema.org/Thursday',
+            'Friday' => 'https://schema.org/Friday',
+            'Saturday' => 'https://schema.org/Saturday',
+            'Sunday' => 'https://schema.org/Sunday',
+        ];
+
+        $by_day = [];
+
+        foreach ($rows as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+
+            $day = trim((string) ($row['day'] ?? ''));
+
+            if (isset($days[$day])) {
+                $by_day[$day] = $row;
+            }
+        }
+
+        $ranges = [];
+
+        foreach ($days as $day => $day_uri) {
+            if (!isset($by_day[$day])) {
+                continue;
+            }
+
+            $row = $by_day[$day];
+
+            if (!empty($row['closed'])) {
+                $opens = '00:00';
+                $closes = '00:00';
+            } else {
+                $opens = self::iso_time($row['open'] ?? '');
+                $closes = self::iso_time($row['close'] ?? '');
+
+                // open and close are free-text fields, so a value that is not a
+                // real time, or a range of no length, is dropped rather than
+                // published as structured data a search engine cannot read.
+                if ($opens === null || $closes === null || $opens === $closes) {
+                    continue;
+                }
+            }
+
+            $ranges[$opens . '|' . $closes][] = $day_uri;
+        }
+
+        $specification = [];
+
+        foreach ($ranges as $range => $day_uris) {
+            [$opens, $closes] = explode('|', $range);
+
+            $specification[] = [
+                '@type' => 'OpeningHoursSpecification',
+                'dayOfWeek' => $day_uris,
+                'opens' => $opens,
+                'closes' => $closes,
+            ];
+        }
+
+        return $specification;
+    }
+
+    /**
+     * Normalise a hand-typed time to the 24-hour HH:MM that schema.org expects.
+     *
+     * Accepts what an editor plausibly types (7, 7:30, 7.30, 0730, 5.30pm) and
+     * returns null for anything else, including 24:00, so an unreadable value
+     * costs one day rather than invalidating the whole specification.
+     */
+    private static function iso_time($value): ?string
+    {
+        $value = trim((string) $value);
+
+        if ($value === '' || !preg_match('~^(\d{1,2})(?:[:.h]?(\d{2}))?\s*([ap]m?)?$~i', $value, $matches)) {
+            return null;
+        }
+
+        $hours = (int) $matches[1];
+        $minutes = (int) ($matches[2] ?? 0);
+        $meridiem = strtolower(substr($matches[3] ?? '', 0, 1));
+
+        if ($meridiem === 'p' && $hours < 12) {
+            $hours += 12;
+        }
+
+        if ($meridiem === 'a' && $hours === 12) {
+            $hours = 0;
+        }
+
+        if ($hours > 23 || $minutes > 59) {
+            return null;
+        }
+
+        return sprintf('%02d:%02d', $hours, $minutes);
+    }
+
+    /**
+     * Finds the partner record an ordinary page is the public face of.
+     *
+     * An Experience Centre is described by an `experience_centre` record, which
+     * feeds the finder, but it is published as a hand-built page. The record
+     * 301s to the URL in its `directory_link`, so its own singular is never
+     * served and the business schema has to be attached to that page instead.
+     *
+     * Only Experience Centres carry `directory_link` and there are very few of
+     * them, so this reads the records and compares in PHP rather than querying
+     * postmeta by value, which no index covers.
+     */
+    private static function partner_record_for_page(int $page_id): int
+    {
+        if (!\post_type_exists('experience_centre')) {
+            return 0;
+        }
+
+        $permalink = \untrailingslashit((string) \get_permalink($page_id));
+
+        if ($permalink === '') {
+            return 0;
+        }
+
+        $records = \get_posts([
+            'post_type' => 'experience_centre',
+            'post_status' => 'publish',
+            'posts_per_page' => 100,
+            'orderby' => 'ID',
+            'order' => 'ASC',
+            'fields' => 'ids',
+            'no_found_rows' => true,
+        ]);
+
+        if (empty($records)) {
+            return 0;
+        }
+
+        // One query for every record's meta, rather than one per get_field().
+        \update_meta_cache('post', $records);
+
+        foreach ($records as $record_id) {
+            $link = \get_field('directory_link', $record_id);
+
+            if (!is_string($link) || trim($link) === '') {
+                continue;
+            }
+
+            if (\untrailingslashit(trim($link)) === $permalink) {
+                return (int) $record_id;
+            }
+        }
+
+        return 0;
+    }
+
+    /**
+     * The URL a partner is actually published at.
+     *
+     * An Experience Centre record redirects to its `directory_link`, so listing
+     * its permalink would put a redirect in the structured data.
+     */
+    private static function partner_public_url(int $post_id): string
+    {
+        $link = \get_field('directory_link', $post_id);
+
+        if (is_string($link) && trim($link) !== '') {
+            return trim($link);
+        }
+
+        return (string) \get_permalink($post_id);
     }
 
     /**
