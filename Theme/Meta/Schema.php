@@ -475,9 +475,9 @@ class Schema
             return 0;
         }
 
-        $permalink = \untrailingslashit((string) \get_permalink($page_id));
+        $path = self::url_path((string) \get_permalink($page_id));
 
-        if ($permalink === '') {
+        if ($path === '') {
             return 0;
         }
 
@@ -505,7 +505,7 @@ class Schema
                 continue;
             }
 
-            if (\untrailingslashit(trim($link)) === $permalink) {
+            if (self::url_path($link) === $path) {
                 return (int) $record_id;
             }
         }
@@ -517,17 +517,39 @@ class Schema
      * The URL a partner is actually published at.
      *
      * An Experience Centre record redirects to its `directory_link`, so listing
-     * its permalink would put a redirect in the structured data.
+     * its permalink would put a redirect in the structured data. The stored
+     * value is rebuilt onto this site's own host rather than published as
+     * saved, because a clone between environments has left staging URLs in this
+     * field on production before.
      */
     private static function partner_public_url(int $post_id): string
     {
         $link = \get_field('directory_link', $post_id);
+        $path = is_string($link) ? self::url_path($link) : '';
 
-        if (is_string($link) && trim($link) !== '') {
-            return trim($link);
+        if ($path === '') {
+            return (string) \get_permalink($post_id);
         }
 
-        return (string) \get_permalink($post_id);
+        $site = (array) \wp_parse_url(\home_url('/'));
+
+        if (empty($site['scheme']) || empty($site['host'])) {
+            return (string) \get_permalink($post_id);
+        }
+
+        return \trailingslashit($site['scheme'] . '://' . $site['host'] . $path);
+    }
+
+    /**
+     * A URL reduced to the part that identifies the page: its path, without a
+     * trailing slash. Used to compare and rebuild `directory_link`, whose host
+     * cannot be trusted to be this environment's.
+     */
+    private static function url_path(string $url): string
+    {
+        $path = \wp_parse_url(trim($url), PHP_URL_PATH);
+
+        return is_string($path) ? \untrailingslashit($path) : '';
     }
 
     /**
