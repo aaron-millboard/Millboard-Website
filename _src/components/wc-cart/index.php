@@ -320,7 +320,9 @@ do_action('woocommerce_before_cart');?>
 
                 <?php if (wc_coupons_enabled()) : ?>
                     <div class="cart__coupon">
-                        <label class="cart__coupon__label" for="coupon_code"><?php esc_html_e('Add voucher', 'granola'); ?></label>
+                        <div class="woocommerce__section-header cart__coupon__header">
+                            <label class="woocommerce__section-header-item" for="coupon_code"><?php esc_html_e('Add voucher', 'granola'); ?></label>
+                        </div>
 
                         <div class="cart__coupon__field">
                             <input type="text" name="coupon_code" class="input-text" id="coupon_code" value="" placeholder="<?php esc_attr_e('Coupon code', 'woocommerce'); ?>" />
