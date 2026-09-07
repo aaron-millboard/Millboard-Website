@@ -53,6 +53,11 @@ if (file_exists($autoloader = __DIR__ . '/vendor/autoload.php')) {
 \Theme\WordPress\Sidebars::init();
 
 // ----------------------------------------------------
+// Structured data (extends Yoast's graph).
+// ----------------------------------------------------
+\Theme\Meta\Schema::init();
+
+// ----------------------------------------------------
 // Custom Shortcodes.
 // ----------------------------------------------------
 \Theme\Shortcodes\Year::init();
