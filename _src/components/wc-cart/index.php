@@ -318,6 +318,21 @@ do_action('woocommerce_before_cart');?>
                     </div>
                 </div>
 
+                <?php if (wc_coupons_enabled()) : ?>
+                    <div class="cart__coupon">
+                        <div class="woocommerce__section-header cart__coupon__header">
+                            <label class="woocommerce__section-header-item" for="coupon_code"><?php esc_html_e('Add voucher', 'granola'); ?></label>
+                        </div>
+
+                        <div class="cart__coupon__field">
+                            <input type="text" name="coupon_code" class="input-text" id="coupon_code" value="" placeholder="<?php esc_attr_e('Coupon code', 'woocommerce'); ?>" />
+                            <button type="submit" name="apply_coupon" value="<?php esc_attr_e('Apply coupon', 'woocommerce'); ?>"><?php esc_html_e('Apply coupon', 'woocommerce'); ?></button>
+                        </div>
+
+                        <?php do_action('woocommerce_cart_coupon'); ?>
+                    </div>
+                <?php endif; ?>
+
                 <?php if ($show_quote_share) :
                     $quote_form_action = esc_url(admin_url('admin-post.php'));
                     $quote_snapshot = [
@@ -369,19 +384,6 @@ do_action('woocommerce_before_cart');?>
             </table>
 
             <?php do_action('woocommerce_after_cart_totals'); ?>
-
-        </div>
-
-        <div>
-            <?php /*
-            <?php if (wc_coupons_enabled()) { ?>
-                <div class="coupon">
-                    <label for="coupon_code" class="visually-hidden"><?php esc_html_e('Coupon:', 'woocommerce'); ?></label> <input type="text" name="coupon_code" class="input-text" id="coupon_code" value="" placeholder="<?php esc_attr_e('Coupon code', 'woocommerce'); ?>" /> <button type="submit" class="button<?php echo esc_attr(wc_wp_theme_get_element_class_name('button') ? ' ' . wc_wp_theme_get_element_class_name('button') : ''); ?>" name="apply_coupon" value="<?php esc_attr_e('Apply coupon', 'woocommerce'); ?>"><?php esc_html_e('Apply coupon', 'woocommerce'); ?></button>
-                    <?php do_action('woocommerce_cart_coupon'); ?>
-                </div>
-            <?php } ?>
-
-            */ ?>
 
         </div>
 
