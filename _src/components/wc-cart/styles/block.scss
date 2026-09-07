@@ -355,6 +355,14 @@
                     font-weight: 600;
                 }
 
+                &--value {
+                    // A long coupon code wraps the label, which leaves this cell wider
+                    // than the text inside it. Without this the amount and Woo's
+                    // [Remove] link sit adrift of the column edge instead of lining up
+                    // with the figures on every other row.
+                    text-align: right;
+                }
+
                 &.order-total {
                     border-top: 2px solid var(--color--brand-1);
                     padding-top: var(--space--s);
