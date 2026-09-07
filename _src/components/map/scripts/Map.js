@@ -493,7 +493,7 @@ let markerHtml = `
             width="${markerWidth}"
             height="${markerHeight}"
         />
-        <span class="screen-reader-text">${listingTitle}</span>
+        <span class="visually-hidden">${listingTitle}</span>
     </span>
 `;
 
