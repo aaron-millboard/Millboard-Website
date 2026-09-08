@@ -102,6 +102,15 @@
             }
         }
 
+        // The hidden refresh button and every modal panel rely on the hidden
+        // attribute, which main.js toggles. A class that sets a display value
+        // beats [hidden] on equal specificity and the element comes back, which
+        // is exactly what g-button did to the refresh button. Pin it so a styling
+        // change cannot resurrect anything meant to be hidden.
+        [hidden] {
+            display: none !important;
+        }
+
         // Sits under the floor-level input and the pads checkbox, so it needs
         // separating from them rather than butting straight up.
         &__ffl-submit {

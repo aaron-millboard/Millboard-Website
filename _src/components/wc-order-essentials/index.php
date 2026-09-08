@@ -131,7 +131,14 @@ if ($count === 0) {
                             <span class="cart__order-essentials__project-type-label"><?php esc_html_e('Commercial', 'granola'); ?></span>
                         </label>
                     </div>
-                    <button type="submit" class="g-button g-button--solid" name="millboard_refresh_essentials" value="1" hidden><?php esc_html_e('Update recommendations', 'granola'); ?></button>
+                    <?php
+                    // Deliberately NOT given the g-button classes: .g-button sets
+                    // display: flex, which beats the hidden attribute on equal
+                    // specificity, and this button then renders as a stray control
+                    // in the middle of the question. It is only ever clicked by the
+                    // radios and the subframe select, so it needs no styling.
+                    ?>
+                    <button type="submit" class="button" name="millboard_refresh_essentials" value="1" hidden><?php esc_html_e('Update recommendations', 'granola'); ?></button>
                 </div>
 
                 <?php
