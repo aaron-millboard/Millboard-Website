@@ -125,6 +125,26 @@ class OrderEssentials
         ],
     ];
 
+    /**
+     * Which supports each subframe option implies.
+     *
+     * The customer's answer is as good a source as the basket: picking "DuoSpan
+     * 51mm with DuoLift" promises DuoLift parts, and those come from an FFL band
+     * table, so the step has to ask for the finished floor level before it can
+     * offer any of them. Keying that on the basket alone meant every subframe
+     * option returned its joist and none of its supports (Ed Lumb, Sep 2026).
+     */
+    private const SUBFRAME_CHOICE_SUPPORTS = [
+        'pp50dl' => ['duolift' => true, 'posts' => false],
+        'pp125dl' => ['duolift' => true, 'posts' => false],
+        'pp125p' => ['duolift' => false, 'posts' => true],
+        'pp60' => ['duolift' => false, 'posts' => false],
+        'ds51dl' => ['duolift' => true, 'posts' => false],
+        'ds99dl' => ['duolift' => true, 'posts' => false],
+        'ds99p' => ['duolift' => false, 'posts' => true],
+        'none' => ['duolift' => false, 'posts' => false],
+    ];
+
     /** DuoLift component SKUs (5.7). */
     private const DUOLIFT_SKUS = [
         'cradles' => 'PMCP010',
@@ -273,8 +293,12 @@ class OrderEssentials
             'recommendation_source_label' => self::get_recommendation_source_label(),
             'disclaimer_url' => self::get_guides_url(),
             'show_added_modal' => self::should_show_added_modal(),
-            // Derived project area in m2, from the boards in the basket.
+            // Derived project area in m2, from the boards in the basket. Split by
+            // part of the job as well, because quantities are now sized off the
+            // relevant part and a single combined figure would not explain them.
             'project_area' => round(self::get_derived_project_area($source_lines), 2),
+            'project_area_decking' => round(self::get_derived_project_area($source_lines, 'decking'), 2),
+            'project_area_cladding' => round(self::get_derived_project_area($source_lines, 'cladding'), 2),
             'subframe_config' => $config,
             // The finished floor level cannot be inferred, so it is asked for. When
             // the basket contains DuoLift components or posts and no FFL has been
@@ -773,7 +797,15 @@ class OrderEssentials
         // basket line, whereas a per-m2 or per-project rule must contribute
         // exactly once no matter how many lines match it.
         $source_lines = self::get_source_cart_lines($target_ids);
-        $project_area = self::get_derived_project_area($source_lines);
+
+        // Three areas, resolved once: a per-m2 rule is sized off the part of the
+        // job that actually triggered it, not off everything in the basket.
+        $areas = [
+            'total' => self::get_derived_project_area($source_lines),
+            'decking' => self::get_derived_project_area($source_lines, 'decking'),
+            'cladding' => self::get_derived_project_area($source_lines, 'cladding'),
+        ];
+
         $waste_multiplier = self::get_waste_multiplier();
 
         foreach ($matrix as $rule) {
@@ -792,6 +824,7 @@ class OrderEssentials
 
             $matched = false;
             $matched_quantity = 0;
+            $matched_kinds = [];
 
             foreach ($source_lines as $line) {
                 if (!self::rule_matches_source($rule, $line['source_id'], $line['category_slugs'])) {
@@ -808,6 +841,7 @@ class OrderEssentials
 
                 if ($line_kind !== '') {
                     $target_kinds[$target_id][$line_kind] = true;
+                    $matched_kinds[$line_kind] = true;
                 }
             }
 
@@ -820,7 +854,7 @@ class OrderEssentials
                 // the boards in the basket via their boards_per_sqm field, which
                 // is how the internal calculator converts lengths to area.
                 case 'per_sqm':
-                    $required = $multiplier * $project_area;
+                    $required = $multiplier * self::area_for_kinds($areas, $matched_kinds);
                     break;
 
                 // A fixed quantity once per order, e.g. the DuoFix guide kit or a
@@ -856,8 +890,10 @@ class OrderEssentials
         $code_computed = [];
 
         foreach ([
-            self::get_ffl_requirements($source_lines, $project_area, $project_type),
-            self::get_subframe_requirements($project_area, $project_type),
+            // Both are deck structure, so both take the decking area. A subframe
+            // sized off a mixed basket's combined area buys bearers for the walls.
+            self::get_ffl_requirements($source_lines, $areas['decking'], $project_type),
+            self::get_subframe_requirements($areas['decking'], $project_type),
         ] as $lookup) {
             foreach ($lookup as $lookup_target_id => $lookup_quantity) {
                 $code_computed[$lookup_target_id] = ($code_computed[$lookup_target_id] ?? 0) + $lookup_quantity;
@@ -1645,9 +1681,16 @@ class OrderEssentials
             return ['config' => null, 'duolift' => false, 'posts' => false, 'needed' => false];
         }
 
-        $duolift = self::basket_has_category($source_lines, 'duolift');
-        $posts = self::basket_has_sku($source_lines, self::POST_SKU)
-            && \in_array($config, ['pp125', 'ds99'], true);
+        // Either the customer's chosen system or the basket can call for these.
+        // OR rather than override, so a basket holding DuoLift parts still gets an
+        // FFL prompt even when the chosen system does not use them.
+        $implied = self::SUBFRAME_CHOICE_SUPPORTS[self::get_subframe_choice()]
+            ?? ['duolift' => false, 'posts' => false];
+
+        $duolift = $implied['duolift'] || self::basket_has_category($source_lines, 'duolift');
+        $posts = $implied['posts']
+            || (self::basket_has_sku($source_lines, self::POST_SKU)
+                && \in_array($config, ['pp125', 'ds99'], true));
 
         return [
             'config' => $config,
@@ -1744,6 +1787,34 @@ class OrderEssentials
     }
 
     /**
+     * The area a per-m2 rule should be sized off: the part of the job that
+     * triggered it.
+     *
+     * A rule matched only by decking sources is sized off the decking, one matched
+     * only by cladding off the cladding, and one matched by both off everything.
+     * Falls back to the total when nothing said which, rather than inventing a
+     * narrower figure.
+     *
+     * @param array{total: float, decking: float, cladding: float} $areas
+     * @param array<string, bool> $kinds
+     */
+    private static function area_for_kinds(array $areas, array $kinds): float
+    {
+        $decking = !empty($kinds['decking']) || !empty($kinds['both']);
+        $cladding = !empty($kinds['cladding']) || !empty($kinds['both']);
+
+        if ($decking && !$cladding) {
+            return $areas['decking'];
+        }
+
+        if ($cladding && !$decking) {
+            return $areas['cladding'];
+        }
+
+        return $areas['total'];
+    }
+
+    /**
      * Derive the project area in m2 from the boards in the basket.
      *
      * Uses each product's `boards_per_sqm` field, which is the same figure the
@@ -1756,11 +1827,23 @@ class OrderEssentials
      *
      * @param array<int, array<string, mixed>> $source_lines
      */
-    private static function get_derived_project_area(array $source_lines): float
+    private static function get_derived_project_area(array $source_lines, string $kind = ''): float
     {
         $area = 0.0;
 
         foreach ($source_lines as $line) {
+            // Pass a kind to size one part of the job off its own boards only.
+            // Cladding goes on a wall, so its area is no part of a deck subframe:
+            // without this a mixed basket bought subframe for the walls too.
+            // 'both' boards count towards either, being genuinely used in both.
+            if ($kind !== '') {
+                $line_kind = self::product_kind((int) $line['source_id']);
+
+                if ($line_kind !== $kind && $line_kind !== 'both') {
+                    continue;
+                }
+            }
+
             $boards_per_sqm = 0.0;
 
             if (\function_exists('get_field')) {

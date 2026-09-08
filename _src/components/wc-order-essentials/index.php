@@ -78,7 +78,23 @@ if ($count === 0) {
             <?php
             // Show the area we worked from. Every square-metre quantity below derives
             // from it, so without it the customer has to take the numbers on trust.
-            if (!empty($essentials_context['project_area'])) : ?>
+            //
+            // Named per part of the job when the basket holds both: deck quantities
+            // are sized off the decking and wall quantities off the cladding, so one
+            // combined figure would explain neither.
+            $essentials_area_decking = (float) ($essentials_context['project_area_decking'] ?? 0);
+            $essentials_area_cladding = (float) ($essentials_context['project_area_cladding'] ?? 0);
+
+            if ($essentials_area_decking > 0 && $essentials_area_cladding > 0) : ?>
+                <p class="cart__order-essentials__area">
+                    <?php echo esc_html(sprintf(
+                        /* translators: 1: decking area in square metres, 2: cladding area in square metres. */
+                        __('Worked out from %1$s m² of decking and %2$s m² of cladding in your basket. Deck and wall quantities are worked out separately.', 'granola'),
+                        (string) $essentials_context['project_area_decking'],
+                        (string) $essentials_context['project_area_cladding']
+                    )); ?>
+                </p>
+            <?php elseif (!empty($essentials_context['project_area'])) : ?>
                 <p class="cart__order-essentials__area">
                     <?php echo esc_html(sprintf(
                         /* translators: %s: project area in square metres. */
@@ -88,6 +104,16 @@ if ($count === 0) {
                 </p>
             <?php endif; ?>
         </header>
+
+        <?php
+        // Confirming an add used to open the modal, which reads as "do you want to
+        // continue?" and takes the customer out of the step they were working in
+        // (Elon, Sep 2026). Say it inline instead and leave them where they were.
+        if ($essentials_show_added_modal) : ?>
+            <p class="cart__order-essentials__notice cart__order-essentials__notice--success" role="status">
+                <?php esc_html_e('Added to your basket. Check the quantities suit your project, then continue when you are ready.', 'granola'); ?>
+            </p>
+        <?php endif; ?>
 
         <?php if ($has_essentials) : ?>
             <fieldset class="cart__order-essentials__project-type">
@@ -228,12 +254,12 @@ if ($count === 0) {
                             <p class="cart__order-essentials__ffl-notice cart__order-essentials__ffl-notice--warning" id="millboard-order-essentials-ffl-help" role="alert">
                                 <?php esc_html_e('That finished floor level is outside the range we can calculate supports for. Please contact us and we will size the subframe for you.', 'granola'); ?>
                             </p>
-                        <?php elseif (!empty($essentials_context['project_area'])) : ?>
+                        <?php elseif (!empty($essentials_context['project_area_decking'])) : ?>
                             <p class="cart__order-essentials__ffl-notice" id="millboard-order-essentials-ffl-help">
                                 <?php echo esc_html(sprintf(
-                                    /* translators: %s: project area in square metres. */
-                                    __('Based on a project area of %s m² from the boards in your basket.', 'granola'),
-                                    (string) $essentials_context['project_area']
+                                    /* translators: %s: decking area in square metres. */
+                                    __('Based on %s m² of decking in your basket. Supports are sized off the deck only, so any cladding is excluded.', 'granola'),
+                                    (string) $essentials_context['project_area_decking']
                                 )); ?>
                             </p>
                         <?php endif; ?>
@@ -487,13 +513,22 @@ if ($count === 0) {
                 // something is missing, "Add selected to basket" already does exactly
                 // what it did, so the two were competing for the same click. ?>
                 <button type="submit" class="g-button g-button--solid cart__order-essentials__action-primary" name="millboard_add_selected_essentials" value="1" <?php disabled(!$has_outstanding_essentials); ?>><?php esc_html_e('Add selected to basket', 'granola'); ?></button>
-                <button type="submit" class="g-button g-button--secondary cart__order-essentials__action-secondary" name="millboard_continue_to_basket" value="1" data-essentials-open-modal="continue"><?php esc_html_e('Continue without essentials', 'granola'); ?></button>
+                <?php
+                // The acknowledgement exists for customers who skip the essentials, so
+                // ask for it only when something is actually outstanding. Once
+                // everything has been added there is nothing to acknowledge and the
+                // step needs a plain way forward, which it previously lacked.
+                if ($has_outstanding_essentials) : ?>
+                    <button type="submit" class="g-button g-button--secondary cart__order-essentials__action-secondary" name="millboard_continue_to_basket" value="1" data-essentials-open-modal="continue"><?php esc_html_e('Continue without essentials', 'granola'); ?></button>
+                <?php else : ?>
+                    <button type="submit" class="g-button g-button--solid cart__order-essentials__action-continue" name="millboard_continue_to_basket" value="1"><?php esc_html_e('Continue to basket', 'granola'); ?></button>
+                <?php endif; ?>
             </div>
 
             <div
-                class="cart__order-essentials-modal<?php echo $essentials_show_added_modal ? ' is-active' : ''; ?>"
+                class="cart__order-essentials-modal"
                 data-essentials-modal
-                aria-hidden="<?php echo $essentials_show_added_modal ? 'false' : 'true'; ?>"
+                aria-hidden="true"
             >
                 <div class="cart__order-essentials-modal__overlay" data-essentials-close-modal></div>
                 <div
@@ -507,19 +542,7 @@ if ($count === 0) {
                         <span aria-hidden="true">&times;</span>
                     </button>
 
-                    <div data-essentials-modal-panel="added" <?php echo $essentials_show_added_modal ? '' : 'hidden'; ?>>
-                        <p class="cart__order-essentials-modal__notice">
-                            <?php esc_html_e('Essentials have been added to your basket.', 'granola'); ?>
-                        </p>
-                        <h2 class="cart__order-essentials-modal__title" id="order-essentials-modal-title">
-                            <?php esc_html_e('Essentials added to basket', 'granola'); ?>
-                        </h2>
-                        <p class="cart__order-essentials-modal__intro">
-                            <?php esc_html_e('Please check the quantities suit your project before you check out.', 'granola'); ?>
-                        </p>
-                    </div>
-
-                    <div data-essentials-modal-panel="continue" <?php echo $essentials_show_added_modal ? 'hidden' : ''; ?>>
+                    <div data-essentials-modal-panel="continue">
                         <h2 class="cart__order-essentials-modal__title" id="order-essentials-modal-title-continue">
                             <?php esc_html_e('Continue without essentials?', 'granola'); ?>
                         </h2>

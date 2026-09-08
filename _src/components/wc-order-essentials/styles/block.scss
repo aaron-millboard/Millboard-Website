@@ -516,6 +516,13 @@
             &--warning {
                 border-left: 3px solid var(--color--brand-1);
             }
+
+            // Confirmation that something was added, shown in place of the dialog
+            // that used to interrupt the step.
+            &--success {
+                border-left: 3px solid var(--color--foreground);
+                font-weight: 600;
+            }
         }
 
         // Subframe question, given the same bordered-box treatment as the finished
@@ -718,13 +725,15 @@
         }
 
         @include mq($until: small) {
+            // The tick column is hidden at this width, so the selection it
+            // describes can be neither seen nor changed. Ed Lumb, Sep 2026: hide
+            // the button that acts on that hidden selection, and the summary that
+            // describes it, so mobile is a per-row flow. The per-row Add buttons
+            // read only their own product id, never the tick map, so they carry
+            // the flow on their own.
+            &__action-primary,
             &__summary {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-
-            &__summary-total {
-                margin-left: 0;
+                display: none;
             }
 
             &__project-type-controls {

@@ -174,10 +174,6 @@
         });
 
         updateSummary();
-
-        if (modal && modal.classList.contains('is-active')) {
-            openModal('added');
-        }
     };
 
     if (document.readyState === 'loading') {
