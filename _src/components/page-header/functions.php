@@ -187,6 +187,10 @@ function filter_args(array $args): ?array
     // -------------------------------------------------------------------------
     // Prepare args for sub-components
     // -------------------------------------------------------------------------
+    // Resolved here rather than with the classes below, because the image needs
+    // to know which layout it is being rendered into.
+    $args['layout'] = get_layout($args);
+
     if (!empty($args['image'])) {
         if (!is_array($args['image'])) {
             $args['image'] = [
@@ -198,6 +202,18 @@ function filter_args(array $args): ?array
         $args['image']['loading'] = 'eager';
         $args['image']['attributes']['fetchpriority'] = 'high';
         $args['image']['attributes']['data-spai-eager'] = true;
+
+        // The image component defaults to `medium_large`, which is 768px wide.
+        // That was right for the classic layout, where the image sits in a
+        // 680px column, but the editorial and split layouts stretch it across
+        // the whole header. Left alone the browser is told the slot is 768px,
+        // picks the 768w candidate and upscales it to the viewport width.
+        if ($args['layout'] !== 'classic') {
+            $args['image']['size'] = 'full';
+            $args['image']['sizes'] = $args['layout'] === 'split'
+                ? '(min-width: 62em) 45vw, (min-width: 48em) 40vw, 100vw'
+                : '100vw';
+        }
     }
 
     $args['background_video'] = get_background_video($args['background_video']);
@@ -256,10 +272,8 @@ function filter_args(array $args): ?array
 
     // -------------------------------------------------------------------------
     // Layout. Only `page` type headers offer a choice; `post` and `product`
-    // keep the original composition.
+    // keep the original composition. Resolved further up, with the image.
     // -------------------------------------------------------------------------
-    $args['layout'] = get_layout($args);
-
     $args['classes'][] = 'page-header--layout--' . $args['layout'];
 
     // Video is only rendered by the layouts that have a media layer, and it
