@@ -1,4 +1,69 @@
+<?php
+/**
+ * Page header.
+ *
+ * The `layout` arg selects the composition for `page` type headers:
+ *  - `editorial` — full-bleed photo behind the whole header, text in the calm
+ *    side of a directional scrim. Falls back to a flat colour with no image.
+ *  - `split`     — text panel beside an image column that bleeds off the right.
+ *  - `classic`   — the original agency layout, where the image is deliberately
+ *    oversized so the heading runs across it.
+ *
+ * `post` and `product` type headers always use `classic` and are unaffected.
+ */
+
+$layout = $args['layout'] ?? 'classic';
+$has_media_layer = !empty($args['image']) && in_array($layout, ['editorial', 'split'], true);
+$video = $has_media_layer ? ($args['background_video'] ?? null) : null;
+?>
 <header <?= \Granola\Helpers::build_attributes($args['attributes']); ?>>
+    <?php if ($has_media_layer) { ?>
+        <div class="page-header__media">
+            <div class="page-header__media-image img-fit">
+                <?= \Granola\Component::get('image', $args['image']); ?>
+            </div>
+
+            <?php if (!empty($video)) { ?>
+                <?php // Decorative. The image below stays as the poster frame and the
+                      // fallback for reduced motion, no JS, and unsupported formats. ?>
+                <video
+                    class="page-header__media-video"
+                    data-page-header-video
+                    muted
+                    loop
+                    playsinline
+                    preload="none"
+                    tabindex="-1"
+                    aria-hidden="true"
+                >
+                    <source src="<?= esc_url($video['url']); ?>" type="<?= esc_attr($video['mime_type']); ?>">
+                </video>
+            <?php } ?>
+
+            <?php if ($layout === 'editorial') { ?>
+                <div class="page-header__scrim" aria-hidden="true"></div>
+            <?php } ?>
+        </div>
+
+        <?php if (!empty($video)) { ?>
+            <?php // WCAG 2.2 SC 2.2.2: moving content that starts automatically and
+                  // runs for more than five seconds needs a way to pause it. Added by
+                  // JS only, so it never appears when the video cannot play. ?>
+            <button
+                type="button"
+                class="page-header__video-toggle"
+                data-page-header-video-toggle
+                data-label-pause="<?= esc_attr__('Pause background video', 'granola'); ?>"
+                data-label-play="<?= esc_attr__('Play background video', 'granola'); ?>"
+                hidden
+            >
+                <span class="page-header__video-toggle-icon page-header__video-toggle-icon--pause" data-page-header-video-icon="pause" aria-hidden="true"></span>
+                <span class="page-header__video-toggle-icon page-header__video-toggle-icon--play" data-page-header-video-icon="play" aria-hidden="true" hidden></span>
+                <span class="page-header__video-toggle-label"><?= esc_html__('Pause background video', 'granola'); ?></span>
+            </button>
+        <?php } ?>
+    <?php } ?>
+
     <div class="page-header__inner">
         <?php if (!empty($args['show_breadcrumbs'])) { ?>
             <!-- Breadcrumbs -->
@@ -8,18 +73,20 @@
         <?php } ?>
 
         <div class="page-header__wrapper">
-            <div class="<?= \Granola\Helpers::build_classes([
-                'page-header__image-wrapper',
-                empty($args['image']) ? 'page-header__image-wrapper--no-image' : '',
-            ]); ?>">
-                <?php if (!empty($args['image'])) { ?>
-                    <div class="page-header__image">
-                        <div class="page-header__image-inner img-fit">
-                            <?= \Granola\Component::get('image', $args['image']); ?>
+            <?php if ($layout === 'classic') { ?>
+                <div class="<?= \Granola\Helpers::build_classes([
+                    'page-header__image-wrapper',
+                    empty($args['image']) ? 'page-header__image-wrapper--no-image' : '',
+                ]); ?>">
+                    <?php if (!empty($args['image'])) { ?>
+                        <div class="page-header__image">
+                            <div class="page-header__image-inner img-fit">
+                                <?= \Granola\Component::get('image', $args['image']); ?>
+                            </div>
                         </div>
-                    </div>
-                <?php } ?>
-            </div>
+                    <?php } ?>
+                </div>
+            <?php } ?>
 
             <div class="page-header__content page-header__content--first">
                 <div class="page-header__header">
