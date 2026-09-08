@@ -131,7 +131,7 @@ if ($count === 0) {
                             <span class="cart__order-essentials__project-type-label"><?php esc_html_e('Commercial', 'granola'); ?></span>
                         </label>
                     </div>
-                    <button type="submit" class="button" name="millboard_refresh_essentials" value="1" hidden><?php esc_html_e('Update recommendations', 'granola'); ?></button>
+                    <button type="submit" class="g-button g-button--solid" name="millboard_refresh_essentials" value="1" hidden><?php esc_html_e('Update recommendations', 'granola'); ?></button>
                 </div>
 
                 <?php
@@ -242,7 +242,7 @@ if ($count === 0) {
                             </label>
                         <?php endif; ?>
 
-                        <button type="submit" class="button" name="millboard_refresh_essentials" value="1">
+                        <button type="submit" class="g-button g-button--solid cart__order-essentials__ffl-submit" name="millboard_refresh_essentials" value="1">
                             <?php esc_html_e('Update recommendations', 'granola'); ?>
                         </button>
 

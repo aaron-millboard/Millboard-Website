@@ -102,6 +102,13 @@
             }
         }
 
+        // Sits under the floor-level input and the pads checkbox, so it needs
+        // separating from them rather than butting straight up.
+        &__ffl-submit {
+            margin-top: var(--space--2xs);
+            align-self: flex-start;
+        }
+
         &__ffl-notice {
             @include typestyle-small;
 
