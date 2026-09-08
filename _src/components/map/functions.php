@@ -450,6 +450,10 @@ function get_item_data($args): array|null
                 'data-map-item-lat' => $lat,
                 'data-map-item-lng' => $lng,
                 'data-map-item-post-type' => $post_type,
+                // Names the listing for the one-off pins in Map.js (LISTING_PINS). The
+                // slug and not the post ID, because IDs are per-subsite (Norman Piette is
+                // 6718 on en-gb and 9629 on en-ie) while the slug is the same on both.
+                'data-map-item-slug' => $wp_post->post_name,
                 'data-map-item-preferred' => $preferred ? '1' : null,
                 'data-map-item-priority' => $prioritised ? '1' : null,
                 'data-map-item-territory' => $territory ? implode(',', $territory) : null,

@@ -118,6 +118,37 @@ class Map {
         // because which one is nearest depends on where the visitor searched.
         this.nearestPrioritised = null;
 
+        // One-off editorial pins: a named listing forced to the top for searches inside
+        // one small area.
+        //
+        // Deliberately a hardcoded table here and NOT a field in the admin. A tickable
+        // "show us first" control is something every partner in the directory would ask
+        // for, and a directory where a hundred listings claim first place is just an
+        // unordered one. Adding an entry costs a code change, a review and a deploy, and
+        // that friction is the feature. Keep this list very short; if it ever grows past
+        // a handful, the answer is a rule the sort can express, not more pins.
+        //
+        // Matched on WHERE the visitor searched rather than what they typed, so
+        // "Guernsey", "GY1 2RL", "St Peter Port" and a Guernsey visitor tapping
+        // "Search near me" all land on the same rule. Keyed on the post slug, which is
+        // identical across locales where the post ID is not.
+        this.LISTING_PINS = [
+            {
+                // Norman Piette above Sydenhams (Guernsey Building Supplies), which
+                // otherwise leads on travel time: 13 minutes by road against 17. Aaron's
+                // call, 8 Sep 2026. Centred on the island; 7 miles covers Guernsey and
+                // Herm, while Sark is 9 miles out and Jersey 28, so neither is caught.
+                slug: 'norman-piette-ltd',
+                lat: 49.4657,
+                lng: -2.5853,
+                radiusInMiles: 7,
+            },
+        ];
+
+        // The pinned listing's slug for the current search, or null. Set per sort, like
+        // nearestPrioritised, because it depends on where the visitor searched.
+        this.pinnedListingSlug = null;
+
         if (typeof L === 'object') {
             this.init();
         }
@@ -1604,6 +1635,9 @@ let markerHtml = `
     }
 
     sortlistingEls(filteredLayers) {
+        // Resolved before the priority band below, which reads it.
+        this.pinnedListingSlug = this.resolvePinnedListingSlug();
+
         // Which single prioritised result gets promoted. Recomputed per sort because it
         // depends on where the visitor searched.
         this.nearestPrioritised = this.findNearestPrioritised(filteredLayers);
@@ -1645,6 +1679,40 @@ let markerHtml = `
     }
 
     /**
+     * The slug pinned to the top of the results for the current search, or null.
+     *
+     * Gated on hasUserSearchLocation so only a real search, geolocate or URL location
+     * can trigger a pin: the untouched locale view is never reordered.
+     */
+    resolvePinnedListingSlug() {
+        if (!this.hasUserSearchLocation || !this.LMAP_DISTANCE_CENTER) {
+            return null;
+        }
+
+        const pin = this.LISTING_PINS.find(({lat, lng, radiusInMiles}) => {
+            const metres = this.LMAP_DISTANCE_CENTER.distanceTo(L.latLng(lat, lng));
+
+            return (this.METERS_TO_MILES_RATIO * metres) <= radiusInMiles;
+        });
+
+        return pin ? pin.slug : null;
+    }
+
+    /**
+     * Is this the listing pinned to the top for the current search?
+     */
+    isPinnedMarker(marker) {
+        if (!this.pinnedListingSlug) {
+            return false;
+        }
+
+        const listingEl = marker.options.themeData.listingElement;
+
+        return Boolean(listingEl)
+            && listingEl.getAttribute('data-map-item-slug') === this.pinnedListingSlug;
+    }
+
+    /**
      * Is this marker a preferred stockist or an Advanced installer?
      *
      * data-map-item-priority, not -preferred: the priority band covers a distributor
@@ -1671,7 +1739,10 @@ let markerHtml = `
         let bestDistance = Infinity;
 
         markers.forEach((marker) => {
-            if (!this.isPrioritisedMarker(marker)) {
+            // A pinned listing is already top of the list, so it must not also spend the
+            // one priority slot. Pin a preferred stockist without this and the band goes
+            // unused for that search, quietly demoting the next preferred partner.
+            if (this.isPinnedMarker(marker) || !this.isPrioritisedMarker(marker)) {
                 return;
             }
 
@@ -1687,11 +1758,19 @@ let markerHtml = `
     }
 
     /**
-     * Grade band for a marker's listing: 0 = Experience Centre within range,
-     * 1 = the single nearest preferred stockist or Advanced installer,
-     * 2 = everything else, including any other prioritised results.
+     * Grade band for a marker's listing: -1 = a one-off pin for this search,
+     * 0 = Experience Centre within range, 1 = the single nearest preferred stockist or
+     * Advanced installer, 2 = everything else, including any other prioritised results.
      */
     getListingRank(marker) {
+        // A pin outranks every band, Experience Centres included. Each one covers a
+        // single small area picked deliberately, so there is nothing it can displace by
+        // accident. Where a pin exists it is a deliberate decision about that area,
+        // which is the whole reason for setting one.
+        if (this.isPinnedMarker(marker)) {
+            return -1;
+        }
+
         const isExperienceCentre = marker.options.themeData.postType === 'experience_centre';
 
         if (isExperienceCentre && this.getSortDistance(marker) <= this.EC_SURFACE_RADIUS_MILES) {
