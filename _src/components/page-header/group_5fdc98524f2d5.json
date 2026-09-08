@@ -108,6 +108,42 @@
             "type": "tab"
         },
         {
+            "key": "block_page_header_layout",
+            "label": "Layout",
+            "name": "layout",
+            "type": "select",
+            "instructions": "Applies to pages only. Article, case study and product headers always use the classic layout.",
+            "choices": {
+                "editorial": "Full-bleed editorial - image behind the whole header",
+                "split": "Split plate - text panel, image to the right",
+                "classic": "Classic - heading crosses the image"
+            },
+            "default_value": "editorial",
+            "return_format": "value",
+            "allow_null": 0,
+            "multiple": 0,
+            "ui": 0
+        },
+        {
+            "key": "block_page_header_background_video",
+            "label": "Background video",
+            "name": "background_video",
+            "type": "file",
+            "instructions": "Optional, and only used by the editorial and split layouts. Upload a short, silent MP4 (H.264). It plays muted on a loop with a pause button, and the header image is used as its poster frame and its fallback, so an image must be set as well. Keep the file under about 5MB so it does not slow the page down.",
+            "return_format": "array",
+            "mime_types": "mp4,webm,m4v",
+            "library": "all",
+            "conditional_logic": [
+                [
+                    {
+                        "field": "block_page_header_layout",
+                        "operator": "!=",
+                        "value": "classic"
+                    }
+                ]
+            ]
+        },
+        {
             "key": "block_page_header_bg_gradient",
             "label": "Add gradient to background?",
             "name": "bg_gradient",

@@ -8,6 +8,47 @@
     --button--color: var(--color--foreground);
     --page-header--image-aspect-ratio: 4 / 3;
 
+    // ---------------------------------------------------------------
+    // Editorial / split layouts
+    // ---------------------------------------------------------------
+    // Accent used for the preheading rule and text. MB Olive on light
+    // surfaces; MB Apple on dark ones, where Olive does not carry enough
+    // contrast. Apple is a brand secondary with no palette token yet, so it
+    // is kept local to this component.
+    --page-header--accent-color: var(--color--brand-4);
+    --page-header--accent-color--on-dark: #a0cd4f;
+    --page-header--accent-rule-width: #{px-to-rem(28)};
+
+    // Hairline that separates the heading row on the no-image split layout.
+    // Derived from the text colour so it works on light and dark surfaces.
+    --page-header--rule-color: color-mix(in srgb, currentColor 18%, transparent);
+
+    // Vertical rhythm between preheading, heading and description.
+    --page-header--stack-gap: #{rfs(14, 22)};
+
+    // Height of the header plate. Overridden per layout and breakpoint.
+    --page-header--min-height: 0;
+
+    // Where the image is cropped to. Editorial biases right so the subject
+    // clears the text sitting in the dark side of the scrim.
+    --page-header--image-position: center;
+
+    // Width of the image column on the split layout, and the gap between it
+    // and the text panel.
+    --page-header--split-media-width: #{px-to-rem(300)};
+    --page-header--split-gap: #{rfs(36, 72)};
+
+    // Directional wash that keeps the text legible over photography.
+    // Vertical on small screens where the text sits under the subject,
+    // horizontal on desktop where it sits beside it.
+    --page-header--scrim: linear-gradient(
+        178deg,
+        rgba(30, 27, 25, 0.42) 0%,
+        rgba(30, 27, 25, 0.14) 26%,
+        rgba(30, 27, 25, 0.66) 66%,
+        rgba(30, 27, 25, 0.9) 100%
+    );
+
     $this: &;
     position: relative;
 
@@ -22,6 +63,7 @@
         margin-left: auto;
         margin-right: auto;
         position: relative;
+        z-index: 1;
         display: flex;
         flex-direction: column;
         gap: var(--space--m);
@@ -50,7 +92,6 @@
         height: 100%;
         flex-direction: column;
         gap: var(--space--xs);
-        // padding-bottom: var(--space--m);
         z-index: 2;
 
         &--first {
@@ -69,7 +110,6 @@
 
         @include mq(large) {
             display: flex;
-            // padding-bottom: var(--space--xl);
         }
     }
 
@@ -119,6 +159,148 @@
         }
     }
 
+    // ---------------------------------------------------------------
+    // Full-bleed media layer, used by the editorial and split layouts.
+    // Sits behind __inner rather than inside the content grid, so the
+    // heading can never land on top of it.
+    // ---------------------------------------------------------------
+    &__media {
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        overflow: hidden;
+        background-color: var(--color--black);
+        pointer-events: none;
+    }
+
+    &__media-image {
+        width: 100%;
+        height: 100%;
+
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: var(--page-header--image-position);
+        }
+    }
+
+    &__media-video {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: var(--page-header--image-position);
+
+        // Revealed once playback has actually begun, so the poster image is
+        // what shows if autoplay is blocked or motion is reduced. The reveal
+        // is an inline style set by JS rather than a class, because Perfmatters
+        // Remove Unused CSS prunes rules whose classes are not in the served
+        // HTML. See the hero-header for what that costs when it goes wrong.
+        opacity: 0;
+        transition: transition(opacity);
+    }
+
+    &__scrim {
+        position: absolute;
+        inset: 0;
+        background: var(--page-header--scrim);
+    }
+
+    // ---------------------------------------------------------------
+    // Pause control for the background video (WCAG 2.2 SC 2.2.2).
+    // Sits above __inner so it stays clickable, and is only unhidden by
+    // JS once the video is genuinely playing.
+    // ---------------------------------------------------------------
+    &__video-toggle {
+        position: absolute;
+        z-index: 2;
+        right: var(--space--container-padding);
+        bottom: var(--space--container-padding);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: px-to-rem(40);
+        height: px-to-rem(40);
+        padding: 0;
+        border: 1px solid color-mix(in srgb, var(--color--white) 55%, transparent);
+        border-radius: 0;
+        background-color: color-mix(in srgb, var(--color--black) 45%, transparent);
+        color: var(--color--white);
+        cursor: pointer;
+        transition: transition(background-color, border-color);
+
+        // The theme has no global [hidden] rule, and an author `display`
+        // outranks the user agent one, so honour it here. Without this the
+        // control shows before JS has confirmed the video can play.
+        &[hidden] {
+            display: none;
+        }
+
+        &:hover,
+        &:focus-visible {
+            background-color: color-mix(in srgb, var(--color--black) 70%, transparent);
+            border-color: var(--color--white);
+        }
+
+        &:focus-visible {
+            outline: 2px solid var(--color--white);
+            outline-offset: 2px;
+        }
+    }
+
+    &__video-toggle-label {
+        @include visually-hidden;
+    }
+
+    // Both icons are in the served markup and swapped with the `hidden`
+    // attribute, so neither rule can be pruned as unused.
+    &__video-toggle-icon {
+        position: relative;
+        display: block;
+        width: px-to-rem(10);
+        height: px-to-rem(12);
+
+        &[hidden] {
+            display: none;
+        }
+
+        // Playing: two bars.
+        &--pause {
+            &::before,
+            &::after {
+                content: '';
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                width: px-to-rem(3);
+                background-color: currentColor;
+            }
+
+            &::before {
+                left: 0;
+            }
+
+            &::after {
+                right: 0;
+            }
+        }
+
+        // Paused: a play triangle.
+        &--play::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            margin: auto;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: px-to-rem(6) 0 px-to-rem(6) px-to-rem(10);
+            border-color: transparent transparent transparent currentColor;
+        }
+    }
+
     &__cta {
         width: max-content;
     }
@@ -163,6 +345,18 @@
 
     /* PAGE */
     &--type--page {
+        #{$this}__description {
+            @include typestyle-small;
+        }
+    }
+
+    /* ---------------------------------------------------------------
+       PAGE — CLASSIC
+       The original agency composition. The image is deliberately wider
+       than its grid column, so it runs under the heading and the
+       description. Kept as an option; it is no longer the default.
+       --------------------------------------------------------------- */
+    &--layout--classic {
         --page-header--image-aspect-ratio: 1 / 1;
 
         #{$this}__inner {
@@ -197,6 +391,7 @@
 
         #{$this}__image-wrapper {
             order: 1;
+
             @include mq(large) {
                 height: px-to-rem(680);
             }
@@ -225,6 +420,7 @@
         #{$this}__content {
             &--first {
                 grid-column: span 2;
+
                 @include mq(large) {
                     grid-column: span 1;
                 }
@@ -252,9 +448,267 @@
                 padding-bottom: var(--space--xl);
             }
         }
+    }
 
-        #{$this}__description {
-            @include typestyle-small;
+    /* ---------------------------------------------------------------
+       PAGE — EDITORIAL and SPLIT, shared rules
+       --------------------------------------------------------------- */
+    &--layout--editorial,
+    &--layout--split {
+        --page-header--padding-bottom: var(--space--xl);
+
+        #{$this}__inner {
+            min-height: var(--page-header--min-height);
+            gap: var(--space--m);
+        }
+
+        // Pin the content to the bottom of the plate, with the breadcrumbs
+        // left at the top. Works whether or not breadcrumbs are shown.
+        #{$this}__wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: var(--page-header--stack-gap);
+            margin-top: auto;
+            row-gap: var(--page-header--stack-gap);
+        }
+
+        #{$this}__content {
+            height: auto;
+            gap: var(--page-header--stack-gap);
+
+            &--first,
+            &--last {
+                grid-column: auto;
+                order: 0;
+                padding-left: 0;
+                padding-bottom: 0;
+            }
+        }
+
+        #{$this}__header {
+            gap: var(--page-header--stack-gap);
+        }
+
+        #{$this}__heading {
+            line-height: 1.1;
+        }
+
+        // Preheading becomes the eyebrow: accent-coloured, with a short rule.
+        #{$this}__preheading {
+            display: flex;
+            align-items: center;
+            gap: var(--space--3xs);
+            color: var(--page-header--accent-color);
+
+            &::before {
+                content: '';
+                flex: 0 0 auto;
+                width: var(--page-header--accent-rule-width);
+                height: 1px;
+                background-color: currentColor;
+            }
+        }
+
+        // Olive has too little contrast on the dark brand surfaces.
+        &.has-brand-3-background-color,
+        &.has-brand-5-background-color,
+        &.has-brand-6-background-color,
+        &.has-charcoal-background-color,
+        &.has-wenge-background-color,
+        &.has-sustainabilitygreen-background-color,
+        &.has-black-background-color {
+            --page-header--accent-color: var(--page-header--accent-color--on-dark);
+        }
+    }
+
+    /* ---------------------------------------------------------------
+       PAGE — FULL-BLEED EDITORIAL
+       Photo behind the whole header, text in the calm side of a
+       directional scrim. Falls back to a flat colour with no image.
+       --------------------------------------------------------------- */
+    &--layout--editorial {
+        --page-header--image-position: 70% 50%;
+
+        &#{$this}--has-media {
+            --page-header--min-height: #{px-to-rem(520)};
+
+            @include mq(medium) {
+                --page-header--min-height: #{px-to-rem(440)};
+                --page-header--scrim: linear-gradient(
+                    178deg,
+                    rgba(30, 27, 25, 0.34) 0%,
+                    rgba(30, 27, 25, 0.12) 34%,
+                    rgba(30, 27, 25, 0.62) 74%,
+                    rgba(30, 27, 25, 0.86) 100%
+                );
+            }
+
+            @include mq(large) {
+                --page-header--min-height: #{px-to-rem(520)};
+                --page-header--scrim: linear-gradient(
+                    96deg,
+                    rgba(30, 27, 25, 0.82) 0%,
+                    rgba(30, 27, 25, 0.68) 32%,
+                    rgba(30, 27, 25, 0.18) 68%,
+                    rgba(30, 27, 25, 0.06) 100%
+                );
+            }
+        }
+
+        &#{$this}--no-media {
+            --page-header--min-height: #{px-to-rem(340)};
+
+            @include mq(medium) {
+                --page-header--min-height: #{px-to-rem(280)};
+            }
+
+            @include mq(large) {
+                --page-header--min-height: #{px-to-rem(340)};
+
+                // Heading left, supporting copy right, both sitting on the
+                // baseline. Nothing overlaps because they are grid siblings.
+                #{$this}__wrapper {
+                    flex-direction: row;
+                    align-items: flex-end;
+                    justify-content: space-between;
+                    gap: var(--space--xl);
+                }
+
+                #{$this}__content--first {
+                    max-width: px-to-rem(760);
+                }
+
+                #{$this}__content--last {
+                    flex: 0 0 auto;
+                    width: px-to-rem(330);
+                }
+            }
+        }
+
+        @include mq(large) {
+            &#{$this}--has-media {
+                #{$this}__wrapper {
+                    max-width: px-to-rem(640);
+                }
+
+                #{$this}__description {
+                    max-width: px-to-rem(470);
+                }
+            }
+        }
+    }
+
+    // Text always sits on photography here, so the surface is dark whatever
+    // background colour the block is set to. Three classes so this wins over
+    // the .has-{color}-background-color context.
+    &#{$this}--layout--editorial#{$this}--has-media {
+        --color--foreground: var(--color--white);
+        --page-header--accent-color: var(--page-header--accent-color--on-dark);
+        --button--border-color: var(--color--white);
+        --button--color: var(--color--white);
+
+        background-color: var(--color--black);
+        color: var(--color--foreground);
+
+        .breadcrumbs {
+            color: color-mix(in srgb, var(--color--white) 82%, transparent);
+
+            a {
+                color: inherit;
+            }
+
+            .breadcrumb_last {
+                color: var(--color--white);
+            }
+        }
+
+        .breadcrumbs__yoast-separator {
+            color: inherit;
+        }
+    }
+
+    /* ---------------------------------------------------------------
+       PAGE — SPLIT PLATE
+       Text panel beside an image column that bleeds off the right.
+       Stacks to text-then-image on small screens.
+       --------------------------------------------------------------- */
+    &--layout--split {
+        &#{$this}--has-media {
+            display: flex;
+            flex-direction: column;
+
+            #{$this}__inner {
+                order: 1;
+            }
+
+            // Small screens: the image follows the text as a normal band.
+            #{$this}__media {
+                position: relative;
+                inset: auto;
+                order: 2;
+                height: px-to-rem(260);
+            }
+
+            @include mq(medium) {
+                display: block;
+
+                --page-header--min-height: #{px-to-rem(440)};
+
+                #{$this}__inner {
+                    padding-right: calc(
+                        var(--page-header--split-media-width) + var(--page-header--split-gap)
+                    );
+                }
+
+                // Anchored to the right edge of the content container and
+                // allowed to bleed past it to the edge of the viewport.
+                #{$this}__media {
+                    position: absolute;
+                    top: 0;
+                    right: 0;
+                    bottom: 0;
+                    left: calc(
+                        50% + (var(--width--responsive--l) / 2) -
+                            var(--page-header--split-media-width)
+                    );
+                    height: auto;
+                }
+            }
+
+            @include mq(large) {
+                --page-header--min-height: #{px-to-rem(520)};
+                --page-header--split-media-width: #{px-to-rem(560)};
+
+                #{$this}__description {
+                    max-width: px-to-rem(440);
+                }
+            }
+        }
+
+        &#{$this}--no-media {
+            #{$this}__wrapper {
+                border-top: 1px solid var(--page-header--rule-color);
+                padding-top: var(--space--m);
+            }
+
+            @include mq(medium) {
+                --page-header--min-height: #{px-to-rem(280)};
+
+                #{$this}__wrapper {
+                    display: grid;
+                    grid-template-columns: minmax(0, 1fr) px-to-rem(260);
+                    gap: var(--space--xl);
+                    align-items: end;
+                }
+            }
+
+            @include mq(large) {
+                --page-header--min-height: #{px-to-rem(340)};
+
+                #{$this}__wrapper {
+                    grid-template-columns: minmax(0, 1fr) px-to-rem(330);
+                }
+            }
         }
     }
 
