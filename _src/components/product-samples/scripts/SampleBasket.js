@@ -146,6 +146,23 @@ export default class SampleBasket {
         const link = document.querySelector('.site-header__basket-link');
         if (!link) return;
 
+        // The badge is decorative and the hidden label is what gets announced, so
+        // both have to move together. Updating only the number would leave a
+        // screen reader reading a stale count for the rest of the visit.
+        const label = link.querySelector('.site-header__basket-label');
+
+        if (label) {
+            if (!cartCount) {
+                label.textContent = this.config.i18n.basketLabel;
+            } else {
+                const template = cartCount === 1
+                    ? this.config.i18n.basketLabelOne
+                    : this.config.i18n.basketLabelMany;
+
+                label.textContent = template.replace('{count}', String(cartCount));
+            }
+        }
+
         let badge = link.querySelector('.site-header__basket-count');
 
         if (!cartCount) {
@@ -156,6 +173,7 @@ export default class SampleBasket {
         if (!badge) {
             badge = document.createElement('span');
             badge.className = 'site-header__basket-count';
+            badge.setAttribute('aria-hidden', 'true');
             link.appendChild(badge);
         }
 

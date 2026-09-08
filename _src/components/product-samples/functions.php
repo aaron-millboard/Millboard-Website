@@ -96,6 +96,14 @@ function enqueue_assets(): void
             // translators: 1: Number of samples chosen. 2: Maximum number of samples.
             'chosen' => sprintf(\__('%1$s of %2$s samples chosen', 'granola'), '{count}', MAX_SAMPLES),
             'error' => \__('Sorry, that sample could not be updated. Please try again.', 'granola'),
+            // The header basket label, so the AJAX path can keep it in step with
+            // the badge. Both forms come from the same _n() pair the site header
+            // renders, so translators see one string pair rather than three.
+            'basketLabel' => \__('Basket', 'granola'),
+            // translators: %s: number of products in the basket.
+            'basketLabelOne' => sprintf(\_n('Basket, %s product', 'Basket, %s products', 1, 'granola'), '{count}'),
+            // translators: %s: number of products in the basket.
+            'basketLabelMany' => sprintf(\_n('Basket, %s product', 'Basket, %s products', 2, 'granola'), '{count}'),
             // translators: %s: Maximum number of free samples.
             'limit' => sprintf(\__('You have reached the limit of %s free samples', 'granola'), MAX_SAMPLES),
         ],
