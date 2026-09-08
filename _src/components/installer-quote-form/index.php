@@ -1,10 +1,12 @@
 <?php
 $phone = $args['phone'] ?? '';
 $email = $args['email'] ?? '';
+$website = trim((string) ($args['website'] ?? ''));
 $tel = preg_replace('/[^0-9+]/', '', (string) $phone);
 
 $icon_phone = '<svg class="installer-quote-form__contact-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.6A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.8.6 2.6a2 2 0 0 1-.5 2.1L8 9.6a16 16 0 0 0 6 6l1.2-1.2a2 2 0 0 1 2.1-.5c.8.3 1.7.5 2.6.6a2 2 0 0 1 1.7 2Z"></path></svg>';
 $icon_mail = '<svg class="installer-quote-form__contact-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="m3 7 9 6 9-6"></path></svg>';
+$icon_globe = '<svg class="installer-quote-form__contact-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"></circle><path d="M3 12h18"></path><path d="M12 3a15 15 0 0 1 0 18 15 15 0 0 1 0-18Z"></path></svg>';
 ?>
 <section <?= \Granola\Helpers::build_attributes($args['attributes']); ?>>
     <div class="installer-quote-form__inner">
@@ -20,14 +22,17 @@ $icon_mail = '<svg class="installer-quote-form__contact-icon" width="18" height=
                 <p class="installer-quote-form__lead"><?= esc_html($args['intro']); ?></p>
             <?php } ?>
 
-            <?php if (!empty($phone) || !empty($email)) { ?>
+            <?php if (!empty($phone) || !empty($email) || $website !== '') { ?>
                 <div class="installer-quote-form__contact">
                     <?php if (!empty($phone)) { ?>
                         <?php /* Reveals the number on desktop, where tel: does nothing. */ ?>
                         <a class="installer-quote-form__contact-btn" href="tel:<?= esc_attr($tel); ?>" data-reveal-phone data-partner-action="phone"><?= $icon_phone; ?><span data-reveal-phone-label><?= esc_html__('Call us', 'granola'); ?></span></a>
                     <?php } ?>
                     <?php if (!empty($email)) { ?>
-                        <a class="installer-quote-form__contact-btn" href="mailto:<?= esc_attr($email); ?>"><?= $icon_mail; ?><span><?= esc_html__('Email us', 'granola'); ?></span></a>
+                        <a class="installer-quote-form__contact-btn" href="mailto:<?= esc_attr($email); ?>" data-partner-action="email"><?= $icon_mail; ?><span><?= esc_html__('Email us', 'granola'); ?></span></a>
+                    <?php } ?>
+                    <?php if ($website !== '') { ?>
+                        <a class="installer-quote-form__contact-btn" href="<?= esc_url($website); ?>" data-partner-action="website" target="_blank" rel="noopener noreferrer"><?= $icon_globe; ?><span><?= esc_html__('Visit website', 'granola'); ?></span></a>
                     <?php } ?>
                 </div>
             <?php } ?>
