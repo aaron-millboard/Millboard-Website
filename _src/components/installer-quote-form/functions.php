@@ -26,10 +26,13 @@ function filter_args(array $args): ?array
         $args['attributes']['id'] = 'installer-enquiry';
     }
 
-    // Contact buttons come from the installer's own phone + email fields.
+    // Contact buttons come from the installer's own phone, email and website
+    // fields. The website is the profile's only plain link to the installer's
+    // own site, so it belongs beside the other two ways of reaching them.
     $post_id = !empty($args['post_id']) ? (int) $args['post_id'] : \get_the_ID();
     $args['phone'] = \get_field('phone', $post_id);
     $args['email'] = \get_field('email', $post_id);
+    $args['website'] = \get_field('website', $post_id);
 
     $args['has_form'] = !empty($args['hs_form_id']);
 
