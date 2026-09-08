@@ -53,11 +53,32 @@ function filter_args(array $args): ?array
         $basket_count = count(WC()->cart->get_cart());
     }
 
+    // The badge on its own announces as "Basket 8", which does not say what 8
+    // counts. Put the meaning in the hidden label and mark the badge decorative,
+    // so a screen reader hears it once and in full.
+    //
+    // SampleBasket.js::syncHeaderCount() updates BOTH of these after an AJAX add.
+    // If you change the markup here, change it there too or the label goes stale
+    // while the number moves.
+    $basket_label = !empty($basket_count)
+        ? sprintf(
+            /* translators: %s: number of products in the basket. */
+            _n('Basket, %s product', 'Basket, %s products', $basket_count, 'granola'),
+            number_format_i18n($basket_count)
+        )
+        : __('Basket', 'granola');
+
+    $basket_button_content = '<span class="visually-hidden site-header__basket-label">'
+        . esc_html($basket_label)
+        . '</span>';
+
     if (!empty($basket_count)) {
-        $args['content']['basket_button_content'] = '<span class="visually-hidden">' . esc_html__('Basket', 'granola') . '</span><span class="site-header__basket-count">' . esc_html($basket_count) . '</span>';
-    } else {
-        $args['content']['basket_button_content'] = '<span class="visually-hidden">' . esc_html__('Basket', 'granola') . '</span>';
+        $basket_button_content .= '<span class="site-header__basket-count" aria-hidden="true">'
+            . esc_html(number_format_i18n($basket_count))
+            . '</span>';
     }
+
+    $args['content']['basket_button_content'] = $basket_button_content;
 
     // -------------------------------------------------------------------------
     // Return the filtered args.
