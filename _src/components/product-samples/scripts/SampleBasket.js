@@ -140,7 +140,7 @@ export default class SampleBasket {
      * Keep the header basket badge in step. It is server-rendered on page load,
      * and is omitted entirely when the basket is empty, so it may need creating.
      *
-     * @param {number} cartCount Total items in the basket.
+     * @param {number} cartCount Number of products in the basket, not units.
      */
     syncHeaderCount(cartCount) {
         if (typeof cartCount !== 'number') return;

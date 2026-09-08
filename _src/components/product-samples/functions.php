@@ -275,8 +275,10 @@ function format_sample_state(): array
         'count' => count($positions),
         'full' => count($positions) >= MAX_SAMPLES,
         // Everything in the basket, not just samples, so the header count can be
-        // kept in step without a page load.
-        'cartCount' => !empty($cart) ? (int) $cart->get_cart_contents_count() : 0,
+        // kept in step without a page load. Products rather than units, matching
+        // what the site header renders: if these two disagree the badge changes
+        // meaning the moment someone adds a sample.
+        'cartCount' => !empty($cart) ? count($cart->get_cart()) : 0,
         'samples' => array_map(function ($sample) {
             return $sample['position'];
         }, $positions),

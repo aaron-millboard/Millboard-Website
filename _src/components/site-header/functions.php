@@ -37,17 +37,20 @@ function filter_args(array $args): ?array
     // Custom.
     // ---------------------------------------
 
+    // Count PRODUCTS, not individual units. get_cart_contents_count() sums
+    // quantities, so a real order reads as 109 or 325 in the badge and looks like
+    // the basket has run away with itself (Elon, Sep 2026). A deck genuinely is
+    // hundreds of boards and screws; the number people want next to the icon is
+    // how many lines they have to review.
+    //
+    // Keep this in step with `cartCount` in the product-samples component, which
+    // writes the same badge after an add without a page load.
     $basket_count = 0;
 
     if (function_exists('WC') && WC()->cart) {
-        if (is_multisite()) {
-            $current_blog_id = get_current_blog_id();
-            switch_to_blog($current_blog_id);
-            $basket_count = WC()->cart->get_cart_contents_count();
-            restore_current_blog();
-        } else {
-            $basket_count = WC()->cart->get_cart_contents_count();
-        }
+        // The previous multisite branch here switched to the blog it was already
+        // on, so both halves did the same thing.
+        $basket_count = count(WC()->cart->get_cart());
     }
 
     if (!empty($basket_count)) {
