@@ -396,3 +396,28 @@
         }
     }
 }
+
+/* Optional-field labels */
+// WooCommerce writes `(optional)` into the label of every field it has not been
+// told is required. That is `$required_indicator` in wc-template-functions.php,
+// and it is applied to text inputs, selects and checkboxes alike. It is core
+// output with no filter behind it, so it comes off here.
+//
+// Aaron, 8 Sep 2026: a field carrying no asterisk is already understood to be
+// optional, so the label only adds noise. It read worst on the checkout, because
+// the shared checkbox rule in wc-checkout/styles/block.scss makes those labels
+// flex containers, which parks the span in a column of its own hard against the
+// right edge. There it looks like a deliberate badge rather than the trailing
+// words of a sentence.
+//
+// `display: none` rather than `.visually-hidden` is deliberate. Taking it out of
+// the accessibility tree too keeps both experiences the same, and nothing is
+// lost: required fields still carry their own indicator and `aria-required`.
+// Doing it in CSS also covers every locale at once, which editing WooCommerce's
+// translations in Loco would not.
+.woocommerce,
+.woocommerce-page {
+    span.optional {
+        display: none;
+    }
+}
