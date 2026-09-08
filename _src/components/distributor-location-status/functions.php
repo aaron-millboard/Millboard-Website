@@ -11,9 +11,31 @@ namespace Granola\Components\DistributorLocationStatus;
  *
  * Everything is read from the record's own Distributor Details fields, so all 376
  * existing distributors render without editing. Of those only address, phone,
- * website and email are reliably populated today, so every badge beyond the stock
- * state has to degrade silently.
+ * website and email are reliably populated today, so every badge has to degrade
+ * silently.
  */
+
+/**
+ * The stock badge is OFF until there is a real per-branch stock list.
+ *
+ * `holds_stock` is true on all 190 UK distributor records, because a distributor
+ * CAN order any product. That is not the same as holding it, and there is no live
+ * feed to tell the two apart: stock often leaves again immediately, backfilling
+ * orders, so sales against a branch do not prove it holds anything either. So the
+ * badge printed "Stock available" on every profile, which is a claim we cannot
+ * stand behind.
+ *
+ * Defaulting the other way is not the answer: "Stock to order" would be equally
+ * wrong for the branches that genuinely do hold stock. Saying nothing is the only
+ * honest option, so the badge is suppressed entirely rather than defaulted either
+ * way, and the yes/no pair is kept intact ready to switch back on.
+ *
+ * TO RE-ENABLE, once the stock list arrives and `holds_stock` means something:
+ * set this to true AND the matching constant in _src/components/map/listing/
+ * functions.php, which guards the same claim on the finder cards and the map
+ * marker tooltip. Both, or the surfaces disagree.
+ */
+const SHOW_STOCK_STATE = false;
 function filter_args(array $args): ?array
 {
     $args = array_merge([
@@ -41,9 +63,6 @@ function filter_args(array $args): ?array
 
     // -------------------------------------------------------------------------
     // Badges.
-    //
-    // holds_stock is deliberately an explicit yes/no rather than a badge that
-    // only appears when true, so a missing badge never has to be interpreted.
     // -------------------------------------------------------------------------
     $args['badges'] = [];
 
@@ -57,19 +76,21 @@ function filter_args(array $args): ?array
             ];
         }
 
-        $args['badges'][] = \get_field('holds_stock', $post_id)
-            ? [
-                'label' => \__('Stock available', 'granola'),
-                'modifier' => 'stock',
-                'icon' => '',
-                'dot' => true,
-            ]
-            : [
-                'label' => \__('Stock to order', 'granola'),
-                'modifier' => 'to-order',
-                'icon' => '',
-                'dot' => false,
-            ];
+        if (SHOW_STOCK_STATE) {
+            $args['badges'][] = \get_field('holds_stock', $post_id)
+                ? [
+                    'label' => \__('Stock available', 'granola'),
+                    'modifier' => 'stock',
+                    'icon' => '',
+                    'dot' => true,
+                ]
+                : [
+                    'label' => \__('Stock to order', 'granola'),
+                    'modifier' => 'to-order',
+                    'icon' => '',
+                    'dot' => false,
+                ];
+        }
 
         if (\get_field('has_display', $post_id)) {
             $args['badges'][] = [
