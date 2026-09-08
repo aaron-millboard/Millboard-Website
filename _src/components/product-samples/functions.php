@@ -133,6 +133,14 @@ function enqueue_assets(): void
             // translators: 1: Number of samples chosen. 2: Maximum number of samples.
             'chosen' => sprintf(\__('%1$s of %2$s samples chosen', 'granola'), '{count}', MAX_SAMPLES),
             'error' => \__('Sorry, that sample could not be updated. Please try again.', 'granola'),
+            // The header basket label, so the AJAX path can keep it in step with
+            // the badge. Both forms come from the same _n() pair the site header
+            // renders, so translators see one string pair rather than three.
+            'basketLabel' => \__('Basket', 'granola'),
+            // translators: %s: number of products in the basket.
+            'basketLabelOne' => sprintf(\_n('Basket, %s product', 'Basket, %s products', 1, 'granola'), '{count}'),
+            // translators: %s: number of products in the basket.
+            'basketLabelMany' => sprintf(\_n('Basket, %s product', 'Basket, %s products', 2, 'granola'), '{count}'),
             // translators: %s: Maximum number of free samples.
             'limit' => sprintf(\__('You have reached the limit of %s free samples', 'granola'), MAX_SAMPLES),
         ],
@@ -275,8 +283,10 @@ function format_sample_state(): array
         'count' => count($positions),
         'full' => count($positions) >= MAX_SAMPLES,
         // Everything in the basket, not just samples, so the header count can be
-        // kept in step without a page load.
-        'cartCount' => !empty($cart) ? (int) $cart->get_cart_contents_count() : 0,
+        // kept in step without a page load. Products rather than units, matching
+        // what the site header renders: if these two disagree the badge changes
+        // meaning the moment someone adds a sample.
+        'cartCount' => !empty($cart) ? count($cart->get_cart()) : 0,
         'samples' => array_map(function ($sample) {
             return $sample['position'];
         }, $positions),
