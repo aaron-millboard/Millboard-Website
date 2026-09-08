@@ -2,6 +2,24 @@
 
 namespace Granola\Components\Map\Listing;
 
+/**
+ * The "Stock available" line is OFF until there is a real per-branch stock list.
+ *
+ * Same reason as the profile badge, written up in full in
+ * _src/components/distributor-location-status/functions.php: `holds_stock` is true
+ * on all 190 UK distributor records because a distributor CAN order any product,
+ * which is not the same as holding it.
+ *
+ * This one is enforced by clearing the arg rather than by guarding the template,
+ * because index.php is included in the GLOBAL namespace and would not see this
+ * constant. Clearing it here means index.php's existing `!empty($args['holds_stock'])`
+ * check does the work, and Map.js stops finding .map__listing__stock to copy into
+ * the marker tooltip, so the card and the tooltip cannot disagree.
+ *
+ * TO RE-ENABLE: set this to true AND SHOW_STOCK_STATE in the profile component.
+ */
+const SHOW_STOCK_STATE = false;
+
 function filter_args(array $args): ?array
 {
     // ---------------------------------------
@@ -25,6 +43,10 @@ function filter_args(array $args): ?array
 
     if (empty($args['address'])) {
         return null;
+    }
+
+    if (!SHOW_STOCK_STATE) {
+        $args['holds_stock'] = false;
     }
 
     $lat = $args['address']['lat'] ?? '';
