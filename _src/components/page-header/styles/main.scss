@@ -607,6 +607,12 @@
         --button--border-color: var(--color--white);
         --button--color: var(--color--white);
 
+        // Links take their colour from the background colour context, not from
+        // --color--foreground, so overriding the text colour alone leaves
+        // inline links in the description rendering black on the photograph.
+        --link--color: var(--color--white);
+        --link--color--hover: var(--color--white);
+
         background-color: var(--color--black);
         color: var(--color--foreground);
 
