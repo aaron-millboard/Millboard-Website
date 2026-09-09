@@ -271,10 +271,23 @@ function filter_args(array $args): ?array
     }
 
     // -------------------------------------------------------------------------
-    // Layout. Only `page` type headers offer a choice; `post` and `product`
-    // keep the original composition. Resolved further up, with the image.
+    // Layout. Resolved further up, with the image.
+    //
+    // The layout classes are emitted for `page` type headers ONLY. The classic
+    // layout rules are the ones that used to live under `--type--page`, so
+    // emitting `--layout--classic` on a `post` or `product` header would apply
+    // the overlapping page composition to headers that have never used it, and
+    // articles would gain the very overlap this component was rebuilt to remove.
+    // Archive headers (search, 404, term, author) are `page` type and keep the
+    // class, which is what preserves their existing layout.
     // -------------------------------------------------------------------------
-    $args['classes'][] = 'page-header--layout--' . $args['layout'];
+    if ($args['type'] === 'page') {
+        $args['classes'][] = 'page-header--layout--' . $args['layout'];
+
+        $args['classes'][] = ($args['layout'] !== 'classic' && !empty($args['image']))
+            ? 'page-header--has-media'
+            : 'page-header--no-media';
+    }
 
     // Video is only rendered by the layouts that have a media layer, and it
     // always needs the image as its poster frame and no-JS fallback.
@@ -282,11 +295,9 @@ function filter_args(array $args): ?array
         $args['background_video'] = null;
     }
 
-    $has_media = $args['layout'] !== 'classic' && !empty($args['image']);
-
-    $args['classes'][] = $has_media
-        ? 'page-header--has-media'
-        : 'page-header--no-media';
+    $has_media = $args['type'] === 'page'
+        && $args['layout'] !== 'classic'
+        && !empty($args['image']);
 
     if (!empty($args['background_video'])) {
         $args['classes'][] = 'page-header--has-video';
