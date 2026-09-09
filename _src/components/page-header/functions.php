@@ -12,6 +12,8 @@ function filter_args(array $args): ?array
         'source' => 'current', // post, custom
         'object' => null,
         'type' => 'page',
+        'layout' => '',
+        'background_video' => null,
         'background_color' => 'brand-1',
         'attributes' => [],
         'show_breadcrumbs' => true,
@@ -185,6 +187,10 @@ function filter_args(array $args): ?array
     // -------------------------------------------------------------------------
     // Prepare args for sub-components
     // -------------------------------------------------------------------------
+    // Resolved here rather than with the classes below, because the image needs
+    // to know which layout it is being rendered into.
+    $args['layout'] = get_layout($args);
+
     if (!empty($args['image'])) {
         if (!is_array($args['image'])) {
             $args['image'] = [
@@ -196,7 +202,21 @@ function filter_args(array $args): ?array
         $args['image']['loading'] = 'eager';
         $args['image']['attributes']['fetchpriority'] = 'high';
         $args['image']['attributes']['data-spai-eager'] = true;
+
+        // The image component defaults to `medium_large`, which is 768px wide.
+        // That was right for the classic layout, where the image sits in a
+        // 680px column, but the editorial and split layouts stretch it across
+        // the whole header. Left alone the browser is told the slot is 768px,
+        // picks the 768w candidate and upscales it to the viewport width.
+        if ($args['layout'] !== 'classic') {
+            $args['image']['size'] = 'full';
+            $args['image']['sizes'] = $args['layout'] === 'split'
+                ? '(min-width: 62em) 45vw, (min-width: 48em) 40vw, 100vw'
+                : '100vw';
+        }
     }
+
+    $args['background_video'] = get_background_video($args['background_video']);
 
     if (!empty($args['heading'])) {
         $args['heading'] = [
@@ -250,6 +270,45 @@ function filter_args(array $args): ?array
         $args['classes'][] = 'page-header--type--' . $args['type'];
     }
 
+    // -------------------------------------------------------------------------
+    // Layout. Resolved further up, with the image.
+    //
+    // The layout classes are emitted for `page` type headers ONLY. The classic
+    // layout rules are the ones that used to live under `--type--page`, so
+    // emitting `--layout--classic` on a `post` or `product` header would apply
+    // the overlapping page composition to headers that have never used it, and
+    // articles would gain the very overlap this component was rebuilt to remove.
+    // Archive headers (search, 404, term, author) are `page` type and keep the
+    // class, which is what preserves their existing layout.
+    // -------------------------------------------------------------------------
+    if ($args['type'] === 'page') {
+        $args['classes'][] = 'page-header--layout--' . $args['layout'];
+
+        $args['classes'][] = ($args['layout'] !== 'classic' && !empty($args['image']))
+            ? 'page-header--has-media'
+            : 'page-header--no-media';
+    }
+
+    // Video is only rendered by the layouts that have a media layer, and it
+    // always needs the image as its poster frame and no-JS fallback.
+    if ($args['layout'] === 'classic' || empty($args['image'])) {
+        $args['background_video'] = null;
+    }
+
+    $has_media = $args['type'] === 'page'
+        && $args['layout'] !== 'classic'
+        && !empty($args['image']);
+
+    if (!empty($args['background_video'])) {
+        $args['classes'][] = 'page-header--has-video';
+    }
+
+    // The radial background gradients sit under the photo on the editorial
+    // layout, where the scrim already does that job.
+    if ($args['layout'] === 'editorial' && $has_media) {
+        $args['bg_gradient'] = false;
+    }
+
     if (!empty($args['show_breadcrumbs'])) {
         $args['classes'][] = 'has-breadcrumbs';
     }
@@ -258,6 +317,95 @@ function filter_args(array $args): ?array
     // Return the filtered args.
     // -------------------------------------------------------------------------
     return $args;
+}
+
+/**
+ * The compositions a `page` type header can use.
+ */
+const LAYOUTS = ['editorial', 'split', 'classic'];
+
+/**
+ * Resolve the header layout.
+ *
+ * Only `page` type headers offer a choice. Anything else (posts, advice
+ * articles, case studies, products) keeps the original composition, so this
+ * returns `classic` for them regardless of what is stored on the block.
+ *
+ * Pages saved before the layout field existed have no stored value and fall
+ * back to the default, which can be changed site-wide with the
+ * `granola/components/page-header/default-layout` filter.
+ */
+function get_layout(array $args): string
+{
+    // Search, 404, author and term archive headers have their own content
+    // requirements (search form, result counts, term images) that the new
+    // compositions are not designed around, so they keep the classic layout.
+    $object = $args['object'] ?? null;
+    $is_archive_header = $object instanceof \WP_Query
+        || $object instanceof \WP_Term
+        || $object instanceof \WP_User;
+
+    if (($args['type'] ?? 'page') !== 'page' || $is_archive_header) {
+        return 'classic';
+    }
+
+    $layout = is_string($args['layout'] ?? null) ? trim($args['layout']) : '';
+
+    if ($layout === '') {
+        $layout = (string) \apply_filters(
+            'granola/components/page-header/default-layout',
+            'editorial'
+        );
+    }
+
+    return in_array($layout, LAYOUTS, true) ? $layout : 'editorial';
+}
+
+/**
+ * Normalise the background video field to a url and mime type, or null.
+ *
+ * Accepts an ACF file array, an attachment ID, or a plain URL, and rejects
+ * anything that is not a video so a mis-set field cannot render a broken
+ * <source> behind the header.
+ *
+ * @param mixed $value The raw field value.
+ */
+function get_background_video($value): ?array
+{
+    if (empty($value)) {
+        return null;
+    }
+
+    $url = '';
+    $mime_type = '';
+
+    if (is_array($value)) {
+        $url = (string) ($value['url'] ?? '');
+        $mime_type = (string) ($value['mime_type'] ?? '');
+    } elseif (is_numeric($value)) {
+        $url = (string) \wp_get_attachment_url((int) $value);
+        $mime_type = (string) \get_post_mime_type((int) $value);
+    } elseif (is_string($value)) {
+        $url = $value;
+    }
+
+    if ($url === '') {
+        return null;
+    }
+
+    if (strpos($mime_type, 'video/') !== 0) {
+        $filetype = \wp_check_filetype($url);
+        $mime_type = !empty($filetype['type']) ? (string) $filetype['type'] : '';
+    }
+
+    if (strpos($mime_type, 'video/') !== 0) {
+        return null;
+    }
+
+    return [
+        'url' => $url,
+        'mime_type' => $mime_type,
+    ];
 }
 
 /**
