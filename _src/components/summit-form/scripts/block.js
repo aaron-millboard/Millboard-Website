@@ -22,6 +22,12 @@ if (forms.length) {
             : null;
 
         const originalLabel = submitLabel ? submitLabel.textContent : '';
+
+        // Which audience this page serves. The gate checks the submitted value
+        // against the invite's own audience, so a US invitee cannot register
+        // through the UK page and be given one day instead of three.
+        const audience = form.getAttribute('data-summit-audience') || '';
+
         let blocked = false;
 
         function showNotice(message) {
@@ -99,7 +105,7 @@ if (forms.length) {
                     return;
                 }
 
-                post(window.params.summit_check_endpoint, { email: email })
+                post(window.params.summit_check_endpoint, { email: email, audience: audience })
                     .then(function (data) {
                         if (data && data.ok) {
                             blocked = false;
@@ -152,19 +158,37 @@ if (forms.length) {
                 workshops.push(box.value);
             });
 
-            const optOut = form.querySelector('[name="opt_out_marketing"]');
-            const tour = form.querySelector('[name="factory_tour"]:checked');
+            // A radio group returns nothing when untouched, which the gate reads
+            // as a validation error rather than a silent default.
+            function radio(name) {
+                const checked = form.querySelector('[name="' + name + '"]:checked');
+                return checked ? checked.value : '';
+            }
 
+            function field(name) {
+                const el = form.querySelector('[name="' + name + '"]');
+                return el ? el.value : '';
+            }
+
+            const optOut = form.querySelector('[name="opt_out_marketing"]');
+
+            // Only the fields this audience actually renders are sent. The
+            // others are absent rather than empty, so the gate's per-audience
+            // validation is not tripped by a question that was never asked.
             const payload = {
-                first_name: (form.querySelector('[name="first_name"]') || {}).value || '',
-                last_name: (form.querySelector('[name="last_name"]') || {}).value || '',
-                email: (form.querySelector('[name="email"]') || {}).value || '',
-                company_typed: (form.querySelector('[name="company_typed"]') || {}).value || '',
-                preferred_date: (form.querySelector('[name="preferred_date"]') || {}).value || '',
-                factory_tour: tour ? tour.value : '',
+                audience: audience,
+                first_name: field('first_name'),
+                last_name: field('last_name'),
+                email: field('email'),
+                company_typed: field('company_typed'),
+                preferred_date: field('preferred_date'),
+                factory_tour: radio('factory_tour'),
+                attending: radio('attending'),
+                email_contact: radio('email_contact'),
+                phone_contact: radio('phone_contact'),
                 workshops: workshops,
                 opt_out_marketing: optOut ? optOut.checked : false,
-                company_website: (form.querySelector('[name="company_website"]') || {}).value || ''
+                company_website: field('company_website')
             };
 
             post(window.params.summit_register_endpoint, payload)
@@ -176,6 +200,19 @@ if (forms.length) {
                         // by pressing the button again.
                         form.hidden = true;
                         if (success) {
+                            // An FR guest who said they cannot come gets the
+                            // server's own wording, not "your place is
+                            // registered", which would be plainly wrong.
+                            if (data.reason === 'declined' && data.message) {
+                                const heading = success.querySelector('[data-summit-success-heading]');
+                                const text = success.querySelector('[data-summit-success-text]');
+                                if (heading) {
+                                    heading.textContent = data.message;
+                                }
+                                if (text) {
+                                    text.hidden = true;
+                                }
+                            }
                             success.hidden = false;
                             if (typeof success.focus === 'function') {
                                 success.setAttribute('tabindex', '-1');

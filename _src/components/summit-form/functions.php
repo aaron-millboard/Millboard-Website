@@ -2,6 +2,7 @@
 
 namespace Granola\Components\SummitForm;
 
+use Theme\Summit\Audiences;
 use Theme\Summit\Gate;
 
 /**
@@ -17,6 +18,7 @@ function filter_args(array $args): ?array
 {
     $args = array_merge([
         'classes' => [],
+        'audience' => '',
         'heading' => '',
         'description' => '',
         'intro' => '',
@@ -85,11 +87,37 @@ function filter_args(array $args): ?array
         );
     }
 
-    // The date and workshop options are defined once, server-side, in Gate.
-    // Rendering them from the same constant the validator checks against means
-    // the form can never offer a value the server would reject.
-    $args['dates'] = Gate::ALLOWED_DATES;
+    // Which audience this page serves decides both the questions asked and the
+    // days the registration consumes, so it has to be set. There is
+    // deliberately no default: guessing UK on a US page would book a US guest
+    // one day instead of three and quietly under-report the seat counts.
+    $args['audience'] = strtoupper(trim((string) $args['audience']));
+    $args['has_audience'] = Audiences::is_valid($args['audience']);
+
+    if (!$args['has_audience']) {
+        // Show the editor what is wrong; render nothing at all on the front end
+        // rather than a form that would refuse every submission.
+        return empty($args['is_preview']) ? null : $args;
+    }
+
+    // Every option is read from the same constants the validator checks
+    // against, so the form can never offer a value the server would reject.
+    $args['asks'] = [];
+    foreach (['preferred_date', 'workshops', 'factory_tour', 'opt_out',
+              'attending', 'email_contact', 'phone_contact'] as $field) {
+        $args['asks'][$field] = Audiences::asks_for($args['audience'], $field);
+    }
+
+    $args['dates'] = Audiences::UK_CHOOSABLE_DAYS;
     $args['workshops'] = Gate::ALLOWED_WORKSHOPS;
+    $args['fr_attending_yes'] = Gate::FR_ATTENDING_YES;
+    $args['fr_attending_no'] = Gate::FR_ATTENDING_NO;
+
+    // The days this audience is assigned, so the page can tell an INT, FR or US
+    // guest which dates they are booked for. They are not asked to choose.
+    $args['assigned_days'] = Audiences::chooses_day($args['audience'])
+        ? []
+        : Audiences::days_for($args['audience']);
 
     return $args;
 }

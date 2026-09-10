@@ -3,6 +3,24 @@
     "title": "Block - Summit Registration Form",
     "fields": [
         {
+            "key": "field_68c1a5f0f000",
+            "label": "Audience",
+            "name": "audience",
+            "type": "select",
+            "instructions": "Which invitation this page serves. This decides both the questions asked and which days the registration takes, so it must match the page. There is no default on purpose: UK on a US page would book a US guest one day instead of three.",
+            "required": 1,
+            "choices": {
+                "UK": "UK - picks one day, 4th or 5th, plus workshops and factory tour",
+                "INT": "INT - no date question, automatically 3rd + 4th",
+                "US": "US - no date question, automatically 3rd + 4th + 5th",
+                "FR": "FR - asked whether they can attend, plus contact consent (French)"
+            },
+            "default_value": "",
+            "allow_null": 1,
+            "ui": 0,
+            "return_format": "value"
+        },
+        {
             "key": "field_68c1a5f0f001",
             "label": "Heading",
             "name": "heading",

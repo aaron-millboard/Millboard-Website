@@ -174,11 +174,27 @@ class InviteList
                 continue;
             }
 
+            // The audience decides which days this person consumes, so a row
+            // without a usable one cannot be seated and must not be imported.
+            $audience = strtoupper(trim((string) ($row['audience'] ?? '')));
+
+            if (!Audiences::is_valid($audience)) {
+                $skipped[] = sprintf(
+                    '%s (%s): audience %s is not one of %s',
+                    $email,
+                    $company,
+                    $audience !== '' ? $audience : '(blank)',
+                    implode('/', Audiences::ALL)
+                );
+                continue;
+            }
+
             $list[$email] = [
                 'name' => $name,
                 'company' => $company,
                 'company_key' => self::company_key($company),
                 'category' => trim((string) ($row['category'] ?? '')),
+                'audience' => $audience,
             ];
         }
 
