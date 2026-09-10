@@ -23,9 +23,14 @@ namespace Theme\WordPress;
  * server-side means neither the class, the directives nor the script ever
  * reach the page, in every locale.
  *
- * Three filters: the option is removed from the editor so it cannot be set,
- * the attribute is dropped on render so content that already carries it is
- * inert, and the class is stripped from the saved markup.
+ * The attribute is dropped on render so content that already carries it is
+ * inert, and the class is stripped from the saved markup. The registry is
+ * cleaned too, though the editor overrides that from its own bundle.
+ *
+ * NOTE: an inline blocks.registerBlockType filter that removed the "Fit text"
+ * toggle from the editor UI was reverted on 10 Sep 2026 because the editor
+ * was rendering blank. The toggle is therefore still offered and still does
+ * nothing when ticked. Diagnose before reinstating it.
  *
  * This is a workaround for a core bug, not a theme feature. If core changes
  * findOptimalFontSize() to measure against a real container, delete this
@@ -36,7 +41,6 @@ class FitText
     public static function init(): void
     {
         \add_filter('register_block_type_args', [__CLASS__, 'remove_fit_text_support']);
-        \add_action('enqueue_block_editor_assets', [__CLASS__, 'remove_fit_text_control']);
         \add_filter('render_block_data', [__CLASS__, 'remove_fit_text_attribute']);
         \add_filter('render_block', [__CLASS__, 'remove_fit_text_class'], 10, 2);
     }
@@ -67,68 +71,6 @@ class FitText
         unset($args['supports']['typography']['fitText']);
 
         return $args;
-    }
-
-    /**
-     * Remove the Fit text control from the editor UI.
-     *
-     * remove_fit_text_support() cleans the server registry, but that is not
-     * enough on its own: processBlockType() in wp-includes/js/dist/blocks.js
-     * spreads the client registration AFTER the bootstrapped server
-     * definition, and block-library.js ships supports.typography.fitText for
-     * three core blocks. The client value wins.
-     *
-     * A blocks.registerBlockType filter does win, but only if it is added
-     * before those blocks register. The theme's editor bundle loads after
-     * wp-block-library, and blocks.js has no hookAdded listener, so a filter
-     * added later is never reapplied. Attaching this to wp-blocks prints it
-     * between wp-blocks and wp-block-library, which depends on it.
-     *
-     * @return void
-     */
-    public static function remove_fit_text_control(): void
-    {
-        $js = <<<'JS'
-( function () {
-    if ( ! window.wp || ! window.wp.hooks ) {
-        return;
-    }
-
-    window.wp.hooks.addFilter(
-        'blocks.registerBlockType',
-        'millboard/fit-text',
-        function ( settings ) {
-            // This runs for every block registration in the editor. It must
-            // never throw: an exception here takes the whole editor white.
-            try {
-                var supports = settings && settings.supports;
-                var typography = supports && supports.typography;
-
-                // Not every block registers typography support as an object.
-                // 'fitText' in true is a TypeError, not false.
-                if ( ! typography || typeof typography !== 'object' ) {
-                    return settings;
-                }
-
-                if ( ! Object.prototype.hasOwnProperty.call( typography, 'fitText' ) ) {
-                    return settings;
-                }
-
-                typography = Object.assign( {}, typography );
-                delete typography.fitText;
-
-                return Object.assign( {}, settings, {
-                    supports: Object.assign( {}, supports, { typography: typography } )
-                } );
-            } catch ( e ) {
-                return settings;
-            }
-        }
-    );
-}() );
-JS;
-
-        \wp_add_inline_script('wp-blocks', $js);
     }
 
     /**
