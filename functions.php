@@ -108,3 +108,11 @@ if (file_exists($autoloader = __DIR__ . '/vendor/autoload.php')) {
 // ----------------------------------------------------
 \Theme\Hubspot\WriteGuard::init();
 \Theme\Hubspot\Attribution::init();
+
+// ----------------------------------------------------
+// Millboard Summit 2026 invite-only registration.
+// ----------------------------------------------------
+\Theme\Summit\InviteList::init();
+\Theme\Summit\Registrations::init();
+\Theme\Summit\Gate::init();
+\Theme\Summit\Cli::init();

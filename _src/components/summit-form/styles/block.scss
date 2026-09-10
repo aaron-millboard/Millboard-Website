@@ -1,0 +1,201 @@
+// =============================================================================
+// Summit Registration Form
+// Invite-only registration for the Millboard Summit. Replaces the HubSpot embed,
+// so every input here is ours and has to be styled from scratch rather than
+// overriding HubSpot's markup.
+// =============================================================================
+
+.summit-form {
+    --sf--ink: var(--color--sustainabilitygreen, #1d3c34);
+    --sf--field: var(--color--springwood, #f8f4f0);
+    --sf--rule: #{rgba(#151716, 0.22)};
+    --sf--error: #b3261e;
+    --sf--accent: var(--color--apple, #a0cd4f);
+
+    padding: clamp(32px, 4vw, 56px) 0;
+    color: var(--sf--ink);
+    // The page's "Register" buttons link to #summit-registration; offset the
+    // scroll so the first field is not hidden behind the sticky site header.
+    scroll-margin-top: px-to-rem(100);
+
+    &__inner {
+        max-width: var(--width--responsive--s);
+        margin: 0 auto;
+    }
+
+    &__heading {
+        margin: 0 0 px-to-rem(8);
+    }
+
+    // The "Fields marked * are required." line, carried over from the block
+    // this replaced.
+    &__description {
+        margin: 0 0 px-to-rem(24);
+        font-size: px-to-rem(16);
+    }
+
+    &__intro,
+    &__note,
+    &__consent {
+        margin: 0 0 px-to-rem(24);
+    }
+
+    &__note,
+    &__consent {
+        // Supporting copy, deliberately a step down from the questions so the
+        // form still scans as a form.
+        font-size: px-to-rem(16);
+        line-height: 1.5;
+    }
+
+    // Two columns for the name pair once there is room, one below.
+    &__row {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: px-to-rem(20);
+
+        @include mq(medium) {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    &__field,
+    &__fieldset {
+        margin: 0 0 px-to-rem(24);
+    }
+
+    &__fieldset {
+        padding: 0;
+        border: 0;
+    }
+
+    &__label {
+        display: block;
+        margin: 0 0 px-to-rem(8);
+        font-weight: 600;
+    }
+
+    &__required {
+        // The asterisk is decorative; `required` on the input is what actually
+        // tells assistive tech the field is mandatory.
+        margin-left: px-to-rem(2);
+    }
+
+    &__hint {
+        margin: px-to-rem(6) 0 0;
+        font-size: px-to-rem(15);
+        opacity: 0.8;
+    }
+
+    &__input,
+    &__select {
+        width: 100%;
+        padding: px-to-rem(12) px-to-rem(14);
+        color: var(--sf--ink);
+        background: var(--sf--field);
+        border: 1px solid var(--sf--rule);
+        border-radius: px-to-rem(2);
+
+        &:focus-visible {
+            outline: 2px solid var(--sf--ink);
+            outline-offset: 2px;
+        }
+
+        &--invalid {
+            border-color: var(--sf--error);
+        }
+    }
+
+    &__options {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    &__option {
+        display: flex;
+        gap: px-to-rem(10);
+        align-items: flex-start;
+        margin: 0 0 px-to-rem(10);
+
+        label {
+            // Nudge the label onto the same optical line as the control.
+            margin-top: px-to-rem(1);
+        }
+
+        &--consent {
+            margin-bottom: px-to-rem(28);
+        }
+    }
+
+    &__checkbox,
+    &__radio {
+        flex: 0 0 auto;
+        // Big enough to hit comfortably on a touch screen.
+        width: px-to-rem(20);
+        height: px-to-rem(20);
+        margin: 0;
+        accent-color: var(--sf--ink);
+    }
+
+    // Whole-form messages: not invited, company already has two people.
+    &__notice {
+        margin: 0 0 px-to-rem(24);
+        padding: px-to-rem(14) px-to-rem(16);
+        background: var(--sf--field);
+        border-left: 4px solid var(--sf--error);
+    }
+
+    &__field-error {
+        margin: px-to-rem(6) 0 0;
+        color: var(--sf--error);
+        font-size: px-to-rem(15);
+    }
+
+    &__error {
+        color: var(--sf--error);
+    }
+
+    &__submit {
+        padding: px-to-rem(14) px-to-rem(32);
+        color: var(--sf--field);
+        background: var(--sf--ink);
+        border: 0;
+        border-radius: px-to-rem(2);
+        cursor: pointer;
+
+        &:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+        }
+
+        &:focus-visible {
+            outline: 2px solid var(--sf--ink);
+            outline-offset: 3px;
+        }
+    }
+
+    // Off-screen rather than display:none, because a bot that respects
+    // `display:none` would skip it and the trap would catch nothing.
+    &__honeypot {
+        position: absolute;
+        left: -9999px;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+    }
+
+    &__success {
+        padding: px-to-rem(24);
+        background: var(--sf--field);
+        border-left: 4px solid var(--sf--accent);
+
+        &-heading {
+            margin: 0 0 px-to-rem(8);
+        }
+
+        &-text {
+            margin: 0;
+        }
+    }
+}
