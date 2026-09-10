@@ -114,7 +114,24 @@ class InviteList
         // copy of the list. One list, imported once.
         $list = \get_site_option(self::OPTION, []);
 
-        return is_array($list) ? $list : [];
+        if (is_array($list) && !empty($list)) {
+            return $list;
+        }
+
+        // Fall back to a per-subsite list if one exists.
+        //
+        // This guards a specific, easy mistake with an ugly failure: importing
+        // the allowlist BEFORE the deploy that made it network-wide has landed.
+        // The import then writes a blog option, the network option stays empty,
+        // and the gate refuses EVERY genuine invitee with "we cannot match that
+        // email address to an invitation". Happened on staging 10 Sep 2026.
+        //
+        // Falling back means the order of import and deploy stops mattering.
+        // `wp summit status` warns while a stale blog option is still present,
+        // so this stays a safety net rather than a second place to keep data.
+        $legacy = \get_option(self::OPTION, []);
+
+        return is_array($legacy) ? $legacy : [];
     }
 
     /**

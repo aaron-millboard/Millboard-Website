@@ -210,6 +210,23 @@ class Cli
         ));
         \WP_CLI::log(sprintf('%d people registered.', count($rows)));
 
+        // A populated per-subsite copy means the list was imported before the
+        // network-wide change was deployed. InviteList::all() falls back to it
+        // so nothing is broken, but two copies is one too many: re-import and
+        // delete the stale one.
+        $legacy = \get_option(InviteList::OPTION, []);
+
+        if (is_array($legacy) && !empty($legacy)) {
+            \WP_CLI::warning(sprintf(
+                'A stale per-subsite copy of the allowlist is present on this blog (%d addresses), '
+                . 'which means it was imported before the network-wide change was deployed. '
+                . 'Re-run import-invites, then remove it with: '
+                . 'wp option delete %s',
+                count($legacy),
+                InviteList::OPTION
+            ));
+        }
+
         // The per-day figures are the ones that matter, and they are not the
         // same as a headcount: an INT guest sits on two days and a US guest on
         // three. See Audiences for why the days are not independent.
