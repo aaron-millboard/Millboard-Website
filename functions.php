@@ -115,3 +115,11 @@ if (file_exists($autoloader = __DIR__ . '/vendor/autoload.php')) {
 // ----------------------------------------------------
 \Theme\Analytics\TagManagerGuard::init();
 \Theme\Analytics\ConversionEmitter::init();
+
+// ----------------------------------------------------
+// Millboard Summit 2026 invite-only registration.
+// ----------------------------------------------------
+\Theme\Summit\InviteList::init();
+\Theme\Summit\Registrations::init();
+\Theme\Summit\Gate::init();
+\Theme\Summit\Cli::init();
