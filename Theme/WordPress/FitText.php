@@ -1,0 +1,128 @@
+<?php
+
+namespace Theme\WordPress;
+
+/**
+ * Disables WordPress core's "Fit text" typography option.
+ *
+ * Core 7.1 added a fitText block attribute. On render,
+ * wp_render_typography_support() enqueues the
+ * '@wordpress/block-editor/utils/fit-text-frontend' script module and adds
+ * Interactivity API directives, and that script sizes the text to fill its
+ * container by binary-searching font sizes between 0 and 2400px.
+ *
+ * findOptimalFontSize() only uses the parent as the reference element when
+ * that parent is display: flex. Post content sits in .site-main__content,
+ * which is display: flow-root, so the block is measured against itself,
+ * nearly every candidate size "fits", and the search runs away. On the Grand
+ * Designs Live article it produced font-size: 1249px and an 80,725px page.
+ *
+ * A CSS guard alone is not enough: Perfmatters Remove Unused CSS runs on
+ * en-gb and strips a rule whose class is on no page, so the guard is absent
+ * at exactly the moment an editor first switches the option on. Handling it
+ * server-side means neither the class, the directives nor the script ever
+ * reach the page, in every locale.
+ *
+ * The attribute is dropped on render so content that already carries it is
+ * inert, and the class is stripped from the saved markup. The registry is
+ * cleaned too, though the editor overrides that from its own bundle.
+ *
+ * NOTE: an inline blocks.registerBlockType filter that removed the "Fit text"
+ * toggle from the editor UI was reverted on 10 Sep 2026 because the editor
+ * was rendering blank. The toggle is therefore still offered and still does
+ * nothing when ticked. Diagnose before reinstating it.
+ *
+ * This is a workaround for a core bug, not a theme feature. If core changes
+ * findOptimalFontSize() to measure against a real container, delete this
+ * class and its init() call in functions.php.
+ */
+class FitText
+{
+    public static function init(): void
+    {
+        \add_filter('register_block_type_args', [__CLASS__, 'remove_fit_text_support']);
+        \add_filter('render_block_data', [__CLASS__, 'remove_fit_text_attribute']);
+        \add_filter('render_block', [__CLASS__, 'remove_fit_text_class'], 10, 2);
+    }
+
+    /**
+     * Drop fitText support from the server-side block registry.
+     *
+     * This keeps the registry and the block-types REST responses consistent
+     * with the render filters below. It does NOT remove the control from the
+     * editor: processBlockType() in wp-includes/js/dist/blocks.js builds a
+     * block as { ...defaults, ...bootstrappedBlockType, ...blockSettings },
+     * so the client registration spreads last and wins, and block-library.js
+     * ships supports.typography.fitText for three core blocks. Verified, not
+     * assumed. The toggle is therefore still visible in the editor.
+     *
+     * Applied to every block type that declares it, so it still holds if core
+     * adds more.
+     *
+     * @param array $args Arguments the block type is registered with.
+     * @return array The arguments without fitText support.
+     */
+    public static function remove_fit_text_support($args): array
+    {
+        // Not every block registers typography support as an array. WooCommerce
+        // registers blocks whose supports are shaped differently, and unsetting
+        // an offset on a non-array value is fatal in PHP 8.
+        if (!isset($args['supports']['typography']) || !is_array($args['supports']['typography'])) {
+            return $args;
+        }
+
+        unset($args['supports']['typography']['fitText']);
+
+        return $args;
+    }
+
+    /**
+     * Drop the fitText attribute before block supports are applied.
+     *
+     * Runs on the parsed block, so core's typography support never sees the
+     * attribute and skips both the script module and the directives. This is
+     * render-time only and never touches stored post content.
+     *
+     * @param array $parsed_block The block being rendered.
+     * @return array The block without its fitText attribute.
+     */
+    public static function remove_fit_text_attribute($parsed_block): array
+    {
+        if (!isset($parsed_block['attrs']) || !is_array($parsed_block['attrs'])) {
+            return $parsed_block;
+        }
+
+        unset($parsed_block['attrs']['fitText']);
+
+        return $parsed_block;
+    }
+
+    /**
+     * Strip the has-fit-text class the editor baked into saved content.
+     *
+     * Paragraph and heading are static blocks, so the class lives in
+     * post_content rather than being added at render. It is inert once the
+     * attribute is gone, but leaving it would keep the markup claiming a
+     * behaviour the page no longer has.
+     *
+     * @param string $block_content The rendered block.
+     * @param array  $block         The block being rendered.
+     * @return string The rendered block without the class.
+     */
+    public static function remove_fit_text_class($block_content, $block): string
+    {
+        if (empty($block_content) || !str_contains($block_content, 'has-fit-text')) {
+            return $block_content;
+        }
+
+        $processor = new \WP_HTML_Tag_Processor($block_content);
+
+        if (!$processor->next_tag()) {
+            return $block_content;
+        }
+
+        $processor->remove_class('has-fit-text');
+
+        return $processor->get_updated_html();
+    }
+}
