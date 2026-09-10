@@ -67,6 +67,48 @@ class Registrations
 
     public const STATUS_REGISTERED = 'Registered';
     public const STATUS_DECLINED = 'Declined';
+
+    /**
+     * Where the row came from: the form, or the one-off HubSpot seed.
+     *
+     * Seeded rows exist because 31 people registered through the ungated
+     * HubSpot forms before this system existed. Without them in the log, every
+     * company that already registered would get a fresh allocation of two on
+     * top of what it holds, and George Davies Turf would go from five people
+     * to seven.
+     */
+    public const META_SOURCE = '_mb_summit_source';
+    public const SOURCE_SEED = 'hubspot-seed';
+
+    /**
+     * Is this address already in the log?
+     *
+     * Used to keep the seed idempotent. Re-running an import that creates rows
+     * unconditionally is how you silently double a dataset.
+     */
+    public static function exists_for_email(string $email): bool
+    {
+        return (bool) self::on_log_blog(static function () use ($email) {
+            $query = new \WP_Query([
+                'post_type' => self::POST_TYPE,
+                'post_status' => 'publish',
+                'posts_per_page' => 1,
+                'fields' => 'ids',
+                'no_found_rows' => true,
+                'update_post_meta_cache' => false,
+                'update_post_term_cache' => false,
+                'meta_query' => [
+                    [
+                        'key' => self::META_EMAIL,
+                        'value' => $email,
+                        'compare' => '=',
+                    ],
+                ],
+            ]);
+
+            return !empty($query->posts);
+        });
+    }
     public const META_CATEGORY = '_mb_summit_category';
     public const META_INVITED_NAME = '_mb_summit_invited_name';
     public const META_EXPORTED = '_mb_summit_exported_at';
@@ -295,6 +337,7 @@ class Registrations
             self::META_ATTENDING => $data['attending'] ?? '',
             self::META_EMAIL_CONTACT => $data['email_contact'] ?? '',
             self::META_PHONE_CONTACT => $data['phone_contact'] ?? '',
+            self::META_SOURCE => $data['source'] ?? 'form',
         ];
 
         foreach ($map as $key => $value) {

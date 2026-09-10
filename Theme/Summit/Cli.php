@@ -24,6 +24,7 @@ class Cli
         }
 
         \WP_CLI::add_command('summit import-invites', [self::class, 'import_invites']);
+        \WP_CLI::add_command('summit seed', [self::class, 'seed']);
         \WP_CLI::add_command('summit status', [self::class, 'status']);
         \WP_CLI::add_command('summit export', [self::class, 'export']);
     }
@@ -193,6 +194,115 @@ class Cli
         }
 
         return '';
+    }
+
+    /**
+     * Seeds the log from the registrations already taken in HubSpot.
+     *
+     * 31 people registered through the ungated HubSpot forms before this
+     * system existed. The log starts empty, so without this every company that
+     * already registered would get a fresh allocation of two places on top of
+     * what it holds: George Davies Turf would go from five people to seven.
+     *
+     * Build the file with `millboard-ops\summit-form\build_seed.py`, which
+     * joins each HubSpot registration back to the invite list and decides the
+     * company from THAT rather than from HubSpot's inconsistent company field.
+     *
+     * Idempotent: an address already in the log is skipped, so a re-run cannot
+     * double the data.
+     *
+     * ## OPTIONS
+     *
+     * <file>
+     * : Path to summit-seed.json.
+     *
+     * [--dry-run]
+     * : Report what would be created without writing anything.
+     *
+     * @param array<int,string>    $args
+     * @param array<string,string> $assoc_args
+     */
+    public static function seed(array $args, array $assoc_args): void
+    {
+        $path = $args[0] ?? '';
+
+        if (!is_readable($path)) {
+            \WP_CLI::error('Cannot read ' . $path);
+        }
+
+        $decoded = json_decode((string) file_get_contents($path), true);
+        $rows = is_array($decoded) ? ($decoded['seed'] ?? $decoded) : null;
+
+        if (!is_array($rows) || empty($rows)) {
+            \WP_CLI::error('No seed rows found in ' . $path);
+        }
+
+        $dry = !empty($assoc_args['dry-run']);
+        $created = 0;
+        $skipped = 0;
+        $failed = 0;
+
+        foreach ($rows as $row) {
+            $email = InviteList::normalise_email((string) ($row['email'] ?? ''));
+
+            if ($email === '' || !\is_email($email)) {
+                \WP_CLI::warning('Skipping a row with no usable email.');
+                $failed++;
+                continue;
+            }
+
+            if (Registrations::exists_for_email($email)) {
+                $skipped++;
+                continue;
+            }
+
+            if ($dry) {
+                \WP_CLI::log(sprintf(
+                    '  would create %-40s %-4s %-28s %s',
+                    $email,
+                    $row['audience'] ?? '',
+                    $row['company'] ?? '',
+                    implode(', ', (array) ($row['days'] ?? []))
+                ));
+                $created++;
+                continue;
+            }
+
+            $result = Registrations::create([
+                'audience' => $row['audience'] ?? '',
+                'email' => $email,
+                'first_name' => $row['first_name'] ?? '',
+                'last_name' => $row['last_name'] ?? '',
+                'company' => $row['company'] ?? '',
+                'company_key' => $row['company_key'] ?? '',
+                'company_typed' => $row['company_typed'] ?? '',
+                'category' => $row['category'] ?? '',
+                'invited_name' => $row['invited_name'] ?? '',
+                'days' => (array) ($row['days'] ?? []),
+                'status' => $row['status'] ?? Registrations::STATUS_REGISTERED,
+                'source' => Registrations::SOURCE_SEED,
+            ]);
+
+            if (\is_wp_error($result)) {
+                \WP_CLI::warning(sprintf('%s failed: %s', $email, $result->get_error_message()));
+                $failed++;
+                continue;
+            }
+
+            $created++;
+        }
+
+        \WP_CLI::success(sprintf(
+            '%s %d, skipped %d already in the log, %d failed.',
+            $dry ? 'Would create' : 'Created',
+            $created,
+            $skipped,
+            $failed
+        ));
+
+        if (!$dry) {
+            \WP_CLI::log('Run `wp summit status` to see the seats these now consume.');
+        }
     }
 
     /** Where registration currently stands, per company and per date. */
