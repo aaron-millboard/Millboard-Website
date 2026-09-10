@@ -1,0 +1,19 @@
+// ----------------------------------------------
+// Neutralise WordPress core's "Fit text"
+//
+// Core 7.1 ships fit-text-frontend.js, which reads the block's fitText
+// attribute and writes an inline font-size sized to "fill the container".
+// It only measures against the parent when that parent is display: flex.
+// Post content sits in .site-main__content (display: flow-root), so the
+// paragraph is measured against itself, every candidate size passes, and
+// core's 0-2400px binary search runs away. On the Grand Designs Live
+// article it settled on 1249px and made the page 80,725px tall.
+//
+// An author !important declaration beats core's non-important inline
+// style, so the toggle stays inert wherever someone switches it on.
+// Applied in the editor bundle too, so it cannot look right there and
+// then break on the front end.
+// ----------------------------------------------
+.has-fit-text {
+    font-size: inherit !important;
+}
