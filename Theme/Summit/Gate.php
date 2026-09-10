@@ -46,8 +46,29 @@ class Gate
     public const FR_ATTENDING_YES = 'Oui, je serai présent(e)';
     public const FR_ATTENDING_NO = 'Non, je ne pourrai pas venir';
 
-    /** Max requests per IP per window, per endpoint. */
-    private const RATE_LIMIT = 12;
+    /**
+     * Requests per IP per window, per endpoint.
+     *
+     * ⚠️ The limit is keyed on IP, and the audience for this form is corporate
+     * offices where colleagues share one public address. We invite TWO people
+     * per company and expect both to register, so two people at Lawsons or
+     * Cladco look like a single IP. Each of them typing an address, correcting
+     * a typo and submitting is four or five requests, so a limit of 12 turned
+     * the third person away with "too many attempts" — a genuine invitee
+     * refused by a bot guard. That happened during testing on 10 Sep 2026.
+     *
+     * The check endpoint is advisory and cheap, so it gets the looser limit.
+     * Register stays tighter because it writes.
+     *
+     * Enumeration is still not worth attempting: 40 per ten minutes is 240 an
+     * hour against a 197-row list, and the prize is merely learning which of
+     * our partners were invited.
+     */
+    private const RATE_LIMITS = [
+        'check' => 40,
+        'register' => 20,
+    ];
+
     private const RATE_WINDOW = 600;
 
     /** One global lock, so no two registrations can take the same last seat. */
@@ -93,10 +114,18 @@ class Gate
             return false;
         }
 
+        // Filterable so the limit can be loosened during the event without a
+        // deploy, if a big partner turns out to sit behind one address.
+        $limit = (int) \apply_filters(
+            'millboard/summit/rate_limit',
+            self::RATE_LIMITS[$bucket] ?? 20,
+            $bucket
+        );
+
         $key = 'mb_summit_rl_' . $bucket . '_' . md5($ip);
         $hits = (int) \get_transient($key);
 
-        if ($hits >= self::RATE_LIMIT) {
+        if ($hits >= $limit) {
             return true;
         }
 
@@ -243,7 +272,10 @@ class Gate
             return new \WP_REST_Response([
                 'ok' => false,
                 'reason' => 'rate_limited',
-                'message' => __('Too many attempts. Please wait a few minutes and try again.', 'granola'),
+                'message' => __(
+                    'Too many attempts from your network. Please wait a few minutes and try again, or reply to your invitation and we will register you.',
+                    'granola'
+                ),
             ], 429);
         }
 
@@ -281,7 +313,10 @@ class Gate
             return new \WP_REST_Response([
                 'ok' => false,
                 'reason' => 'rate_limited',
-                'message' => __('Too many attempts. Please wait a few minutes and try again.', 'granola'),
+                'message' => __(
+                    'Too many attempts from your network. Please wait a few minutes and try again, or reply to your invitation and we will register you.',
+                    'granola'
+                ),
             ], 429);
         }
 
