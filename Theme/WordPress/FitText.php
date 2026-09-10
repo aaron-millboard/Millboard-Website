@@ -57,6 +57,13 @@ class FitText
      */
     public static function remove_fit_text_support($args): array
     {
+        // Not every block registers typography support as an array. WooCommerce
+        // registers blocks whose supports are shaped differently, and unsetting
+        // an offset on a non-array value is fatal in PHP 8.
+        if (!isset($args['supports']['typography']) || !is_array($args['supports']['typography'])) {
+            return $args;
+        }
+
         unset($args['supports']['typography']['fitText']);
 
         return $args;
@@ -123,6 +130,10 @@ JS;
      */
     public static function remove_fit_text_attribute($parsed_block): array
     {
+        if (!isset($parsed_block['attrs']) || !is_array($parsed_block['attrs'])) {
+            return $parsed_block;
+        }
+
         unset($parsed_block['attrs']['fitText']);
 
         return $parsed_block;
