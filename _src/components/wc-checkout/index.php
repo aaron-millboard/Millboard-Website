@@ -111,6 +111,19 @@ if (!$checkout->is_registration_enabled() && $checkout->is_registration_required
                 </div>
             <?php endif; ?>
 
+            <?php
+            // The terms checkbox belongs with the form, not down in the payment
+            // section: payment sits in the grid's second row, so on a short order it
+            // was left on its own in the row gap.
+            //
+            // Rendered here rather than in checkout/payment.php because that markup
+            // is the fragment WooCommerce replaces on every update_order_review call.
+            // A copy left there would come back as a second checkbox, and the tick
+            // would be lost, the moment anything triggered a totals refresh, which
+            // this component's own script does 500ms after load.
+            wc_get_template('checkout/terms.php');
+            ?>
+
             <div class="checkout__section">
                 <div class="checkout__section-header">
                     <h2><?php esc_html_e('Shipping method', 'granola'); ?></h2>
