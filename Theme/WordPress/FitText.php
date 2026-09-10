@@ -19,9 +19,13 @@ namespace Theme\WordPress;
  *
  * A CSS guard alone is not enough: Perfmatters Remove Unused CSS runs on
  * en-gb and strips a rule whose class is on no page, so the guard is absent
- * at exactly the moment an editor first switches the option on. Removing the
- * attribute server-side means neither the class, the directives nor the
- * script ever reach the page, in every locale.
+ * at exactly the moment an editor first switches the option on. Handling it
+ * server-side means neither the class, the directives nor the script ever
+ * reach the page, in every locale.
+ *
+ * Three filters: the option is removed from the editor so it cannot be set,
+ * the attribute is dropped on render so content that already carries it is
+ * inert, and the class is stripped from the saved markup.
  *
  * This is a workaround for a core bug, not a theme feature. If core changes
  * findOptimalFontSize() to measure against a real container, delete this
@@ -31,8 +35,30 @@ class FitText
 {
     public static function init(): void
     {
+        \add_filter('register_block_type_args', [__CLASS__, 'remove_fit_text_support']);
         \add_filter('render_block_data', [__CLASS__, 'remove_fit_text_attribute']);
         \add_filter('render_block', [__CLASS__, 'remove_fit_text_class'], 10, 2);
+    }
+
+    /**
+     * Take the Fit text toggle out of the editor's Typography panel.
+     *
+     * get_block_editor_server_block_settings() passes 'supports' through to
+     * wp.blocks.unstable__bootstrapServerSideBlockDefinitions(), so dropping
+     * the flag at registration removes the control from the editor UI rather
+     * than leaving authors a switch that silently does nothing.
+     *
+     * Applied to every block type that declares it, currently core/paragraph
+     * and core/heading, so it still holds if core adds more.
+     *
+     * @param array $args Arguments the block type is registered with.
+     * @return array The arguments without fitText support.
+     */
+    public static function remove_fit_text_support($args): array
+    {
+        unset($args['supports']['typography']['fitText']);
+
+        return $args;
     }
 
     /**
