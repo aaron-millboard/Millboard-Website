@@ -31,6 +31,10 @@ if ($privacy_url !== '') {
             <h2 class="summit-form__heading"><?= esc_html($args['heading']); ?></h2>
         <?php } ?>
 
+        <?php if (!empty($args['description'])) { ?>
+            <p class="summit-form__description"><?= esc_html($args['description']); ?></p>
+        <?php } ?>
+
         <?php if (!empty($args['intro'])) { ?>
             <p class="summit-form__intro"><?= esc_html($args['intro']); ?></p>
         <?php } ?>

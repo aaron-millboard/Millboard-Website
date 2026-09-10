@@ -18,6 +18,7 @@ function filter_args(array $args): ?array
     $args = array_merge([
         'classes' => [],
         'heading' => '',
+        'description' => '',
         'intro' => '',
         'date_note' => '',
         'consent_text' => '',
