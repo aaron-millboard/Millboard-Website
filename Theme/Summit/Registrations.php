@@ -71,6 +71,52 @@ class Registrations
     public const META_INVITED_NAME = '_mb_summit_invited_name';
     public const META_EXPORTED = '_mb_summit_exported_at';
 
+    /**
+     * The one blog that holds every registration, network-wide.
+     *
+     * ⚠️ This is load-bearing. The four registration pages sit on THREE
+     * different subsites (UK and INT on en-gb, US on en-us, FR on fr-fr), and
+     * posts, post meta and WP_Query are all per-subsite. Without pinning the
+     * log to one blog each locale would keep its own separate list, and the
+     * 60-a-day cap would only ever count the subsite the visitor happened to be
+     * on: the 3rd could be filled three times over, once per locale.
+     *
+     * The network's main site is used because it is stable and unambiguous.
+     * Filterable in case the log ever needs moving, but it must never differ
+     * between requests or the counts stop meaning anything.
+     */
+    public static function log_blog_id(): int
+    {
+        $default = \is_multisite() ? (int) \get_main_site_id() : \get_current_blog_id();
+
+        return (int) \apply_filters('millboard/summit/log_blog_id', $default);
+    }
+
+    /**
+     * Runs a callback against the log blog, whatever subsite we started on.
+     *
+     * @param  callable $callback
+     * @return mixed The callback's return value.
+     */
+    private static function on_log_blog(callable $callback)
+    {
+        $needs_switch = \is_multisite() && \get_current_blog_id() !== self::log_blog_id();
+
+        if ($needs_switch) {
+            \switch_to_blog(self::log_blog_id());
+        }
+
+        try {
+            return $callback();
+        } finally {
+            // Always restore, including when the callback throws, or every
+            // later query in the request silently runs against the wrong blog.
+            if ($needs_switch) {
+                \restore_current_blog();
+            }
+        }
+    }
+
     public static function init(): void
     {
         \add_action('init', [self::class, 'register']);
@@ -97,7 +143,10 @@ class Registrations
             'publicly_queryable' => false,
             'exclude_from_search' => true,
             'show_ui' => true,
-            'show_in_menu' => true,
+            // Every registration lives on the log blog, so the other locales
+            // would only ever show an empty list. Hide the menu there rather
+            // than inviting someone to conclude nobody has registered.
+            'show_in_menu' => \get_current_blog_id() === self::log_blog_id(),
             'show_in_rest' => false,
             'menu_icon' => 'dashicons-tickets-alt',
             'supports' => ['title'],
@@ -117,6 +166,7 @@ class Registrations
      */
     public static function count_for_company(string $company_key): int
     {
+        return (int) self::on_log_blog(static function () use ($company_key) {
         $query = new \WP_Query([
             'post_type' => self::POST_TYPE,
             'post_status' => 'publish',
@@ -144,6 +194,7 @@ class Registrations
         ]);
 
         return (int) $query->found_posts;
+        });
     }
 
     /**
@@ -158,6 +209,7 @@ class Registrations
      */
     public static function count_for_day(string $day): int
     {
+        return (int) self::on_log_blog(static function () use ($day) {
         $query = new \WP_Query([
             'post_type' => self::POST_TYPE,
             'post_status' => 'publish',
@@ -180,6 +232,7 @@ class Registrations
         ]);
 
         return (int) $query->found_posts;
+        });
     }
 
     /**
@@ -206,6 +259,7 @@ class Registrations
      */
     public static function create(array $data)
     {
+        return self::on_log_blog(static function () use ($data) {
         $title = sprintf(
             '%s %s - %s',
             $data['first_name'] ?? '',
@@ -256,6 +310,7 @@ class Registrations
         }
 
         return $post_id;
+        });
     }
 
     /**
@@ -268,6 +323,7 @@ class Registrations
      */
     public static function export_rows(): array
     {
+        return (array) self::on_log_blog(static function () {
         $ids = \get_posts([
             'post_type' => self::POST_TYPE,
             'post_status' => 'publish',
@@ -313,6 +369,7 @@ class Registrations
         }
 
         return $rows;
+        });
     }
 
     /** @param array<string,string> $columns */

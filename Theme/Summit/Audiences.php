@@ -117,7 +117,9 @@ class Audiences
 
     public static function cap_per_day(): int
     {
-        $cap = (int) \get_option(self::OPTION_CAP_PER_DAY, self::DEFAULT_CAP_PER_DAY);
+        // Network-wide: 60 is a room capacity shared by every locale, not a
+        // per-subsite setting.
+        $cap = (int) \get_site_option(self::OPTION_CAP_PER_DAY, self::DEFAULT_CAP_PER_DAY);
 
         return $cap > 0 ? $cap : self::DEFAULT_CAP_PER_DAY;
     }
