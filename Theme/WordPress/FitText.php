@@ -36,6 +36,7 @@ class FitText
     public static function init(): void
     {
         \add_filter('register_block_type_args', [__CLASS__, 'remove_fit_text_support']);
+        \add_action('enqueue_block_editor_assets', [__CLASS__, 'remove_fit_text_control']);
         \add_filter('render_block_data', [__CLASS__, 'remove_fit_text_attribute']);
         \add_filter('render_block', [__CLASS__, 'remove_fit_text_class'], 10, 2);
     }
@@ -59,6 +60,55 @@ class FitText
         unset($args['supports']['typography']['fitText']);
 
         return $args;
+    }
+
+    /**
+     * Remove the Fit text control from the editor UI.
+     *
+     * remove_fit_text_support() cleans the server registry, but that is not
+     * enough on its own: processBlockType() in wp-includes/js/dist/blocks.js
+     * spreads the client registration AFTER the bootstrapped server
+     * definition, and block-library.js ships supports.typography.fitText for
+     * three core blocks. The client value wins.
+     *
+     * A blocks.registerBlockType filter does win, but only if it is added
+     * before those blocks register. The theme's editor bundle loads after
+     * wp-block-library, and blocks.js has no hookAdded listener, so a filter
+     * added later is never reapplied. Attaching this to wp-blocks prints it
+     * between wp-blocks and wp-block-library, which depends on it.
+     *
+     * @return void
+     */
+    public static function remove_fit_text_control(): void
+    {
+        $js = <<<'JS'
+( function () {
+    if ( ! window.wp || ! window.wp.hooks ) {
+        return;
+    }
+
+    window.wp.hooks.addFilter(
+        'blocks.registerBlockType',
+        'millboard/fit-text',
+        function ( settings ) {
+            var typography = settings && settings.supports && settings.supports.typography;
+
+            if ( ! typography || ! ( 'fitText' in typography ) ) {
+                return settings;
+            }
+
+            typography = Object.assign( {}, typography );
+            delete typography.fitText;
+
+            return Object.assign( {}, settings, {
+                supports: Object.assign( {}, settings.supports, { typography: typography } )
+            } );
+        }
+    );
+}() );
+JS;
+
+        \wp_add_inline_script('wp-blocks', $js);
     }
 
     /**
