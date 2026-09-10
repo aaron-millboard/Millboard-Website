@@ -253,6 +253,15 @@
             margin: 0;
         }
 
+        // The business branch shows the same sentence as a row of its own, so the
+        // billing grid's row gap would set it a whole field away from the objection
+        // notice it belongs to. Pulled back to the spacing the consumer fieldset
+        // uses. Only ever matches that row: inside the fieldset the paragraph is not
+        // a form row.
+        &__policy.form-row {
+            margin-top: calc(var(--space--3xs) - var(--space--m));
+        }
+
         &__option {
             @include typestyle-small;
 
