@@ -98,18 +98,31 @@ class FitText
         'blocks.registerBlockType',
         'millboard/fit-text',
         function ( settings ) {
-            var typography = settings && settings.supports && settings.supports.typography;
+            // This runs for every block registration in the editor. It must
+            // never throw: an exception here takes the whole editor white.
+            try {
+                var supports = settings && settings.supports;
+                var typography = supports && supports.typography;
 
-            if ( ! typography || ! ( 'fitText' in typography ) ) {
+                // Not every block registers typography support as an object.
+                // 'fitText' in true is a TypeError, not false.
+                if ( ! typography || typeof typography !== 'object' ) {
+                    return settings;
+                }
+
+                if ( ! Object.prototype.hasOwnProperty.call( typography, 'fitText' ) ) {
+                    return settings;
+                }
+
+                typography = Object.assign( {}, typography );
+                delete typography.fitText;
+
+                return Object.assign( {}, settings, {
+                    supports: Object.assign( {}, supports, { typography: typography } )
+                } );
+            } catch ( e ) {
                 return settings;
             }
-
-            typography = Object.assign( {}, typography );
-            delete typography.fitText;
-
-            return Object.assign( {}, settings, {
-                supports: Object.assign( {}, settings.supports, { typography: typography } )
-            } );
         }
     );
 }() );
