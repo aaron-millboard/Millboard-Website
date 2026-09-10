@@ -24,7 +24,14 @@
     }
 
     &__heading {
-        margin: 0 0 px-to-rem(16);
+        margin: 0 0 px-to-rem(8);
+    }
+
+    // The "Fields marked * are required." line, carried over from the block
+    // this replaced.
+    &__description {
+        margin: 0 0 px-to-rem(24);
+        font-size: px-to-rem(16);
     }
 
     &__intro,
