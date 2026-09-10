@@ -46,15 +46,18 @@ class FitText
     }
 
     /**
-     * Take the Fit text toggle out of the editor's Typography panel.
+     * Drop fitText support from the server-side block registry.
      *
-     * get_block_editor_server_block_settings() passes 'supports' through to
-     * wp.blocks.unstable__bootstrapServerSideBlockDefinitions(), so dropping
-     * the flag at registration removes the control from the editor UI rather
-     * than leaving authors a switch that silently does nothing.
+     * This keeps the registry and the block-types REST responses consistent
+     * with the render filters below. It does NOT remove the control from the
+     * editor: processBlockType() in wp-includes/js/dist/blocks.js builds a
+     * block as { ...defaults, ...bootstrappedBlockType, ...blockSettings },
+     * so the client registration spreads last and wins, and block-library.js
+     * ships supports.typography.fitText for three core blocks. Verified, not
+     * assumed. The toggle is therefore still visible in the editor.
      *
-     * Applied to every block type that declares it, currently core/paragraph
-     * and core/heading, so it still holds if core adds more.
+     * Applied to every block type that declares it, so it still holds if core
+     * adds more.
      *
      * @param array $args Arguments the block type is registered with.
      * @return array The arguments without fitText support.
