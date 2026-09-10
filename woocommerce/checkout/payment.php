@@ -46,7 +46,21 @@ if (! wp_doing_ajax()) {
         <br/><button type="submit" class="button alt<?php echo esc_attr(wc_wp_theme_get_element_class_name('button') ? ' ' . wc_wp_theme_get_element_class_name('button') : ''); ?>" name="woocommerce_checkout_update_totals" value="<?php esc_attr_e('Update totals', 'woocommerce'); ?>"><?php esc_html_e('Update totals', 'woocommerce'); ?></button>
     </noscript>
 
-    <?php wc_get_template('checkout/terms.php'); ?>
+    <?php
+    // The terms checkbox is rendered up with the checkout form, above the shipping
+    // method, by the wc-checkout component. It cannot live here as well: this markup
+    // is the fragment WooCommerce replaces on every update_order_review call, so a
+    // copy here reappears as a second checkbox and drops the customer's tick as soon
+    // as anything refreshes the totals.
+    //
+    // Kept, guarded, for the case where the component renders nothing because the
+    // checkout has no fields at all. terms.php's own `millboard_checkout_terms_rendered`
+    // guard stops it rendering twice in one request; the AJAX check stops it coming
+    // back in a fragment.
+    if (! wp_doing_ajax()) {
+        wc_get_template('checkout/terms.php');
+    }
+    ?>
 
     <div class="woocommerce__actions">
 

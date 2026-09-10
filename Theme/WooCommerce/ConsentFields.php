@@ -92,8 +92,10 @@ class ConsentFields
      *
      * `wording` is stamped onto every order so that a later change to the copy does
      * not invalidate the evidence for orders taken under the previous wording. Bump
-     * it whenever `consumer_legend`, `consumer_hint`, `consumer_options` or
-     * `business_label` change.
+     * it whenever a string the customer reads changes: `consumer_legend`,
+     * `consumer_hint`, `consumer_options`, `consumer_terms`, `business_label` or the
+     * privacy sentence. Nothing filters on the value, so bumping is free; guessing
+     * later at which text an order was taken under is not.
      *
      * @return array<string, array<string, mixed>>
      */
@@ -101,7 +103,7 @@ class ConsentFields
     {
         $locales = [
             'fr_FR' => [
-                'wording' => 'fr-2026-08-v4',
+                'wording' => 'fr-2026-09-v5',
 
                 // Consumer branch: a single required yes/no covering BOTH channels.
                 //
@@ -155,12 +157,26 @@ class ConsentFields
                 // an easy objection, which is what the exemption is conditional on.
                 'business_label' => 'Nous traitons vos données professionnelles sur la base de l\'intérêt légitime afin de vous adresser des informations pertinentes par e-mail, par courrier et par téléphone, conformément à notre politique de confidentialité. Si vous ne souhaitez pas être contacté à des fins de prospection, cochez cette case.',
 
-                // The policy link is back, at James's request. It duplicates the one in
-                // WooCommerce's own privacy block above the Order button, deliberately:
-                // his wording ends with an explicit route to the notice, and a consent
-                // statement that relies on boilerplate elsewhere on the page is weaker.
+                // The privacy sentence, shown to BOTH branches, requested by Aaron on
+                // 10 Sep 2026. It replaces "Consultez notre politique de
+                // confidentialité." and is WooCommerce's own checkout privacy wording,
+                // so the consent block says what the data is used for rather than only
+                // pointing at the notice. Duplicating WooCommerce's privacy block above
+                // the Order button is deliberate, as it was when this was a bare link:
+                // a consent statement that leans on boilerplate elsewhere on the page is
+                // weaker than one that carries its own.
+                //
+                // %s is the link, so the linked words stay part of the sentence rather
+                // than trailing it.
                 'policy_link_text' => 'politique de confidentialité',
-                'policy_prompt' => 'Consultez notre %s.',
+                'policy_prompt' => 'Vos données personnelles seront utilisées pour traiter '
+                    . 'votre commande, accompagner votre expérience sur ce site web et à '
+                    . 'd\'autres fins décrites dans notre %s.',
+
+                // The business branch gets the same sentence as a paragraph under the
+                // objection notice. Its own row, because the notice is a checkbox label
+                // and a label may only hold phrasing content.
+                'show_policy_for_business' => true,
 
                 // Company name strengthens the record that we approached the person
                 // in a professional capacity, which matters most for sole traders.
@@ -181,6 +197,7 @@ class ConsentFields
         // 1001 so the Checkout Field Editor (1000) has already built the array.
         \add_filter('woocommerce_checkout_fields', [__CLASS__, 'add_fields'], 1001);
         \add_filter('woocommerce_form_field_' . self::FIELD_TYPE, [__CLASS__, 'render_field'], 10, 4);
+        \add_filter('woocommerce_form_field_checkbox', [__CLASS__, 'append_business_policy'], 10, 4);
         \add_filter('woocommerce_checkout_posted_data', [__CLASS__, 'discard_inapplicable_branch']);
         \add_action('woocommerce_after_checkout_validation', [__CLASS__, 'validate'], 10, 2);
         \add_action('woocommerce_checkout_create_order', [__CLASS__, 'record_permission'], 10, 2);
@@ -420,20 +437,99 @@ class ConsentFields
                 . '</p>';
         }
 
-        $privacy_url = \get_privacy_policy_url();
-
-        if ($privacy_url !== '' && !empty($config['policy_prompt'])) {
-            $link = '<a href="' . \esc_url($privacy_url) . '" target="_blank" rel="noopener">'
-                . \esc_html((string) ($config['policy_link_text'] ?? '')) . '</a>';
-
-            $html .= '<p class="mb-consent__policy">'
-                . sprintf(\esc_html((string) $config['policy_prompt']), $link)
-                . '</p>';
-        }
+        $html .= self::policy_paragraph($config);
 
         $html .= '</fieldset></div>';
 
         return $html;
+    }
+
+    /**
+     * Append the privacy sentence under the legitimate-interest objection.
+     *
+     * A row of its own rather than part of the notice, because the notice is a
+     * checkbox label and a label may only hold phrasing content, and because
+     * WooCommerce wraps a field in a `<p>`, which a paragraph inside it would close.
+     *
+     * Gated on the marker class, not on `is_checkout()`: the class is only ever
+     * added by add_fields(), so the sentence can only appear where the audience
+     * question and the JS that hides this row both exist. The same checkbox is a
+     * billing field, so it also renders on the account address form, where nothing
+     * would ever hide it again.
+     *
+     * `data-priority` is set one above the objection's so WooCommerce's own
+     * address-i18n re-sort, which runs on every country change, puts the row back
+     * where it started.
+     *
+     * @param string $field Markup WooCommerce built for the checkbox.
+     * @param string $key
+     * @param array<string, mixed> $args
+     * @param string|null $value
+     */
+    public static function append_business_policy($field, $key, $args, $value): string
+    {
+        $field = (string) $field;
+
+        if ($key !== self::OBJECTION_FIELD || $field === '') {
+            return $field;
+        }
+
+        if (!in_array('mb-consent--business', (array) ($args['class'] ?? []), true)) {
+            return $field;
+        }
+
+        $config = self::config();
+
+        if ($config === null || empty($config['show_policy_for_business'])) {
+            return $field;
+        }
+
+        $priority = (int) ($args['priority'] ?? 160) + 1;
+
+        return $field . self::policy_paragraph(
+            $config,
+            ['form-row', 'form-row-wide', 'mb-consent', 'mb-consent--business'],
+            $priority
+        );
+    }
+
+    /**
+     * The privacy sentence, with the notice linked inside it.
+     *
+     * Both branches show the same words, so they come from one place. The pattern is
+     * escaped first and the anchor substituted afterwards, so nothing in config can
+     * introduce markup.
+     *
+     * @param array<string, mixed> $config
+     * @param array<int, string> $row_classes Wrapper classes for when the paragraph
+     *                                        stands as a checkout row of its own.
+     * @param int|null $priority
+     */
+    private static function policy_paragraph(array $config, array $row_classes = [], ?int $priority = null): string
+    {
+        $prompt = (string) ($config['policy_prompt'] ?? '');
+
+        if ($prompt === '') {
+            return '';
+        }
+
+        $text = (string) ($config['policy_link_text'] ?? '');
+        $privacy_url = \get_privacy_policy_url();
+
+        // Left unlinked rather than dropped when the locale has no privacy page set.
+        // The sentence says what the data is used for, which is worth reading on its
+        // own; an empty anchor, or silence, is worse than a missing route to the
+        // full notice.
+        $link = ($privacy_url === '' || $text === '')
+            ? \esc_html($text)
+            : '<a href="' . \esc_url($privacy_url) . '" target="_blank" rel="noopener">'
+                . \esc_html($text) . '</a>';
+
+        $classes = array_unique(array_merge(['mb-consent__policy'], $row_classes));
+
+        return '<p class="' . \esc_attr(implode(' ', $classes)) . '"'
+            . ($priority === null ? '' : ' data-priority="' . \esc_attr((string) $priority) . '"')
+            . '>' . sprintf(\esc_html($prompt), $link) . '</p>';
     }
 
     /**
