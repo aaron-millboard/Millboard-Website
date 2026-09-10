@@ -208,7 +208,21 @@ class Cli
             count(array_unique(array_column($invites, 'company_key'))),
             $cap
         ));
-        \WP_CLI::log(sprintf('%d people registered.', count($rows)));
+        // Count declines separately. Lumping them in reads as "5 people
+        // registered" while the audience tally below says 4, and on the FR list
+        // (17 invited people) declines could easily outnumber acceptances.
+        $declined = 0;
+        foreach ($rows as $row) {
+            if (($row['status'] ?? '') === Registrations::STATUS_DECLINED) {
+                $declined++;
+            }
+        }
+
+        \WP_CLI::log(sprintf(
+            '%d people registered%s.',
+            count($rows) - $declined,
+            $declined > 0 ? sprintf(', %d declined', $declined) : ''
+        ));
 
         // A populated per-subsite copy means the list was imported before the
         // network-wide change was deployed. InviteList::all() falls back to it
