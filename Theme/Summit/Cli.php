@@ -123,6 +123,7 @@ class Cli
                     'name' => $rec['name'] ?? '',
                     'company' => $rec['company'] ?? '',
                     'category' => $rec['category'] ?? '',
+                    'audience' => $rec['audience'] ?? self::audience_from_category($rec['category'] ?? ''),
                 ];
             }
 
@@ -159,12 +160,39 @@ class Cli
                 'name' => $assoc['name'] ?? '',
                 'company' => $assoc['company'] ?? '',
                 'category' => $assoc['category'] ?? '',
+                'audience' => $assoc['audience'] ?? self::audience_from_category($assoc['category'] ?? ''),
             ];
         }
 
         fclose($handle);
 
         return $rows;
+    }
+
+    /**
+     * Derives the audience from the Category column, for a CSV that has no
+     * audience column of its own.
+     *
+     * The lists spell their categories inconsistently ("FR - Installer",
+     * "FR - Installeur", "FR - Installateur", "Int", "US - Reseller"), so match
+     * on the prefix only.
+     */
+    private static function audience_from_category(string $category): string
+    {
+        $c = strtolower(trim($category));
+
+        foreach ([
+            'uk' => Audiences::UK,
+            'int' => Audiences::INT,
+            'fr' => Audiences::FR,
+            'us' => Audiences::US,
+        ] as $prefix => $audience) {
+            if (strpos($c, $prefix) === 0) {
+                return $audience;
+            }
+        }
+
+        return '';
     }
 
     /** Where registration currently stands, per company and per date. */
@@ -182,16 +210,42 @@ class Cli
         ));
         \WP_CLI::log(sprintf('%d people registered.', count($rows)));
 
-        $by_date = [];
+        // The per-day figures are the ones that matter, and they are not the
+        // same as a headcount: an INT guest sits on two days and a US guest on
+        // three. See Audiences for why the days are not independent.
+        $day_cap = Audiences::cap_per_day();
+        $used = Registrations::counts_by_day();
+
+        \WP_CLI::log(sprintf('Seats, cap %d per day:', $day_cap));
+        foreach ($used as $day => $count) {
+            \WP_CLI::log(sprintf('  %-16s %3d used, %3d left%s',
+                $day, $count, $day_cap - $count, $count >= $day_cap ? '   FULL' : ''));
+        }
+
+        // Everyone on the 3rd is also on the 4th, and no UK guest is on the
+        // 3rd, so the 3rd's occupancy IS the combined non-UK headcount and it
+        // comes straight off the UK's allowance on the 4th.
+        $non_uk = $used[Audiences::DAY_3RD] ?? 0;
+        \WP_CLI::log(sprintf('Non-UK guests booked (INT + FR + US): %d of %d', $non_uk, $day_cap));
+        \WP_CLI::log(sprintf('UK places left on the 4th: %d',
+            max(0, $day_cap - ($used[Audiences::DAY_4TH] ?? 0))));
+        \WP_CLI::log(sprintf('UK places left on the 5th: %d',
+            max(0, $day_cap - ($used[Audiences::DAY_5TH] ?? 0))));
+
+        $by_audience = [];
         $by_company = [];
 
         foreach ($rows as $row) {
-            $by_date[$row['preferred_date']] = ($by_date[$row['preferred_date']] ?? 0) + 1;
+            if (($row['status'] ?? '') === Registrations::STATUS_DECLINED) {
+                continue;
+            }
+            $by_audience[$row['audience']] = ($by_audience[$row['audience']] ?? 0) + 1;
             $by_company[$row['company']] = ($by_company[$row['company']] ?? 0) + 1;
         }
 
-        foreach ($by_date as $date => $count) {
-            \WP_CLI::log(sprintf('  %-16s %d', $date, $count));
+        \WP_CLI::log('People by audience:');
+        foreach ($by_audience as $aud => $count) {
+            \WP_CLI::log(sprintf('  %-4s %d', $aud, $count));
         }
 
         $full = array_filter($by_company, static fn($n) => $n >= $cap);
