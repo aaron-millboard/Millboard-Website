@@ -46,7 +46,10 @@ class InviteList
      * @var array<string,string>
      */
     private const ALIASES = [
-        // 'wingham' => 'covers',  // both on covers.biz, awaiting a decision
+        // Both sit on covers.biz and Aaron confirmed on 10 Sep 2026 that they
+        // are one business, so they share one allocation of places rather than
+        // getting two.
+        'wingham' => 'covers',
     ];
 
     public static function init(): void
