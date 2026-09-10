@@ -108,7 +108,11 @@ class InviteList
      */
     public static function all(): array
     {
-        $list = \get_option(self::OPTION, []);
+        // NETWORK-wide, not per-subsite. The four registration pages live on
+        // three different subsites (UK and INT on en-gb, US on en-us, FR on
+        // fr-fr), and get_option() would give each of them its own separate
+        // copy of the list. One list, imported once.
+        $list = \get_site_option(self::OPTION, []);
 
         return is_array($list) ? $list : [];
     }
@@ -130,7 +134,9 @@ class InviteList
     /** How many people from one company may attend. */
     public static function cap_per_company(): int
     {
-        $cap = (int) \get_option(self::OPTION_CAP, self::DEFAULT_CAP);
+        // Network-wide, like the list itself, so the cap cannot differ between
+        // the locales the four pages sit on.
+        $cap = (int) \get_site_option(self::OPTION_CAP, self::DEFAULT_CAP);
 
         return $cap > 0 ? $cap : self::DEFAULT_CAP;
     }
@@ -198,7 +204,7 @@ class InviteList
             ];
         }
 
-        \update_option(self::OPTION, $list, false);
+        \update_site_option(self::OPTION, $list);
 
         return ['imported' => count($list), 'skipped' => $skipped];
     }
