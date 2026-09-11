@@ -115,4 +115,5 @@ if (file_exists($autoloader = __DIR__ . '/vendor/autoload.php')) {
 \Theme\Summit\InviteList::init();
 \Theme\Summit\Registrations::init();
 \Theme\Summit\Gate::init();
+\Theme\Summit\Admin::init();
 \Theme\Summit\Cli::init();
