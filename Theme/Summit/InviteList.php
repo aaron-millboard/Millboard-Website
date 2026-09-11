@@ -159,6 +159,121 @@ class InviteList
     }
 
     /**
+     * Adds one person to the allowlist, leaving everyone else alone.
+     *
+     * Deliberately separate from replace(): the CLI import REPLACES the whole
+     * list from a file, which is right when the spreadsheet is the source of
+     * truth, but would wipe anyone added by hand in the admin. This appends.
+     *
+     * @return array{ok:bool,message:string}
+     */
+    public static function add(string $email, string $name, string $company, string $audience): array
+    {
+        $email = self::normalise_email($email);
+        $name = trim($name);
+        $company = trim($company);
+        $audience = strtoupper(trim($audience));
+
+        if (!\is_email($email)) {
+            return ['ok' => false, 'message' => sprintf('%s is not a valid email address.', $email ?: '(blank)')];
+        }
+
+        if ($company === '') {
+            return ['ok' => false, 'message' => 'A company is required: the two-per-company cap is counted against it.'];
+        }
+
+        if (!Audiences::is_valid($audience)) {
+            return [
+                'ok' => false,
+                'message' => sprintf('Audience must be one of %s.', implode(', ', Audiences::ALL)),
+            ];
+        }
+
+        $list = self::all();
+
+        if (isset($list[$email])) {
+            return [
+                'ok' => false,
+                'message' => sprintf('%s is already invited, under %s.', $email, $list[$email]['company']),
+            ];
+        }
+
+        $key = self::company_key($company);
+
+        // A typo in the company name creates a NEW company with its own two
+        // places, silently. Worth saying which existing company it joins.
+        $existing = null;
+        foreach ($list as $record) {
+            if (($record['company_key'] ?? '') === $key) {
+                $existing = $record['company'];
+                break;
+            }
+        }
+
+        $list[$email] = [
+            'name' => $name,
+            'company' => $company,
+            'company_key' => $key,
+            'category' => 'Added in admin',
+            'audience' => $audience,
+        ];
+
+        \update_site_option(self::OPTION, $list);
+
+        return [
+            'ok' => true,
+            'message' => $existing !== null
+                ? sprintf('Added %s to %s, sharing the two places with "%s".', $email, $audience, $existing)
+                : sprintf(
+                    'Added %s to %s. NOTE: "%s" is a new company, so it gets its own two places. '
+                    . 'If they should share with an existing company, remove this and re-add with '
+                    . 'that company spelled the same way.',
+                    $email,
+                    $audience,
+                    $company
+                ),
+        ];
+    }
+
+    /**
+     * Removes one person from the allowlist.
+     *
+     * Does NOT touch any registration they have already made: the log is the
+     * record of who is coming, and deleting an invite must not quietly free a
+     * seat someone is holding.
+     *
+     * @return array{ok:bool,message:string}
+     */
+    public static function remove(string $email): array
+    {
+        $email = self::normalise_email($email);
+        $list = self::all();
+
+        if (!isset($list[$email])) {
+            return ['ok' => false, 'message' => sprintf('%s is not on the list.', $email)];
+        }
+
+        $company = $list[$email]['company'] ?? '';
+        unset($list[$email]);
+        \update_site_option(self::OPTION, $list);
+
+        $registered = Registrations::exists_for_email($email);
+
+        return [
+            'ok' => true,
+            'message' => $registered
+                ? sprintf(
+                    'Removed %s (%s) from the invite list. They have ALREADY REGISTERED, and that '
+                    . 'registration still stands and still uses a seat. Delete it under Summit '
+                    . 'registrations if they are not coming.',
+                    $email,
+                    $company
+                )
+                : sprintf('Removed %s (%s) from the invite list.', $email, $company),
+        ];
+    }
+
+    /**
      * Replaces the allowlist wholesale.
      *
      * Rows are re-normalised here rather than trusted from the import file, so
