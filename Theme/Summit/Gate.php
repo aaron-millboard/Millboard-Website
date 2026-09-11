@@ -199,8 +199,9 @@ class Gate
             ];
         }
 
-        // Rule 3.
-        $company_cap = InviteList::cap_per_company();
+        // Rule 3. The cap is looked up per company, so an exception granted in
+        // the admin is honoured here without a code change.
+        $company_cap = InviteList::cap_per_company($invite['company_key']);
         $taken = Registrations::count_for_company($invite['company_key']);
 
         if ($taken >= $company_cap) {
