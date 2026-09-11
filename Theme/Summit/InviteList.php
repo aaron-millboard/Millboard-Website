@@ -148,14 +148,59 @@ class InviteList
         return isset($list[$key]) && is_array($list[$key]) ? $list[$key] : null;
     }
 
-    /** How many people from one company may attend. */
-    public static function cap_per_company(): int
+    /** Per-company exceptions to the cap, keyed by company_key. */
+    public const OPTION_OVERRIDES = 'mb_summit_company_cap_overrides';
+
+    /**
+     * How many people from one company may attend.
+     *
+     * Pass a company_key to pick up an exception. Exceptions exist because they
+     * are genuinely needed: Hythe Landscapes asked for a third place within
+     * hours of the form going live. Without a way to grant that in the admin,
+     * every such request is a code change and a deploy.
+     */
+    public static function cap_per_company(string $company_key = ''): int
     {
         // Network-wide, like the list itself, so the cap cannot differ between
         // the locales the four pages sit on.
         $cap = (int) \get_site_option(self::OPTION_CAP, self::DEFAULT_CAP);
+        $cap = $cap > 0 ? $cap : self::DEFAULT_CAP;
 
-        return $cap > 0 ? $cap : self::DEFAULT_CAP;
+        if ($company_key === '') {
+            return $cap;
+        }
+
+        $overrides = self::cap_overrides();
+
+        return isset($overrides[$company_key]) && (int) $overrides[$company_key] > 0
+            ? (int) $overrides[$company_key]
+            : $cap;
+    }
+
+    /** @return array<string,int> company_key => their own cap */
+    public static function cap_overrides(): array
+    {
+        $overrides = \get_site_option(self::OPTION_OVERRIDES, []);
+
+        return is_array($overrides) ? $overrides : [];
+    }
+
+    /**
+     * Grants one company a different number of places, or clears the exception.
+     *
+     * @param int $cap 0 clears it and puts them back on the standard cap.
+     */
+    public static function set_cap_override(string $company_key, int $cap): void
+    {
+        $overrides = self::cap_overrides();
+
+        if ($cap > 0) {
+            $overrides[$company_key] = $cap;
+        } else {
+            unset($overrides[$company_key]);
+        }
+
+        \update_site_option(self::OPTION_OVERRIDES, $overrides);
     }
 
     /**

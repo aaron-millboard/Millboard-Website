@@ -185,10 +185,14 @@ class Registrations
             'publicly_queryable' => false,
             'exclude_from_search' => true,
             'show_ui' => true,
-            // Every registration lives on the log blog, so the other locales
-            // would only ever show an empty list. Hide the menu there rather
-            // than inviting someone to conclude nobody has registered.
-            'show_in_menu' => \get_current_blog_id() === self::log_blog_id(),
+            // ⚠️ Never show the built-in list screen. The log lives on the
+            // network's main site (blog 1), but /en-gb/wp-admin/ resolves to
+            // blog 3, so a CPT list screen would always be on the wrong blog
+            // and always read "no registrations" no matter how many there are.
+            // Registrations are listed on the Summit admin page instead, which
+            // reads through on_log_blog() and is therefore correct from any
+            // site. See Theme\Summit\Admin.
+            'show_in_menu' => false,
             'show_in_rest' => false,
             'menu_icon' => 'dashicons-tickets-alt',
             'supports' => ['title'],
@@ -353,6 +357,88 @@ class Registrations
         }
 
         return $post_id;
+        });
+    }
+
+    /**
+     * Registrations for the admin table, newest first, with their post ids.
+     *
+     * Separate from export_rows() because that one feeds the HubSpot import and
+     * should not carry a WordPress id column.
+     *
+     * @return array<int,array<string,mixed>>
+     */
+    public static function list_rows(): array
+    {
+        return (array) self::on_log_blog(static function () {
+            $ids = \get_posts([
+                'post_type' => self::POST_TYPE,
+                'post_status' => 'publish',
+                'posts_per_page' => -1,
+                'fields' => 'ids',
+                'orderby' => 'date',
+                'order' => 'DESC',
+            ]);
+
+            $rows = [];
+
+            foreach ($ids as $id) {
+                $days = \get_post_meta($id, self::META_DAYS, false);
+
+                $rows[] = [
+                    'id' => (int) $id,
+                    'registered_at' => \get_post_time('Y-m-d H:i', true, $id),
+                    'audience' => (string) \get_post_meta($id, self::META_AUDIENCE, true),
+                    'first_name' => (string) \get_post_meta($id, self::META_FIRST_NAME, true),
+                    'last_name' => (string) \get_post_meta($id, self::META_LAST_NAME, true),
+                    'email' => (string) \get_post_meta($id, self::META_EMAIL, true),
+                    'company' => (string) \get_post_meta($id, self::META_COMPANY, true),
+                    'company_key' => (string) \get_post_meta($id, self::META_COMPANY_KEY, true),
+                    'days' => is_array($days) ? $days : [],
+                    'status' => (string) \get_post_meta($id, self::META_STATUS, true),
+                    'source' => (string) \get_post_meta($id, self::META_SOURCE, true),
+                ];
+            }
+
+            return $rows;
+        });
+    }
+
+    /**
+     * Deletes one registration, freeing the seats and the company place it held.
+     *
+     * @return array{ok:bool,message:string}
+     */
+    public static function delete(int $post_id): array
+    {
+        return (array) self::on_log_blog(static function () use ($post_id) {
+            $post = \get_post($post_id);
+
+            if (!$post || $post->post_type !== self::POST_TYPE) {
+                return ['ok' => false, 'message' => 'That registration no longer exists.'];
+            }
+
+            $email = (string) \get_post_meta($post_id, self::META_EMAIL, true);
+            $company = (string) \get_post_meta($post_id, self::META_COMPANY, true);
+            $days = \get_post_meta($post_id, self::META_DAYS, false);
+
+            // Force, not trash: a trashed post still holds its meta, and a
+            // trashed registration that still counted towards the caps would be
+            // the worst of both worlds.
+            if (!\wp_delete_post($post_id, true)) {
+                return ['ok' => false, 'message' => 'Could not delete that registration.'];
+            }
+
+            return [
+                'ok' => true,
+                'message' => sprintf(
+                    'Deleted the registration for %s (%s). That frees %s and one of %s\'s places.',
+                    $email,
+                    $company,
+                    is_array($days) && $days ? implode(' and ', $days) : 'no days',
+                    $company
+                ),
+            ];
         });
     }
 
