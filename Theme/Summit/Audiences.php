@@ -70,7 +70,11 @@ class Audiences
         self::UK => ['preferred_date', 'workshops', 'factory_tour', 'opt_out'],
         self::INT => ['opt_out'],
         self::US => ['opt_out'],
-        self::FR => ['attending', 'email_contact', 'phone_contact'],
+        // FR asked for the two contact-consent radios to be replaced with the
+        // same legitimate-interest paragraph and opt-out checkbox the other
+        // audiences use, in French (Aaron, 14 Sep 2026). No FR registration had
+        // been taken at that point, so nothing was lost by dropping them.
+        self::FR => ['attending', 'opt_out'],
     ];
 
     public static function is_valid(string $audience): bool
