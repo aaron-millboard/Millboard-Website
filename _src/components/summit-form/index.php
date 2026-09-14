@@ -22,7 +22,9 @@ $asks = (array) ($args['asks'] ?? []);
 $dates = (array) ($args['dates'] ?? []);
 $workshops = (array) ($args['workshops'] ?? []);
 $assigned_days = (array) ($args['assigned_days'] ?? []);
+$assigned_days_text = (string) ($args['assigned_days_text'] ?? '');
 $privacy_url = trim((string) ($args['privacy_url'] ?? ''));
+$t = (array) ($args['t'] ?? []);
 
 // The block cannot work without knowing its audience. filter_args returns null
 // on the front end in that case, so this only ever shows in the editor.
@@ -40,15 +42,26 @@ if (empty($args['has_audience'])) { ?>
 }
 
 // The consent sentence mentions the privacy policy; link it if the editor gave
-// us a URL, otherwise leave the text alone rather than inventing a link.
+// us a URL, otherwise leave the text alone rather than inventing a link. The
+// phrase to link differs by language, so it is read from the same place as the
+// sentence it sits in rather than being guessed at here.
 $consent_text = (string) ($args['consent_text'] ?? '');
-if ($privacy_url !== '' && $consent_text !== '') {
+$privacy_phrase = $audience === \Theme\Summit\Audiences::FR
+    ? \Theme\Summit\Strings::fr('privacy_phrase')
+    : 'privacy policy';
+
+if ($privacy_url !== '' && $consent_text !== '' && $privacy_phrase !== '') {
     $consent_text = str_replace(
-        'privacy policy',
-        '<a href="' . esc_url($privacy_url) . '">privacy policy</a>',
+        $privacy_phrase,
+        '<a href="' . esc_url($privacy_url) . '">' . esc_html($privacy_phrase) . '</a>',
         $consent_text
     );
 }
+
+// The French consent notice is four paragraphs where the English is one.
+// Splitting on blank lines renders both properly and leaves the English
+// output exactly as it was.
+$consent_paragraphs = preg_split('/\R{2,}/', $consent_text, -1, PREG_SPLIT_NO_EMPTY) ?: [];
 ?>
 <section <?= \Granola\Helpers::build_attributes($args['attributes']); ?>>
     <div class="summit-form__inner">
@@ -67,14 +80,17 @@ if ($privacy_url !== '' && $consent_text !== '') {
 
         <noscript>
             <p class="summit-form__error" role="alert">
-                <?= esc_html__(
-                    'This registration form needs JavaScript enabled. Please turn it on and reload the page, or reply to your invitation and we will register you.',
-                    'granola'
-                ); ?>
+                <?= esc_html($t['noscript']); ?>
             </p>
         </noscript>
 
-        <form class="summit-form__form" data-summit-form data-summit-audience="<?= esc_attr($audience); ?>" novalidate>
+        <?php /* The script has three messages of its own. They ride on the form
+                 so the page's language reaches them; the script keeps the
+                 English as its fallback. */ ?>
+        <form class="summit-form__form" data-summit-form data-summit-audience="<?= esc_attr($audience); ?>"
+              data-summit-busy-label="<?= esc_attr($t['js_busy']); ?>"
+              data-summit-unavailable="<?= esc_attr($t['js_unavailable']); ?>"
+              data-summit-failed="<?= esc_attr($t['js_failed']); ?>" novalidate>
 
             <?php /* Whole-form messages: not invited, wrong page, company full, day full. */ ?>
             <div class="summit-form__notice" data-summit-notice role="alert" hidden></div>
@@ -82,7 +98,7 @@ if ($privacy_url !== '' && $consent_text !== '') {
             <div class="summit-form__row">
                 <div class="summit-form__field">
                     <label class="summit-form__label" for="summit-first-name">
-                        <?= esc_html__('First name', 'granola'); ?><span class="summit-form__required" aria-hidden="true">*</span>
+                        <?= esc_html($t['first_name']); ?><span class="summit-form__required" aria-hidden="true">*</span>
                     </label>
                     <input class="summit-form__input" id="summit-first-name" name="first_name" type="text" autocomplete="given-name" required>
                     <p class="summit-form__field-error" data-summit-error="first_name" hidden></p>
@@ -90,7 +106,7 @@ if ($privacy_url !== '' && $consent_text !== '') {
 
                 <div class="summit-form__field">
                     <label class="summit-form__label" for="summit-last-name">
-                        <?= esc_html__('Last name', 'granola'); ?><span class="summit-form__required" aria-hidden="true">*</span>
+                        <?= esc_html($t['last_name']); ?><span class="summit-form__required" aria-hidden="true">*</span>
                     </label>
                     <input class="summit-form__input" id="summit-last-name" name="last_name" type="text" autocomplete="family-name" required>
                     <p class="summit-form__field-error" data-summit-error="last_name" hidden></p>
@@ -99,19 +115,19 @@ if ($privacy_url !== '' && $consent_text !== '') {
 
             <div class="summit-form__field">
                 <label class="summit-form__label" for="summit-email">
-                    <?= esc_html__('Business Email', 'granola'); ?><span class="summit-form__required" aria-hidden="true">*</span>
+                    <?= esc_html($t['email']); ?><span class="summit-form__required" aria-hidden="true">*</span>
                 </label>
                 <input class="summit-form__input" id="summit-email" name="email" type="email" autocomplete="email" required
                        aria-describedby="summit-email-hint">
                 <p class="summit-form__hint" id="summit-email-hint">
-                    <?= esc_html__('Please use the address your invitation was sent to.', 'granola'); ?>
+                    <?= esc_html($t['email_hint']); ?>
                 </p>
                 <p class="summit-form__field-error" data-summit-error="email" hidden></p>
             </div>
 
             <div class="summit-form__field">
                 <label class="summit-form__label" for="summit-company">
-                    <?= esc_html__('Company name', 'granola'); ?><span class="summit-form__required" aria-hidden="true">*</span>
+                    <?= esc_html($t['company']); ?><span class="summit-form__required" aria-hidden="true">*</span>
                 </label>
                 <input class="summit-form__input" id="summit-company" name="company_typed" type="text" autocomplete="organization" required>
                 <p class="summit-form__field-error" data-summit-error="company_typed" hidden></p>
@@ -166,10 +182,8 @@ if ($privacy_url !== '' && $consent_text !== '') {
                 <p class="summit-form__note summit-form__note--days">
                     <?= esc_html(sprintf(
                         /* translators: %s is a list of dates, e.g. "3rd November and 4th November". */
-                        __('Your invitation covers %s.', 'granola'),
-                        // wp_sprintf's %l joins a list with the locale's own
-                        // "and", so French reads "et" without extra work.
-                        \wp_sprintf('%l', $assigned_days)
+                        $t['assigned_days'],
+                        $assigned_days_text
                     )); ?>
                 </p>
             <?php } ?>
@@ -254,16 +268,16 @@ if ($privacy_url !== '' && $consent_text !== '') {
             <?php } ?>
 
             <?php if (!empty($asks['opt_out'])) { ?>
-                <?php if ($consent_text !== '') { ?>
-                    <?php /* Only the privacy-policy anchor is introduced above, so
-                             the allowed tag list is deliberately narrow. */ ?>
-                    <p class="summit-form__consent"><?= wp_kses($consent_text, ['a' => ['href' => [], 'target' => [], 'rel' => []]]); ?></p>
+                <?php /* Only the privacy-policy anchor is introduced above, so
+                         the allowed tag list is deliberately narrow. */ ?>
+                <?php foreach ($consent_paragraphs as $consent_paragraph) { ?>
+                    <p class="summit-form__consent"><?= wp_kses($consent_paragraph, ['a' => ['href' => [], 'target' => [], 'rel' => []]]); ?></p>
                 <?php } ?>
 
                 <div class="summit-form__option summit-form__option--consent">
                     <input class="summit-form__checkbox" type="checkbox" id="summit-opt-out" name="opt_out_marketing" value="1">
                     <label for="summit-opt-out">
-                        <?= esc_html__('I\'d like to not to receive other marketing communications from Millboard.', 'granola'); ?>
+                        <?= esc_html($t['opt_out']); ?>
                     </label>
                 </div>
             <?php } ?>

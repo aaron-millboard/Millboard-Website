@@ -28,6 +28,12 @@ if (forms.length) {
         // through the UK page and be given one day instead of three.
         const audience = form.getAttribute('data-summit-audience') || '';
 
+        // Wording for the three messages the script renders itself. English is
+        // the fallback, so a page that does not set them behaves as before.
+        function text(name, fallback) {
+            return form.getAttribute('data-summit-' + name) || fallback;
+        }
+
         let blocked = false;
 
         function showNotice(message) {
@@ -74,7 +80,9 @@ if (forms.length) {
                 submit.disabled = isBusy || blocked;
             }
             if (submitLabel) {
-                submitLabel.textContent = isBusy ? 'Please wait…' : originalLabel;
+                submitLabel.textContent = isBusy
+                    ? text('busy-label', 'Please wait…')
+                    : originalLabel;
             }
         }
 
@@ -143,9 +151,10 @@ if (forms.length) {
             event.preventDefault();
 
             if (!window.params || !window.params.summit_register_endpoint) {
-                showNotice(
+                showNotice(text(
+                    'unavailable',
                     'Registration is unavailable right now. Please reply to your invitation and we will register you.'
-                );
+                ));
                 return;
             }
 
@@ -237,9 +246,10 @@ if (forms.length) {
                 })
                 .catch(function () {
                     setBusy(false);
-                    showNotice(
+                    showNotice(text(
+                        'failed',
                         'Something went wrong sending your registration. Please try again, or reply to your invitation.'
-                    );
+                    ));
                 });
         });
     });
