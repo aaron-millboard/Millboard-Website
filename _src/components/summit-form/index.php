@@ -22,6 +22,7 @@ $asks = (array) ($args['asks'] ?? []);
 $dates = (array) ($args['dates'] ?? []);
 $workshops = (array) ($args['workshops'] ?? []);
 $assigned_days = (array) ($args['assigned_days'] ?? []);
+$assigned_days_text = (string) ($args['assigned_days_text'] ?? '');
 $privacy_url = trim((string) ($args['privacy_url'] ?? ''));
 $t = (array) ($args['t'] ?? []);
 
@@ -182,9 +183,7 @@ $consent_paragraphs = preg_split('/\R{2,}/', $consent_text, -1, PREG_SPLIT_NO_EM
                     <?= esc_html(sprintf(
                         /* translators: %s is a list of dates, e.g. "3rd November and 4th November". */
                         $t['assigned_days'],
-                        // wp_sprintf's %l joins a list with the locale's own
-                        // "and", so French reads "et" without extra work.
-                        \wp_sprintf('%l', $assigned_days)
+                        $assigned_days_text
                     )); ?>
                 </p>
             <?php } ?>

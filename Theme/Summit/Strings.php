@@ -38,8 +38,8 @@ class Strings
             . 'transmettre ce lien d\'inscription à d\'autres personnes : les places sont strictement '
             . 'limitées et nous ne pouvons accueillir que deux participants par entreprise. Merci de '
             . 'votre compréhension.',
-        /* translators: %s is a list of dates. */
-        'assigned_days' => 'Votre invitation couvre %s.',
+        /* translators: %s is a list of dates, e.g. "3 et 4 novembre". */
+        'assigned_days' => 'Votre invitation couvre les %s.',
         'noscript' => 'Ce formulaire d\'inscription nécessite JavaScript. Merci de l\'activer et de '
             . 'recharger la page, ou de répondre à votre invitation et nous vous inscrirons.',
 
@@ -104,6 +104,54 @@ class Strings
         'misconfigured' => 'Ce formulaire d\'inscription n\'est pas correctement configuré. Merci de '
             . 'répondre à votre invitation et nous vous inscrirons.',
     ];
+
+    /**
+     * Day numbers for display.
+     *
+     * The day labels in Audiences are also the keys the registrations are
+     * stored under, so they are English by definition and cannot be changed
+     * here. These are for showing a French guest their dates, nothing else.
+     *
+     * @var array<string,string>
+     */
+    private const FR_DAY_NUMBERS = [
+        Audiences::DAY_3RD => '3',
+        Audiences::DAY_4TH => '4',
+        Audiences::DAY_5TH => '5',
+    ];
+
+    private const FR_MONTH = 'novembre';
+
+    /**
+     * The assigned days as French reads them: "3 et 4 novembre".
+     *
+     * The month is said once, which is how the rest of the French page words
+     * it. If a day ever turns up that is not one of the three, the labels are
+     * returned as they are rather than quietly mislabelling a date.
+     *
+     * @param array<int,string> $days
+     */
+    public static function fr_day_list(array $days): string
+    {
+        $numbers = [];
+
+        foreach ($days as $day) {
+            if (!isset(self::FR_DAY_NUMBERS[$day])) {
+                return implode(' et ', $days);
+            }
+
+            $numbers[] = self::FR_DAY_NUMBERS[$day];
+        }
+
+        if ($numbers === []) {
+            return '';
+        }
+
+        $last = array_pop($numbers);
+        $list = $numbers === [] ? $last : implode(', ', $numbers) . ' et ' . $last;
+
+        return $list . ' ' . self::FR_MONTH;
+    }
 
     /**
      * The French string for this key when the audience is FR, otherwise the

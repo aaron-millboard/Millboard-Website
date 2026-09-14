@@ -158,6 +158,14 @@ function filter_args(array $args): ?array
         ? []
         : Audiences::days_for($args['audience']);
 
+    // The list as the sentence around it reads it. English keeps wp_sprintf's
+    // %l, which joins with the locale's own "and"; French cannot use it,
+    // because the day labels are storage keys and so are English whatever the
+    // locale says.
+    $args['assigned_days_text'] = $args['audience'] === Audiences::FR
+        ? Strings::fr_day_list($args['assigned_days'])
+        : \wp_sprintf('%l', $args['assigned_days']);
+
     return $args;
 }
 
