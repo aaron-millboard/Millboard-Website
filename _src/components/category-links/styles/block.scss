@@ -1,0 +1,114 @@
+// =============================================================================
+// Category Links
+// A row of labelled links where the whole tile is the link. Two finishes:
+// solid for the planning tools, outline for the related categories.
+// =============================================================================
+
+.category-links {
+    --cl--accent: var(--color--olivegreen);
+    --cl--muted: #{rgba(#151716, 0.66)};
+    --cl--line: #{rgba(#151716, 0.18)};
+
+    padding: clamp(40px, 5vw, 60px) 0;
+
+    &__inner {
+        max-width: var(--width--responsive--l);
+        margin: 0 auto;
+    }
+
+    // ---- Header -------------------------------------------------------------
+    &__header {
+        margin: 0 0 px-to-rem(28);
+    }
+
+    &__rule {
+        display: block;
+        width: px-to-rem(48);
+        height: 2px;
+        margin: 0 0 px-to-rem(22);
+        border: 0;
+        background: var(--cl--accent);
+    }
+
+    &__meta {
+        margin: 0;
+        font-size: px-to-rem(12);
+        font-weight: 700;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+        color: var(--cl--muted);
+    }
+
+    // Inherits the site h2 hierarchy.
+    &__heading {
+        margin: px-to-rem(18) 0 0;
+    }
+
+    // ---- Items --------------------------------------------------------------
+    &__items {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(px-to-rem(200), 1fr));
+        gap: px-to-rem(16);
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    &__item {
+        display: flex;
+    }
+
+    &__link {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        gap: px-to-rem(8);
+        padding: px-to-rem(20);
+        text-decoration: none;
+        transition:
+            border-color var(--transition--duration) var(--transition--ease),
+            background-color var(--transition--duration) var(--transition--ease);
+    }
+
+    &__label {
+        font-size: px-to-rem(13);
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+    }
+
+    &__detail {
+        font-size: px-to-rem(12);
+    }
+
+    // ---- Outline finish, for the related categories -------------------------
+    &--outline &__link {
+        border: 1px solid var(--cl--line);
+        color: var(--color--black);
+
+        &:hover,
+        &:focus-visible {
+            border-color: var(--cl--accent);
+        }
+    }
+
+    &--outline &__detail {
+        color: var(--cl--muted);
+    }
+
+    // ---- Solid finish, for the planning tools -------------------------------
+    &--solid &__link {
+        border: 1px solid transparent;
+        background: var(--color--sustainabilitygreen);
+        color: var(--color--springwood);
+
+        &:hover,
+        &:focus-visible {
+            background: var(--cl--accent);
+        }
+    }
+
+    &--solid &__detail {
+        color: #{rgba(#f9f7f1, 0.78)};
+    }
+}
