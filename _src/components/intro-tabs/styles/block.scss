@@ -12,7 +12,10 @@
     --it--muted: #{rgba(#151716, 0.66)};
     --it--line: #{rgba(#151716, 0.18)};
 
-    padding: clamp(32px, 4vw, 48px) 0 0;
+    // Padded both ends. With only top padding the copy ran straight into the
+    // next section's background, which was hidden before only because the
+    // theme's block margin was still there.
+    padding: clamp(32px, 4vw, 48px) 0;
     // The theme gives every block a vertical margin. These sections carry
     // their own padding and several have their own background, so that
     // margin shows as a stripe of page colour between them.
