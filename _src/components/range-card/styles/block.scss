@@ -12,6 +12,10 @@
     --rc--line: #{rgba(#151716, 0.18)};
 
     padding: clamp(48px, 6vw, 72px) 0;
+    // The theme gives every block a vertical margin. These sections carry
+    // their own padding and several have their own background, so that
+    // margin shows as a stripe of page colour between them.
+    margin-block: 0;
     background: var(--color--mist);
     color: var(--rc--ink);
 

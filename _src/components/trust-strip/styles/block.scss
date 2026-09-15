@@ -10,6 +10,10 @@
     --ts--line: #{rgba(#151716, 0.18)};
 
     padding: 0 0 clamp(16px, 2vw, 24px);
+    // The theme gives every block a vertical margin. These sections carry
+    // their own padding and several have their own background, so that
+    // margin shows as a stripe of page colour between them.
+    margin-block: 0;
 
     &__inner {
         max-width: var(--width--responsive--l);
