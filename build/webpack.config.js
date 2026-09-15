@@ -69,7 +69,12 @@ export default (env, argv) => {
     // ----------------------------------------------
 
     // normalize component paths (components-wholegrain -> components).
-    const normalizeComponentPath = (filePath) => filePath.replace('components-wholegrain/', 'components/');
+    // Normalise separators first. path.relative() returns backslashes on
+    // Windows, so the replace never matched there and the wholegrain
+    // components were copied to assets/components-wholegrain/, which the theme
+    // never reads. breadcrumbs lives in the site header, so every page fataled.
+    const normalizeComponentPath = (filePath) =>
+        filePath.split(path.sep).join('/').replace('components-wholegrain/', 'components/');
 
     // build webpack entries from glob pattern.
     const buildEntries = (globPattern, filterFn = null) => {
@@ -83,7 +88,12 @@ export default (env, argv) => {
             }
 
             const parsed = path.parse(file);
-            let entryPath = path.join(parsed.dir, parsed.name);
+
+            // path.join() returns backslashes on Windows, so normalise before
+            // matching. Without this the test below never fired there and the
+            // wholegrain components' compiled JS and CSS were emitted to
+            // assets/components-wholegrain/, where nothing enqueues them.
+            let entryPath = path.join(parsed.dir, parsed.name).split(path.sep).join('/');
 
             // Normalise to remove alternative component directories.
             if (entryPath.includes('_src/components-')) {
