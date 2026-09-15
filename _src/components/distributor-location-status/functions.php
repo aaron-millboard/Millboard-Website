@@ -102,9 +102,15 @@ function filter_args(array $args): ?array
         }
     }
 
-    $args['status'] = $args['show_status'] ? \Granola\Components\DistributorOpeningHours\today_status($post_id) : null;
+    // The week itself, not a verdict about it. Whether the branch is open right now is
+    // decided in the browser (see OpeningStatus.js), because this markup is served from
+    // the full page cache and a verdict rendered here would be frozen at whatever the
+    // clock said when the cache entry was written.
+    $args['opening_week'] = $args['show_status']
+        ? \Granola\Components\DistributorOpeningHours\week_payload(\get_field('opening_hours', $post_id))
+        : '';
 
-    if (empty($args['address']) && empty($args['badges']) && empty($args['status']) && empty($args['is_preview'])) {
+    if (empty($args['address']) && empty($args['badges']) && $args['opening_week'] === '' && empty($args['is_preview'])) {
         return null;
     }
 

@@ -728,6 +728,12 @@
             font-weight: var(--fw-light, 300);
             color: var(--mb-muted);
 
+            // The line arrives from the browser rather than the server (OpeningStatus.js),
+            // so its space is held from the start. Without this the whole list shuffles
+            // down a line per card the moment the script runs.
+            min-height: 1.55em;
+            min-height: 1lh;
+
             &--open {
                 color: var(--mb-olive);
             }
