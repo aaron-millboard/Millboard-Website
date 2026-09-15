@@ -18,6 +18,9 @@
 
     &__items {
         display: grid;
+        // The theme spaces li + li globally. These are grid cells, so the
+        // first item would sit 10px above the rest of its row.
+        --list--item--spacing: 0;
         grid-template-columns: repeat(auto-fit, minmax(px-to-rem(190), 1fr));
         gap: px-to-rem(20);
         margin: px-to-rem(40) 0 0;

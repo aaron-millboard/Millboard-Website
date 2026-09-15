@@ -12,12 +12,18 @@
 
     padding: clamp(48px, 6vw, 72px) 0;
 
+    // The framing column is narrower than the list, as in the design. An even
+    // split left a large empty column whenever there was no image.
     &__inner {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(px-to-rem(300), 1fr));
+        grid-template-columns: minmax(px-to-rem(260), 1fr) minmax(0, 1.8fr);
         gap: clamp(32px, 5vw, 64px);
         max-width: var(--width--responsive--l);
         margin: 0 auto;
+
+        @media (max-width: 860px) {
+            grid-template-columns: 1fr;
+        }
     }
 
     // ---- Left column --------------------------------------------------------

@@ -53,6 +53,9 @@
 
     &__trail-list {
         display: flex;
+        // The theme spaces li + li globally. These are grid cells, so the
+        // first item would sit 10px above the rest of its row.
+        --list--item--spacing: 0;
         flex-wrap: wrap;
         gap: px-to-rem(8);
         margin: 0;

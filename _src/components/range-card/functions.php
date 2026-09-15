@@ -36,7 +36,6 @@ function filter_args(array $args): ?array
     $args['classes'] = array_merge([
         'range-card',
         'wp-block',
-        'animate',
         'alignfull',
     ], $args['classes']);
 

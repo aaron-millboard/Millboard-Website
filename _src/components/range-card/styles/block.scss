@@ -60,7 +60,11 @@
     // ---- Grid ---------------------------------------------------------------
     &__items {
         display: grid;
+        // The theme spaces li + li globally. These are grid cells, so the
+        // first item would sit 10px above the rest of its row.
+        --list--item--spacing: 0;
         grid-template-columns: repeat(auto-fill, minmax(px-to-rem(280), 1fr));
+        align-items: stretch;
         gap: px-to-rem(24);
         margin: 0;
         padding: 0;
@@ -69,6 +73,11 @@
 
     &__item {
         display: flex;
+        height: 100%; // Cards in a row match, whatever the description length.
+
+        &[hidden] {
+            display: none;
+        }
     }
 
     &__card {
@@ -106,6 +115,13 @@
         flex-direction: column;
         gap: px-to-rem(14);
         padding: px-to-rem(22);
+    }
+
+    // The text absorbs the slack, so the swatch row and the price line sit at
+    // the same height on every card whether or not the collection has a
+    // description. Modello has none, which is what threw the row out.
+    &__text {
+        flex: 1;
     }
 
     &__name {
@@ -155,11 +171,11 @@
     }
 
     // ---- Swatches -----------------------------------------------------------
+    // The count sits on its own line rather than beside the swatches. Inline it
+    // wrapped at different widths per card, which pushed the swatch rows out of
+    // line with each other by a few pixels.
     &__swatches {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: px-to-rem(6);
+        display: block;
     }
 
     &__swatch-list {
@@ -180,7 +196,7 @@
     }
 
     &__colour-note {
-        margin: 0 0 0 px-to-rem(4);
+        margin: px-to-rem(8) 0 0;
         font-size: px-to-rem(11);
         color: var(--rc--muted);
     }

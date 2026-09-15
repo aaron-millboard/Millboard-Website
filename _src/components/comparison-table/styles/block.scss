@@ -117,12 +117,24 @@
         margin-top: clamp(32px, 4vw, 48px);
     }
 
+    // Sized and cased like the other section labels. Left at the default h3 it
+    // read as a title for the first column rather than for the whole row.
     &__best-for-heading {
-        margin: 0 0 px-to-rem(20);
+        margin: 0 0 px-to-rem(22);
+        padding-bottom: px-to-rem(14);
+        border-bottom: 1px solid var(--ct--line);
+        font-size: px-to-rem(12);
+        font-weight: 700;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+        color: var(--ct--muted);
     }
 
     &__needs {
         display: grid;
+        // The theme spaces li + li globally. These are grid cells, so the
+        // first item would sit 10px above the rest of its row.
+        --list--item--spacing: 0;
         grid-template-columns: repeat(auto-fit, minmax(px-to-rem(220), 1fr));
         gap: px-to-rem(20);
         margin: 0;

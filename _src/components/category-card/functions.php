@@ -46,6 +46,13 @@ function filter_args(array $args): ?array
     $args['spec'] = get_spec_line($product_id);
     $args['price'] = get_board_price($product_id);
 
+    // Only 24 of the 151 products in Composite Decking have a sample. Offering
+    // one on an adhesive or a touch-up spray is offering something that is not
+    // for sale, so the link appears only where the product really has one.
+    if (!has_sample($product_id)) {
+        $args['sample_url'] = '';
+    }
+
     // -------------------------------------------------------------------------
     // Bail early if the product has no title to show.
     // -------------------------------------------------------------------------
@@ -181,6 +188,41 @@ function get_board_price_value(int $product_id): ?float
     }
 
     return $lowest;
+}
+
+/**
+ * Whether this product is actually available as a sample.
+ *
+ * A sample is a variation on the pa_sample-size attribute, small or large. A
+ * product without one is not sampled: the adhesives, cleaners and touch-up
+ * sprays in this category are all sold only as themselves.
+ *
+ * @param int $product_id The product.
+ * @return bool Whether a sample exists.
+ */
+function has_sample(int $product_id): bool
+{
+    $product = \function_exists('wc_get_product') ? \wc_get_product($product_id) : null;
+
+    if (empty($product) || !$product->is_type('variable')) {
+        return false;
+    }
+
+    foreach ($product->get_children() as $variation_id) {
+        $variation = \wc_get_product($variation_id);
+
+        if (empty($variation)) {
+            continue;
+        }
+
+        $size = strtolower((string) $variation->get_attribute('pa_sample-size'));
+
+        if ($size === 'small' || $size === 'large') {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 /**

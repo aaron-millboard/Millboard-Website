@@ -52,18 +52,20 @@ $grid_strings = [
                     <fieldset class="category-grid__filter-group">
                         <legend class="category-grid__filter-legend"><?= \esc_html($group['label']); ?></legend>
 
-                        <?php foreach ($group['options'] as $option) { ?>
-                            <button
-                                type="button"
-                                class="category-grid__chip"
-                                aria-pressed="false"
-                                data-filter-group="<?= \esc_attr($group['key']); ?>"
-                                data-filter-value="<?= \esc_attr($option['slug']); ?>"
-                            >
-                                <?= \esc_html($option['label']); ?>
-                                <span class="category-grid__chip-count">(<?= \esc_html((string) $option['count']); ?>)</span>
-                            </button>
-                        <?php } ?>
+                        <div class="category-grid__chips">
+                            <?php foreach ($group['options'] as $option) { ?>
+                                <button
+                                    type="button"
+                                    class="category-grid__chip"
+                                    aria-pressed="false"
+                                    data-filter-group="<?= \esc_attr($group['key']); ?>"
+                                    data-filter-value="<?= \esc_attr($option['slug']); ?>"
+                                >
+                                    <?= \esc_html($option['label']); ?>
+                                    <span class="category-grid__chip-count"><?= \esc_html((string) $option['count']); ?></span>
+                                </button>
+                            <?php } ?>
+                        </div>
                     </fieldset>
                 <?php } ?>
 
