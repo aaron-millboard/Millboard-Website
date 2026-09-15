@@ -1,0 +1,100 @@
+// =============================================================================
+// Category Header
+// Opening block of a shop category page. Text column (rule, trail, heading,
+// intro, buttons) beside a supporting image. Kept apart from page-header so
+// this page type can change without touching the 576 pages that block renders.
+// =============================================================================
+
+.category-header {
+    --ch--accent: var(--color--olivegreen);
+    --ch--muted: #{rgba(#151716, 0.66)};
+
+    padding: clamp(32px, 4vw, 48px) 0 px-to-rem(8);
+
+    &__inner {
+        max-width: var(--width--responsive--l);
+        margin: 0 auto;
+    }
+
+    &__layout {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: clamp(32px, 5vw, 64px);
+    }
+
+    &__text {
+        flex: 1 1 px-to-rem(420);
+        min-width: min(100%, px-to-rem(300));
+    }
+
+    &__media {
+        flex: 1 1 px-to-rem(300);
+        min-width: min(100%, px-to-rem(280));
+    }
+
+    &__image {
+        display: block;
+        width: 100%;
+        height: auto;
+        aspect-ratio: 4 / 3;
+        object-fit: cover;
+    }
+
+    // ---- Rule and trail -----------------------------------------------------
+    &__rule {
+        display: block;
+        width: px-to-rem(48);
+        height: 2px;
+        margin: 0 0 px-to-rem(22);
+        border: 0;
+        background: var(--ch--accent);
+    }
+
+    &__trail-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: px-to-rem(8);
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        font-size: px-to-rem(12);
+        font-weight: 700;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+        color: var(--ch--muted);
+
+        a {
+            color: inherit;
+        }
+    }
+
+    &__crumb + &__crumb::before {
+        content: '/';
+        margin-right: px-to-rem(8);
+    }
+
+    // ---- Heading and intro --------------------------------------------------
+    // Inherits the site h1 hierarchy.
+    &__heading {
+        margin: px-to-rem(20) 0 0;
+    }
+
+    &__intro {
+        max-width: 34em;
+
+        p {
+            margin: px-to-rem(24) 0 0;
+            line-height: 1.7;
+            text-wrap: pretty;
+        }
+    }
+
+    // ---- Buttons ------------------------------------------------------------
+    &__buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: px-to-rem(14);
+        margin-top: px-to-rem(32);
+    }
+}
