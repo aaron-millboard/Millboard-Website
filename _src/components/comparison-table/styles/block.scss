@@ -1,0 +1,164 @@
+// =============================================================================
+// Comparison Table
+// Compares board constructions, never brands, then ranks our own ranges
+// against named customer needs.
+//
+// The table scrolls sideways inside a focusable region rather than shrinking
+// to nothing, so it stays readable on a phone and reachable from a keyboard.
+// =============================================================================
+
+.comparison-table {
+    --ct--accent: var(--color--olivegreen);
+    --ct--muted: #{rgba(#151716, 0.66)};
+    --ct--line: #{rgba(#151716, 0.18)};
+
+    padding: clamp(48px, 6vw, 72px) 0;
+
+    &__inner {
+        max-width: var(--width--responsive--l);
+        margin: 0 auto;
+    }
+
+    // ---- Header -------------------------------------------------------------
+    &__header {
+        margin: 0 0 px-to-rem(32);
+    }
+
+    &__rule {
+        display: block;
+        width: px-to-rem(48);
+        height: 2px;
+        margin: 0 0 px-to-rem(22);
+        border: 0;
+        background: var(--ct--accent);
+    }
+
+    &__meta {
+        margin: 0;
+        font-size: px-to-rem(12);
+        font-weight: 700;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+        color: var(--ct--muted);
+    }
+
+    // Inherits the site h2 hierarchy.
+    &__heading {
+        margin: px-to-rem(18) 0 0;
+    }
+
+    &__intro {
+        max-width: 44em;
+
+        p {
+            margin: px-to-rem(18) 0 0;
+            line-height: 1.7;
+        }
+    }
+
+    // ---- Table --------------------------------------------------------------
+    &__scroll {
+        overflow-x: auto;
+
+        &:focus-visible {
+            outline: var(--focus--1--width) solid var(--focus--color);
+            outline-offset: var(--focus--1--offset);
+        }
+    }
+
+    &__table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: px-to-rem(680);
+
+        th,
+        td {
+            padding: px-to-rem(14) px-to-rem(16);
+            border-bottom: 1px solid var(--ct--line);
+            text-align: left;
+            vertical-align: top;
+            font-size: px-to-rem(14);
+            line-height: 1.5;
+        }
+
+        thead th {
+            font-size: px-to-rem(11);
+            font-weight: 700;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            border-bottom-width: 2px;
+        }
+
+        tbody th {
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        // The wood free column is ours. Mark it without shouting.
+        thead th:last-child,
+        tbody td:last-child {
+            background: #{rgba(#799513, 0.06)};
+        }
+    }
+
+    &__corner {
+        border-bottom: 2px solid var(--ct--line);
+    }
+
+    &__footnote {
+        margin: px-to-rem(16) 0 0;
+        font-size: px-to-rem(12);
+        line-height: 1.6;
+        color: var(--ct--muted);
+    }
+
+    // ---- Best for rail ------------------------------------------------------
+    &__best-for {
+        margin-top: clamp(32px, 4vw, 48px);
+    }
+
+    &__best-for-heading {
+        margin: 0 0 px-to-rem(20);
+    }
+
+    &__needs {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(px-to-rem(220), 1fr));
+        gap: px-to-rem(20);
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    &__need {
+        padding-top: px-to-rem(16);
+        border-top: 2px solid var(--ct--accent);
+    }
+
+    &__need-label {
+        margin: 0;
+        font-size: px-to-rem(11);
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--ct--muted);
+    }
+
+    &__need-range {
+        margin: px-to-rem(6) 0 0;
+        font-size: px-to-rem(17);
+        font-weight: 300;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+
+        a {
+            color: inherit;
+        }
+    }
+
+    &__need-why {
+        margin: px-to-rem(10) 0 0;
+        font-size: px-to-rem(14);
+        line-height: 1.6;
+    }
+}
