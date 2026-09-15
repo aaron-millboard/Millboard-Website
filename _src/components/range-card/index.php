@@ -54,8 +54,13 @@
                                 </ul>
                             <?php } ?>
 
-                            <?php if (!empty($item['swatches'])) { ?>
+                            <?php if (!empty($item['swatches']) || !empty($item['colour_count'])) { ?>
                                 <div class="range-card__swatches">
+                                    <?php
+                                    // A range with no board swatch still says how
+                                    // many options it has.
+                                    ?>
+                                    <?php if (!empty($item['swatches'])) { ?>
                                     <ul class="range-card__swatch-list" role="list">
                                         <?php foreach ($item['swatches'] as $swatch) { ?>
                                             <li class="range-card__swatch">
@@ -68,6 +73,7 @@
                                             </li>
                                         <?php } ?>
                                     </ul>
+                                    <?php } ?>
 
                                     <?php if (!empty($item['colour_count'])) { ?>
                                         <p class="range-card__colour-note">

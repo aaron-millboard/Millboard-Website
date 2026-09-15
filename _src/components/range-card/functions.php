@@ -351,20 +351,16 @@ function find_swatch_image(int $product_id): int
             }
         }
 
-        // The plain colour set, titled "<Colour> swatch" with no range prefix.
-        // Square 2048s, so they crop cleanly to the little squares. This is
-        // what covers Lasta-Grip and Weathered Oak, which have no swatch of
-        // their own, rather than leaving a project photo at 26px.
-        if ($colour !== '') {
-            $found = find_swatch_by_title([$colour . ' swatch']);
-
-            if ($found > 0) {
-                return $found;
-            }
-        }
     }
 
-    return (int) \get_post_thumbnail_id($product_id);
+    // Nothing else is a board swatch, so nothing else is offered.
+    //
+    // The library also holds a plain "<Colour> swatch" set, square 2048s that
+    // look ideal, but every one of them is uploaded against PU Adhesive: they
+    // are touch-up and adhesive colour chips, not decking. And a product
+    // photograph at 26px is just a brown smudge. Better to show no square than
+    // the wrong one, so a range with no swatch simply has no swatch row.
+    return 0;
 }
 
 /**
