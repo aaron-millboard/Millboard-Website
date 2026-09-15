@@ -193,13 +193,14 @@ function build_item_from_term(\WP_Term $term, int $swatch_limit): array
     $product_ids = get_product_ids_in_term($term);
     $swatches = build_swatches($product_ids, $swatch_limit);
 
-    // No product category on this site carries a term image, so fall back to
-    // the first product in the range rather than rendering a card with a hole
-    // where the design puts its largest element.
+    // No product category on this site carries a term image, so fall back to a
+    // product photograph. Deliberately NOT the first swatch: a swatch is a flat
+    // crop of the board surface, and using one here replaced the project shot
+    // at the top of the card with a slab of texture.
     $image_id = (int) \get_term_meta($term->term_id, 'thumbnail_id', true);
 
-    if (empty($image_id) && !empty($swatches)) {
-        $image_id = $swatches[0]['image_id'];
+    if (empty($image_id)) {
+        $image_id = find_project_image($product_ids);
     }
 
     return [
@@ -279,6 +280,28 @@ function build_swatches(array $product_ids, int $limit): array
 }
 
 /**
+ * A project photograph for the top of the card.
+ *
+ * The first product in the range that has a featured image. These are lifestyle
+ * and project shots, which is what the design puts here.
+ *
+ * @param array<int> $product_ids The products in the range.
+ * @return int The attachment ID, or 0.
+ */
+function find_project_image(array $product_ids): int
+{
+    foreach ($product_ids as $product_id) {
+        $image_id = (int) \get_post_thumbnail_id($product_id);
+
+        if ($image_id > 0) {
+            return $image_id;
+        }
+    }
+
+    return 0;
+}
+
+/**
  * The colour swatch for a product.
  *
  * These squares are 26px. A lifestyle photograph shrunk to that reads as a
@@ -322,6 +345,18 @@ function find_swatch_image(int $product_id): int
 
         if ($colour !== '' && strlen($sku) >= 3) {
             $found = find_swatch_by_title([substr($sku, 0, 3) . '%', '%' . $colour . '%', '%Swatch%']);
+
+            if ($found > 0) {
+                return $found;
+            }
+        }
+
+        // The plain colour set, titled "<Colour> swatch" with no range prefix.
+        // Square 2048s, so they crop cleanly to the little squares. This is
+        // what covers Lasta-Grip and Weathered Oak, which have no swatch of
+        // their own, rather than leaving a project photo at 26px.
+        if ($colour !== '') {
+            $found = find_swatch_by_title([$colour . ' swatch']);
 
             if ($found > 0) {
                 return $found;
