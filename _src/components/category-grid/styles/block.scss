@@ -1,0 +1,185 @@
+// =============================================================================
+// Category Grid
+// The product listing for a shop category: header and sort, filter chips, the
+// grid itself, load more, and an empty state.
+//
+// Every product is in the markup. The controls are hidden until the script
+// reveals them, so without JavaScript the whole category is visible rather
+// than a first page with a dead button under it.
+// =============================================================================
+
+.category-grid {
+    --cg--accent: var(--color--olivegreen);
+    --cg--muted: #{rgba(#151716, 0.66)};
+    --cg--line: #{rgba(#151716, 0.18)};
+
+    padding: clamp(32px, 4vw, 48px) 0;
+    scroll-margin-top: var(--site-header--bottom, 0);
+
+    &__inner {
+        max-width: var(--width--responsive--l);
+        margin: 0 auto;
+    }
+
+    // ---- Header -------------------------------------------------------------
+    &__header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: px-to-rem(20);
+        margin-bottom: px-to-rem(20);
+    }
+
+    &__heading {
+        margin: 0;
+    }
+
+    &__count {
+        margin: px-to-rem(6) 0 0;
+        font-size: px-to-rem(13);
+        color: var(--cg--muted);
+    }
+
+    &__sort {
+        display: flex;
+        align-items: center;
+        gap: px-to-rem(10);
+    }
+
+    &__sort-label {
+        font-size: px-to-rem(11);
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--cg--muted);
+    }
+
+    &__sort-select {
+        padding: px-to-rem(8) px-to-rem(12);
+        border: 1px solid var(--cg--line);
+        background: transparent;
+        font-size: px-to-rem(13);
+    }
+
+    // ---- Filters ------------------------------------------------------------
+    &__filters {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: px-to-rem(20);
+        padding: px-to-rem(18) 0;
+        border-top: 1px solid var(--cg--line);
+        border-bottom: 1px solid var(--cg--line);
+        margin-bottom: px-to-rem(28);
+    }
+
+    &__filter-group {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: px-to-rem(8);
+        margin: 0;
+        padding: 0;
+        border: 0;
+    }
+
+    &__filter-legend {
+        padding: 0 px-to-rem(8) 0 0;
+        font-size: px-to-rem(11);
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--cg--muted);
+    }
+
+    &__chip {
+        padding: px-to-rem(7) px-to-rem(12);
+        border: 1px solid var(--cg--line);
+        background: transparent;
+        font-size: px-to-rem(12);
+        cursor: pointer;
+        transition:
+            border-color var(--transition--duration) var(--transition--ease),
+            background-color var(--transition--duration) var(--transition--ease);
+
+        &:hover {
+            border-color: var(--cg--accent);
+        }
+
+        &[aria-pressed='true'] {
+            border-color: var(--cg--accent);
+            background: #{rgba(#799513, 0.1)};
+            font-weight: 700;
+        }
+    }
+
+    &__chip-count {
+        color: var(--cg--muted);
+        font-weight: 400;
+    }
+
+    &__clear {
+        padding: px-to-rem(7) 0;
+        border: 0;
+        background: transparent;
+        font-size: px-to-rem(12);
+        text-decoration: underline;
+        text-underline-offset: var(--text-underline-offset);
+        cursor: pointer;
+    }
+
+    // ---- Grid ---------------------------------------------------------------
+    &__items {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(px-to-rem(250), 1fr));
+        gap: px-to-rem(24);
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    &__item {
+        display: flex;
+    }
+
+    // ---- Load more ----------------------------------------------------------
+    &__more {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: px-to-rem(12);
+        margin-top: px-to-rem(32);
+    }
+
+    &__progress {
+        margin: 0;
+        font-size: px-to-rem(12);
+        color: var(--cg--muted);
+    }
+
+    // ---- Empty state --------------------------------------------------------
+    &__empty {
+        padding: clamp(32px, 4vw, 48px) px-to-rem(24);
+        border: 1px solid var(--cg--line);
+        text-align: center;
+    }
+
+    &__empty-heading {
+        margin: 0;
+    }
+
+    &__empty-text {
+        max-width: 42em;
+        margin: px-to-rem(14) auto 0;
+        line-height: 1.7;
+    }
+
+    &__empty-actions {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: px-to-rem(14);
+        margin-top: px-to-rem(24);
+    }
+}
