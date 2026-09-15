@@ -16,7 +16,6 @@ function filter_args(array $args): ?array
     $args = array_merge([
         'classes' => [],
         'heading' => '',
-        'trail' => [],
         'intro' => '',
         'buttons' => [],
         'image_id' => 0,
@@ -48,10 +47,6 @@ function filter_args(array $args): ?array
         $args['intro'] = $term->description;
     }
 
-    if (empty($args['trail'])) {
-        $args['trail'] = build_trail($term);
-    }
-
     // -------------------------------------------------------------------------
     // Bail early if there is nothing to head the page with.
     // -------------------------------------------------------------------------
@@ -61,51 +56,16 @@ function filter_args(array $args): ?array
 
     $args['buttons'] = normalise_buttons($args['buttons']);
 
+    // Carry the media library's alt text. This image shows the product, so it
+    // is not decoration, and the image component treats an empty alt as a
+    // presentation role.
+    $args['image_alt'] = '';
+
+    if (!empty($args['image_id'])) {
+        $args['image_alt'] = (string) \get_post_meta((int) $args['image_id'], '_wp_attachment_image_alt', true);
+    }
+
     return $args;
-}
-
-/**
- * The trail shown above the heading, for example "Shop / Decking".
- *
- * The current page is not included: it is the heading directly below.
- *
- * @param \WP_Term|null $term The category being viewed.
- * @return array<array{label:string,url:string}> The trail.
- */
-function build_trail(?\WP_Term $term): array
-{
-    $shop_id = \function_exists('wc_get_page_id') ? \wc_get_page_id('shop') : 0;
-
-    $trail = [];
-
-    if ($shop_id > 0) {
-        $trail[] = [
-            'label' => \get_the_title($shop_id),
-            'url' => (string) \get_permalink($shop_id),
-        ];
-    }
-
-    if (empty($term)) {
-        return $trail;
-    }
-
-    // Ancestors, outermost first. get_ancestors returns nearest first.
-    $ancestors = array_reverse(\get_ancestors($term->term_id, 'product_cat', 'taxonomy'));
-
-    foreach ($ancestors as $ancestor_id) {
-        $ancestor = \get_term($ancestor_id, 'product_cat');
-
-        if (empty($ancestor) || \is_wp_error($ancestor)) {
-            continue;
-        }
-
-        $trail[] = [
-            'label' => $ancestor->name,
-            'url' => (string) \get_term_link($ancestor),
-        ];
-    }
-
-    return $trail;
 }
 
 /**

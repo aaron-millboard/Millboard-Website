@@ -51,30 +51,9 @@
         background: var(--ch--accent);
     }
 
-    &__trail-list {
-        display: flex;
-        // The theme spaces li + li globally. These are grid cells, so the
-        // first item would sit 10px above the rest of its row.
-        --list--item--spacing: 0;
-        flex-wrap: wrap;
-        gap: px-to-rem(8);
-        margin: 0;
-        padding: 0;
-        list-style: none;
-        font-size: px-to-rem(12);
-        font-weight: 700;
-        letter-spacing: 0.24em;
-        text-transform: uppercase;
-        color: var(--ch--muted);
-
-        a {
-            color: inherit;
-        }
-    }
-
-    &__crumb + &__crumb::before {
-        content: '/';
-        margin-right: px-to-rem(8);
+    // The theme's breadcrumbs component, sitting where page-header puts it.
+    &__breadcrumbs {
+        margin-bottom: clamp(24px, 3vw, 40px);
     }
 
     // ---- Heading and intro --------------------------------------------------
