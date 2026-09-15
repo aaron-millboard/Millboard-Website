@@ -1,0 +1,88 @@
+// =============================================================================
+// Trust Strip
+// A short band of reassurance points under a category header. A rule above and
+// below, points laid out on a fluid grid so they wrap rather than shrink.
+// =============================================================================
+
+.trust-strip {
+    --ts--accent: var(--color--olivegreen);
+    --ts--muted: #{rgba(#151716, 0.66)};
+    --ts--line: #{rgba(#151716, 0.18)};
+
+    padding: 0 0 clamp(16px, 2vw, 24px);
+
+    &__inner {
+        max-width: var(--width--responsive--l);
+        margin: 0 auto;
+    }
+
+    &__items {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(px-to-rem(190), 1fr));
+        gap: px-to-rem(20);
+        margin: px-to-rem(40) 0 0;
+        padding: px-to-rem(20) 0;
+        border-top: 1px solid var(--ts--line);
+        border-bottom: 1px solid var(--ts--line);
+        list-style: none;
+    }
+
+    &__item {
+        display: flex;
+        flex-direction: column;
+        gap: px-to-rem(6);
+    }
+
+    // ---- Statement ----------------------------------------------------------
+    &__label {
+        margin: 0;
+        font-size: px-to-rem(13);
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+
+        a {
+            color: inherit;
+        }
+    }
+
+    &__detail {
+        margin: 0;
+        font-size: px-to-rem(12);
+        color: var(--ts--muted);
+
+        a {
+            color: inherit;
+        }
+    }
+
+    // ---- Review score -------------------------------------------------------
+    &__rating {
+        display: flex;
+        align-items: center;
+        gap: px-to-rem(8);
+        margin: 0;
+    }
+
+    &__stars {
+        display: inline-flex;
+        gap: px-to-rem(2);
+        // Set explicitly: the theme has a global svg { width: 100% } reset and
+        // a fluid body scale, so a glyph left to inherit drifts.
+        font-size: px-to-rem(14);
+        line-height: 1;
+    }
+
+    &__star {
+        color: var(--ts--line);
+
+        &.is-filled {
+            color: var(--ts--accent);
+        }
+    }
+
+    &__score {
+        font-size: px-to-rem(13);
+        font-weight: 700;
+    }
+}
