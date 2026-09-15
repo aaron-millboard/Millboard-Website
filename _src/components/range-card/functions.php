@@ -305,68 +305,85 @@ function find_project_image(array $product_ids): int
  * The colour swatch for a product.
  *
  * These squares are 26px. A lifestyle photograph shrunk to that reads as a
- * brown smudge, so a real swatch image is wanted: the media library holds them
- * titled "<SKU>_<Range>_<Colour>_Swatch".
+ * brown smudge, so the tile has to be the board surface square-on.
  *
- * Coverage is partial. Matching by SKU finds 29 of the 44 board products,
- * and Weathered Oak and Lasta-Grip have no swatch at all, so this falls back
- * to the same colour in another board width before giving up and using the
- * product image. A card never loses its swatch row.
+ * The library holds that in four namings, and only the first is called a
+ * swatch. The other three are photographs of laid boards shot from directly
+ * above, which is the same thing at a larger scale and crops to a perfectly
+ * good tile: "<SKU>_<Range>_<Colour>_Overhead Laying Pattern", "_Overhead"
+ * and "_Full Board". Ranking them in that order is what puts a tile on
+ * Lasta-Grip and Weathered Oak, neither of which has a cut swatch.
+ *
+ * Deliberately excluded: the "_45" and "_End" shots, which are the board at an
+ * angle and its end grain rather than its face, and the plain "<Colour> swatch"
+ * set, square 2048s that look ideal but are every one of them uploaded against
+ * PU Adhesive, so they are touch-up and adhesive colour chips, not decking.
  *
  * @param int $product_id The product.
  * @return int The attachment ID, or 0.
  */
 function find_swatch_image(int $product_id): int
 {
-    global $wpdb;
+    // An explicit pin always wins. Everything below is inference from the file
+    // name, and the naming is not consistent enough to rely on: the Weathered
+    // Oak swatches are filed under the Heritage Wide SKU (MCH), which no rule
+    // keyed on the product's own SKU can ever reach. Set _swatch_image_id on a
+    // product to settle it by hand.
+    $pinned = (int) \get_post_meta($product_id, '_swatch_image_id', true);
+
+    if ($pinned > 0 && is_usable_tile($pinned)) {
+        return $pinned;
+    }
 
     $product = \function_exists('wc_get_product') ? \wc_get_product($product_id) : null;
 
-    if (!empty($product)) {
-        $sku = (string) $product->get_sku();
-
-        if ($sku !== '') {
-            $found = find_swatch_by_title([$sku . '%', '%Swatch%']);
-
-            if ($found > 0) {
-                return $found;
-            }
-        }
-
-        // Same colour, same range, different board width: the 126mm boards
-        // share a colour with the 176mm ones, which is where the swatches are.
-        //
-        // Held to the SKU family (the first three characters, MDE for Enhanced
-        // Grain, MDL for Lasta-Grip, MDW for Weathered Oak) on purpose. Colour
-        // alone crossed ranges and put an Enhanced Grain swatch on the
-        // Lasta-Grip card, which has a different surface entirely. A product
-        // photograph is a better answer than another range's texture.
-        $colour = $product->get_attribute('pa_colour');
-
-        if ($colour !== '' && strlen($sku) >= 3) {
-            $found = find_swatch_by_title([substr($sku, 0, 3) . '%', '%' . $colour . '%', '%Swatch%']);
-
-            if ($found > 0) {
-                return $found;
-            }
-        }
-
+    if (empty($product)) {
+        return 0;
     }
 
-    // Nothing else is a board swatch, so nothing else is offered.
+    $sku = (string) $product->get_sku();
+    $colour = (string) $product->get_attribute('pa_colour');
+
+    // Best first. Both spellings of the laying-pattern shot are in the library,
+    // spaced and hyphenated, so the wildcards sit between the words.
+    $kinds = ['%Swatch%', '%Overhead%Laying%Pattern%', '%Overhead%', '%Full Board%'];
+
+    if ($sku !== '') {
+        foreach ($kinds as $kind) {
+            $found = find_swatch_by_title([$sku . '%', $kind]);
+
+            if ($found > 0) {
+                return $found;
+            }
+        }
+    }
+
+    // Same colour, same range, different board width: the 126mm boards share a
+    // colour with the 176mm ones, which is where the imagery sits.
     //
-    // The library also holds a plain "<Colour> swatch" set, square 2048s that
-    // look ideal, but every one of them is uploaded against PU Adhesive: they
-    // are touch-up and adhesive colour chips, not decking. And a product
-    // photograph at 26px is just a brown smudge. Better to show no square than
-    // the wrong one, so a range with no swatch simply has no swatch row.
+    // Held to the SKU family (the first three characters, MDE for Enhanced
+    // Grain, MDL for Lasta-Grip, MDW for Weathered Oak) on purpose. Colour
+    // alone crossed ranges and put an Enhanced Grain swatch on the Lasta-Grip
+    // card, which has a different surface entirely.
+    if ($colour !== '' && strlen($sku) >= 3) {
+        foreach ($kinds as $kind) {
+            $found = find_swatch_by_title([substr($sku, 0, 3) . '%', '%' . $colour . '%', $kind]);
+
+            if ($found > 0) {
+                return $found;
+            }
+        }
+    }
+
     return 0;
 }
 
 /**
- * The first attachment whose title matches every pattern.
+ * The best usable attachment whose title matches every pattern.
  *
  * "Swatch Length" is a long thin strip rather than a square, so it sorts last.
+ * Candidates are walked rather than taking the first, because a title match is
+ * no guarantee the file crops to a tile.
  *
  * @param array<string> $patterns LIKE patterns, already wildcarded.
  * @return int The attachment ID, or 0.
@@ -386,19 +403,55 @@ function find_swatch_by_title(array $patterns): int
     $values[] = '%Swatch Length%';
 
     // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-    $id = $wpdb->get_var(
+    $ids = $wpdb->get_col(
         $wpdb->prepare(
             "SELECT ID FROM {$wpdb->posts}
              WHERE post_type = 'attachment'
                AND " . implode(' AND ', $where) . "
              ORDER BY (post_title LIKE %s) ASC, ID ASC
-             LIMIT 1",
+             LIMIT 10",
             $values
         )
     );
     // phpcs:enable
 
-    return (int) $id;
+    foreach ($ids as $id) {
+        if (is_usable_tile((int) $id)) {
+            return (int) $id;
+        }
+    }
+
+    return 0;
+}
+
+/**
+ * Whether an attachment will survive being shown as a 26px square.
+ *
+ * Two ways it will not. A full-board photograph is the entire 3.6m length in
+ * one frame: "MDW200V_Weathered Oak_Vintage_Overhead Full Board" is 2000x27733,
+ * which is a hairline in a tile and so extreme that WordPress declined to
+ * generate a thumbnail for it at all. So both are checked, since either on its
+ * own lets the other through.
+ *
+ * @param int $attachment_id The attachment.
+ * @return bool
+ */
+function is_usable_tile(int $attachment_id): bool
+{
+    $meta = \wp_get_attachment_metadata($attachment_id);
+
+    if (empty($meta['sizes']['thumbnail'])) {
+        return false;
+    }
+
+    $width = (int) ($meta['width'] ?? 0);
+    $height = (int) ($meta['height'] ?? 0);
+
+    if ($width < 1 || $height < 1) {
+        return false;
+    }
+
+    return max($width / $height, $height / $width) <= 3;
 }
 
 /**
