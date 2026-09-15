@@ -95,11 +95,42 @@ function resolve_term(array $args): ?\WP_Term
 /**
  * The products in the category, including its sub categories.
  *
+ * Minus the branches marked as not being the category's own products. A
+ * category holds more than the thing it is named after: Composite Decking
+ * owns Edging, Fascias, Subframes and Decking Accessories as well as the five
+ * board ranges, so listing it whole put bullnose boards, joists and screws in
+ * a grid headed "All composite decking".
+ *
+ * Those branches are not moved out of the tree, because they belong there and
+ * because 85 products carry Composite Decking as their Yoast primary category,
+ * which is what builds their URL. They are flagged instead.
+ *
  * @param \WP_Term $term The category.
  * @return array<int> Product IDs.
  */
 function get_product_ids(\WP_Term $term): array
 {
+    $tax_query = [
+        [
+            'taxonomy' => 'product_cat',
+            'field' => 'term_id',
+            'terms' => $term->term_id,
+            'include_children' => true,
+        ],
+    ];
+
+    $excluded = get_excluded_term_ids($term);
+
+    if (!empty($excluded)) {
+        $tax_query[] = [
+            'taxonomy' => 'product_cat',
+            'field' => 'term_id',
+            'terms' => $excluded,
+            'operator' => 'NOT IN',
+            'include_children' => true,
+        ];
+    }
+
     $query = new \WP_Query([
         'post_type' => 'product',
         'post_status' => 'publish',
@@ -108,17 +139,44 @@ function get_product_ids(\WP_Term $term): array
         'orderby' => 'title',
         'order' => 'ASC',
         'no_found_rows' => true,
-        'tax_query' => [
-            [
-                'taxonomy' => 'product_cat',
-                'field' => 'term_id',
-                'terms' => $term->term_id,
-                'include_children' => true,
-            ],
-        ],
+        'tax_query' => $tax_query,
     ]);
 
     return $query->posts;
+}
+
+/**
+ * Sub categories flagged as not part of this category's own product list.
+ *
+ * Carried on the term rather than on the block so one setting serves every
+ * locale and every page that lists the category. Set `shop_grid_exclude` to 1
+ * on a term to drop it and everything under it.
+ *
+ * @param \WP_Term $term The category being shown.
+ * @return array<int> Term IDs to exclude.
+ */
+function get_excluded_term_ids(\WP_Term $term): array
+{
+    $children = \get_terms([
+        'taxonomy' => 'product_cat',
+        'child_of' => $term->term_id,
+        'hide_empty' => false,
+        'fields' => 'ids',
+    ]);
+
+    if (\is_wp_error($children) || empty($children)) {
+        return [];
+    }
+
+    $excluded = [];
+
+    foreach ($children as $child_id) {
+        if (\get_term_meta((int) $child_id, 'shop_grid_exclude', true)) {
+            $excluded[] = (int) $child_id;
+        }
+    }
+
+    return $excluded;
 }
 
 /**
