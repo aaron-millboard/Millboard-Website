@@ -102,6 +102,35 @@
             "bidirectional_target": []
         },
         {
+            "key": "field_range_card_exclude",
+            "label": "Leave out",
+            "name": "exclude_categories",
+            "aria-label": "",
+            "type": "taxonomy",
+            "instructions": "Child categories that are not collections, for example Decking Accessories, Edging, Fascias and Subframes.",
+            "required": 0,
+            "conditional_logic": [
+                [
+                    {
+                        "field": "field_range_card_source",
+                        "operator": "==",
+                        "value": "automatic"
+                    }
+                ]
+            ],
+            "wrapper": { "width": "", "class": "", "id": "" },
+            "taxonomy": "product_cat",
+            "add_term": 0,
+            "save_terms": 0,
+            "load_terms": 0,
+            "return_format": "id",
+            "field_type": "multi_select",
+            "allow_null": 1,
+            "bidirectional": 0,
+            "multiple": 0,
+            "bidirectional_target": []
+        },
+        {
             "key": "field_range_card_ranges",
             "label": "Collections",
             "name": "ranges",

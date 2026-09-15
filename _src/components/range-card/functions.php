@@ -24,6 +24,7 @@ function filter_args(array $args): ?array
         'intro' => '',
         'source' => 'automatic', // automatic, manual.
         'parent_category' => null,
+        'exclude_categories' => [],
         'ranges' => [],
         'swatch_limit' => 6,
         'object' => \Granola\WordPress\PageObject::get(),
@@ -113,9 +114,20 @@ function build_automatic_items(array $args): array
         return [];
     }
 
+    // Not every child category is a collection. Under Composite Decking the
+    // board ranges sit alongside Decking Accessories, Edging, Fascias and
+    // Subframes, and nothing in the data tells them apart: "has children" does
+    // not work, because Enhanced Grain has 126mm and 176mm beneath it. So the
+    // page says which to leave out.
+    $excluded = array_map('intval', (array) $args['exclude_categories']);
+
     $items = [];
 
     foreach ($children as $term) {
+        if (in_array((int) $term->term_id, $excluded, true)) {
+            continue;
+        }
+
         $items[] = build_item_from_term($term, $args['swatch_limit']);
     }
 
