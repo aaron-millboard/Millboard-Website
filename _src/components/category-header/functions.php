@@ -91,7 +91,12 @@ function normalise_buttons(array $buttons): array
             'url' => $link['url'],
             'title' => $link['title'],
             'target' => $link['target'] ?? '',
-            'classes' => ['g-button', 'g-button--' . $style, 'category-header__button'],
+            // The theme has no --primary. Solid is the filled one.
+            'classes' => array_merge(
+                ['g-button'],
+                $style === 'primary' ? ['g-button--solid'] : ['g-button--secondary'],
+                ['category-header__button']
+            ),
         ];
     }
 

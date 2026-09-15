@@ -49,8 +49,15 @@ $grid_strings = [
         <?php if (!empty($args['filter_groups'])) { ?>
             <div class="category-grid__filters" hidden data-grid-filters>
                 <?php foreach ($args['filter_groups'] as $group) { ?>
-                    <fieldset class="category-grid__filter-group">
-                        <legend class="category-grid__filter-legend"><?= \esc_html($group['label']); ?></legend>
+                    <?php
+                    // A plain group rather than a fieldset. A fieldset will not
+                    // lay out as a grid: it keeps its own intrinsic sizing and
+                    // collapses to nothing, which is what squashed the chips
+                    // into a one-word column.
+                    $group_id = $args['uid'] . '-filter-' . $group['key'];
+                    ?>
+                    <div class="category-grid__filter-group" role="group" aria-labelledby="<?= \esc_attr($group_id); ?>">
+                        <p class="category-grid__filter-legend" id="<?= \esc_attr($group_id); ?>"><?= \esc_html($group['label']); ?></p>
 
                         <div class="category-grid__chips">
                             <?php foreach ($group['options'] as $option) { ?>
@@ -66,7 +73,7 @@ $grid_strings = [
                                 </button>
                             <?php } ?>
                         </div>
-                    </fieldset>
+                    </div>
                 <?php } ?>
 
                 <button type="button" class="category-grid__clear" hidden data-grid-clear>
@@ -93,7 +100,7 @@ $grid_strings = [
 
         <div class="category-grid__more" hidden data-grid-more-wrap>
             <p class="category-grid__progress" data-grid-progress></p>
-            <button type="button" class="g-button g-button--secondary category-grid__more-button" data-grid-more>
+            <button type="button" class="g-button category-grid__more-button" data-grid-more>
                 <?= \esc_html__('Load more', 'granola'); ?>
             </button>
         </div>
@@ -108,7 +115,7 @@ $grid_strings = [
             <?php } ?>
 
             <div class="category-grid__empty-actions">
-                <button type="button" class="g-button g-button--primary" data-grid-clear>
+                <button type="button" class="g-button" data-grid-clear>
                     <?= \esc_html__('Clear all filters', 'granola'); ?>
                 </button>
 

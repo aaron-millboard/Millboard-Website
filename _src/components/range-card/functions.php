@@ -254,17 +254,20 @@ function get_product_ids_in_term(\WP_Term $term): array
 function build_swatches(array $product_ids, int $limit): array
 {
     $swatches = [];
+    $seen = [];
 
     foreach ($product_ids as $product_id) {
         if (count($swatches) >= $limit) {
             break;
         }
 
-        $image_id = (int) \get_post_thumbnail_id($product_id);
+        $image_id = find_swatch_image($product_id);
 
-        if (empty($image_id)) {
+        if (empty($image_id) || isset($seen[$image_id])) {
             continue;
         }
+
+        $seen[$image_id] = true;
 
         $swatches[] = [
             'image_id' => $image_id,
@@ -273,6 +276,98 @@ function build_swatches(array $product_ids, int $limit): array
     }
 
     return $swatches;
+}
+
+/**
+ * The colour swatch for a product.
+ *
+ * These squares are 26px. A lifestyle photograph shrunk to that reads as a
+ * brown smudge, so a real swatch image is wanted: the media library holds them
+ * titled "<SKU>_<Range>_<Colour>_Swatch".
+ *
+ * Coverage is partial. Matching by SKU finds 29 of the 44 board products,
+ * and Weathered Oak and Lasta-Grip have no swatch at all, so this falls back
+ * to the same colour in another board width before giving up and using the
+ * product image. A card never loses its swatch row.
+ *
+ * @param int $product_id The product.
+ * @return int The attachment ID, or 0.
+ */
+function find_swatch_image(int $product_id): int
+{
+    global $wpdb;
+
+    $product = \function_exists('wc_get_product') ? \wc_get_product($product_id) : null;
+
+    if (!empty($product)) {
+        $sku = (string) $product->get_sku();
+
+        if ($sku !== '') {
+            $found = find_swatch_by_title([$sku . '%', '%Swatch%']);
+
+            if ($found > 0) {
+                return $found;
+            }
+        }
+
+        // Same colour, same range, different board width: the 126mm boards
+        // share a colour with the 176mm ones, which is where the swatches are.
+        //
+        // Held to the SKU family (the first three characters, MDE for Enhanced
+        // Grain, MDL for Lasta-Grip, MDW for Weathered Oak) on purpose. Colour
+        // alone crossed ranges and put an Enhanced Grain swatch on the
+        // Lasta-Grip card, which has a different surface entirely. A product
+        // photograph is a better answer than another range's texture.
+        $colour = $product->get_attribute('pa_colour');
+
+        if ($colour !== '' && strlen($sku) >= 3) {
+            $found = find_swatch_by_title([substr($sku, 0, 3) . '%', '%' . $colour . '%', '%Swatch%']);
+
+            if ($found > 0) {
+                return $found;
+            }
+        }
+    }
+
+    return (int) \get_post_thumbnail_id($product_id);
+}
+
+/**
+ * The first attachment whose title matches every pattern.
+ *
+ * "Swatch Length" is a long thin strip rather than a square, so it sorts last.
+ *
+ * @param array<string> $patterns LIKE patterns, already wildcarded.
+ * @return int The attachment ID, or 0.
+ */
+function find_swatch_by_title(array $patterns): int
+{
+    global $wpdb;
+
+    $where = [];
+    $values = [];
+
+    foreach ($patterns as $pattern) {
+        $where[] = 'post_title LIKE %s';
+        $values[] = $pattern;
+    }
+
+    $values[] = '%Swatch Length%';
+
+    // phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+    $id = $wpdb->get_var(
+        $wpdb->prepare(
+            "SELECT ID FROM {$wpdb->posts}
+             WHERE post_type = 'attachment'
+               AND " . implode(' AND ', $where) . "
+             ORDER BY (post_title LIKE %s) ASC, ID ASC
+             LIMIT 1",
+            $values
+        )
+    );
+    // phpcs:enable
+
+    return (int) $id;
 }
 
 /**

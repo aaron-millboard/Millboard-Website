@@ -12,6 +12,10 @@
 
     padding: clamp(48px, 6vw, 72px) 0;
 
+    &--mist {
+        background: var(--color--mist);
+    }
+
     // The framing column is narrower than the list, as in the design. An even
     // split left a large empty column whenever there was no image.
     &__inner {

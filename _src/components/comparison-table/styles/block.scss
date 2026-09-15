@@ -13,6 +13,7 @@
     --ct--line: #{rgba(#151716, 0.18)};
 
     padding: clamp(48px, 6vw, 72px) 0;
+    background: var(--color--mist);
 
     &__inner {
         max-width: var(--width--responsive--l);

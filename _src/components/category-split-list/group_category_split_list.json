@@ -3,6 +3,29 @@
     "title": "Block - Category Split List",
     "fields": [
         {
+            "key": "field_csl_background",
+            "label": "Background",
+            "name": "background",
+            "aria-label": "",
+            "type": "button_group",
+            "instructions": "Mist for the certification section, none for the benefits one.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "choices": {
+                "": "None",
+                "mist": "Mist"
+            },
+            "default_value": "",
+            "return_format": "value",
+            "allow_null": 0,
+            "layout": "horizontal"
+        },
+        {
             "key": "field_csl_meta",
             "label": "Meta prefix",
             "name": "meta_prefix",
@@ -11,7 +34,11 @@
             "instructions": "",
             "required": 0,
             "conditional_logic": 0,
-            "wrapper": { "width": "", "class": "", "id": "" },
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
             "default_value": "",
             "maxlength": "",
             "allow_in_bindings": 0,
@@ -28,7 +55,11 @@
             "instructions": "",
             "required": 0,
             "conditional_logic": 0,
-            "wrapper": { "width": "", "class": "", "id": "" },
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
             "default_value": "",
             "maxlength": "",
             "allow_in_bindings": 0,
@@ -45,7 +76,11 @@
             "instructions": "Optional. Used by the certification section, not by the benefits one.",
             "required": 0,
             "conditional_logic": 0,
-            "wrapper": { "width": "", "class": "", "id": "" },
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
             "default_value": "",
             "maxlength": "",
             "allow_in_bindings": 0,
@@ -62,7 +97,11 @@
             "instructions": "Optional. For example the brochures and guides library.",
             "required": 0,
             "conditional_logic": 0,
-            "wrapper": { "width": "", "class": "", "id": "" },
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
             "return_format": "array",
             "allow_in_bindings": 0
         },
@@ -75,7 +114,11 @@
             "instructions": "Optional. Used by the benefits section.",
             "required": 0,
             "conditional_logic": 0,
-            "wrapper": { "width": "", "class": "", "id": "" },
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
             "return_format": "id",
             "library": "all",
             "min_width": "",
@@ -97,7 +140,11 @@
             "instructions": "Anything measured should say the standard it is measured to.",
             "required": 0,
             "conditional_logic": 0,
-            "wrapper": { "width": "", "class": "", "id": "" },
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
             "layout": "table",
             "pagination": 0,
             "min": 0,
@@ -115,7 +162,11 @@
                     "instructions": "",
                     "required": 0,
                     "conditional_logic": 0,
-                    "wrapper": { "width": "35", "class": "", "id": "" },
+                    "wrapper": {
+                        "width": "35",
+                        "class": "",
+                        "id": ""
+                    },
                     "default_value": "",
                     "maxlength": "",
                     "allow_in_bindings": 0,
@@ -133,7 +184,11 @@
                     "instructions": "",
                     "required": 0,
                     "conditional_logic": 0,
-                    "wrapper": { "width": "65", "class": "", "id": "" },
+                    "wrapper": {
+                        "width": "65",
+                        "class": "",
+                        "id": ""
+                    },
                     "default_value": "",
                     "maxlength": "",
                     "allow_in_bindings": 0,

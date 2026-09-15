@@ -81,7 +81,6 @@
         gap: px-to-rem(14);
         margin: 0;
         padding: 0;
-        border: 0;
 
         @media (max-width: 640px) {
             grid-template-columns: 1fr;
@@ -90,6 +89,7 @@
     }
 
     &__filter-legend {
+        margin: 0;
         padding: px-to-rem(6) 0 0;
         font-size: px-to-rem(11);
         font-weight: 700;

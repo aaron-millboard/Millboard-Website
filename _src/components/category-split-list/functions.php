@@ -26,17 +26,24 @@ function filter_args(array $args): ?array
         'image_id' => 0,
         'link' => [],
         'items' => [],
+        // The certification section sits on Mist in the design, the benefits
+        // one does not, so the page says which.
+        'background' => '',
         'uid' => \wp_unique_id('category-split-list-'),
     ], $args);
 
     // -------------------------------------------------------------------------
     // Required classes.
     // -------------------------------------------------------------------------
-    $args['classes'] = array_merge([
-        'category-split-list',
-        'wp-block',
-        'alignfull',
-    ], $args['classes']);
+    $args['classes'] = array_merge(
+        [
+            'category-split-list',
+            'wp-block',
+            'alignfull',
+        ],
+        $args['background'] === 'mist' ? ['category-split-list--mist'] : [],
+        $args['classes']
+    );
 
     $args['items'] = normalise_items($args['items']);
 
