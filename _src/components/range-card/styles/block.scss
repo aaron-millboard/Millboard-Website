@@ -1,0 +1,223 @@
+// =============================================================================
+// Range Cards
+// Opens a shop category with its named collections rather than a flat list of
+// every product. Header row (rule + eyebrow + heading + intro) and a grid of
+// cards carrying an image, a spec chip row, colour swatches and a from-price.
+// =============================================================================
+
+.range-card {
+    --rc--accent: var(--color--olivegreen);
+    --rc--ink: var(--color--black);
+    --rc--muted: #{rgba(#151716, 0.66)};
+    --rc--line: #{rgba(#151716, 0.18)};
+
+    padding: clamp(48px, 6vw, 72px) 0;
+    background: var(--color--mist);
+    color: var(--rc--ink);
+
+    &__inner {
+        max-width: var(--width--responsive--l);
+        margin: 0 auto;
+    }
+
+    // ---- Header -------------------------------------------------------------
+    &__header {
+        margin: 0 0 px-to-rem(40);
+    }
+
+    &__rule {
+        display: block;
+        width: px-to-rem(48);
+        height: 2px;
+        margin: 0 0 px-to-rem(22);
+        border: 0;
+        background: var(--rc--accent);
+    }
+
+    &__meta {
+        margin: 0;
+        font-size: px-to-rem(12);
+        font-weight: 700;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+        color: var(--rc--muted);
+    }
+
+    // Inherits the site h2 hierarchy.
+    &__heading {
+        margin: px-to-rem(18) 0 0;
+    }
+
+    &__intro {
+        max-width: 34em;
+
+        p {
+            margin: px-to-rem(18) 0 0;
+            line-height: 1.7;
+        }
+    }
+
+    // ---- Grid ---------------------------------------------------------------
+    &__items {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(px-to-rem(280), 1fr));
+        gap: px-to-rem(24);
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    &__item {
+        display: flex;
+    }
+
+    &__card {
+        position: relative; // Anchors the stretched link below.
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        background: var(--color--springwood);
+        border: 1px solid var(--rc--line);
+        transition: border-color var(--transition--duration) var(--transition--ease);
+
+        &:hover,
+        &:focus-within {
+            border-color: var(--rc--accent);
+        }
+    }
+
+    // ---- Media --------------------------------------------------------------
+    &__media {
+        display: block;
+    }
+
+    &__image {
+        display: block;
+        width: 100%;
+        height: auto;
+        aspect-ratio: 4 / 3;
+        object-fit: cover;
+    }
+
+    // ---- Body ---------------------------------------------------------------
+    &__body {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        gap: px-to-rem(14);
+        padding: px-to-rem(22);
+    }
+
+    &__name {
+        margin: 0;
+        font-size: px-to-rem(18);
+        font-weight: 300;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+    }
+
+    &__link {
+        color: inherit;
+        text-decoration: none;
+
+        // Lets the whole card be the target without nesting interactive
+        // elements inside one another.
+        &::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+        }
+    }
+
+    &__line {
+        margin: px-to-rem(10) 0 0;
+        font-size: px-to-rem(14);
+        line-height: 1.6;
+    }
+
+    // ---- Chips --------------------------------------------------------------
+    &__chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: px-to-rem(6);
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    &__chip {
+        padding: px-to-rem(5) px-to-rem(9);
+        border: 1px solid var(--rc--line);
+        font-size: px-to-rem(10);
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+    }
+
+    // ---- Swatches -----------------------------------------------------------
+    &__swatches {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: px-to-rem(6);
+    }
+
+    &__swatch-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: px-to-rem(6);
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+
+    &__swatch-image {
+        display: block;
+        width: px-to-rem(26);
+        height: px-to-rem(26);
+        border: 1px solid var(--rc--line);
+        object-fit: cover;
+    }
+
+    &__colour-note {
+        margin: 0 0 0 px-to-rem(4);
+        font-size: px-to-rem(11);
+        color: var(--rc--muted);
+    }
+
+    // ---- Footer -------------------------------------------------------------
+    &__footer {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: px-to-rem(12);
+        margin-top: auto;
+        padding-top: px-to-rem(14);
+        border-top: 1px solid var(--rc--line);
+    }
+
+    &__price {
+        margin: 0;
+        font-size: px-to-rem(14);
+    }
+
+    &__price-label {
+        font-size: px-to-rem(11);
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--rc--muted);
+    }
+
+    &__price-value {
+        font-weight: 700;
+    }
+
+    &__cta {
+        border-bottom: 1px solid var(--rc--accent);
+        font-size: px-to-rem(11);
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+    }
+}
