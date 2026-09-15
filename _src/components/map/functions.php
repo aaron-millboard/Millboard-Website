@@ -276,96 +276,6 @@ function get_type_label(\WP_Post $wp_post, bool $is_advanced_installer = false):
     return '';
 }
 
-/**
- * Converts a "HH:MM" time to minutes past midnight, or null if unparseable.
- * Accepts a single-digit hour ("9:00") and tolerates stray whitespace.
- */
-function time_to_minutes(string $time): ?int
-{
-    if (!preg_match('/^\s*(\d{1,2}):(\d{2})\s*$/', $time, $matches)) {
-        return null;
-    }
-
-    $hours = (int) $matches[1];
-    $minutes = (int) $matches[2];
-
-    if ($hours > 23 || $minutes > 59) {
-        return null;
-    }
-
-    return ($hours * 60) + $minutes;
-}
-
-/**
- * Builds a compact "today's opening hours" line from an opening_hours repeater.
- * Returns ['status' => 'open'|'closed'|'', 'text' => string]: "open" with an
- * "Open today HH:MM–HH:MM" line, "closed" with "Closed today", or empty status
- * and text when today has no matching row.
- */
-function get_todays_opening_hours($rows): array
-{
-    $none = ['status' => '', 'text' => ''];
-
-    if (empty($rows) || !is_array($rows)) {
-        return $none;
-    }
-
-    $today = \current_time('l'); // Full day name, e.g. "Wednesday".
-
-    foreach ($rows as $row) {
-        if (!is_array($row) || ($row['day'] ?? '') !== $today) {
-            continue;
-        }
-
-        if (!empty($row['closed'])) {
-            return ['status' => 'closed', 'text' => \__('Closed today', 'granola')];
-        }
-
-        $open = trim((string) ($row['open'] ?? ''));
-        $close = trim((string) ($row['close'] ?? ''));
-
-        if ($open === '' || $close === '') {
-            return $none;
-        }
-
-        // "Open" has to mean open right now, not merely open at some point
-        // today, otherwise the line reads green at 9pm. Compare against site
-        // local time in minutes.
-        $open_minutes = time_to_minutes($open);
-        $close_minutes = time_to_minutes($close);
-        $now_minutes = time_to_minutes((string) \current_time('H:i'));
-
-        if ($open_minutes === null || $close_minutes === null || $now_minutes === null) {
-            return $none;
-        }
-
-        if ($now_minutes < $open_minutes) {
-            return [
-                'status' => 'closed',
-                'text' => sprintf(
-                    // translators: %s: opening time, e.g. "08:30".
-                    \__('Closed now, opens %s', 'granola'),
-                    $open
-                ),
-            ];
-        }
-
-        if ($now_minutes >= $close_minutes) {
-            return ['status' => 'closed', 'text' => \__('Closed now', 'granola')];
-        }
-
-        return [
-            'status' => 'open',
-            'text' => sprintf(
-                // translators: %s: closing time, e.g. "17:00".
-                \__('Open now until %s', 'granola'),
-                $close
-            ),
-        ];
-    }
-
-    return $none;
-}
 
 function get_item_data($args): array|null
 {
@@ -404,7 +314,14 @@ function get_item_data($args): array|null
 
         $preferred = !empty(\get_field('preferred_stockist', $wp_post_id));
         $holds_stock = !empty(\get_field('holds_stock', $wp_post_id));
-        $today_hours = get_todays_opening_hours(\get_field('opening_hours', $wp_post_id));
+        // The week, not a verdict about it. Whether this branch is open right now is
+        // decided in the browser (see OpeningStatus.js), because the finder page is
+        // served from the full page cache: a verdict rendered here is frozen at
+        // whatever the clock said when the cache entry was written, which is how all
+        // 187 cards came to read "Closed today" on a Monday.
+        $opening_week = \Granola\Components\DistributorOpeningHours\week_payload(
+            \get_field('opening_hours', $wp_post_id)
+        );
 
         // Appointed market territory. Non-empty means a search anywhere in these
         // countries shows this distributor on its own and ignores the distance filter, so
@@ -443,8 +360,7 @@ function get_item_data($args): array|null
             'holds_stock' => $holds_stock,
             'display_collections' => \get_field('display_collections', $wp_post_id),
             'display_photo' => \get_field('display_photo', $wp_post_id),
-            'opening_today' => $today_hours['text'],
-            'opening_today_status' => $today_hours['status'],
+            'opening_week' => $opening_week,
             'attributes' => [
                 'class' => 'map__listing',
                 'data-map-item-lat' => $lat,

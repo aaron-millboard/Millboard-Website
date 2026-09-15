@@ -11,7 +11,7 @@
             </p>
         <?php } ?>
 
-        <?php if (!empty($args['badges']) || !empty($args['status'])) { ?>
+        <?php if (!empty($args['badges']) || !empty($args['opening_week'])) { ?>
             <div class="distributor-location-status__row">
 
                 <?php if (!empty($args['badges'])) { ?>
@@ -35,10 +35,12 @@
                     </ul>
                 <?php } ?>
 
-                <?php if (!empty($args['status'])) { ?>
-                    <p class="distributor-location-status__open distributor-location-status__open--<?= esc_attr($args['status']['state']); ?>">
+                <?php // Written by OpeningStatus.js from the week carried here, and hidden until
+                // it is, so a cached page can never show a stale verdict. ?>
+                <?php if (!empty($args['opening_week'])) { ?>
+                    <p class="distributor-location-status__open" data-opening-status="profile" data-opening-week="<?= esc_attr($args['opening_week']); ?>" hidden>
                         <span class="distributor-location-status__dot" aria-hidden="true"></span>
-                        <?= esc_html($args['status']['label']); ?>
+                        <span data-opening-status-text></span>
                     </p>
                 <?php } ?>
 

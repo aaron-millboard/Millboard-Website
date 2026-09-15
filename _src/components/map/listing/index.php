@@ -28,10 +28,11 @@ $listing_type_icon = \Granola\Components\Map\marker_icon_svg(
         </p>
     <?php } ?>
 
-    <?php if (!empty($args['opening_today'])) { ?>
-        <p class="map__listing__hours map__listing__hours--<?= esc_attr($args['opening_today_status'] ?? ''); ?>">
-            <?= esc_html($args['opening_today']); ?>
-        </p>
+    <?php // Written by OpeningStatus.js from the week carried here. Left empty rather than
+    // rendered server-side, because this card is served from the full page cache and a
+    // line worked out in PHP would go on claiming Sunday's hours all week. ?>
+    <?php if (!empty($args['opening_week'])) { ?>
+        <p class="map__listing__hours" data-opening-status="listing" data-opening-week="<?= esc_attr($args['opening_week']); ?>"></p>
     <?php } ?>
 
     <?php if (!empty($args['holds_stock'])) { ?>
