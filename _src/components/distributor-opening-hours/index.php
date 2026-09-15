@@ -5,13 +5,16 @@
 
         <?php if (!empty($args['days'])) { ?>
             <dl class="distributor-opening-hours__week">
+                <?php // Which row is today is decided by the browser, not here: this markup is
+                // served from the full page cache, so a "today" worked out in PHP stays
+                // stuck on whichever day the cache entry was written. Every row carries the
+                // pill hidden and OpeningStatus.js shows the right one, which also keeps the
+                // wording in PHP where Loco can translate it. ?>
                 <?php foreach ($args['days'] as $row) { ?>
-                    <div class="distributor-opening-hours__row<?= $row['is_today'] ? ' distributor-opening-hours__row--today' : ''; ?>">
+                    <div class="distributor-opening-hours__row" data-opening-day="<?= esc_attr($row['day']); ?>">
                         <dt class="distributor-opening-hours__day">
                             <?= esc_html($row['day']); ?>
-                            <?php if ($row['is_today']) { ?>
-                                <span class="distributor-opening-hours__pill"><?= esc_html__('Today', 'granola'); ?></span>
-                            <?php } ?>
+                            <span class="distributor-opening-hours__pill" data-opening-today-pill hidden><?= esc_html__('Today', 'granola'); ?></span>
                         </dt>
                         <dd class="distributor-opening-hours__hours<?= $row['closed'] ? ' distributor-opening-hours__hours--closed' : ''; ?>">
                             <?= esc_html($row['hours']); ?>

@@ -46,23 +46,27 @@ function filter_args(array $args): ?array
     return $args;
 }
 
+const WEEK_ORDER = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
 /**
- * Normalise the repeater into a Monday-first week, marking today.
+ * Normalise the repeater into a Monday-first week.
  *
  * Rows are keyed by day rather than read in order, because the repeater lets an
  * editor enter them in any sequence and a profile that lists Sunday first reads
  * like a mistake.
  *
- * @return array<int, array{day: string, is_today: bool, closed: bool, hours: string}>
+ * Which row is today is deliberately NOT decided here. This markup is served from
+ * the full page cache, so a "today" worked out in PHP is frozen at whatever the
+ * clock said when the cache entry was written and goes on highlighting a Sunday
+ * for the rest of the week. The browser marks it instead, see OpeningStatus.js.
+ *
+ * @return array<int, array{day: string, closed: bool, hours: string}>
  */
 function week($rows): array
 {
-    $order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-    $today = \current_time('l');
-
     $byDay = [];
     foreach ((array) $rows as $row) {
-        $day = $row['day'] ?? '';
+        $day = is_array($row) ? ($row['day'] ?? '') : '';
         if ($day !== '') {
             $byDay[$day] = $row;
         }
@@ -70,7 +74,7 @@ function week($rows): array
 
     $week = [];
 
-    foreach ($order as $day) {
+    foreach (WEEK_ORDER as $day) {
         if (!isset($byDay[$day])) {
             continue;
         }
@@ -87,7 +91,6 @@ function week($rows): array
 
         $week[] = [
             'day' => $day,
-            'is_today' => ($day === $today),
             'closed' => $closed,
             // En dash for the range, per the design. Written as an escape so the
             // character survives whatever encoding this file is edited in.
@@ -99,69 +102,99 @@ function week($rows): array
 }
 
 /**
- * Resolve the record's hours into a live open-or-closed line.
+ * The week as a payload the browser can read the clock against, Monday first.
  *
- * Shared with the location status block, which shows this beside the badges.
+ * Seven slots, one per day: null where the record has no row for that day, false
+ * where it says closed, and "HH:MM-HH:MM" where it is open. Compact because the
+ * finder page carries one of these per card, 187 of them on en-gb today.
  *
- * @return array{label: string, state: string}|null
+ * Returns '' when the record says nothing usable at all, so a caller can leave the
+ * element out entirely rather than print an empty one.
  */
-function today_status(int $post_id): ?array
+function week_payload($rows): string
 {
-    $rows = \get_field('opening_hours', $post_id);
-
     if (empty($rows) || !is_array($rows)) {
-        return null;
+        return '';
     }
 
-    $today = \current_time('l');
-    $now = (int) \current_time('H') * 60 + (int) \current_time('i');
-    $separator = " \u{00B7} ";
+    $byDay = [];
+    foreach ($rows as $row) {
+        $day = is_array($row) ? ($row['day'] ?? '') : '';
+        if ($day !== '') {
+            $byDay[$day] = $row;
+        }
+    }
 
-    foreach ((array) $rows as $row) {
-        if (($row['day'] ?? '') !== $today) {
+    $week = [];
+    $usable = false;
+
+    foreach (WEEK_ORDER as $day) {
+        $row = $byDay[$day] ?? null;
+
+        if ($row === null) {
+            $week[] = null;
+
             continue;
         }
 
         if (!empty($row['closed'])) {
-            return ['label' => \__('Closed today', 'granola'), 'state' => 'closed'];
+            $week[] = false;
+            $usable = true;
+
+            continue;
         }
 
-        $openLabel = trim((string) ($row['open'] ?? ''));
-        $closeLabel = trim((string) ($row['close'] ?? ''));
-        $open = to_minutes($openLabel);
-        $close = to_minutes($closeLabel);
+        $open = trim((string) ($row['open'] ?? ''));
+        $close = trim((string) ($row['close'] ?? ''));
 
-        if ($open === null || $close === null) {
-            return null;
+        if ($open === '' || $close === '') {
+            $week[] = null;
+
+            continue;
         }
 
-        if ($now < $open) {
-            return [
-                'label' => \__('Closed now', 'granola') . $separator . sprintf(\__('opens %s', 'granola'), $openLabel),
-                'state' => 'closed',
-            ];
-        }
-
-        if ($now >= $close) {
-            return ['label' => \__('Closed for today', 'granola'), 'state' => 'closed'];
-        }
-
-        return [
-            'label' => \__('Open now', 'granola') . $separator . sprintf(\__('closes %s', 'granola'), $closeLabel),
-            'state' => 'open',
-        ];
+        $week[] = $open . '-' . $close;
+        $usable = true;
     }
 
-    return null;
+    return $usable ? (string) \wp_json_encode($week) : '';
 }
 
-function to_minutes(string $time): ?int
+/**
+ * Wording and timezone for the browser-side status line.
+ *
+ * The strings stay here rather than in the script so they stay editable in Loco,
+ * and they are passed through with their %s intact for the browser to fill, which
+ * keeps every translation already entered against them working.
+ *
+ * The finder cards and the profile line are worded differently ("Open now until
+ * 17:00" against "Open now / closes 17:00"). Both wordings are already translated,
+ * so both are carried rather than one quietly becoming the other.
+ */
+function add_status_localization($localizations): array
 {
-    $time = trim($time);
+    $separator = " \u{00B7} ";
 
-    if ($time === '' || !preg_match('~^(\d{1,2})[:.]?(\d{2})?~', $time, $m)) {
-        return null;
-    }
+    $localizations['opening_status'] = [
+        // The partner's clock, not the visitor's. This is the site timezone, which is
+        // what the PHP used, so the answer does not change for a visitor abroad.
+        'timezone' => \wp_timezone()->getName(),
+        'today_class' => 'distributor-opening-hours__row--today',
+        'listing' => [
+            'class' => 'map__listing__hours',
+            'open' => \__('Open now until %s', 'granola'),
+            'opens' => \__('Closed now, opens %s', 'granola'),
+            'closed_now' => \__('Closed now', 'granola'),
+            'closed_today' => \__('Closed today', 'granola'),
+        ],
+        'profile' => [
+            'class' => 'distributor-location-status__open',
+            'open' => \__('Open now', 'granola') . $separator . \__('closes %s', 'granola'),
+            'opens' => \__('Closed now', 'granola') . $separator . \__('opens %s', 'granola'),
+            'closed_now' => \__('Closed for today', 'granola'),
+            'closed_today' => \__('Closed today', 'granola'),
+        ],
+    ];
 
-    return ((int) $m[1]) * 60 + (int) ($m[2] ?? 0);
+    return $localizations;
 }
