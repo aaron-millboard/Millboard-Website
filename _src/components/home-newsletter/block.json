@@ -1,0 +1,42 @@
+{
+    "$schema": "https://raw.githubusercontent.com/AdvancedCustomFields/schemas/main/json/block.json",
+    "apiVersion": 3,
+    "name": "acf/home-newsletter",
+    "title": "Home Newsletter",
+    "description": "The mailing list sign-up beside a picture.",
+    "category": "granola-blocks",
+    "icon": "email-alt",
+    "keywords": [
+        "newsletter",
+        "subscribe",
+        "mailing list",
+        "homepage"
+    ],
+    "acf": {
+        "mode": "edit",
+        "blockVersion": 3,
+        "autoInlineEditing": false,
+        "hideFieldsInSidebar": false,
+        "renderCallback": "\\Granola\\Component::acf_render_callback",
+        "postTypes": [
+            "page",
+            "granola-template"
+        ]
+    },
+    "supports": {
+        "align": false,
+        "anchor": true,
+        "color": {
+            "background": false,
+            "text": false
+        },
+        "mode": false,
+        "multiple": true
+    },
+    "attributes": {
+        "align": {
+            "type": "string",
+            "default": "full"
+        }
+    }
+}

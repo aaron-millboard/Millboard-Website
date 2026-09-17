@@ -1,0 +1,42 @@
+{
+    "$schema": "https://raw.githubusercontent.com/AdvancedCustomFields/schemas/main/json/block.json",
+    "apiVersion": 3,
+    "name": "acf/home-case-study",
+    "title": "Home Featured Case Study",
+    "description": "A full-bleed project photograph with the headline and a route into the case study.",
+    "category": "granola-blocks",
+    "icon": "cover-image",
+    "keywords": [
+        "case study",
+        "featured",
+        "homepage",
+        "project"
+    ],
+    "acf": {
+        "mode": "edit",
+        "blockVersion": 3,
+        "autoInlineEditing": false,
+        "hideFieldsInSidebar": false,
+        "renderCallback": "\\Granola\\Component::acf_render_callback",
+        "postTypes": [
+            "page",
+            "granola-template"
+        ]
+    },
+    "supports": {
+        "align": false,
+        "anchor": true,
+        "color": {
+            "background": false,
+            "text": false
+        },
+        "mode": false,
+        "multiple": true
+    },
+    "attributes": {
+        "align": {
+            "type": "string",
+            "default": "full"
+        }
+    }
+}

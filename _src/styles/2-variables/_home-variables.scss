@@ -1,0 +1,50 @@
+// ---------------------------------------------------
+// Homepage redesign variables
+// ---------------------------------------------------
+// Non-colour tokens for the 2026 homepage redesign, from the design handoff.
+//
+// There are no colours here on purpose. The refreshed brand palette was adopted
+// site-wide in `_color-variables.scss`, so the redesign reads its colours from
+// the theme's own `--color--*` tokens like everything else does. Two sources of
+// truth for a hex is how a palette drifts.
+//
+// What the design does need, and the theme has no token for, is the motion
+// vocabulary and the section geometry: one easing curve, two duration bands,
+// square corners and hairline rules.
+
+@mixin home-variables {
+    // Motion. One curve everywhere -- no bounce, no overshoot.
+    --mbh-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+
+    // UI transitions run 240-420ms; reveals run 900-1200ms.
+    --mbh-dur-ui: 240ms;
+    --mbh-dur-ui-slow: 420ms;
+    --mbh-dur-reveal: 1000ms;
+    --mbh-dur-reveal-slow: 1200ms;
+
+    // Hairlines. Charcoal Black on light grounds, Spring Wood on dark ones.
+    --mbh-rule: #{rgba(#2f292e, 0.18)};
+    --mbh-rule-strong: #{rgba(#2f292e, 0.35)};
+    --mbh-rule-on-dark: #{rgba(#f8f4f0, 0.25)};
+
+    // Geometry. Square corners throughout -- radius 0, no exceptions.
+    --mbh-container: 1440px;
+    --mbh-container-narrow: 1200px; // Plan your space only.
+    --mbh-section-y: clamp(72px, 10vw, 160px);
+    --mbh-section-x: clamp(24px, 5vw, 64px);
+
+    // Type. Light (300) and Bold (700) only -- the brand guide forbids Regular
+    // in marketing layouts, so nothing here reaches for 400.
+    --mbh-tracking-heading: 0.2em;
+    --mbh-tracking-sub: 0.16em;
+    --mbh-tracking-eyebrow: 0.2em;
+    --mbh-fs-h2: clamp(26px, 3.4vw, 52px);
+    --mbh-fs-body: clamp(15px, 1.15vw, 18px);
+    --mbh-lh-body: 1.75;
+    --mbh-measure: 54ch; // Body copy caps at roughly 54 characters.
+
+    // Small accent text in olive fails AA at #78953C (3.11:1 on Spring Wood),
+    // so anything that has to be *read* in olive uses this instead: 4.59:1.
+    // The 2px accent rules and other non-text marks keep the true olive.
+    --mbh-olive-text: #607730;
+}

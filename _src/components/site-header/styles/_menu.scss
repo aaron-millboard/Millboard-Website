@@ -271,9 +271,13 @@
                 @include mq('site-header') {
                     left: 50%;
                     transform: translate(-50%, var(--submenu--translate-y));
-                    width: 100vw;
-                    width: 100vw;
-                    max-width: 100vw;
+                    // 100vw counts the scrollbar and the viewport does not, so a
+                    // full-bleed dropdown overhung the page by the scrollbar's width
+                    // and put a horizontal scrollbar on every page. SiteHeader.js
+                    // measures the real width into --site-header--viewport; 100vw is
+                    // the fallback for the first paint, before that lands.
+                    width: var(--site-header--viewport, 100vw);
+                    max-width: var(--site-header--viewport, 100vw);
                 }
 
                 .menu-list {

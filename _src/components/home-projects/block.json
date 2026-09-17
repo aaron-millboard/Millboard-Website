@@ -1,0 +1,43 @@
+{
+    "$schema": "https://raw.githubusercontent.com/AdvancedCustomFields/schemas/main/json/block.json",
+    "apiVersion": 3,
+    "name": "acf/home-projects",
+    "title": "Home Projects Rail",
+    "description": "A sideways rail of recent projects, each a portrait photograph with its location and boards.",
+    "category": "granola-blocks",
+    "icon": "images-alt2",
+    "keywords": [
+        "projects",
+        "rail",
+        "carousel",
+        "case studies",
+        "homepage"
+    ],
+    "acf": {
+        "mode": "edit",
+        "blockVersion": 3,
+        "autoInlineEditing": false,
+        "hideFieldsInSidebar": false,
+        "renderCallback": "\\Granola\\Component::acf_render_callback",
+        "postTypes": [
+            "page",
+            "granola-template"
+        ]
+    },
+    "supports": {
+        "align": false,
+        "anchor": true,
+        "color": {
+            "background": false,
+            "text": false
+        },
+        "mode": false,
+        "multiple": true
+    },
+    "attributes": {
+        "align": {
+            "type": "string",
+            "default": "full"
+        }
+    }
+}

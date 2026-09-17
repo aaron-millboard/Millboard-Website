@@ -1,0 +1,197 @@
+{
+    "key": "group_68c1a4e70a100",
+    "title": "Block - Home Hero",
+    "fields": [
+        {
+            "key": "field_68c1a4e70a101",
+            "label": "Eyebrow",
+            "name": "eyebrow",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "The small line of caps above the strapline.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "allow_in_bindings": 0,
+            "placeholder": "",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_68c1a4e70a102",
+            "label": "Strapline",
+            "name": "strapline",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "The page's h1. Each character rises into place on load, staggered 60ms apart, so keep it short -- three words is what the design is drawn to.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "allow_in_bindings": 0,
+            "placeholder": "Live. Life. Outside.",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_68c1a4e70a103",
+            "label": "Film URL",
+            "name": "film_url",
+            "aria-label": "",
+            "type": "url",
+            "instructions": "Preferred. A hosted MP4 from the CDN. Takes precedence over an uploaded file -- a hero film does not belong in the media library.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "allow_in_bindings": 0,
+            "placeholder": ""
+        },
+        {
+            "key": "field_68c1a4e70a104",
+            "label": "Film file",
+            "name": "film",
+            "aria-label": "",
+            "type": "file",
+            "instructions": "Fallback only, used when no film URL is set.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "return_format": "array",
+            "library": "all",
+            "min_size": "",
+            "max_size": "",
+            "mime_types": "mp4,webm",
+            "allow_in_bindings": 0
+        },
+        {
+            "key": "field_68c1a4e70a105",
+            "label": "Poster image",
+            "name": "poster",
+            "aria-label": "",
+            "type": "image",
+            "instructions": "Shown while the film loads, and instead of it where autoplay is refused. Also the fallback if no film is set at all.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "return_format": "array",
+            "library": "all",
+            "min_width": "",
+            "min_height": "",
+            "min_size": "",
+            "max_width": "",
+            "max_height": "",
+            "max_size": "",
+            "mime_types": "",
+            "preview_size": "medium",
+            "allow_in_bindings": 0
+        },
+        {
+            "key": "field_68c1a4e70a106",
+            "label": "Film description",
+            "name": "film_description",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "The film's accessible name, describing what is on screen. For example: Millboard Limed Oak decking, filmed at golden hour.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "allow_in_bindings": 0,
+            "placeholder": "",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_68c1a4e70a107",
+            "label": "Pause hint",
+            "name": "pause_hint",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "Bottom left, beneath the frame. Names a pointer gesture, so it is hidden on touch and narrow viewports.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "allow_in_bindings": 0,
+            "placeholder": "Click the frame to pause the film",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_68c1a4e70a108",
+            "label": "Scroll label",
+            "name": "scroll_label",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "Bottom right, beside the drawing rule.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "allow_in_bindings": 0,
+            "placeholder": "Scroll",
+            "prepend": "",
+            "append": ""
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "block",
+                "operator": "==",
+                "value": "acf\/home-hero"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "",
+    "show_in_rest": 0,
+    "display_title": "",
+    "granola_save_location": 0,
+    "modified": 1789041000
+}

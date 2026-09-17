@@ -11,6 +11,7 @@ function filter_args(array $args): ?array
         'content' => [],
         'classes' => [],
         'help_center_link' => null,
+        'nav_split' => 0,
     ], $args);
 
     // ---------------------------------------
@@ -19,6 +20,39 @@ function filter_args(array $args): ?array
     $args['classes'] = array_merge([
         'site-header',
     ], $args['classes']);
+
+    // -------------------------------------------------------------------------
+    // Where to break the primary nav either side of the wordmark.
+    //
+    // The redesigned header centres the wordmark inside the main nav rather than
+    // sitting it at one end, so the menu renders in two halves. The split is
+    // computed from however many top-level items the menu actually has, because
+    // it is different per locale and editable in the admin: en-gb has six, which
+    // breaks 3/3 exactly as the design draws it, but nothing here assumes that.
+    //
+    // The larger half goes on the LEFT. The right-hand group also carries the
+    // search, account and basket icons, so giving the left the extra item keeps
+    // the two sides closer to even.
+    //
+    // Deliberately a count, not a measurement. Balancing the halves by label
+    // width instead was tried and reverted: it is more even in pixels and
+    // plainly wrong to look at, because the icons do not read as nav items. It
+    // put four links against two on fr-fr and moved en-ie and en-au around for
+    // no visible gain. Where a locale's labels genuinely do not fit, the answer
+    // is the label, not the arithmetic.
+    // -------------------------------------------------------------------------
+    $header_menu_locations = \get_nav_menu_locations();
+
+    if (!empty($header_menu_locations['header'])) {
+        $top_level = array_values(array_filter(
+            (array) \wp_get_nav_menu_items($header_menu_locations['header'], ['output' => false]),
+            function ($item) {
+                return empty($item->menu_item_parent) || $item->menu_item_parent === '0';
+            }
+        ));
+
+        $args['nav_split'] = (int) ceil(count($top_level) / 2);
+    }
 
     if ($header_call_to_action_1 = get_field('header_call_to_action_1', 'option')) {
         $args['content']['call_to_action_1'] = $header_call_to_action_1;

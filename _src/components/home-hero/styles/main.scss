@@ -1,0 +1,492 @@
+// =============================================================================
+// Home Hero
+// =============================================================================
+// A 300svh section holding a sticky 100svh stage. One scroll variable does all
+// of it: `--p` runs 0 to 1 across the section and `--op` is its inverse, both
+// written by HomeHero.js. At rest the film sits in a frame inset below the
+// header and inside the side margins; as the page moves the frame opens to full
+// bleed, the film scales and drifts, and the strapline shrinks away.
+//
+// The section is pulled up under the site header by its own height, so the
+// stage really is a full viewport rather than a viewport minus the header. The
+// header stays `position: sticky` for every other template on the site; only
+// this block opts into sitting beneath it.
+// =============================================================================
+
+.home-hero {
+    --home-hero--inset-x: 5vw;
+    --home-hero--inset-bottom: 11svh;
+    // The strength of the pool behind the type, as an alpha. Raised from the
+    // 0.4 it carried when it only had to cover the middle of the frame.
+    // The pool behind the type, as an alpha, and no darker than it has to be.
+    //
+    // 0.52 is what the brightest pixel of the footage needs to carry Spring
+    // Wood at 3:1. The footage behind the words averages 0.09 luminance but
+    // reaches 0.92 where the dusk sky shows through, and that peak is what
+    // sets this number -- not the average, which would let it be far lighter
+    // and leave a letter or two unreadable.
+    //
+    // It would have to be 0.65 if the eyebrow were still 12px. Small text
+    // needs 4.5:1 where large text needs 3:1, so one 12px line was costing
+    // the whole hero a quarter of its brightness. The eyebrow is 19px now.
+    --home-hero--scrim: 0.52;
+    --home-hero--motion: 1;
+
+    // The theme gives every .wp-block a vertical rhythm. The hero is the fold:
+    // it starts under the header and the next section begins the moment it
+    // ends, so both margins go.
+    --block--margin-top: 0;
+    --block--margin-bottom: 0;
+
+    position: relative;
+    z-index: 1;
+    height: 300svh;
+    // Pulled up under the header by the space the header reserves.
+    //
+    // --site-header--reserved, which does not move. The header now holds its
+    // resting height in flow whatever it happens to be drawing, so there is
+    // nothing here to compensate for any more and this margin is a constant.
+    // It used to chase the header's live height, and a top margin that changes
+    // while you scroll is a page that moves while you scroll.
+    margin-top: calc(-1 * var(--site-header--reserved));
+    // The page background, because at rest this is what shows in the side and
+    // bottom margins the frame is inset by -- and the base line's charcoal type
+    // sits on it. Charcoal here turned the whole gap into a black box. The
+    // FRAME keeps charcoal, so there is no white flash before the film paints.
+    background-color: var(--color--springwood);
+
+    // Reduced motion: pin the scroll variable so nothing parallaxes, and let the
+    // frame sit open rather than animating shut.
+    @media (prefers-reduced-motion: reduce) {
+        --home-hero--motion: 0;
+
+        height: 100svh;
+        margin-top: 0;
+    }
+
+    // -------------------------------------------------------------------------
+    // The sticky stage.
+    // -------------------------------------------------------------------------
+    &__stage {
+        position: sticky;
+        top: 0;
+        height: 100svh;
+        overflow: hidden;
+    }
+
+    // -------------------------------------------------------------------------
+    // The aperture. `--op` is 1 at rest and 0 once open, so every inset
+    // collapses to zero as the page scrolls.
+    // -------------------------------------------------------------------------
+    &__frame {
+        position: absolute;
+        inset: 0;
+        // The page background, not charcoal. This is what shows outside the
+        // clipped aperture while the 1100ms load-in slide runs, and charcoal
+        // made the whole hero a dark box for that second. Spring Wood means the
+        // film slides out of the page rather than out of a black hole -- and
+        // there is no dark flash before the first frame paints either.
+        background-color: var(--color--springwood);
+        clip-path: inset(
+            calc(var(--op, 1) * var(--site-header--height))
+            calc(var(--op, 1) * var(--home-hero--inset-x))
+            calc(var(--op, 1) * var(--home-hero--inset-bottom))
+            calc(var(--op, 1) * var(--home-hero--inset-x))
+        );
+
+        @media (prefers-reduced-motion: reduce) {
+            clip-path: none;
+        }
+    }
+
+    // A 1100ms aperture on load, opening from a narrow slit to the full frame.
+    &__aperture {
+        position: absolute;
+        inset: 0;
+        animation: home-hero-aperture 1100ms var(--mbh-ease) both;
+
+        @media (prefers-reduced-motion: reduce) {
+            animation: none;
+        }
+    }
+
+    &__film,
+    &__poster {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: 50% 55%;
+        transform:
+            scale(calc(1.03 + var(--p, 0) * var(--home-hero--motion) * 0.15))
+            translate3d(0, calc(var(--p, 0) * var(--home-hero--motion) * -5svh), 0);
+        transform-origin: 50% 45%;
+    }
+
+    // -------------------------------------------------------------------------
+    // Scrims. Type over moving footage needs a floor under it, and contrast
+    // over video is frame-dependent -- if the clip is ever swapped for a
+    // brighter one, re-measure the strapline and the eyebrow.
+    // -------------------------------------------------------------------------
+    &__scrim {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+
+        &--linear {
+            background: linear-gradient(
+                180deg,
+                #{rgba(#2f292e, 0.44)} 0%,
+                #{rgba(#2f292e, 0.06)} 34%,
+                #{rgba(#2f292e, 0.1)} 58%,
+                #{rgba(#2f292e, 0.66)} 100%
+            );
+            opacity: calc(0.8 + var(--p, 0) * 0.2);
+        }
+
+        // The pool the type sits in.
+        //
+        // Shaped to the words, not to the frame. A shallow band centred on the
+        // type block, holding its strength past the ends of the strapline and
+        // then falling away above and below it, so the sky at the top of the
+        // frame and the decking at the bottom keep their brightness. Spreading
+        // it over the whole stage would be simpler and would dull the shot.
+        //
+        // Sized for the tallest the type block gets, which is a phone: there
+        // the eyebrow wraps to two lines and the strapline to two more, so the
+        // words fill far more of the frame than they do at 1440. Cut to the
+        // desktop block alone, the corners of the phone's eyebrow fell outside
+        // the pool and came back at 2.3:1.
+        //
+        // It was a 58%-wide ellipse centred at 44%, which put the ends of
+        // "Live. Life. Outside." at 0.72 of its radius -- where the alpha has
+        // fallen to nothing. Sampling the poster, which is a frame of this
+        // film, the footage behind the strapline averages 0.09 luminance but
+        // peaks at 0.82 where the dusk sky shows between the trees. Spring
+        // Wood on that is 1.1:1, against the 3:1 large text has to meet, so
+        // the ends of the words were relying on the middle's pool reaching
+        // them, and it did not.
+        //
+        // At these values the worst pixel behind the strapline comes out at
+        // 4.2:1 and behind the eyebrow, which is small text and needs 4.5,
+        // at 5.0:1.
+        &--radial {
+            background: radial-gradient(
+                78% 32% at 50% 52%,
+                rgba(47, 41, 46, calc(var(--home-hero--scrim) + 0.04)) 0%,
+                rgba(47, 41, 46, var(--home-hero--scrim)) 75%,
+                #{rgba(#2f292e, 0)} 100%
+            );
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Type. Sits inside the same insets as the frame so it travels with it.
+    // -------------------------------------------------------------------------
+    &__content {
+        position: absolute;
+        top: calc(var(--op, 1) * var(--site-header--height));
+        right: calc(var(--op, 1) * var(--home-hero--inset-x));
+        bottom: calc(var(--op, 1) * var(--home-hero--inset-bottom));
+        left: calc(var(--op, 1) * var(--home-hero--inset-x));
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 0 6vw;
+        text-align: center;
+        pointer-events: none;
+        transform:
+            translateY(calc(var(--p, 0) * var(--home-hero--motion) * -7svh))
+            scale(calc(1 - var(--p, 0) * 0.2));
+        opacity: clamp(0, calc(1.05 - var(--p, 0) * 1.9), 1);
+
+        @media (prefers-reduced-motion: reduce) {
+            inset: 0;
+            transform: none;
+            opacity: 1;
+        }
+    }
+
+    &__eyebrow {
+        margin: 0 0 clamp(#{px-to-rem(18)}, 3vh, #{px-to-rem(34)});
+        // 19px, not the 12px the design draws.
+        //
+        // WCAG puts the boundary between small and large text at 18.66px for
+        // bold, and the two sides of that line want 4.5:1 and 3:1. Over
+        // footage this bright, holding a 12px line to 4.5:1 meant a scrim
+        // dark enough to flatten the whole film. One step over the boundary
+        // and the eyebrow asks for no more than the strapline beside it.
+        font-size: #{px-to-rem(19)};
+        font-weight: 700;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+        color: var(--color--springwood);
+        text-shadow:
+            0 1px 3px #{rgba(#2f292e, 0.95)},
+            0 2px 18px #{rgba(#2f292e, 0.8)};
+        animation: home-hero-fade 900ms var(--mbh-ease) 1000ms both;
+
+        @media (prefers-reduced-motion: reduce) {
+            animation: none;
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Strapline. Sentence case and near-solid line height, which is the one
+    // heading on the site that does NOT take the brand's 0.2em caps tracking.
+    // -------------------------------------------------------------------------
+    &__strapline {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        justify-content: center;
+        column-gap: 0.3em;
+        row-gap: 0.04em;
+        margin: 0;
+        font-weight: 300;
+        font-size: clamp(#{px-to-rem(38)}, 8.2vw, #{px-to-rem(152)});
+        line-height: 0.94;
+        letter-spacing: 0.005em;
+        text-transform: none;
+        color: var(--color--springwood);
+    }
+
+    &__word {
+        display: inline-flex;
+        overflow: hidden;
+        padding-bottom: 0.1em;
+        vertical-align: bottom;
+    }
+
+    &__letter {
+        display: inline-block;
+        // 1200ms rise. 240ms lead-in, then 60ms per character with an extra
+        // 20ms rest at each word boundary, so the three words land as three
+        // phrases rather than one even run of letters.
+        animation: home-hero-rise 1200ms var(--mbh-ease)
+            calc(240ms + var(--home-hero-letter, 0) * 60ms + var(--home-hero-word, 0) * 20ms) both;
+
+        @media (prefers-reduced-motion: reduce) {
+            animation: none;
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Play/pause. A real button covering the whole frame: keyboard operable,
+    // named, and with a visible focus ring inset off the frame edge.
+    // -------------------------------------------------------------------------
+    &__toggle {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        padding: 0;
+        margin: 0;
+        border: 0;
+        background: transparent;
+        // The ring below follows the pointer in place of a cursor.
+        cursor: none;
+
+        &:focus-visible {
+            outline: 2px solid var(--color--springwood);
+            outline-offset: -#{px-to-rem(8)};
+        }
+    }
+
+    &__ring {
+        position: absolute;
+        left: 0;
+        top: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: #{px-to-rem(7)};
+        width: #{px-to-rem(108)};
+        height: #{px-to-rem(108)};
+        border: 1px solid #{rgba(#f8f4f0, 0.75)};
+        border-radius: 50%;
+        background: #{rgba(#2f292e, 0.14)};
+        color: var(--color--springwood);
+        pointer-events: none;
+        opacity: var(--home-hero--hover, 0);
+        transform:
+            translate3d(var(--home-hero--pointer-x, 50%), var(--home-hero--pointer-y, 50%), 0)
+            translate(-50%, -50%)
+            scale(calc(0.72 + var(--home-hero--hover, 0) * 0.28));
+        transition:
+            opacity 320ms var(--mbh-ease),
+            transform 220ms var(--mbh-ease);
+
+        // A pointer-following ring is meaningless without a pointer.
+        @media (hover: none) {
+            display: none;
+        }
+    }
+
+    &__ring-icons {
+        position: relative;
+        display: block;
+        width: #{px-to-rem(16)};
+        height: #{px-to-rem(16)};
+    }
+
+    &__ring-icon {
+        position: absolute;
+        inset: 0;
+        // The theme resets every svg to width: 100%; height: auto, so both
+        // dimensions are restated here rather than left to the glyph.
+        width: #{px-to-rem(16)};
+        height: #{px-to-rem(16)};
+        max-height: none;
+        fill: currentColor;
+
+        // Reflects the film's real paused state, which the script mirrors from
+        // the media element's own play and pause events.
+        &--play {
+            opacity: var(--home-hero--paused, 0);
+        }
+
+        &--pause {
+            opacity: calc(1 - var(--home-hero--paused, 0));
+        }
+    }
+
+    &__ring-label {
+        font-size: #{px-to-rem(9)};
+        font-weight: 700;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+    }
+
+    // -------------------------------------------------------------------------
+    // Base line. Lives in the gap the frame leaves at the bottom, on the page
+    // background rather than over the film, and fades the moment you scroll.
+    // -------------------------------------------------------------------------
+    &__baseline {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space--s);
+        height: calc(var(--op, 1) * var(--home-hero--inset-bottom));
+        padding: 0 clamp(#{px-to-rem(24)}, 5vw, #{px-to-rem(56)});
+        overflow: hidden;
+        opacity: clamp(0, calc(1.05 - var(--p, 0) * 3.4), 1);
+
+        @media (prefers-reduced-motion: reduce) {
+            display: none;
+        }
+    }
+
+    &__hint {
+        margin: 0;
+        font-size: #{px-to-rem(11)};
+        font-weight: 300;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        // 0.62 of charcoal over Spring Wood composites to #7b7678, which is
+        // 4.08:1 -- under the 4.5:1 that 11px text has to meet. 0.75 is the
+        // same charcoal at 6.0:1, and is what the projects rail's own hint
+        // line already uses, so the two read as the same piece of furniture.
+        color: #{rgba(#2f292e, 0.75)};
+        white-space: nowrap;
+
+        // The hint names a pointer gesture, so it has nothing to say on a
+        // touchscreen, and it is the first thing to go when space is tight.
+        @include mq($until: 'home-compact') {
+            display: none;
+        }
+    }
+
+    &__cue {
+        display: flex;
+        align-items: center;
+        gap: #{px-to-rem(14)};
+        margin-left: auto;
+    }
+
+    &__cue-label {
+        font-size: #{px-to-rem(11)};
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--color--foreground);
+    }
+
+    &__cue-rule {
+        display: block;
+        width: 1px;
+        height: #{px-to-rem(34)};
+        background-color: var(--color--olivegreen);
+        animation: home-hero-cue 2600ms var(--mbh-ease) infinite;
+    }
+}
+
+// =============================================================================
+// Keyframes. Namespaced so they cannot collide with the theme's own.
+// =============================================================================
+@keyframes home-hero-rise {
+    from {
+        transform: translateY(108%) rotate(1.5deg);
+        opacity: 0;
+    }
+
+    to {
+        transform: none;
+        opacity: 1;
+    }
+}
+
+@keyframes home-hero-fade {
+    from {
+        opacity: 0;
+        transform: translateY(#{px-to-rem(14)});
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@keyframes home-hero-aperture {
+    from {
+        clip-path: inset(0 42% 0 42%);
+    }
+
+    to {
+        clip-path: inset(0 0 0 0);
+    }
+}
+
+@keyframes home-hero-cue {
+    0% {
+        transform: scaleY(0);
+        transform-origin: top;
+        opacity: 0;
+    }
+
+    35% {
+        transform: scaleY(1);
+        transform-origin: top;
+        opacity: 1;
+    }
+
+    65% {
+        transform: scaleY(1);
+        transform-origin: bottom;
+        opacity: 1;
+    }
+
+    100% {
+        transform: scaleY(0);
+        transform-origin: bottom;
+        opacity: 0;
+    }
+}

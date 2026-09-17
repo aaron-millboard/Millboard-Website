@@ -1,0 +1,43 @@
+{
+    "$schema": "https://raw.githubusercontent.com/AdvancedCustomFields/schemas/main/json/block.json",
+    "apiVersion": 3,
+    "name": "acf/home-feature",
+    "title": "Home Feature Pair",
+    "description": "Square image beside a headed block of copy, mirrored between the decking and cladding sections.",
+    "category": "granola-blocks",
+    "icon": "align-pull-left",
+    "keywords": [
+        "feature",
+        "homepage",
+        "decking",
+        "cladding",
+        "mirrored"
+    ],
+    "acf": {
+        "mode": "edit",
+        "blockVersion": 3,
+        "autoInlineEditing": false,
+        "hideFieldsInSidebar": false,
+        "renderCallback": "\\Granola\\Component::acf_render_callback",
+        "postTypes": [
+            "page",
+            "granola-template"
+        ]
+    },
+    "supports": {
+        "align": false,
+        "anchor": true,
+        "color": {
+            "background": false,
+            "text": false
+        },
+        "mode": false,
+        "multiple": true
+    },
+    "attributes": {
+        "align": {
+            "type": "string",
+            "default": "full"
+        }
+    }
+}

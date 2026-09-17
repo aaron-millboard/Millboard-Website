@@ -1,695 +1,1158 @@
 @import './menu';
 
-// These are set as SCSS variables so they can be used in the color-context mixin
+// =============================================================================
+// Site header
+// =============================================================================
+// Two rows above the `site-header` breakpoint: a Mist utility strip that
+// collapses away as the page scrolls, then the main row with the wordmark
+// centred between the two halves of the primary nav. Below the breakpoint the
+// same markup becomes a 64px bar plus a full-height drawer.
+//
+// Scroll state is one number: `--nav`, written by SiteHeader.js, 0 -> 1 across
+// the first 90px. Both row heights, the wordmark size and the strip's collapse
+// interpolate from it, so there is no second source of truth and no class to
+// keep in step.
+//
+// The header stays `position: sticky` rather than becoming fixed. Fixed would
+// take its reserved space out of the flow and shift every page on the site up
+// underneath it. The homepage hero opts into sitting under the header itself,
+// with a negative margin, and no other template has to know.
+// =============================================================================
+
+// Set as SCSS variables so they can be passed to the color-context mixin.
 $site-header--bottom--background: 'brand-1';
 $site-header--top--background: 'white';
 
 :root {
-    --site-header--bottom: auto;
+    // The header's resting height, as drawn: a 64px bar on compact, and a 44px
+    // utility strip over an 88px row from the site-header breakpoint.
+    //
+    // SiteHeader.js overwrites this with the measured height on load and on
+    // every resize, as an inline style on this same element, so what is
+    // declared here only ever governs the paint before that lands. It still has
+    // to be right, because the home hero builds its whole opening frame out of
+    // it -- a negative top margin, the frame's clip-path and the strapline's
+    // offset.
+    //
+    // This was `auto`, which is what made the hero jump on load. `auto` is not
+    // a length, so every calc() consuming it was invalid at computed-value time
+    // and fell back to the property's initial value: the hero painted with no
+    // negative margin, no clip-path at all and its strapline 579px too low,
+    // then snapped into place the moment the measurement arrived. Being set to
+    // something unusable was also worse than being unset -- `var(--x, 132px)`
+    // only reaches its fallback when --x is not defined, so the fallbacks the
+    // hero carried never once applied.
+    --site-header--bottom: #{px-to-rem(64)};
     --site-header--menu--duration: 250ms;
     --site-header--menu--ease: ease-in-out;
 
-    // Submenu variables
+    // Submenu variables.
     --submenu--transition-duration: 200ms;
     --submenu--transition-ease: ease-out;
 
     @include mq('site-header') {
+        --site-header--bottom: #{px-to-rem(132)};
         --submenu--transition-duration: 250ms;
     }
 }
 
 body {
-    --site-header--height: 6.5rem;
+    // Consumed by anchor-links and list-values for their sticky offsets, so it
+    // has to stay defined at every width and stay honest about the real height.
+    --site-header--height: #{px-to-rem(64)};
+
+    // What the header occupies in the page, as opposed to what it currently
+    // draws. The two are the same at the top of the page and part company as
+    // the header collapses: the drawn height shrinks, the reserved one does
+    // not. Anything positioning ITSELF against the header wants the live
+    // height; anything reserving SPACE for it wants this.
+    --site-header--reserved: #{px-to-rem(64)};
 
     @include mq('site-header') {
-        --site-header--height: #{px-to-rem(160)};
+        // The utility strip over the main row, both collapsing with --nav: the
+        // strip from its own height to nothing, the row from 88px to 66px.
+        //
+        // Written out in full rather than as 132px - nav * 66px. That shorthand
+        // is only correct at --nav 0 and 1; in between it is a straight line
+        // drawn across a curve, and anything positioning against it drifts.
+        --site-header--height: calc(
+            (var(--site-header--strip, #{px-to-rem(44)}) + #{px-to-rem(88)})
+            - var(--nav, 0) * (var(--site-header--strip, #{px-to-rem(44)}) + #{px-to-rem(22)})
+        );
 
-        transition: padding-top var(--site-header--menu--duration) var(--site-header--menu--ease);
-
-        &.scrolling-down.scroll-valid {
-            --site-header--height: #{px-to-rem(64)};
-
-            padding-top: calc(160px - 64px);
-        }
+        // The strip plus the main row at their full size -- the header as it
+        // stands at the top of the page, before any of it collapses.
+        --site-header--reserved: calc(var(--site-header--strip, #{px-to-rem(44)}) + #{px-to-rem(88)});
     }
 }
 
 .site-header {
-    --site-header--logo-width: #{px-to-rem(120)};
-
     --site-header--spacing: var(--space--m);
+    --site-header--button-size: #{px-to-rem(48)};
+    --site-header--pad: clamp(#{px-to-rem(16)}, 3vw, #{px-to-rem(56)});
 
-    --site-header--button-size: #{px-to-rem(45)};
+    // The gap between top-level nav links, and between the nav and the icons.
+    // Declared once because the two halves have to breathe identically, and
+    // because the narrow-desktop band below overrides both together.
+    --site-header--nav-gap: clamp(#{px-to-rem(12)}, 2vw, #{px-to-rem(34)});
 
+    // The gap between the search, account and basket buttons.
+    --site-header--icon-gap: clamp(#{px-to-rem(10)}, 1.2vw, #{px-to-rem(18)});
+
+    // The gutter both rows use, declared once so they cannot drift apart. It is
+    // the side padding until the viewport passes the 1440px container, and the
+    // centring margin after that.
+    //
+    // `100%` resolves against whichever element reads it, so this only holds
+    // while both rows are full-bleed -- which is the point. The utility strip
+    // previously capped itself with `max-width` plus its own padding, which put
+    // its content exactly one padding-width further in than the main row on any
+    // screen wider than 1440. Below 1440 the two agreed, so it looked right
+    // everywhere except the wide screens it was most visible on.
+    --site-header--gutter: max(
+        var(--site-header--pad),
+        calc((100% - var(--mbh-container)) / 2)
+    );
+
+    // Nav link colour is the body colour; only the underline carries the accent.
     --link--color: var(--color--foreground);
     --link--color--hover: var(--color--foreground);
 
-    $this: &;
+    // No text-decoration underline anywhere in the header. Every underline the
+    // design draws is a 1px border -- an active audience, a hover accent, the
+    // samples call to action -- because a border can be coloured and animated
+    // independently of the text and sits where the design puts it.
+    //
+    // `_menu.scss` applies `link--2`, which sets
+    // `--link--text-decoration--hover: underline`. That arrived on top of the
+    // border, so every hover drew two lines.
+    --link--text-decoration: none;
+    --link--text-decoration--hover: none;
 
+    $this: &;
     $internal-z-index: 10;
 
     position: sticky;
     top: var(--wp--admin-bar-height--sticky);
     z-index: var(--z-index--site-header);
     width: 100%;
-    height: var(--site-header--height);
-    background-color: var(--color--#{$site-header--bottom--background});
-    transition: height var(--site-header--menu--duration) var(--site-header--menu--ease);
-    border-bottom: 1px solid transparent;
+    background-color: var(--color--springwood);
+    // No bottom border. The design deliberately drops the rule the old header
+    // grew on scroll -- the utility strip's Mist band is the only division.
+    border-bottom: 0;
 
     @include mq('site-header') {
         --site-header--spacing: var(--space--l);
-        --site-header--logo-width: #{px-to-rem(210)};
-        --site-header--height: #{px-to-rem(160)};
         --site-header--button-size: #{px-to-rem(42)};
 
-        background-color: var(--color--white);
+        // ---------------------------------------------------------------------
+        // The header keeps the space it starts with.
+        // ---------------------------------------------------------------------
+        // It is `sticky`, which means it is in flow, which means that when it
+        // collapsed from 132px to 66px on scroll it took 66px out of the page
+        // and every section below it rose by that much. The home hero cancelled
+        // that with a negative top margin; nothing else on the site did, so on
+        // every other page the content moved while you scrolled -- and then
+        // the browser's own scroll anchoring tried to correct for the content
+        // moving, which is a loop, and the loop is what shook.
+        //
+        // So the box stops changing size. It reserves its resting height for
+        // good and the collapse happens inside it: the strip shrinks away, the
+        // main row rises to the top of the reserved space, and the rest of the
+        // box is simply empty. Nothing below it ever moves again.
+        //
+        // min-height, not height. The row can still outgrow its 88px -- a long
+        // nav wraps at narrow desktop widths -- and clipping the header would
+        // be a worse bug than the one being fixed.
+        min-height: var(--site-header--reserved);
 
-        .scroll-valid & {
-            border-bottom-color: var(--color--brand-1);
-        }
+        // The empty part of the box must not be a pane of page colour over the
+        // content scrolling behind it, nor swallow clicks meant for it. The
+        // background moves to the rows that actually draw something, and the
+        // box passes pointers through to whatever is underneath.
+        background-color: transparent;
+        pointer-events: none;
 
-        .scrolling-down.scroll-valid & {
-            --site-header--height: #{px-to-rem(64)};
-            --site-header--logo-width: #{px-to-rem(160)};
-
-            box-shadow: var(--box-shadow--1);
+        > * {
+            pointer-events: auto;
         }
     }
 
+    // -------------------------------------------------------------------------
+    // Grid. One container, two sets of areas.
+    // -------------------------------------------------------------------------
+    // Compact: the header itself is the column, so the utility strip can be
+    // reordered under the nav rows in the drawer.
     @include mq($until: 'site-header') {
-        max-width: 100%;
-        background-color: var(--color--brand-2);
-
-        #{$this}__inner {
-            max-width: 100%;
-        }
-
-        &.is-open {
-            height: var(--site-header--height);
-            transition: height var(--site-header--menu--duration) 0;
-            background-color: #ffffff;
-            // Stay sticky (do not switch to fixed) on open. Going fixed removes
-            // the header's reserved space from the layout, shifting the whole
-            // page up and causing the jump when the menu is opened while
-            // scrolled. Sticky keeps it pinned to the top without that shift.
-
-            #{$this}__inner {
-                height: max-content;
-
-                &__navigation {
-                    background-color: var(--color--brand-1);
-                }
-            }
-        }
-    }
-
-    // Tablet (medium up to the site-header breakpoint): put the toggle, logo
-    // and buttons on a single line (toggle left, logo centred, buttons right)
-    // instead of stacking the logo under the toggle. Phones (below medium)
-    // keep the stacked layout; desktop (site-header and up) is unchanged.
-    @include mq($from: 'medium', $until: 'site-header') {
-        #{$this}__inner {
-            display: grid;
-            grid-template-columns: 1fr auto 1fr;
-            align-content: center;
-            align-items: center;
-            column-gap: var(--site-header--spacing);
-            padding-right: var(--space--container-padding);
-            padding-left: var(--space--container-padding);
-        }
-
-        // Opening the menu applies the mobile `height: max-content` to the
-        // inner, which shrinks it and (with align-content: center) shifts the
-        // logo and toggle up ~29px. Keep the row full-height when open so the
-        // header contents stay put.
-        &.is-open #{$this}__inner {
-            height: 100%;
-        }
-
-        #{$this}__top-navigation {
-            grid-row: 1;
-            grid-column: 1;
-            justify-self: start;
-
-            .menu-list {
-                padding-right: 0;
-                padding-left: 0;
-            }
-        }
-
-        // Unwrap __top so the logo and buttons become direct grid items and can
-        // occupy their own columns.
-        #{$this}__top {
-            display: contents;
-        }
-
-        #{$this}__logo {
-            grid-row: 1;
-            grid-column: 2;
-            justify-self: center;
-            margin: 0;
-        }
-
-        #{$this}__buttons {
-            grid-row: 1;
-            grid-column: 3;
-            justify-self: end;
-            margin-left: 0;
-        }
-
-        // Keep the (hidden) mobile dropdown menu out of the single-line grid
-        // flow; it re-positions itself when opened (see the .is-open rules).
-        #{$this}__bottom {
-            position: absolute;
-        }
+        display: flex;
+        flex-direction: column;
     }
 
     &__inner {
-        @include align-width--l;
+        // The page colour, taken off .site-header itself. See the note there:
+        // the header's box is now taller than what it draws, so the background
+        // belongs to the row rather than the box.
+        @include mq('site-header') {
+            background-color: var(--color--springwood);
+        }
 
         position: relative;
-        display: flex;
-        flex-direction: column;
-        width: 100%;
-        height: 100%;
-        gap: 0;
+        // Its own stacking context, so the wordmark's 30 and the icons' 40 stay
+        // inside the row and are compared with each other rather than with the
+        // utility strip above them.
+        z-index: 1;
+        display: grid;
+        max-width: 100%;
+        align-items: center;
+
+        // Compact: a 64px bar, then the drawer's nav rows beneath it.
+        //
+        // The bar's three items share one area and separate themselves with
+        // justify-self, rather than each owning a column. That frees the nav
+        // rows below to be two equal columns at tablet width without the bar
+        // having to agree to the same column structure.
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            'bar'
+            'navstart'
+            'navend';
+        // 12px, as the design specifies for the compact bar, and stated rather
+        // than inherited: --space--2xs is fluid and came out near 24px at tablet,
+        // which left the bar's area 16px short of the viewport and the wordmark
+        // 7px off centre.
+        padding-inline: #{px-to-rem(12)};
+
+        // Two columns from tablet up, as the design draws it -- and the two
+        // halves of the primary menu ARE those columns.
+        //
+        // Each half was gridding itself into two columns instead: the menu is
+        // split 3/3 so the wordmark can sit between the halves on a wide
+        // viewport, so in the drawer each half laid out three items in two
+        // columns and left a gap in the fourth cell. Two stacked grids, two
+        // trailing holes. Side by side, they are three items down the left and
+        // three down the right, in menu order, with nothing missing.
+        @include mq($from: 'home-compact') {
+            grid-template-columns: 1fr 1fr;
+            grid-template-areas:
+                'bar bar'
+                'navstart navend';
+            column-gap: clamp(#{px-to-rem(24)}, 5vw, #{px-to-rem(64)});
+            align-items: start;
+        }
 
         @include mq('site-header') {
-            gap: 0;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            align-items: center;
+            max-width: none;
+            grid-template-columns: 1fr auto 1fr;
+            grid-template-areas: 'navstart logo navend';
+            column-gap: var(--site-header--pad);
+            padding-inline: var(--site-header--gutter);
+        }
+
+        // ---------------------------------------------------------------------
+        // Narrow desktop: give the wordmark's clearance back to the nav.
+        // ---------------------------------------------------------------------
+        // The design's spacing was drawn against the nav labels the design
+        // carries -- "Decking" and "Cladding". The live UK menu says "Composite
+        // Decking" and "Composite Cladding", which is about 90px wider across
+        // that half of the row, and below roughly 1340px the row ran out of
+        // width and the nav wrapped to a second line. The header went from the
+        // 132px it is drawn at to 175px, on 1280px laptops among others.
+        //
+        // The wordmark stays exactly centred -- the columns are still a
+        // symmetric 1fr auto 1fr -- so what has to give is the space either
+        // side of it, which at 1280 was 38px of clearance around a wordmark
+        // that needs nowhere near that. Taking it to 20px hands 18px back to
+        // each nav column, which is more than the 17px the longer half was
+        // short of.
+        //
+        // Only through the band. Above it the design's own figures return
+        // untouched, because above it they fit.
+        @include mq($from: 'site-header', $until: 1400px) {
+            --site-header--nav-gap: #{px-to-rem(16)};
+
+            // The icon row is the other thing taking width the nav needs, and
+            // most of it is padding. The design draws three 18px glyphs; these
+            // are 42px buttons, so the row is 157px where the design's is 85px.
+            // 36px keeps a comfortable target -- well above the 24px WCAG 2.2
+            // asks for -- and hands back 33px, which is what the heavier
+            // right-hand half needs on fr-fr.
+            --site-header--button-size: #{px-to-rem(36)};
+            --site-header--icon-gap: #{px-to-rem(8)};
+
+            column-gap: #{px-to-rem(20)};
         }
     }
 
-    &__top-navigation {
-        display: flex;
-        gap: var(--space--s);
-        z-index: $internal-z-index * 2;
+    // -------------------------------------------------------------------------
+    // Utility strip. Mist, 44px, full-opacity Charcoal Black at 11px -- the
+    // earlier 60% opacity failed contrast on Mist, so these links are not
+    // dimmed.
+    // -------------------------------------------------------------------------
+    &__utility {
+        background-color: var(--color--mist);
 
         @include mq('site-header') {
-            width: 100%;
-            background-color: var(--color--brand-2);
+            // Collapses to nothing once the page has moved. max-height rather
+            // than height so the strip can still size to its own content when
+            // the links wrap at narrow desktop widths.
+            // Above the main row, so the locale dropdown paints over the nav
+            // rather than under it.
+            //
+            // 2, not 1, and paired with a stacking context on the main row
+            // below. The row was `z-index: auto`, so it created no context of
+            // its own and its descendants' z-indexes leaked into the header's:
+            // `.menu-item__wrap` at 10, the wordmark at 30, the icons at 40.
+            // Every one of those beat a strip at 1, which is why the nav still
+            // drew over an unclipped dropdown.
+            position: relative;
+            z-index: 2;
+
+            // Counts down from the strip's own height, not from a fixed cap.
+            // It counted down from 150px, which is not what the strip is: at 44px
+            // tall it stayed fully open until --nav passed 0.7 and then collapsed
+            // in a rush. That made the header's height a bent line where every
+            // offset built from it assumed a straight one, so the compensation was
+            // out by up to 27px in the middle of the collapse even though it
+            // agreed at both ends.
+            //
+            // SiteHeader.js measures the strip's natural height into
+            // --site-header--strip on load and on resize, so this still sizes to
+            // its own content when the links wrap, which is what the max-height
+            // was for in the first place.
+            max-height: calc(var(--site-header--strip, #{px-to-rem(44)}) * (1 - var(--nav, 0)));
+            opacity: clamp(0, calc(1 - var(--nav, 0) * 1.6), 1);
+
+            // Deliberately unclipped at rest. The collapse needs a clip, but a
+            // clip also traps the locale dropdown, which opens 108px tall out
+            // of a 44px strip -- 96px of it was being cut off. At the top of
+            // the page there is nothing to clip anyway: 44px of content inside
+            // a 150px max-height. SiteHeader.js adds `site-header--scrolled`
+            // the moment the page moves, and the rule below takes over.
+            overflow: visible;
+
+            // No transition on any of this. `--nav` is already a smooth
+            // function of scroll position, so the collapse animates itself as
+            // the page moves. A time-based transition on top of it is a second
+            // animation chasing the first: every scroll frame sets a new target
+            // and the transition is always somewhere behind it. That lag is
+            // what made the page shudder, because the header is in flow and
+            // SiteHeader.js was re-measuring its half-collapsed height each
+            // frame to compensate the hero's negative top margin.
         }
 
-        .site-header__navigation--top {
-            @include mq('site-header') {
-                width: max-content;
-            }
+        // In the drawer it is a plain block on the page background, last, under
+        // a hairline with the rest of the secondary links.
+        @include mq($until: 'site-header') {
+            display: none;
+            order: 2;
+            padding-top: var(--space--s);
+            margin-top: var(--space--s);
+            border-top: 1px solid var(--mbh-rule);
+            background-color: transparent;
         }
+    }
 
-        .menu-list {
-            margin-top: 0;
-            padding-right: var(--space--container-padding);
-            padding-left: var(--space--container-padding);
+    // Once the page has moved the strip is collapsing, and then it does need
+    // to clip -- otherwise its content spills out of a shrinking box.
+    &--scrolled &__utility {
+        @include mq('site-header') {
+            overflow: hidden;
+        }
+    }
+
+    &__utility-inner {
+        @include mq('site-header') {
             display: flex;
-            flex-flow: row nowrap;
+            flex-wrap: wrap;
             align-items: center;
-            gap: var(--space--3xs);
-
-            @include mq('site-header') {
-                margin: 0;
-                padding-right: 0;
-                padding-left: 0;
-            }
+            justify-content: space-between;
+            gap: var(--space--3xs) var(--space--s);
+            width: 100%;
+            min-height: #{px-to-rem(44)};
+            // The same gutter as the main row, so the first utility link sits
+            // directly above the first nav link.
+            padding-block: #{px-to-rem(6)};
+            padding-inline: var(--site-header--gutter);
         }
 
-        .menu-item {
-            padding: var(--space--3xs) var(--space--3xs);
-            flex-shrink: 0;
-            letter-spacing: 1.5px;
-
-            .menu-item__wrap > a {
-                @include typestyle-h6;
-            }
+        // No box on compact: its children become the drawer column's own flex
+        // items so the samples button can be ordered ahead of them. The gutter
+        // moves to the strip, which still has a box.
+        @include mq($until: 'site-header') {
+            display: contents;
         }
+    }
 
-        .menu-item--depth-0 > .menu-item__wrap > a {
-            font-weight: 400;
-            font-family: var(--type--1--font-family);
-        }
+    // -------------------------------------------------------------------------
+    // The drawer's order.
+    //
+    // The design runs: six nav rows, a full-width samples button, a hairline,
+    // then the secondary links. The markup is ordered for the wide viewport
+    // instead -- strip, row, account links -- so the column is resequenced.
+    //
+    // `display: contents` on the strip's wrapper and both its groups drops four
+    // leaves into the strip's own flex column, so the samples button can be
+    // ordered ahead of links it is nested alongside without touching the
+    // markup the wide layout needs.
+    // -------------------------------------------------------------------------
+    @include mq($until: 'site-header') {
+        &__inner { order: 1; }
+        &__utility { order: 2; }
+        &__mobile-links { order: 3; }
 
-        .menu-item--root {
-            background-color: var(--color--brand-1);
-            text-decoration: underline;
-
-            &.menu-item--depth-0 > .menu-item__wrap > a {
-                font-weight: 700;
-            }
-        }
-
-        .menu-item__wrap {
-            min-height: auto;
-        }
-
-        .menu-item.is-active {
-            background-color: var(--color--brand-1);
+        &__utility {
+            // No `display` here. The strip is `display: none` while the drawer
+            // is shut and `flex` once `.is-open` lands; declaring flex in this
+            // block overrode the none and left a 329px strip hanging under a
+            // closed 64px bar.
+            flex-direction: column;
+            // The hairline moves to the first secondary link, below the button.
             border-top: 0;
-
-            > .menu-item__wrap > a {
-                font-weight: 600;
-                font-family: var(--type--3--font-family);
-                cursor: default;
-                pointer-events: none;
-                text-decoration: underline;
-
-                @include interact {
-                    text-decoration: none;
-                }
-            }
+            margin-top: 0;
+            padding-top: 0;
         }
+
+
+        // 1. The samples button, full width. It was inset twice over -- once by
+        //    the strip's padding and again by its own margins -- so it came out
+        //    310px wide in a 390px drawer.
+        &__call-to-action-1 {
+            order: 1;
+            width: 100%;
+            min-height: #{px-to-rem(50)};
+            margin: var(--space--s) 0 0;
+            justify-content: center;
+        }
+
+        // 2. Audience, then the finder links, then the locale: one column on a
+        //    phone, two from tablet up, all sharing the same left edge. The
+        //    locale was floating out to the right on its own.
+        &__navigation--top { order: 2; }
+        &__navigation--utility { order: 3; }
 
         .language-switcher {
-            display: none;
+            order: 4;
+            // Its own component sets `align-self: center` and `margin-left:
+            // auto` for the old header. In a column flex container that centres
+            // it, so the locale sat at x=173 while every link beside it started
+            // at the 20px gutter.
+            align-self: flex-start;
+            min-height: #{px-to-rem(44)};
+            margin-left: 0;
+            padding-inline: 0;
+        }
 
-            @include mq('site-header') {
-                display: block;
-            }
+        // The hairline the design puts under the button.
+        &__navigation--top {
+            margin-top: var(--space--m);
+            padding-top: var(--space--s);
+            border-top: 1px solid var(--mbh-rule);
         }
     }
-
-    // The header call to action ("Order FREE Samples" and its per-market
-    // equivalents), set per site on the Header options page. It is a child of
-    // __inner rather than of __top-navigation so that each of the three header
-    // layouts can place it on its own terms, and so its width is never bound by
-    // a label that is a different length in every locale.
-    &__call-to-action-1 {
-        --button--font-size: #{px-to-rem(13)};
-        --button--padding-y: #{px-to-rem(7)};
-        --button--padding-x: #{px-to-rem(12)};
-
-        // Phones get nothing: the audience tabs alone take 300px of a 375px
-        // viewport, and the row below them is full with the logo and buttons.
-        // A phone treatment needs its own design rather than a squeeze.
-        display: none;
-
-        z-index: $internal-z-index * 4;
-        letter-spacing: 1.5px;
-        white-space: nowrap;
-
-        // Tablet: the audience tabs, logo and buttons already fill the single
-        // line, so the call to action gets the row below them. The header keeps
-        // its height, which has room for a second row.
-        @include mq($from: 'medium', $until: 'site-header') {
-            display: inline-flex;
-            grid-row: 2;
-            grid-column: 1 / -1;
-            justify-self: end;
-        }
-
-        // Desktop: sit in the top strip, immediately left of the basket,
-        // account and search buttons. Those are positioned against __inner
-        // (right: 0, 50 and 110), so 152px clears all three and 160px leaves a
-        // gap. Positioning rather than flowing it keeps a long label growing
-        // leftwards into the empty strip instead of displacing the buttons.
-        // The 3px lifts it off the very top edge so it reads as sitting in the
-        // strip rather than hanging from it (Aaron's tuning on staging).
-        @include mq('site-header') {
-            display: inline-flex;
-            position: absolute;
-            top: px-to-rem(3);
-            right: px-to-rem(160);
-        }
-    }
-
-    &__top {
+    &__utility-group {
         display: flex;
+        flex-wrap: wrap;
         align-items: center;
-        padding-right: var(--space--container-padding);
-        padding-left: var(--space--container-padding);
-        gap: var(--site-header--spacing);
-        justify-content: center;
-        margin-top: var(--space--2xs);
+        gap: var(--space--3xs) clamp(#{px-to-rem(12)}, 1.8vw, #{px-to-rem(26)});
 
+        // Hairline pipes between the strip's items, as the design draws them:
+        // Residential, Commercial | UK, and Find an installer | Find a
+        // distributor | Order free samples.
+        //
+        // Pseudo-elements rather than markup: they are punctuation between
+        // links, not links, and a screen reader running the strip should not
+        // have to hear them. Suppressed after the last child so a group never
+        // ends on a divider, and gone entirely in the drawer, where the items
+        // are stacked rows rather than a single line.
         @include mq('site-header') {
-            width: 100%;
-            margin-top: 0;
-            padding-right: 0;
-            padding-left: 0;
-        }
-    }
+            // Not `.menu-list > li + li` across the board: Residential and
+            // Commercial are one audience pair and the design runs them
+            // together, with the only pipe on that side sitting before the
+            // locale. The right-hand group does divide every item.
+            .site-header__navigation--utility .menu-list > li + li > .menu-item__wrap::before {
+                display: block;
+                width: 1px;
+                height: #{px-to-rem(14)};
+                margin-right: clamp(#{px-to-rem(12)}, 1.8vw, #{px-to-rem(26)});
+                background-color: #{rgba(#2f292e, 0.38)};
+                content: '';
+            }
 
-    &__bottom {
-        display: flex;
-        flex-direction: column;
-        width: 100%;
-        transition: all var(--site-header--menu--duration) var(--site-header--menu--ease);
-
-        @include mq($until: 'site-header') {
-            --link--color: var(--color--foreground);
-            --link--color--hover: var(--color--foreground);
-
-            @include color-context($site-header--bottom--background);
-
-            overflow: auto;
-            width: 100%;
-            background: var(--color--#{$site-header--bottom--background});
-            grid-auto-flow: row;
-            grid-template-columns: min(100%, #{px-to-rem(300)});
-            opacity: 0;
-            pointer-events: none;
-            visibility: hidden;
-
-            .site-header.is-open & {
-                opacity: 1;
-                pointer-events: all;
-                transition: all var(--site-header--menu--duration) var(--site-header--menu--ease)
-                    var(--site-header--menu--duration);
-                visibility: visible;
-                padding-top: 0;
-                position: absolute;
-                top: var(--site-header--height);
-                left: 0;
-                height: auto;
-                max-height: calc(100vh - var(--wp--admin-bar-height--sticky) - var(--site-header--height));
-                max-height: calc(100dvh - var(--wp--admin-bar-height--sticky) - var(--site-header--height));
-                overflow-x: hidden;
-                overflow-y: auto;
-                // Keep scroll momentum inside the open menu from chaining to
-                // the page behind it.
-                overscroll-behavior: contain;
-                -webkit-overflow-scrolling: touch;
-
-                #{$this}__navigation {
-                    background-color: var(--color--#{$site-header--bottom--background});
-                    width: 100%;
-                }
+            // The group divider goes on the PRECEDING item's ::after, not the
+            // following item's ::before. The samples call to action is a link
+            // carrying its own border-bottom, and a ::before on it renders
+            // inside its box -- so the pipe became part of the anchor and its
+            // underline stretched 33px past the text to cover it. An ::after on
+            // the sibling before it keeps the divider out of any bordered box.
+            > *:not(:last-child)::after {
+                display: block;
+                width: 1px;
+                height: #{px-to-rem(14)};
+                // The group's own gap follows the divider; this is the space
+                // before it.
+                margin-left: clamp(#{px-to-rem(12)}, 1.8vw, #{px-to-rem(26)});
+                align-self: center;
+                background-color: #{rgba(#2f292e, 0.38)};
+                content: '';
             }
 
             > * {
-                padding-right: var(--space--container-padding);
-                padding-left: var(--space--container-padding);
+                display: flex;
+                align-items: center;
             }
 
-            > *:first-child {
-                padding-top: var(--site-header--spacing);
-            }
-
-            > *:last-child {
-                padding-bottom: var(--site-header--spacing);
+            .site-header__navigation--utility .menu-list > li,
+            .site-header__navigation--utility .menu-list > li > .menu-item__wrap {
+                display: flex;
+                align-items: center;
             }
         }
 
-        .site-header__navigation {
-            transition-property: translate visibility;
-            transition-duration: var(--site-header--menu--duration);
-            transition-timing-function: var(--site-header--menu--ease);
+        // Dissolved on compact for the same reason as the wrapper above. The
+        // two columns the design asks for at tablet width come from each nav's
+        // own list, not from this wrapper.
+        @include mq($until: 'site-header') {
+            display: contents;
         }
+    }
+
+    // -------------------------------------------------------------------------
+    // `_menu.scss` stretches every header nav to width/height 100% and lays its
+    // list out as a column-flow grid -- the old single-row header needed that.
+    // Here each nav is one item in a grid or flex row and has to size to its own
+    // content. Left as it was, a nav's `width: 100%` resolves against the very
+    // box it is meant to be sizing, which pinned the utility strip to the width
+    // of its first child and wrapped the language switcher onto a second line.
+    // -------------------------------------------------------------------------
+    &__navigation {
+        @include mq('site-header') {
+            width: auto;
+            height: auto;
+            align-self: center;
+        }
+
+        // Nothing here touches the list's width. `.menu__inner` is a flex
+        // container, so a list set to `width: auto` becomes content-sized: in
+        // the drawer that shrank a 772px nav's list to 337px and collapsed the
+        // two-column layout to one. `_menu.scss` gives it `width: 100%`, which
+        // is what both breakpoints want.
+    }
+
+    // -------------------------------------------------------------------------
+    // The two utility menus and the language switcher share one type style.
+    // -------------------------------------------------------------------------
+    &__navigation--top,
+    &__navigation--utility {
+        // `_menu.scss` pads every header menu item top and bottom -- at wide by
+        // a full --space--s, which is the hover bridge between a top-level link
+        // and its dropdown. The utility links have no dropdowns, and that
+        // padding made the 44px strip 65px tall.
+        .menu-item {
+            padding-top: 0;
+            padding-bottom: 0;
+        }
+
+        .menu-list {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: var(--space--3xs) clamp(#{px-to-rem(12)}, 1.8vw, #{px-to-rem(26)});
+            margin: 0;
+            padding: 0;
+            list-style: none;
+
+            @include mq($until: 'site-header') {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(min(100%, #{px-to-rem(200)}), 1fr));
+                gap: 0 var(--space--m);
+            }
+        }
+
+        // Matched to `_menu.scss`'s own depth-0 selector, which sets these links
+        // to 1rem for the old header. That rule is
+        // `.site-header__navigation .menu-item--depth-0 > .menu-item__wrap > a`
+        // -- three classes and an element -- and a shorter selector here lost to
+        // it on specificity rather than on order, so the strip rendered at 16px
+        // where the design asks for 11px.
+        .menu-item--depth-0 > .menu-item__wrap > a,
+        a {
+            // `_menu.scss` sets `link--2` on the anchor itself, and a declaration
+            // on the element beats an inherited one from .site-header however
+            // specific the ancestor's selector is. So these have to be restated
+            // here, on the anchor, or hover draws a text-decoration underline on
+            // top of the border and you get two lines.
+            --link--text-decoration: none;
+            --link--text-decoration--hover: none;
+
+            display: flex;
+            align-items: center;
+            font-size: #{px-to-rem(11)};
+            font-weight: 700;
+            letter-spacing: var(--mbh-tracking-sub);
+            text-transform: uppercase;
+            color: var(--color--foreground);
+            border-bottom: 1px solid transparent;
+            padding-bottom: #{px-to-rem(2)};
+            transition: border-color var(--mbh-dur-ui) var(--mbh-ease);
+
+            &:hover {
+                border-bottom-color: var(--color--olivegreen);
+            }
+
+            // In the drawer these are stacked rows rather than a tight line,
+            // so the design lifts them to 12px on 44px targets.
+            @include mq($until: 'site-header') {
+                min-height: #{px-to-rem(44)};
+                font-size: #{px-to-rem(12)};
+                border-bottom: 0;
+            }
+        }
+
+        // The active audience keeps a solid underline rather than a hover one.
+        //
+        // `menu-item--current` is the class this theme's menu component writes;
+        // WordPress's own `current-menu-item` is not present, so a rule written
+        // against it matched nothing and Residential rendered unmarked on the
+        // page it points at. `is-active` stays for the `permanently_active`
+        // ACF flag the top menu supports.
+        .menu-item--current > .menu-item__wrap > a,
+        .menu-item.is-active > .menu-item__wrap > a {
+            border-bottom-color: var(--color--foreground);
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // The locale control is a sibling of the utility links and has to read as
+    // one of them. Its own component sets 15px at weight 100 for the old
+    // header, so the size, weight and tracking are restated here rather than
+    // inherited.
+    // -------------------------------------------------------------------------
+    &__utility .language-switcher {
+        font-weight: 700;
+
+        // The globe and chevron are mask icons sized from this, which the
+        // component sets to 1.5rem for the old header. At 24px they dwarfed
+        // 11px type.
+        --mask-icon--size: #{px-to-rem(11)};
 
         @include mq('site-header') {
-            @include align-width--l;
+            font-size: #{px-to-rem(11)};
+            letter-spacing: var(--mbh-tracking-sub);
+        }
 
-            justify-content: center;
-            padding-top: var(--space--2xs);
-            gap: var(--site-header--spacing);
-            display: grid;
-            grid-auto-rows: min-content;
-            grid-template-rows: auto;
+        &__button,
+        &__button * {
+            font-size: inherit;
+            font-weight: inherit;
+            letter-spacing: inherit;
+        }
+
+        // ---- The open list ---------------------------------------------------
+        // Six locales stacked at --space--3xs read as one block of text with no
+        // way to tell which you are on. Rows get real height and a hover, and
+        // the locale you are already on gets an olive marker.
+        &__items {
             width: auto;
-            align-items: center;
+            min-width: #{px-to-rem(132)};
+            padding: #{px-to-rem(6)} 0;
+            gap: 0;
+            background-color: var(--color--springwood);
+            border: 1px solid var(--mbh-rule);
+            box-shadow: 0 #{px-to-rem(12)} #{px-to-rem(40)} #{rgba(#2f292e, 0.12)};
+        }
 
-            .scrolling-down.scroll-valid & .site-header__navigation {
-                translate: 0 -100%;
-                z-index: -1;
-                visibility: hidden;
+        .menu-item {
+            padding: 0;
+        }
+
+        .menu-item > .menu-item__wrap > a {
+            display: flex;
+            align-items: center;
+            min-height: #{px-to-rem(40)};
+            // The 2px inset keeps the text from shifting when the current
+            // item's olive rule appears in the same space.
+            padding: 0 #{px-to-rem(16)};
+            border-bottom: 0;
+            border-left: 2px solid transparent;
+            color: var(--color--foreground);
+            transition:
+                background-color var(--mbh-dur-ui) var(--mbh-ease),
+                border-color var(--mbh-dur-ui) var(--mbh-ease);
+        }
+
+        .menu-item > .menu-item__wrap > a:hover,
+        .menu-item > .menu-item__wrap > a:focus-visible {
+            // Mist, the section-divider colour, is the only fill the brand puts
+            // behind text. Olive is an accent and never a background for type.
+            background-color: var(--color--mist);
+            border-bottom: 0;
+        }
+
+        // The locale you are on. An olive rule rather than olive text: olive is
+        // 3.11:1 on Spring Wood and fails AA for type, and the brand guide says
+        // the same thing. The text stays Charcoal Black and carries the weight.
+        .language-switcher__item--current > .menu-item__wrap > a {
+            background-color: var(--color--mist);
+            border-left-color: var(--color--olivegreen);
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Primary nav. Two halves either side of the wordmark: the first is
+    // right-aligned toward the centre, the second left-aligned away from it.
+    // -------------------------------------------------------------------------
+    &__navigation--primary {
+        > .menu__inner > .menu-list,
+        > .menu-list {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: var(--space--3xs) var(--site-header--nav-gap);
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        &.site-header__navigation--start {
+            grid-area: navstart;
+
+            @include mq('site-header') {
+                // The nav fills its 1fr column, but `.menu__inner` is a flex
+                // container sized to its content, so right-aligning the list
+                // inside it achieved nothing -- the list was already flush with
+                // that wrapper, and 87px sat stranded between the wrapper and
+                // the column's right edge. The wrapper itself has to be pushed
+                // across, which is why this sits on the nav.
+                justify-content: flex-end;
+
+                > .menu__inner > .menu-list,
+                > .menu-list {
+                    justify-content: flex-end;
+                }
+            }
+        }
+
+        &.site-header__navigation--end {
+            grid-area: navend;
+
+            @include mq('site-header') {
+                > .menu__inner > .menu-list,
+                > .menu-list {
+                    justify-content: flex-start;
+                }
+            }
+        }
+
+        // `_menu.scss` pads these items only at the bottom, by a full
+        // --space--s, as the mouse bridge down to an open dropdown. That is
+        // load-bearing, but one-sided padding pushed the link text above the
+        // row's centre line, so the nav sat visibly higher than the wordmark
+        // and the icons beside it. Mirrored to the top: the text centres again
+        // and the bridge below it is unchanged.
+        @include mq('site-header') {
+            .menu-item--depth-0 {
+                padding-top: var(--space--s);
+            }
+        }
+
+        // Top-level links: Light, small caps, and a transparent hairline that
+        // turns olive on hover. Olive never touches the type itself.
+        .menu-item--depth-0 > .menu-item__wrap > a {
+            // `_menu.scss` sets `link--2` on the anchor itself, and a declaration
+            // on the element beats an inherited one from .site-header however
+            // specific the ancestor's selector is. So these have to be restated
+            // here, on the anchor, or hover draws a text-decoration underline on
+            // top of the border and you get two lines.
+            --link--text-decoration: none;
+            --link--text-decoration--hover: none;
+
+            font-size: clamp(#{px-to-rem(11)}, 0.95vw, #{px-to-rem(12)});
+            font-weight: 300;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--color--foreground);
+            border-bottom: 1px solid transparent;
+            padding-bottom: #{px-to-rem(4)};
+            transition: border-color var(--mbh-dur-ui) var(--mbh-ease);
+        }
+
+        .menu-item--depth-0:hover > .menu-item__wrap > a,
+        .menu-item--depth-0 > .menu-item__wrap > a:focus-visible {
+            border-bottom-color: var(--color--olivegreen);
+        }
+
+        // ---- Drawer rows -----------------------------------------------------
+        // 60px rows on hairlines with an olive chevron, two columns at tablet
+        // width and one on a phone. The design draws a single-level nav; the
+        // live menu has sub-menus, so the chevron stays a real disclosure
+        // rather than becoming decoration.
+        @include mq($until: 'site-header') {
+            // One column per half. The two halves sit side by side from tablet
+            // up and give the design its two columns; a half gridding itself
+            // into two is what left the trailing gaps.
+            > .menu__inner > .menu-list,
+            > .menu-list {
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 0;
+            }
+
+            .menu-item--depth-0 > .menu-item__wrap {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: var(--space--s);
+                min-height: #{px-to-rem(60)};
+                border-bottom: 1px solid var(--mbh-rule);
+            }
+
+            .menu-item--depth-0 > .menu-item__wrap > a {
+                font-size: #{px-to-rem(20)};
+                letter-spacing: var(--mbh-tracking-sub);
+                border-bottom: 0;
+                padding-bottom: 0;
             }
         }
     }
 
-    &__buttons {
+    // -------------------------------------------------------------------------
+    // Wordmark. 28px shrinking to 22px on scroll; 24px on the compact bar.
+    // -------------------------------------------------------------------------
+    &__logo {
+        // `bar` on compact, where the three bar items share one area; `logo`
+        // on wide, where it has a column of its own between the nav halves.
+        grid-area: bar;
+        display: flex;
+        align-items: center;
+        justify-self: center;
+        z-index: $internal-z-index * 3;
+        border-bottom: 0;
+        line-height: 0;
+        padding: #{px-to-rem(8)};
+
+        img,
+        svg {
+            display: block;
+            width: auto;
+            height: #{px-to-rem(24)};
+        }
+
+        @include mq('site-header') {
+            grid-area: logo;
+
+            img,
+            svg {
+                height: calc(#{px-to-rem(28)} - var(--nav, 0) * #{px-to-rem(6)});
+            }
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // The right-hand group. On wide it is a flex row so the nav starts at the
+    // centre and the icons are pushed to the far right, while the wordmark
+    // stays centred between two equal 1fr columns. On compact it dissolves so
+    // its two children can go to different grid areas -- icons to the bar, nav
+    // to the drawer.
+    // -------------------------------------------------------------------------
+    &__end {
+        display: contents;
+
+        @include mq('site-header') {
+            grid-area: navend;
+            display: flex;
+            align-items: center;
+            gap: var(--space--3xs) var(--site-header--nav-gap);
+            min-width: 0;
+        }
+    }
+
+    &__icons {
+        grid-area: bar;
         z-index: $internal-z-index * 4;
         display: flex;
-        gap: var(--space--2xs);
-        margin-left: auto;
+        align-items: center;
+        justify-self: end;
+        gap: var(--site-header--icon-gap);
 
         @include mq('site-header') {
-            margin-left: 0;
+            margin-left: auto;
         }
     }
 
+    // -------------------------------------------------------------------------
+    // The main row's own height. Applied to the tallest things in the row so
+    // the grid track follows: 88px shrinking to 66px, 64px on compact.
+    // -------------------------------------------------------------------------
+    &__logo,
+    &__end,
     &__burger {
-        --burger--color: var(--color--black);
+        min-height: #{px-to-rem(64)};
+    }
+
+    @include mq('site-header') {
+        #{$this}__logo,
+        #{$this}__end {
+            min-height: calc(#{px-to-rem(88)} - var(--nav, 0) * #{px-to-rem(22)});
+        }
+
+        // The row's cap and gutters are the padding on __inner itself; nothing
+        // else needs to know about the container width.
+    }
+
+    // -------------------------------------------------------------------------
+    // Compact: the drawer.
+    // -------------------------------------------------------------------------
+    @include mq($until: 'site-header') {
+        #{$this}__navigation--primary,
+        #{$this}__mobile-links {
+            display: none;
+        }
+
+        // Closed, the header is just the 64px bar.
+        &.is-open {
+            // The drawer scrolls, the page behind it does not (the script locks
+            // the body). dvh rather than vh so a mobile browser's collapsing
+            // toolbar cannot leave the last row unreachable.
+            max-height: calc(100dvh - var(--wp--admin-bar-height--sticky));
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            padding-bottom: var(--space--xl);
+
+            #{$this}__navigation--primary,
+            #{$this}__mobile-links {
+                display: block;
+            }
+
+            // Flex, not block: the strip is the drawer's column and `order` on
+            // its children only means anything to a flex container. As block it
+            // laid the samples button out in DOM order, below the links it is
+            // meant to sit above.
+            #{$this}__utility {
+                display: flex;
+            }
+
+            // The gutter lives here now. `display: contents` on the inner
+            // wrapper removes its box, and its padding with it, so the
+            // secondary links were sitting flush against x=0.
+            #{$this}__navigation--primary,
+            #{$this}__utility {
+                padding-inline: clamp(#{px-to-rem(20)}, 5vw, #{px-to-rem(48)});
+            }
+
+            // The samples call to action goes full width above the hairline.
+            #{$this}__call-to-action-1 {
+                display: flex;
+                width: 100%;
+                margin-inline: 0;
+                justify-content: center;
+            }
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Samples call to action. An outlined link in the utility strip, a solid
+    // full-width button in the drawer.
+    // -------------------------------------------------------------------------
+    &__call-to-action-1 {
+        @include mq('site-header') {
+            --button--padding-y: 0;
+            --button--padding-x: 0;
+            --button--background-color: transparent;
+            --button--border-color: transparent;
+            --button--background-color--hover: transparent;
+            --button--border-color--hover: transparent;
+            --button--color: var(--color--foreground);
+            --button--color--hover: var(--color--foreground);
+
+            display: inline-flex;
+            align-items: center;
+            min-height: auto;
+            font-size: #{px-to-rem(11)};
+            font-weight: 700;
+            letter-spacing: var(--mbh-tracking-sub);
+            text-transform: uppercase;
+            border: 0;
+            border-bottom: 1px solid var(--mbh-rule-strong);
+            padding-bottom: #{px-to-rem(2)};
+            transition: border-color var(--mbh-dur-ui) var(--mbh-ease);
+
+            &:hover {
+                border-bottom-color: var(--color--olivegreen);
+            }
+        }
+
+        @include mq($until: 'site-header') {
+            display: none;
+            margin-top: var(--space--m);
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Chrome. Square, hairline, no radius -- the old circular buttons and Mist
+    // fills are gone, but the mask-image icons and every hook the JS and
+    // SampleBasket.js reach for are unchanged.
+    // -------------------------------------------------------------------------
+    &__burger {
+        --burger--color: var(--color--foreground);
         --burger--background-color: transparent;
         --burger--border-color: transparent;
 
-        --burger--color--hover: var(--color--black);
-        --burger--background-color--hover: var(--color--brand-1);
+        --burger--color--hover: var(--color--foreground);
+        --burger--background-color--hover: transparent;
         --burger--border-color--hover: transparent;
 
-        --burger--size: var(--site-header--button-size);
+        --burger--size: #{px-to-rem(48)};
 
+        grid-area: bar;
+        justify-self: start;
         flex: 0 0 auto;
-        margin-right: calc(var(--burger--padding) * -0.5);
 
         @include mq('site-header') {
             display: none;
+        }
+    }
+
+    &__account-link,
+    &__basket-link,
+    &__search-toggler {
+        position: relative;
+        display: flex;
+        width: var(--site-header--button-size);
+        height: var(--site-header--button-size);
+        flex: 0 0 auto;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        margin: 0;
+        border: 0;
+        border-radius: 0;
+        color: var(--color--foreground);
+        text-decoration: none;
+
+        &::before {
+            width: #{px-to-rem(19)};
+            height: #{px-to-rem(19)};
+            flex-shrink: 0;
+            background: currentColor;
+            content: '';
+            mask-position: center;
+            mask-repeat: no-repeat;
+            mask-size: contain;
+            transition: background var(--mbh-dur-ui) var(--mbh-ease);
+        }
+
+        &:hover {
+            color: var(--color--olivegreen);
         }
     }
 
     &__account-link {
-        position: relative;
-
+        // Hidden on the compact bar -- it lives in the drawer by name instead.
         display: none;
-        width: var(--site-header--button-size);
-        height: var(--site-header--button-size);
-        flex: 0 0 auto;
-        flex-flow: column nowrap;
-        align-items: center;
-        justify-content: space-around;
-        padding: 0;
-        border-radius: 100%;
-        margin-left: auto;
 
         @include mq('site-header') {
             display: flex;
-            position: absolute;
-            top: 0;
-            right: px-to-rem(50);
         }
 
         &::before {
-            width: px-to-rem(20);
-            height: px-to-rem(20);
-            background: currentColor;
-            content: '';
             mask-image: url('./images/icons-custom/account.svg');
-            mask-position: center;
-            mask-repeat: no-repeat;
-            mask-size: contain;
-            transition: all var(--site-header--menu--duration) var(--site-header--menu--ease);
-        }
-
-        &:hover {
-            &::before {
-                background: var(--color--brand-1);
-            }
         }
     }
 
     &__basket-link {
-        position: relative;
-
-        @include mq('site-header') {
-            position: absolute;
-            top: 0;
-            right: px-to-rem(110);
-        }
-
-        display: flex;
         gap: var(--space--3xs);
-        width: var(--site-header--button-size);
-        height: var(--site-header--button-size);
-        flex: 0 0 auto;
-        align-items: center;
-        justify-content: center;
-        padding: 0;
-        border-radius: 100%;
-        margin-left: auto;
-        text-decoration: none;
 
         &::before {
-            width: px-to-rem(20);
-            height: px-to-rem(20);
-            flex-shrink: 0;
-            background: currentColor;
-            content: '';
             mask-image: url('./images/icons-custom/basket.svg');
-            mask-position: center;
-            mask-repeat: no-repeat;
-            mask-size: contain;
-            transition: all var(--site-header--menu--duration) var(--site-header--menu--ease);
-        }
-
-        &:hover {
-            color: var(--color--brand-1);
         }
     }
 
+    // Counts PRODUCTS, not units, and is written by both this component's
+    // filter_args() and SampleBasket.js::syncHeaderCount(). Sized from its own
+    // content so a three-figure basket cannot overflow the box.
     &__basket-count {
-        background-color: var(--color--brand-1);
-        color: var(--color--black);
         display: flex;
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
-        height: px-to-rem(24);
-        width: px-to-rem(24);
-        border-radius: 100%;
-        font-size: px-to-rem(12);
+        min-width: #{px-to-rem(18)};
+        height: #{px-to-rem(18)};
+        padding: 0 #{px-to-rem(4)};
+        background-color: var(--color--olivegreen);
+        color: var(--color--springwood);
+        font-size: #{px-to-rem(10)};
+        font-weight: 700;
+        line-height: 1;
     }
 
     &__search-toggler {
-        --button--color: var(--color--black);
+        --button--color: var(--color--foreground);
         --button--background-color: transparent;
         --button--border-color: transparent;
 
-        --button--color--hover: var(--color--brand-1);
+        --button--color--hover: var(--color--olivegreen);
         --button--background-color--hover: transparent;
         --button--border-color--hover: transparent;
 
         --focus--color: var(--color--foreground);
 
-        position: relative;
-
-        display: flex;
-        width: var(--site-header--button-size);
-        height: var(--site-header--button-size);
-        flex: 0 0 auto;
-        flex-flow: column nowrap;
-        align-items: center;
-        justify-content: space-around;
-        padding: 0;
-        border-radius: 100%;
-        margin-left: auto;
-
-        @include mq('site-header') {
-            position: absolute;
-            top: 0;
-            right: 0;
-        }
-
         &::before {
-            width: px-to-rem(20);
-            height: px-to-rem(20);
-            background: currentColor;
-            content: '';
             mask-image: url('./images/icons/search.svg');
-            mask-position: center;
-            mask-repeat: no-repeat;
-            mask-size: contain;
         }
 
         &[aria-expanded='true'] {
-            --button--color: var(--color--brand-2);
-            --button--background-color: var(--color--brand-1);
-            --button--border-color: var(--color--brand-1);
+            --button--color: var(--color--olivegreen);
 
-            --button--color--hover: var(--color--brand-2);
-            --button--background-color--hover: var(--color--brand-1);
-            --button--border-color--hover: var(--color--brand-1);
+            color: var(--color--olivegreen);
         }
     }
 
-    &__logo {
-        display: flex;
-        width: var(--site-header--logo-width);
-        z-index: $internal-z-index * 3;
-        transition: all var(--site-header--menu--duration) var(--site-header--menu--ease)
-            calc(var(--site-header--menu--duration) / 2);
-
-        @include mq('site-header') {
-            .scrolling-down.scroll-valid & {
-                translate: 0 -20px;
-                transition-delay: 0s;
-            }
-        }
-
-        > * {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            object-position: left center;
-        }
-    }
-
-    &__widgets {
-        display: flex;
-        justify-content: center;
-        padding-right: var(--space--container-padding);
-        padding-left: var(--space--container-padding);
-        margin-top: auto;
-
-        @include mq('site-header') {
-            display: flex;
-            height: 100%;
-            flex-flow: row nowrap;
-            align-items: center;
-            padding-right: 0;
-            padding-left: 0;
-            margin: 0;
-        }
-    }
-
+    // -------------------------------------------------------------------------
+    // Drawer-only links.
+    // -------------------------------------------------------------------------
     &__mobile-links {
-        display: flex;
-        flex-direction: column;
-        gap: var(--space--s);
-        padding-top: px-to-rem(40);
+        grid-area: mobile;
 
         @include mq('site-header') {
             display: none;
         }
 
-        & > a {
+        a {
             display: flex;
             align-items: center;
-            gap: var(--space--3xs);
-            text-decoration: none;
-
-            &::before {
-                width: px-to-rem(20);
-                height: px-to-rem(20);
-                background: currentColor;
-                content: '';
-                mask-position: center;
-                mask-repeat: no-repeat;
-                mask-size: contain;
-            }
-        }
-
-        &__account {
-            &::before {
-                mask-image: url('./images/icons-custom/account.svg');
-            }
-        }
-
-        &__help-center {
-            &::before {
-                mask-image: url('./images/icons-custom/help-center.svg');
-            }
-        }
-
-        .language-switcher {
-            margin-left: 0;
-            margin-right: auto;
-            padding-left: 0;
-
-            &__items {
-                left: 100%;
-                bottom: 0;
-                top: auto;
-            }
+            min-height: #{px-to-rem(44)};
+            padding-inline: clamp(#{px-to-rem(20)}, 5vw, #{px-to-rem(48)});
+            font-size: #{px-to-rem(12)};
+            font-weight: 700;
+            letter-spacing: var(--mbh-tracking-sub);
+            text-transform: uppercase;
+            color: var(--color--foreground);
+            border-bottom: 0;
         }
     }
 
+    // -------------------------------------------------------------------------
+    // Search panel. Drops below the header rather than sitting in its flow.
+    //
+    // The panel is only hidden with opacity and visibility, so it keeps its
+    // box. The old header gave itself a fixed `height` and clipped it; this one
+    // sizes to its rows, so an unpositioned 244px panel was being added to the
+    // header's height on every page.
+    // -------------------------------------------------------------------------
     .header-search {
         position: absolute;
-        top: 0;
-        right: 0;
+        // Under the visible header, which above the breakpoint is no longer the
+        // bottom of the header's box -- that now stays at the resting height
+        // while the rows collapse inside it, so `top: 100%` would drop the
+        // panel through a gap.
+        top: 100%;
+
+        @include mq('site-header') {
+            top: var(--site-header--height);
+        }
+
         left: 0;
-        width: 100%;
-        z-index: $internal-z-index * 5;
+        right: 0;
+        z-index: $internal-z-index * 2;
     }
 }

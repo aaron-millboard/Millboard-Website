@@ -1,0 +1,221 @@
+// =============================================================================
+// Home Plan Your Space
+// =============================================================================
+// A numbered list of ways to get started. Each row is one link across its full
+// width: number, title and description in the middle, the action on the right.
+//
+// The container is narrower than the rest of the page (1200 against 1440),
+// which is deliberate in the design: these are rows of running text and the
+// full width would leave the action stranded a long way from the title it
+// belongs to.
+//
+// The row collapses to a stack below the compact threshold, because three
+// columns of unequal content in a phone's width is four cramped lines and a
+// wrapped button.
+// =============================================================================
+
+.home-plan {
+    --block--margin-top: 0;
+    --block--margin-bottom: 0;
+
+    // How far the numbered rows sit outside the text they hold, so a hovered
+    // row's tint clears its own content. Never wider than the section gutter
+    // it has to grow into.
+    --home-plan--row-inset: min(var(--mbh-section-x), #{px-to-rem(28)});
+
+    position: relative;
+    z-index: 3;
+    background-color: var(--color--springwood);
+    padding: var(--mbh-section-y) var(--mbh-section-x);
+
+    &__inner {
+        max-width: var(--mbh-container-narrow);
+        margin: 0 auto;
+    }
+
+    // -------------------------------------------------------------------------
+    // Heading.
+    // -------------------------------------------------------------------------
+    &__header {
+        // Short, so a two-word heading sits over the list rather than stretching
+        // across it.
+        max-width: 44ch;
+    }
+
+    &__rule {
+        display: block;
+        width: #{px-to-rem(56)};
+        height: #{px-to-rem(2)};
+        background-color: var(--color--olivegreen);
+    }
+
+    &__eyebrow {
+        margin: #{px-to-rem(24)} 0 #{px-to-rem(18)};
+        font-size: #{px-to-rem(12)};
+        font-weight: 700;
+        letter-spacing: var(--mbh-tracking-eyebrow);
+        text-transform: uppercase;
+        color: var(--color--foreground);
+    }
+
+    &__heading {
+        margin: 0;
+        font-weight: 300;
+        font-size: clamp(#{px-to-rem(26)}, 3vw, #{px-to-rem(44)});
+        line-height: 1.18;
+        letter-spacing: var(--mbh-tracking-heading);
+        text-transform: uppercase;
+        text-wrap: pretty;
+        color: var(--color--foreground);
+    }
+
+    // -------------------------------------------------------------------------
+    // The list.
+    // -------------------------------------------------------------------------
+    &__list {
+        @include list-reset-hard;
+        // The item variant too: the theme spaces every `li + li`, which here
+        // would open a gap in the middle of a run of hairline-separated rows.
+        @include list-reset-hard--li;
+
+        margin-top: clamp(#{px-to-rem(40)}, 5vw, #{px-to-rem(72)});
+        // The rows carry a bottom rule each; this is the one that closes the
+        // top of the first.
+        border-top: 1px solid var(--mbh-rule);
+    }
+
+    &__row {
+        display: grid;
+        // Number, then the text, then the action. `minmax(0, 1fr)` on the
+        // middle column is what lets a long description wrap instead of
+        // forcing the row wider than the container.
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        // Centred, not baseline-aligned.
+        //
+        // The handoff baselines these, which looks the same as centring when
+        // the description is a single line, as it is in the mock. With real
+        // copy the descriptions run to two lines and the row grows to 180px,
+        // which left the action pinned to the title's first baseline and
+        // sitting 24px above the middle of its own row.
+        align-items: center;
+        gap: clamp(#{px-to-rem(16)}, 3vw, #{px-to-rem(56)});
+        // Vertical padding, then the row's own side inset.
+        //
+        // The row had none, so on hover the tint ran exactly to the numeral on
+        // one side and the action on the other, with both touching the edge of
+        // their own highlight. The inset is paid back as a negative margin, so
+        // the tint and the hairline grow outwards and every word stays where it
+        // was -- the numerals still line up under the section heading, which
+        // they would not if the text were simply pushed in.
+        //
+        // Capped at the section's own gutter so a phone, where that gutter is
+        // smallest, cannot end up with a highlight wider than the screen.
+        padding: clamp(#{px-to-rem(26)}, 3vw, #{px-to-rem(40)}) var(--home-plan--row-inset);
+        margin-inline: calc(-1 * var(--home-plan--row-inset));
+        border-bottom: 1px solid var(--mbh-rule);
+        color: var(--color--foreground);
+        transition: background-color var(--mbh-dur-ui) var(--mbh-ease);
+
+        --link--text-decoration: none;
+        --link--text-decoration--hover: none;
+
+        &:hover,
+        &:focus-visible {
+            color: var(--color--foreground);
+            // Barely there on purpose: enough to show which row the pointer is
+            // on without turning a quiet list into a set of buttons.
+            background-color: #{rgba(#2f292e, 0.03)};
+        }
+
+        // Stacked on a phone: the action drops under the text and the number
+        // keeps its own column so the list still reads as numbered.
+        @media (max-width: #{px-to-rem(719)}) {
+            grid-template-columns: auto minmax(0, 1fr);
+            gap: #{px-to-rem(14)} #{px-to-rem(18)};
+        }
+    }
+
+    &__number {
+        font-size: #{px-to-rem(11)};
+        font-weight: 700;
+        letter-spacing: var(--mbh-tracking-eyebrow);
+        // The darker olive, not the brand one.
+        //
+        // Brand olive on Spring Wood is 3.11:1, which is fine for the 2px
+        // accent rules and fails AA for 11px text. --mbh-olive-text is the same
+        // hue taken down to 4.59:1 so the numerals can actually be read. The
+        // rules elsewhere on the page keep the true olive.
+        color: var(--mbh-olive-text);
+    }
+
+    &__text {
+        display: grid;
+        gap: #{px-to-rem(10)};
+    }
+
+    &__title {
+        font-weight: 300;
+        font-size: clamp(#{px-to-rem(20)}, 2.1vw, #{px-to-rem(30)});
+        line-height: 1.25;
+        // Looser than body copy, tighter than the section headings: these are
+        // titles inside a list, not headings of their own.
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--color--foreground);
+    }
+
+    &__description {
+        max-width: 58ch;
+        font-weight: 300;
+        font-size: #{px-to-rem(15)};
+        line-height: 1.7;
+        text-wrap: pretty;
+        color: var(--color--foreground);
+    }
+
+    &__action {
+        display: inline-flex;
+        align-items: center;
+        gap: #{px-to-rem(10)};
+        font-size: #{px-to-rem(11)};
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        // The action is two or three words and belongs on one line; wrapping it
+        // under itself reads as two separate links.
+        white-space: nowrap;
+        color: var(--color--foreground);
+
+        @media (max-width: #{px-to-rem(719)}) {
+            // Stacked, the action sits under the text in the second column so
+            // it lines up with the title rather than the numeral.
+            grid-column: 2;
+        }
+    }
+
+    &__arrow {
+        // The theme resets every svg to width: 100%.
+        width: #{px-to-rem(15)};
+        height: #{px-to-rem(15)};
+        max-height: none;
+        flex: none;
+        // Moves with the row on hover, which is the only motion here.
+        transition: transform var(--mbh-dur-ui) var(--mbh-ease);
+    }
+
+    &__row:hover &__arrow,
+    &__row:focus-visible &__arrow {
+        transform: translateX(#{px-to-rem(4)});
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        &__arrow {
+            transition: none;
+        }
+
+        &__row:hover &__arrow,
+        &__row:focus-visible &__arrow {
+            transform: none;
+        }
+    }
+}

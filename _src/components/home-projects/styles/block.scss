@@ -1,0 +1,31 @@
+// =============================================================================
+// Home Projects Rail -- editor
+// =============================================================================
+// The canvas is narrower than the front end and a sideways scroll inside it
+// fights the editor's own. The rail wraps instead, so every card is visible
+// and selectable while the copy is being written.
+// =============================================================================
+
+.editor-styles-wrapper {
+    .home-projects {
+        &__header,
+        &__card {
+            opacity: 1;
+            transform: none;
+            transition: none;
+        }
+
+        &__rail {
+            overflow-x: visible;
+        }
+
+        &__track {
+            flex-wrap: wrap;
+            width: auto;
+        }
+
+        &__item {
+            flex: 0 0 #{px-to-rem(220)};
+        }
+    }
+}

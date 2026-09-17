@@ -255,3 +255,76 @@ function get_locale_from_url(string $url): ?string
 
     return preg_match('/^[a-z]{2}-[a-z]{2}$/', $segment) ? $segment : null;
 }
+
+/**
+ * Mark the item for the locale we are already on.
+ *
+ * The switcher's own button shows the current locale, but the open list gave no
+ * indication which of the six you were looking at from -- Aaron's point, and a
+ * fair one: a list of destinations with no "you are here" is a guessing game.
+ *
+ * Deliberately separate from filter_menu_items_to_alternates(), which bails
+ * early whenever there are no hreflang alternates to apply (no plugin, or a
+ * page type it does not cover). The current locale is knowable regardless, and
+ * marking it must not depend on that.
+ *
+ * The class lands on the <li> because menu-item's filter_args() merges
+ * $item->classes onto it.
+ *
+ * @param mixed $items The menu items. Array in practice.
+ * @param mixed $menu The menu the items belong to. A WP_Term in practice.
+ * @return mixed The menu items, with the current locale's item marked.
+ */
+function mark_current_locale_item($items, $menu)
+{
+    // Never in the admin: the nav menu editor reads its items through this same
+    // filter, and a presentational class has no business being saved back.
+    if (!is_array($items) || \is_admin() || !is_switcher_menu($menu)) {
+        return $items;
+    }
+
+    $current_locale = get_locale_from_url(\home_url('/'));
+
+    if (empty($current_locale)) {
+        return $items;
+    }
+
+    foreach ($items as $item) {
+        if (empty($item->url) || get_locale_from_url($item->url) !== $current_locale) {
+            continue;
+        }
+
+        $item->classes = array_merge((array) ($item->classes ?? []), [
+            'language-switcher__item--current',
+        ]);
+    }
+
+    return $items;
+}
+
+/**
+ * Give the current locale's link an accessible "current" state.
+ *
+ * A class is enough to draw the olive marker; it says nothing to a screen
+ * reader, which would otherwise hear six equal-looking locale links and no
+ * indication of which one it is already on.
+ *
+ * @param array $args The menu-item component's arguments.
+ * @return array The arguments, with aria-current set on the current locale.
+ */
+function set_current_locale_aria(array $args): array
+{
+    $item = $args['item'] ?? null;
+
+    if (empty($item) || empty($item->classes) || !is_array($item->classes)) {
+        return $args;
+    }
+
+    if (!in_array('language-switcher__item--current', $item->classes, true)) {
+        return $args;
+    }
+
+    $args['link']['attributes']['aria-current'] = 'true';
+
+    return $args;
+}

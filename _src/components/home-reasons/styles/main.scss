@@ -1,0 +1,115 @@
+// =============================================================================
+// Home Reasons Grid
+// =============================================================================
+// A headed intro above an auto-fit grid of short reasons. One set of tracks
+// gives five across at 1440, three on a tablet and one on a phone, so there is
+// no breakpoint here at all -- 250px is simply the narrowest a caps title and
+// two lines of body can sit without the title wrapping mid-word.
+// =============================================================================
+
+.home-reasons {
+    // Flush against the cladding band above it, like the rest of the sequence.
+    --block--margin-top: 0;
+    --block--margin-bottom: 0;
+
+    position: relative;
+    z-index: 3;
+    background-color: var(--color--springwood);
+    padding: var(--mbh-section-y) var(--mbh-section-x);
+
+    &__inner {
+        max-width: var(--mbh-container);
+        margin: 0 auto;
+    }
+
+    // -------------------------------------------------------------------------
+    // Heading.
+    // -------------------------------------------------------------------------
+    &__header {
+        // Narrower than the body measure: this is a two- or three-word heading
+        // over a full-width grid, and letting it run the whole 1440 would
+        // leave it floating above nothing.
+        max-width: 46ch;
+    }
+
+    &__rule {
+        display: block;
+        width: #{px-to-rem(56)};
+        height: #{px-to-rem(2)};
+        // A mark, not text, so it keeps the true brand olive.
+        background-color: var(--color--olivegreen);
+    }
+
+    &__eyebrow {
+        margin: #{px-to-rem(24)} 0 #{px-to-rem(18)};
+        font-size: #{px-to-rem(12)};
+        font-weight: 700;
+        letter-spacing: var(--mbh-tracking-eyebrow);
+        text-transform: uppercase;
+        color: var(--color--foreground);
+    }
+
+    &__heading {
+        margin: 0;
+        font-weight: 300;
+        font-size: clamp(#{px-to-rem(26)}, 3vw, #{px-to-rem(44)});
+        line-height: 1.18;
+        letter-spacing: var(--mbh-tracking-heading);
+        text-transform: uppercase;
+        text-wrap: pretty;
+        color: var(--color--foreground);
+    }
+
+    // -------------------------------------------------------------------------
+    // Grid.
+    // -------------------------------------------------------------------------
+    &__grid {
+        @include list-reset-hard;
+        // The item variant too: the theme spaces every `li + li` with
+        // --list--item--spacing, which inside a grid becomes a top margin on
+        // all but the first item and pushes each row out of line with itself.
+        @include list-reset-hard--li;
+
+        display: grid;
+        // 220px, not the 250 the handoff draws with. The design calls for five
+        // across a desktop row and three on a tablet, and 250 gives neither:
+        // five 250px tracks plus four 48px gaps need 1442px inside a 1440px
+        // container, so it falls back to four, and at 834 three tracks need
+        // 814px in 751px of room, so it falls back to two. 220 lands 5 / 5 / 3 / 1
+        // across 1920 / 1440 / 834 / 375, and the tracks still resolve to
+        // 228-250px, so nothing is actually narrower than drawn.
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, #{px-to-rem(220)}), 1fr));
+        gap: clamp(#{px-to-rem(32)}, 3vw, #{px-to-rem(48)});
+        margin-top: clamp(#{px-to-rem(48)}, 6vw, #{px-to-rem(88)});
+    }
+
+    &__icon {
+        // The theme resets every svg to width: 100%, so both dimensions are
+        // restated rather than left to the glyph.
+        width: #{px-to-rem(24)};
+        height: #{px-to-rem(24)};
+        max-height: none;
+        flex: none;
+        color: var(--color--foreground);
+    }
+
+    &__title {
+        margin: #{px-to-rem(18)} 0 #{px-to-rem(10)};
+        font-size: #{px-to-rem(12)};
+        font-weight: 700;
+        letter-spacing: var(--mbh-tracking-sub);
+        text-transform: uppercase;
+        color: var(--color--foreground);
+    }
+
+    &__text {
+        margin: 0;
+        font-weight: 300;
+        // Flat rather than the fluid body size: these sit in a 250px track and
+        // scaling them with the viewport would push a five-column row long.
+        font-size: #{px-to-rem(15)};
+        line-height: var(--mbh-lh-body);
+        text-wrap: pretty;
+        color: var(--color--foreground);
+    }
+}

@@ -1,0 +1,22 @@
+// =============================================================================
+// Home Trust Band -- editor
+// =============================================================================
+// The Trustpilot widget does not hydrate inside the canvas, so it leaves an
+// empty strip. The reveal is left at rest and the widget slot is given a
+// minimum so the row does not collapse while the copy is being written.
+// =============================================================================
+
+.editor-styles-wrapper {
+    .home-trust {
+        &__inner,
+        &__badges {
+            opacity: 1;
+            transform: none;
+            transition: none;
+        }
+
+        &__widget {
+            min-height: 24px;
+        }
+    }
+}

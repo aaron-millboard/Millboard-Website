@@ -1,0 +1,121 @@
+// =============================================================================
+// Home Trust Band
+// =============================================================================
+// A shallow Mist band between the projects rail and the planning section: the
+// Trustpilot rating on one line, accreditation badges under a hairline beneath
+// it. Deliberately the shortest section on the page -- it is a reassurance, not
+// a chapter, and its padding is roughly half what the other sections carry.
+// =============================================================================
+
+.home-trust {
+    --block--margin-top: 0;
+    --block--margin-bottom: 0;
+
+    position: relative;
+    z-index: 3;
+    background-color: var(--color--mist);
+    padding: clamp(#{px-to-rem(48)}, 6vw, #{px-to-rem(88)}) var(--mbh-section-x);
+
+    &__inner {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: clamp(#{px-to-rem(20)}, 3vw, #{px-to-rem(48)});
+        max-width: var(--mbh-container);
+        margin: 0 auto;
+    }
+
+    &__heading {
+        margin: 0;
+        font-weight: 300;
+        font-size: clamp(#{px-to-rem(18)}, 1.8vw, #{px-to-rem(26)});
+        line-height: 1.4;
+        // Looser than body copy but tighter than the section headings: this is
+        // a statement, not a title.
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--color--foreground);
+    }
+
+    &__rating {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: clamp(#{px-to-rem(14)}, 2vw, #{px-to-rem(24)});
+    }
+
+    &__widget {
+        // The TrustBox is a fixed-height strip that asks for 100% width. Given
+        // a flex row it would take the whole line and push the link off it, so
+        // it is held to the width it actually needs.
+        flex: 0 1 auto;
+        min-width: #{px-to-rem(180)};
+        max-width: #{px-to-rem(240)};
+    }
+
+    &__link {
+        padding-bottom: #{px-to-rem(4)};
+        font-size: #{px-to-rem(11)};
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--color--foreground);
+        // Every underline in this design is a border.
+        border-bottom: 1px solid #{rgba(#2f292e, 0.35)};
+        transition: border-color var(--mbh-dur-ui) var(--mbh-ease);
+        white-space: nowrap;
+
+        --link--text-decoration: none;
+        --link--text-decoration--hover: none;
+
+        &:hover,
+        &:focus-visible {
+            color: var(--color--foreground);
+            border-bottom-color: var(--color--olivegreen);
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Badges.
+    // -------------------------------------------------------------------------
+    &__badges {
+        @include list-reset-hard;
+        // The item variant too: the theme spaces every `li + li`, which in a
+        // wrapping row becomes a top margin on everything but the first badge.
+        @include list-reset-hard--li;
+
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        gap: clamp(#{px-to-rem(28)}, 4vw, #{px-to-rem(64)});
+        max-width: var(--mbh-container);
+        margin: clamp(#{px-to-rem(32)}, 4vw, #{px-to-rem(56)}) auto 0;
+        padding-top: clamp(#{px-to-rem(28)}, 3.4vw, #{px-to-rem(44)});
+        border-top: 1px solid var(--mbh-rule);
+    }
+
+    &__badge-link {
+        display: block;
+
+        --link--text-decoration: none;
+        --link--text-decoration--hover: none;
+    }
+
+    &__badge-image {
+        display: block;
+        // One box for every badge, with the logo contained inside it.
+        //
+        // Not `width: auto` with a cap: two of these logos are SVGs with no
+        // intrinsic width or height, and auto resolves those to nothing at
+        // all -- they rendered 0x0 and vanished. A stated box sizes every
+        // badge whatever the file knows about itself, and `contain` keeps
+        // each one's aspect, so a stacked roundel does not tower over a wide
+        // wordmark.
+        width: clamp(#{px-to-rem(96)}, 12vw, #{px-to-rem(150)});
+        height: clamp(#{px-to-rem(34)}, 4vw, #{px-to-rem(52)});
+        object-fit: contain;
+        object-position: center;
+    }
+}

@@ -1,0 +1,256 @@
+// =============================================================================
+// Home Projects Rail
+// =============================================================================
+// A sideways rail of recent projects. The rail runs past the container on both
+// sides so the last card is visibly cut off, which is the thing that tells a
+// reader there is more to the right.
+//
+// The section therefore has no horizontal padding of its own: the header and
+// the track each pad themselves to the same gutter, and the track's own
+// padding is what keeps the first card aligned with the heading above it.
+// =============================================================================
+
+.home-projects {
+    --block--margin-top: 0;
+    --block--margin-bottom: 0;
+
+    // Card width, and the gutter the header and the track share.
+    --home-projects--card: min(80vw, #{px-to-rem(400)});
+
+    position: relative;
+    z-index: 3;
+    background-color: var(--color--springwood);
+    // Vertical only. The rail needs to reach the edges.
+    padding: var(--mbh-section-y) 0;
+
+    // -------------------------------------------------------------------------
+    // Header.
+    // -------------------------------------------------------------------------
+    &__header {
+        display: flex;
+        flex-wrap: wrap;
+        // The link sits on the heading's baseline rather than centred against
+        // a two-line heading.
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: #{px-to-rem(24)};
+        max-width: var(--mbh-container);
+        margin: 0 auto;
+        padding: 0 var(--mbh-section-x);
+    }
+
+    &__rule {
+        display: block;
+        width: #{px-to-rem(56)};
+        height: #{px-to-rem(2)};
+        background-color: var(--color--olivegreen);
+    }
+
+    &__eyebrow {
+        margin: #{px-to-rem(24)} 0 #{px-to-rem(18)};
+        font-size: #{px-to-rem(12)};
+        font-weight: 700;
+        letter-spacing: var(--mbh-tracking-eyebrow);
+        text-transform: uppercase;
+        color: var(--color--foreground);
+    }
+
+    &__heading {
+        margin: 0;
+        font-weight: 300;
+        font-size: clamp(#{px-to-rem(26)}, 3vw, #{px-to-rem(44)});
+        line-height: 1.18;
+        letter-spacing: var(--mbh-tracking-heading);
+        text-transform: uppercase;
+        text-wrap: pretty;
+        color: var(--color--foreground);
+    }
+
+    &__all {
+        display: inline-flex;
+        align-items: center;
+        gap: #{px-to-rem(10)};
+        padding-bottom: #{px-to-rem(5)};
+        font-size: #{px-to-rem(11)};
+        font-weight: 700;
+        letter-spacing: var(--mbh-tracking-eyebrow);
+        text-transform: uppercase;
+        color: var(--color--foreground);
+        border-bottom: 1px solid #{rgba(#2f292e, 0.35)};
+        transition: border-color var(--mbh-dur-ui) var(--mbh-ease);
+
+        --link--text-decoration: none;
+        --link--text-decoration--hover: none;
+
+        &:hover,
+        &:focus-visible {
+            color: var(--color--foreground);
+            border-bottom-color: var(--color--olivegreen);
+        }
+    }
+
+    &__all-arrow {
+        // The theme resets every svg to width: 100%.
+        width: #{px-to-rem(14)};
+        height: #{px-to-rem(14)};
+        max-height: none;
+        flex: none;
+    }
+
+    // -------------------------------------------------------------------------
+    // Rail.
+    // -------------------------------------------------------------------------
+    &__rail {
+        margin-top: clamp(#{px-to-rem(40)}, 5vw, #{px-to-rem(72)});
+        overflow-x: auto;
+        // A sideways swipe inside the rail should not turn into the browser's
+        // back gesture once it reaches the end.
+        overscroll-behavior-x: contain;
+
+        // The scrollbar, kept but made quiet.
+        //
+        // It was hidden outright, which left the rail with no visible sign of
+        // how far it runs or how far along you are -- the hint line says you
+        // can scroll, not where you have got to. The browsers' own bar is too
+        // heavy for this page, so it is reduced to the thinnest thing that
+        // still reads as a control: a 4px rail with a rounded thumb, the same
+        // charcoal as the type at low opacity, darkening when pointed at.
+        //
+        // Both syntaxes are needed and neither is a fallback for the other:
+        // scrollbar-width and scrollbar-color are the standard ones Firefox
+        // uses, and the ::-webkit pseudo-elements are what Chrome and Safari
+        // read. A browser that understands neither shows its default bar,
+        // which is still better than no bar at all.
+        scrollbar-width: thin;
+        scrollbar-color: #{rgba(#2f292e, 0.3)} #{rgba(#2f292e, 0.08)};
+
+        &::-webkit-scrollbar {
+            height: #{px-to-rem(4)};
+        }
+
+        &::-webkit-scrollbar-track {
+            background-color: #{rgba(#2f292e, 0.08)};
+            border-radius: 999px;
+        }
+
+        &::-webkit-scrollbar-thumb {
+            background-color: #{rgba(#2f292e, 0.3)};
+            border-radius: 999px;
+        }
+
+        &:hover::-webkit-scrollbar-thumb {
+            background-color: #{rgba(#2f292e, 0.45)};
+        }
+    }
+
+    &__track {
+        @include list-reset-hard;
+        // The item variant too: the theme spaces every `li + li`, which in a
+        // row of flex items becomes a top margin on all but the first.
+        @include list-reset-hard--li;
+
+        display: flex;
+        gap: clamp(#{px-to-rem(20)}, 2.4vw, #{px-to-rem(36)});
+        // The first card lines up under the heading, which means matching the
+        // header's content edge rather than the viewport's. The header is a
+        // centred 1440 container with its own gutter, so past 1440 the two
+        // part company: at 1920 a plain gutter left the first card 232px to
+        // the left of the heading above it.
+        //
+        // The right stays a plain gutter, so the rail still runs off the edge
+        // and the last card is visibly cut. The 8px is room for a focus ring
+        // under the last line of text.
+        padding-left: calc(max(0px, (100% - var(--mbh-container)) / 2) + var(--mbh-section-x));
+        padding-right: var(--mbh-section-x);
+        padding-bottom: #{px-to-rem(8)};
+        width: max-content;
+    }
+
+    &__item {
+        flex: 0 0 var(--home-projects--card);
+    }
+
+    &__card {
+        display: block;
+        color: var(--color--foreground);
+
+        --link--text-decoration: none;
+        --link--text-decoration--hover: none;
+
+        &:hover,
+        &:focus-visible {
+            color: var(--color--foreground);
+        }
+    }
+
+    &__frame {
+        display: block;
+        overflow: hidden;
+    }
+
+    &__image {
+        display: block;
+        width: 100%;
+        // Portrait, which is what lets four cards read as a row of tall
+        // windows rather than a filmstrip.
+        aspect-ratio: 3 / 4;
+        object-fit: cover;
+        transition: transform 700ms var(--mbh-ease);
+    }
+
+    &__card:hover &__image,
+    &__card:focus-visible &__image {
+        transform: scale(1.03);
+    }
+
+    &__location {
+        display: block;
+        margin: #{px-to-rem(20)} 0 #{px-to-rem(10)};
+        font-size: #{px-to-rem(11)};
+        font-weight: 700;
+        letter-spacing: var(--mbh-tracking-eyebrow);
+        text-transform: uppercase;
+        color: var(--color--foreground);
+    }
+
+    &__title {
+        display: block;
+        margin-bottom: #{px-to-rem(8)};
+        font-weight: 300;
+        font-size: clamp(#{px-to-rem(18)}, 1.5vw, #{px-to-rem(22)});
+        line-height: 1.3;
+        text-wrap: pretty;
+        color: var(--color--foreground);
+    }
+
+    &__product {
+        display: block;
+        font-weight: 300;
+        font-size: #{px-to-rem(14)};
+        line-height: var(--mbh-lh-body);
+        text-wrap: pretty;
+        // Stepped back from the title without dropping below AA: this is
+        // 7.9:1 on Spring Wood.
+        color: #{rgba(#2f292e, 0.82)};
+    }
+
+    // Hidden until HomeProjects.js confirms the rail really does overflow.
+    // With four cards on a 1920 screen everything fits, and telling someone
+    // to scroll sideways when they cannot is worse than saying nothing.
+    &__hint {
+        display: none;
+        max-width: var(--mbh-container);
+        margin: clamp(#{px-to-rem(20)}, 2vw, #{px-to-rem(28)}) auto 0;
+        padding: 0 var(--mbh-section-x);
+        font-size: #{px-to-rem(11)};
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: #{rgba(#2f292e, 0.75)};
+    }
+}
+
+// Shown only where the rail overflows its container.
+.home-projects--scrollable .home-projects__hint {
+    display: block;
+}

@@ -3,25 +3,30 @@ import isElementVisible from '../../../scripts/helpers/isElementVisible.js';
 import ExpandableElement from '../../../scripts/helpers/ExpandableElement.js';
 
 // TODO manage focus leaving overlay mobile menu and close it (or trap it)
-// TODO add escape key suppport for submenus and mobile menu
 
 export default class SiteHeader {
     constructor(element) {
         this.el = element;
         this.body = document.querySelector('body');
-        this.headerTopEl = this.el.querySelector('.site-header__top');
+        this.innerEl = this.el.querySelector('.site-header__inner');
         this.navigationEl = this.el.querySelector('.site-header__navigation');
         this.mainMenuEl = this.el.querySelector('#main-menu');
         this.burgerEl = this.el.querySelector('.site-header__burger');
         this.headerTogglerEls = this.el.querySelectorAll('.js-site-header-toggle');
         this.searchEl = this.el.querySelector('.header-search');
+        this.utilityEl = this.el.querySelector('.site-header__utility');
         this.callToActionEl = this.el.querySelector('.site-header__call-to-action-1');
         this.currentPageAnchorEls = this.el.querySelectorAll('.current-menu-item > [href*="#"]');
 
-        this.subMenuExpandableEls = {};
-        if (this.mainMenuEl) {
-            this.subMenuExpandableEls = this.mainMenuEl.querySelectorAll('.js-expandable-element');
-        }
+        // Every top-level link in the primary nav, across BOTH halves. The
+        // wordmark sits between them, so the menu renders twice -- scoping this
+        // to #main-menu alone would leave the second half's dropdowns dead.
+        this.primaryMenuEls = this.el.querySelectorAll('.site-header__navigation--primary .menu-list');
+
+        // Sub-menus are collected from the whole header for the same reason.
+        this.subMenuExpandableEls = this.el.querySelectorAll(
+            '.site-header__navigation--primary .js-expandable-element'
+        );
 
         // Stores the sub-menu ExpandableElement instances and the parent menu item for hover triggering.
         this.subMenuDropdowns = {};
@@ -31,6 +36,7 @@ export default class SiteHeader {
 
     init() {
         this.setHeight();
+        this.initScrollState();
 
         window.addEventListener(
             'resize',
@@ -47,6 +53,13 @@ export default class SiteHeader {
         // Listen to custom scroll events.
         window.addEventListener('scrollchange', this);
         window.addEventListener('scrolldown', this);
+
+        // Escape closes the drawer, returning focus to the burger.
+        window.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && this.el.classList.contains('is-open')) {
+                this.closeHeader();
+            }
+        });
 
         if (this.isBurgerModeActive()) {
             this.closeHeader(true);
@@ -185,20 +198,116 @@ export default class SiteHeader {
         });
     }
 
-    getHeight() {
-        const headerHeight = this.headerTopEl.offsetHeight;
+    /**
+     * Drives the header's scroll state as a single custom property, `--nav`,
+     * running 0 -> 1 across the first 90px of the page.
+     *
+     * Both row heights, the wordmark's size and the utility strip's collapse
+     * all interpolate from this one number in CSS, so there is no class to keep
+     * in step and no second definition of "scrolled". The homepage hero reads
+     * the same variable, which is why it is set on the document element.
+     *
+     * Written inside requestAnimationFrame off a passive listener: the handler
+     * only ever reads scrollY and writes a custom property, so there is no
+     * layout read per frame.
+     */
+    initScrollState() {
+        this.navRaf = null;
 
-        // if (this.announcementBanner) {
-        //     headerHeight += this.announcementBanner.offsetHeight;
-        // }
+        this.writeNavState = () => {
+            this.navRaf = null;
 
-        return headerHeight;
+            const scrollTop = window.scrollY || document.documentElement.scrollTop || 0;
+
+            document.documentElement.style.setProperty('--nav', Math.min(1, scrollTop / 90).toFixed(3));
+
+            // The utility strip collapses by clipping its own overflow, which
+            // also clips anything trying to escape it -- the locale dropdown
+            // opens 108px tall out of a 44px strip and lost 96px of itself.
+            //
+            // It only needs to clip while it is actually collapsing, so the
+            // clip goes on the moment the page moves and comes off at rest.
+            // At rest there is nothing to clip: 44px of content inside a
+            // 150px max-height.
+            this.el.classList.toggle('site-header--scrolled', scrollTop > 0);
+        };
+
+        this.onNavScroll = () => {
+            if (!this.navRaf) {
+                this.navRaf = requestAnimationFrame(this.writeNavState);
+            }
+        };
+
+        window.addEventListener('scroll', this.onNavScroll, { passive: true });
+        this.writeNavState();
     }
 
+    getHeight() {
+        // The header element itself, so the utility strip is included -- it is a
+        // sibling of the main row, not a child of it, and measuring only the row
+        // reported 88px for a 132px header. The search panel is absolutely
+        // positioned and so contributes nothing here, which is what we want.
+        return this.el.offsetHeight;
+    }
+
+    /**
+     * Write the header's height out for anything that positions against it.
+     *
+     * Called on load, on resize and when the drawer closes -- deliberately NOT
+     * on scroll. It used to run on every scroll frame, on the reasoning that
+     * the header's height changes with `--nav` so the offset should follow.
+     *
+     * It does change, and following it that way made the page shudder. The
+     * header is in flow, so its collapse lifts everything below it, and the
+     * home hero cancels that with a negative top margin built from this value.
+     * Measuring mid-collapse and writing the result fed a number that was
+     * always slightly behind the height it was meant to cancel, and worse, the
+     * sampling stopped the moment scrolling did while the collapse carried on.
+     * Anything that needs the live height should read `--site-header--height`,
+     * which is the same collapse expressed in CSS and is therefore never out
+     * of step with it.
+     */
     setHeight() {
+        // The viewport's real width, excluding the scrollbar. Full-bleed
+        // dropdowns size from this rather than 100vw, which counts the
+        // scrollbar and so overhangs the page by its width. Written before the
+        // guard below, because it is true whatever the drawer is doing.
+        document.documentElement.style.setProperty(
+            '--site-header--viewport',
+            `${document.documentElement.clientWidth}px`
+        );
+
+        // While the drawer is open the inner element is the full-height panel,
+        // which is not the header's resting height -- measuring it would push
+        // every sticky offset on the page down by a screenful.
+        if (this.el.classList.contains('is-open')) {
+            return;
+        }
+
         this.headerHeight = this.getHeight();
 
         document.documentElement.style.setProperty('--site-header--bottom', `${this.headerHeight}px`);
+
+        // The utility strip's natural height, which is what it collapses FROM.
+        //
+        // The cap has to come off to measure it, because the cap is built from
+        // this very number. scrollHeight looks like the way round that and is
+        // not: the strip is deliberately unclipped at rest so the locale
+        // dropdown can open out of it, and scrollHeight counts that dropdown.
+        // It reported 286px for a 44px strip, which put the whole collapse in
+        // the last seventh of the scroll and left the header lurching.
+        //
+        // Only on wide viewports, where the strip is part of the header rather
+        // than a block in the drawer; on compact it is display: none and would
+        // measure zero.
+        if (this.utilityEl && this.utilityEl.offsetParent !== null) {
+            this.utilityEl.style.maxHeight = 'none';
+            const stripHeight = this.utilityEl.offsetHeight;
+            this.utilityEl.style.maxHeight = '';
+
+            document.documentElement.style.setProperty('--site-header--strip', `${stripHeight}px`);
+        }
+
         this.el.classList.add('site-header--positioned');
     }
 
@@ -213,11 +322,15 @@ export default class SiteHeader {
     openHeader() {
         let first = '';
 
-        if (this.mainMenuEl) {
-            const listItems = Array.from(this.mainMenuEl.children);
-
-            listItems.forEach((li) => {
+        // Across both halves of the primary nav, in DOM order, so the first
+        // link focused is the first one in the menu.
+        this.primaryMenuEls.forEach((list) => {
+            Array.from(list.children).forEach((li) => {
                 const a = li.querySelector('a');
+
+                if (!a) {
+                    return;
+                }
 
                 SiteHeader.setTabIndex([a], 0);
 
@@ -225,9 +338,12 @@ export default class SiteHeader {
                     first = a;
                 }
             });
-        }
+        });
 
         this.el.classList.add('is-open');
+
+        // The drawer scrolls itself, so the page behind it must not.
+        this.body.style.overflow = 'hidden';
 
         this.headerTogglerEls.forEach((toggle) => {
             toggle.setAttribute('aria-expanded', 'true');
@@ -245,6 +361,10 @@ export default class SiteHeader {
 
         // close the menu
         this.el.classList.remove('is-open');
+        this.body.style.overflow = '';
+
+        // The resting height is only measurable once the drawer has closed.
+        this.setHeight();
 
         if (this.isBurgerModeActive()) {
             this.headerTogglerEls.forEach((toggle) => {

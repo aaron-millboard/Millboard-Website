@@ -40,22 +40,22 @@
                 {
                     "name": "Mist",
                     "slug": "brand-1",
-                    "color": "#dedcd2"
+                    "color": "#dedbd2"
                 },
                 {
                     "name": "Springwood",
                     "slug": "brand-2",
-                    "color": "#f9f7f1"
+                    "color": "#f8f4f0"
                 },
                 {
                     "name": "Wenge",
                     "slug": "brand-5",
-                    "color": "#62554d"
+                    "color": "#625249"
                 },
                 {
                     "name": "Sustainably Green",
                     "slug": "brand-6",
-                    "color": "#333C12"
+                    "color": "#34401a"
                 }
             ],
             "text": false

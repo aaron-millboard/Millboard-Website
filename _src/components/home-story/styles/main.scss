@@ -1,0 +1,231 @@
+// =============================================================================
+// Home Story
+// =============================================================================
+// The one dark section in the sequence: Wenge, with Spring Wood type. The
+// accent rule switches from olive to Apple here, because the brand olive on
+// Wenge is two dark colours touching and reads as no rule at all.
+//
+// Copy on one side, a film and two captioned figures on the other, centred on
+// each other above the stacking threshold.
+// =============================================================================
+
+.home-story {
+    --block--margin-top: 0;
+    --block--margin-bottom: 0;
+
+    position: relative;
+    z-index: 3;
+    background-color: var(--color--wenge);
+    padding: var(--mbh-section-y) var(--mbh-section-x);
+
+    &__inner {
+        display: grid;
+        max-width: var(--mbh-container);
+        margin: 0 auto;
+        gap: clamp(#{px-to-rem(40)}, 6vw, #{px-to-rem(96)});
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, #{px-to-rem(320)}), 1fr));
+        // The copy is shorter than the media stack, so centring is what keeps
+        // it from sitting against the top of a much taller column.
+        align-items: center;
+    }
+
+    // -------------------------------------------------------------------------
+    // Copy.
+    // -------------------------------------------------------------------------
+    &__rule {
+        display: block;
+        width: #{px-to-rem(56)};
+        height: #{px-to-rem(2)};
+        // Apple, not olive: brand olive on Wenge is 1.4:1 and vanishes.
+        background-color: var(--color--apple);
+    }
+
+    &__eyebrow {
+        margin: #{px-to-rem(24)} 0 #{px-to-rem(18)};
+        font-size: #{px-to-rem(12)};
+        font-weight: 700;
+        letter-spacing: var(--mbh-tracking-eyebrow);
+        text-transform: uppercase;
+        color: var(--color--springwood);
+    }
+
+    &__heading {
+        margin: 0;
+        font-weight: 300;
+        font-size: clamp(#{px-to-rem(26)}, 3vw, #{px-to-rem(46)});
+        line-height: 1.18;
+        letter-spacing: var(--mbh-tracking-heading);
+        text-transform: uppercase;
+        text-wrap: pretty;
+        color: var(--color--springwood);
+    }
+
+    &__text {
+        p {
+            margin: #{px-to-rem(20)} 0 0;
+            font-weight: 300;
+            font-size: var(--mbh-fs-body);
+            line-height: var(--mbh-lh-body);
+            text-wrap: pretty;
+            // Slightly tighter than the light sections: light type on a dark
+            // ground is harder to track back along, so the line runs shorter.
+            max-width: 52ch;
+            color: var(--color--springwood);
+
+            &:first-child {
+                margin-top: #{px-to-rem(28)};
+            }
+        }
+    }
+
+    &__link {
+        display: inline-flex;
+        align-items: center;
+        gap: #{px-to-rem(12)};
+        margin-top: clamp(#{px-to-rem(32)}, 3.6vw, #{px-to-rem(48)});
+        padding-bottom: #{px-to-rem(5)};
+        font-size: #{px-to-rem(11)};
+        font-weight: 700;
+        letter-spacing: var(--mbh-tracking-eyebrow);
+        text-transform: uppercase;
+        color: var(--color--springwood);
+        // Every underline in this design is a border.
+        border-bottom: 1px solid #{rgba(#f8f4f0, 0.5)};
+        transition: border-color var(--mbh-dur-ui) var(--mbh-ease);
+
+        --link--text-decoration: none;
+        --link--text-decoration--hover: none;
+
+        &:hover,
+        &:focus-visible {
+            color: var(--color--springwood);
+            border-bottom-color: var(--color--apple);
+        }
+    }
+
+    &__link-arrow {
+        // The theme resets every svg to width: 100%.
+        width: #{px-to-rem(15)};
+        height: #{px-to-rem(15)};
+        max-height: none;
+        flex: none;
+    }
+
+    // -------------------------------------------------------------------------
+    // Film.
+    // -------------------------------------------------------------------------
+    &__film {
+        position: relative;
+    }
+
+    &__poster {
+        display: block;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        object-fit: cover;
+    }
+
+    &__play {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: #{px-to-rem(6)};
+        width: #{px-to-rem(96)};
+        height: #{px-to-rem(96)};
+        padding: 0;
+        border: 1px solid #{rgba(#f8f4f0, 0.85)};
+        border-radius: 50%;
+        background-color: #{rgba(#2f292e, 0.28)};
+        color: var(--color--springwood);
+        cursor: pointer;
+        transform: translate(-50%, -50%);
+        transition: background-color var(--mbh-dur-ui-slow) var(--mbh-ease);
+
+        &:hover,
+        &:focus-visible {
+            background-color: #{rgba(#2f292e, 0.5)};
+        }
+    }
+
+    &__play-glyph {
+        width: #{px-to-rem(16)};
+        height: #{px-to-rem(16)};
+        max-height: none;
+        flex: none;
+    }
+
+    &__play-label {
+        font-size: #{px-to-rem(9)};
+        font-weight: 700;
+        letter-spacing: var(--mbh-tracking-eyebrow);
+        text-transform: uppercase;
+    }
+
+    &__frame {
+        position: absolute;
+        inset: 0;
+        // Nothing to show until the player is asked for, and hidden rather
+        // than transparent so an empty iframe cannot take a click.
+        visibility: hidden;
+    }
+
+    &__iframe {
+        // The theme gives every iframe a --space--l margin along with p,
+        // table and the rest. Inside a frame that is absolutely positioned
+        // to inset: 0, that pushed the player 34px down and left it hanging
+        // the same 34px over the figures below once it started playing.
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        border: 0;
+    }
+
+    &--playing {
+        .home-story__play,
+        .home-story__poster {
+            visibility: hidden;
+        }
+
+        .home-story__frame {
+            visibility: visible;
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Figures.
+    // -------------------------------------------------------------------------
+    &__figures {
+        @include list-reset-hard;
+        // The item variant too: the theme spaces every `li + li`, which inside
+        // a grid becomes a top margin that drops the second figure out of line.
+        @include list-reset-hard--li;
+
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: #{px-to-rem(18)};
+        margin-top: #{px-to-rem(18)};
+    }
+
+    &__figure-inner {
+        margin: 0;
+    }
+
+    &__figure-image {
+        display: block;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        object-fit: cover;
+    }
+
+    &__caption {
+        margin-top: #{px-to-rem(12)};
+        font-weight: 300;
+        font-size: #{px-to-rem(13)};
+        line-height: 1.6;
+        color: var(--color--springwood);
+    }
+}

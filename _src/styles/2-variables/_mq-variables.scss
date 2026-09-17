@@ -11,7 +11,17 @@ $mq-breakpoints: (
     xlarge: 1200px,
     xxlarge: 1400px,
     xxxlarge: 1900px,
-    site-header: 1150px,
+    // The header's compact/wide switch. Moved 1150px -> 1100px with the 2026
+    // redesign, which is drawn to 1100. The menu, language switcher,
+    // header-search and search-form components all key off this same name, so
+    // moving it here moves them together -- a second competing threshold would
+    // leave a 50px band where the header was compact but its own menu was not.
+    site-header: 1100px,
+    // The redesign's other threshold. The layout is otherwise fluid -- clamp(),
+    // minmax() and flex-wrap do the work -- so these two are the only points
+    // where anything actually switches.
+    home-compact: 720px, // Below this every homepage block is single column.
+    home-wide: 1100px, // Sticky feature images and the two-column vision block. Same value as site-header, named for its own purpose.
 );
 
 // Define the breakpoint from the $mq-breakpoints list that should

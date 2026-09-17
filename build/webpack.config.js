@@ -69,7 +69,9 @@ export default (env, argv) => {
     // ----------------------------------------------
 
     // normalize component paths (components-wholegrain -> components).
-    const normalizeComponentPath = (filePath) => filePath.replace('components-wholegrain/', 'components/');
+    // Normalise backslashes to forward slashes first so this works on Windows
+    // (path.relative() returns backslashes there, which broke the merge into assets/components/).
+    const normalizeComponentPath = (filePath) => filePath.replace(/\\/g, '/').replace('components-wholegrain/', 'components/');
 
     // build webpack entries from glob pattern.
     const buildEntries = (globPattern, filterFn = null) => {
@@ -83,7 +85,12 @@ export default (env, argv) => {
             }
 
             const parsed = path.parse(file);
-            let entryPath = path.join(parsed.dir, parsed.name);
+
+            // path.join() returns backslashes on Windows, so normalise before
+            // matching. Without this the test below never fired there and the
+            // wholegrain components' compiled JS and CSS were emitted to
+            // assets/components-wholegrain/, where nothing enqueues them.
+            let entryPath = path.join(parsed.dir, parsed.name).split(path.sep).join('/');
 
             // Normalise to remove alternative component directories.
             if (entryPath.includes('_src/components-')) {
