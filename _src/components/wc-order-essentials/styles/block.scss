@@ -1,0 +1,788 @@
+.woocommerce {
+    .cart__order-essentials {
+        &-page {
+            .cart {
+                display: block;
+                gap: 0;
+            }
+        }
+
+        &__header {
+            max-width: #{px-to-rem(840)};
+            margin-bottom: var(--space--m);
+        }
+
+        &__title {
+            @include typestyle-h6;
+
+            margin: var(--space--m) 0 var(--space--2xs);
+            text-transform: uppercase;
+            color: var(--color--foreground);
+        }
+
+        &__subtitle {
+            @include typestyle-h2;
+
+            margin: 0;
+        }
+
+        &__intro {
+            @include typestyle-base;
+
+            margin: var(--space--2xs) 0 var(--space--s);
+            max-width: #{px-to-rem(720)};
+        }
+
+        &__area {
+            @include typestyle-small;
+
+            margin: 0 0 var(--space--m);
+            font-weight: var(--type--2--font-weight);
+        }
+
+        &__project-type {
+            margin: var(--space--s) 0 var(--space--m);
+            padding: 0;
+            border-bottom: 1px solid var(--color--brand-1);
+            background-color: var(--color--background);
+            width: 100%;
+
+            // A fieldset defaults to min-inline-size: min-content, so it ignores
+            // width: 100% and grows to fit its widest unbreakable content. On a
+            // 375px phone that made this box 382px and pushed it, and its note,
+            // off the right edge of the screen.
+            min-inline-size: 0;
+        }
+
+        // Finished floor level, asked for only when the basket contains a DuoLift
+        // build or posts, because those quantities come from an FFL lookup.
+        &__ffl {
+            margin: 0 0 var(--space--m);
+            padding: 0;
+            border: 0;
+            width: 100%;
+        }
+
+        &__ffl-inner {
+            border: 1px solid var(--color--brand-1);
+            padding: var(--space--s);
+            display: grid;
+            gap: var(--space--2xs);
+            max-width: #{px-to-rem(560)};
+        }
+
+        &__ffl-label {
+            @include typestyle-h6;
+
+            text-transform: uppercase;
+        }
+
+        &__ffl-help {
+            @include typestyle-small;
+
+            margin: 0;
+            color: var(--color--foreground);
+        }
+
+        &__ffl-input {
+            --input--background-color: transparent;
+
+            max-width: #{px-to-rem(180)};
+        }
+
+        &__ffl-acoustic {
+            @include typestyle-small;
+
+            display: flex;
+            align-items: center;
+            gap: var(--space--3xs);
+
+            input {
+                flex: 0 0 auto;
+            }
+        }
+
+        // The hidden refresh button and every modal panel rely on the hidden
+        // attribute, which main.js toggles. A class that sets a display value
+        // beats [hidden] on equal specificity and the element comes back, which
+        // is exactly what g-button did to the refresh button. Pin it so a styling
+        // change cannot resurrect anything meant to be hidden.
+        [hidden] {
+            display: none !important;
+        }
+
+        // Sits under the floor-level input and the pads checkbox, so it needs
+        // separating from them rather than butting straight up.
+        &__ffl-submit {
+            margin-top: var(--space--2xs);
+            align-self: flex-start;
+        }
+
+        &__ffl-notice {
+            @include typestyle-small;
+
+            margin: 0;
+
+            &--warning {
+                font-weight: var(--type--2--font-weight);
+                color: var(--color--error, #b3261e);
+            }
+        }
+
+        &__project-type-legend {
+            border: 1px solid var(--color--brand-1);
+            border-bottom: none;
+            width: auto;
+            margin: 0;
+            padding: var(--space--3xs) var(--space--s);
+            display: inline-flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 100%;
+
+            &-label {
+                @include typestyle-small;
+
+                font-weight: 700;
+                text-transform: sentence-case;
+            }
+        }
+
+        &__project-type-note {
+            @include typestyle-small;
+
+            margin: var(--space--2xs) 0 0;
+        }
+
+        &__project-type-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        &__project-type-option {
+            position: relative;
+            margin: 0;
+            flex: 1 1 auto;
+
+            @include mq('medium') {
+                flex: 0 0 auto;
+            }
+        }
+
+        &__project-type-option input {
+            position: absolute;
+            opacity: 0;
+            width: 1px;
+            height: 1px;
+            pointer-events: none;
+        }
+
+        &__project-type-label {
+            @include typestyle-h6;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space--3xs);
+            padding: var(--space--2xs) var(--space--s);
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            background-color: var(--color--background);
+            color: var(--color--foreground);
+            cursor: pointer;
+            transition:
+                background-color 0.2s ease,
+                color 0.2s ease;
+            white-space: nowrap;
+            height: 100%;
+        }
+
+        &__project-type-option input:checked + .cart__order-essentials__project-type-label {
+            background-color: var(--color--foreground);
+            color: var(--color--background);
+            font-weight: 600;
+
+            &::after {
+                content: '\2713';
+                width: #{px-to-rem(20)};
+                height: #{px-to-rem(20)};
+                border-radius: 50%;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                font-size: #{px-to-rem(12)};
+                background-color: var(--color--background);
+                color: var(--color--foreground);
+                line-height: 1;
+            }
+        }
+
+        &__project-type-option input:focus-visible + .cart__order-essentials__project-type-label {
+            outline: 2px solid var(--color--foreground);
+            outline-offset: -2px;
+        }
+
+        &__recommendation-source-label {
+            @include typestyle-small;
+
+            font-weight: 700;
+            margin-top: var(--space--m);
+            margin-bottom: 0;
+        }
+
+        &__recommendation-source {
+            @include typestyle-h5;
+
+            font-weight: 400;
+            margin-top: 0;
+            margin-bottom: var(--space--m);
+        }
+
+        &__item {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--space--s);
+            padding: var(--space--2xs);
+            transition: background-color 0.2s ease;
+            border-top: 1px solid var(--color--brand-5);
+
+            &.is-selected {
+                background-color: hsla(var(--color--brand-1--hsl), 0.3);
+            }
+
+            &-details {
+                flex: 1 1 auto;
+            }
+        }
+
+        &__summary {
+            margin-top: var(--space--l);
+            padding: var(--space--s) var(--space--l);
+            background-color: #6d6158;
+            color: var(--color--background);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--space--s);
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+        }
+
+        &__summary-count,
+        &__summary-total {
+            @include typestyle-h6;
+
+            margin: 0;
+            display: flex;
+            align-items: baseline;
+            gap: var(--space--2xs);
+        }
+
+        &__summary-count span,
+        &__summary-total strong {
+            font-weight: 700;
+        }
+
+        &__summary-total {
+            margin-left: auto;
+
+            strong {
+                font-variant-numeric: tabular-nums;
+            }
+        }
+
+        &__disclaimer {
+            margin: var(--space--m) 0 0;
+            padding: var(--space--m) var(--space--l);
+            border-left: 4px solid #6d6158;
+            background-color: #eeecea;
+            display: grid;
+            grid-template-columns: #{px-to-rem(28)} 1fr;
+            gap: var(--space--s);
+            align-items: start;
+        }
+
+        &__disclaimer-icon {
+            width: #{px-to-rem(28)};
+            height: #{px-to-rem(28)};
+            border-radius: 50%;
+            background-color: #6d6158;
+            color: var(--color--background);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            line-height: 1;
+            margin-top: #{px-to-rem(2)};
+        }
+
+        &__disclaimer-text {
+            @include typestyle-base;
+
+            color: var(--color--foreground);
+        }
+
+        &__actions {
+            margin-top: var(--space--l);
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space--s);
+            align-items: center;
+            justify-content: center;
+
+            .button[name='millboard_add_all_essentials'] {
+                display: none;
+            }
+        }
+
+        &__action-primary {
+            min-width: #{px-to-rem(300)};
+        }
+
+        &__item-select {
+            display: none;
+            align-self: center;
+
+            @include mq(small) {
+                display: block;
+            }
+        }
+
+        &-modal {
+            position: fixed;
+            inset: 0;
+            z-index: var(--z-index--modal);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space--s);
+
+            &.is-active {
+                display: flex;
+            }
+
+            &__overlay {
+                position: absolute;
+                inset: 0;
+                background-color: rgba(0, 0, 0, 0.72);
+            }
+
+            &__dialog {
+                position: relative;
+                width: min(#{px-to-rem(980)}, 100%);
+                max-height: calc(100vh - var(--space--l));
+                overflow: auto;
+                padding: var(--space--l);
+                background-color: var(--color--background);
+                color: var(--color--foreground);
+                border: 1px solid var(--color--brand-5);
+            }
+
+            &__close {
+                @include typestyle-base;
+
+                position: absolute;
+                top: var(--space--2xs);
+                right: var(--space--2xs);
+                display: inline-flex;
+                align-items: center;
+                gap: var(--space--3xs);
+                border: 0;
+                padding: 0;
+                background: transparent;
+                color: inherit;
+                cursor: pointer;
+
+                span[aria-hidden='true'] {
+                    font-size: #{px-to-rem(44)};
+                    line-height: 0.7;
+                }
+            }
+
+            &__title {
+                @include typestyle-h2;
+
+                margin: var(--space--m) 0 var(--space--2xs);
+                text-transform: uppercase;
+                letter-spacing: 0.12em;
+            }
+
+            &__intro {
+                @include typestyle-base;
+
+                max-width: #{px-to-rem(860)};
+                margin: 0 0 var(--space--m);
+            }
+
+            &__warning {
+                @include typestyle-base;
+
+                display: grid;
+                grid-template-columns: #{px-to-rem(32)} 1fr;
+                gap: var(--space--2xs);
+                align-items: start;
+                margin: 0 0 var(--space--m);
+                padding: var(--space--m);
+                border-left: 4px solid #6d6158;
+                background-color: #eeecea;
+            }
+
+            &__warning-icon {
+                width: #{px-to-rem(28)};
+                height: #{px-to-rem(28)};
+                border-radius: 50%;
+                background-color: #6d6158;
+                color: var(--color--background);
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 700;
+                line-height: 1;
+            }
+
+            &__ack {
+                @include typestyle-base;
+
+                display: grid;
+                grid-template-columns: #{px-to-rem(28)} 1fr;
+                gap: var(--space--2xs);
+                align-items: start;
+                margin: 0 0 var(--space--m);
+
+                input {
+                    width: #{px-to-rem(28)};
+                    height: #{px-to-rem(28)};
+                    margin-top: #{px-to-rem(4)};
+                }
+            }
+
+            &__actions {
+                display: flex;
+                flex-wrap: wrap;
+                gap: var(--space--s);
+                align-items: center;
+                padding-top: var(--space--m);
+                border-top: 1px solid var(--color--brand-1);
+
+                .g-button:disabled {
+                    opacity: 0.45;
+                    cursor: not-allowed;
+                }
+            }
+        }
+
+        &__item-image {
+            img {
+                max-width: #{px-to-rem(72)};
+
+                @include mq(small) {
+                    max-width: #{px-to-rem(144)};
+                }
+            }
+        }
+
+        &__item-info {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space--s);
+            flex: 1 1 auto;
+
+            @include mq(large) {
+                flex-direction: row;
+                gap: var(--space--l);
+            }
+        }
+
+        // The unit price. Matches the basket, which sets .product-price to
+        // typestyle-small; without this it inherits the larger body size and the
+        // same price reads at a different size either side of the step.
+        // Which part of the job the row belongs to.
+        &__item-kind {
+            @include typestyle-small;
+
+            display: inline-block;
+            margin: 0 0 var(--space--3xs);
+            padding: #{px-to-rem(2)} var(--space--2xs);
+            border: 1px solid var(--color--brand-1);
+            font-size: #{px-to-rem(12)};
+            line-height: 1.4;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        &__item-meta {
+            @include typestyle-small;
+        }
+
+        // Secondary line under the price, same treatment.
+        &__item-status {
+            @include typestyle-small;
+        }
+
+        &__notice {
+            @include typestyle-small;
+
+            padding: var(--space--s) var(--space--m);
+            margin: 0 0 var(--space--m);
+            background: var(--color--neutral-2, #f4f2ee);
+
+            &--warning {
+                border-left: 3px solid var(--color--brand-1);
+            }
+
+            // Confirmation that something was added, shown in place of the dialog
+            // that used to interrupt the step.
+            &--success {
+                border-left: 3px solid var(--color--foreground);
+                font-weight: 600;
+            }
+        }
+
+        // Subframe question, given the same bordered-box treatment as the finished
+        // floor level ask, because they are the same kind of question.
+        &__subframe {
+            margin: 0 0 var(--space--m);
+            padding: 0;
+            border: 0;
+            width: 100%;
+        }
+
+        &__subframe-inner {
+            border: 1px solid var(--color--brand-1);
+            padding: var(--space--s);
+            display: grid;
+            gap: var(--space--2xs);
+            max-width: #{px-to-rem(560)};
+
+            // Horizontal from medium up: the ask on the left, the answer on the
+            // right. Placed explicitly rather than left to auto-flow, which would
+            // pair the label with its help text across the two columns and put the
+            // select next to the notice.
+            @include mq('medium') {
+                grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+                column-gap: var(--space--xl);
+                align-items: start;
+                max-width: #{px-to-rem(1000)};
+            }
+        }
+
+        @include mq('medium') {
+            &__subframe-label {
+                grid-column: 1;
+                grid-row: 1;
+            }
+
+            &__subframe-help {
+                grid-column: 1;
+                grid-row: 2;
+            }
+
+            &__subframe-input {
+                grid-column: 2;
+                grid-row: 1;
+            }
+
+            &__subframe-notice {
+                grid-column: 2;
+                grid-row: 2;
+            }
+        }
+
+        &__subframe-label {
+            @include typestyle-h6;
+
+            text-transform: uppercase;
+        }
+
+        &__subframe-help {
+            @include typestyle-small;
+
+            margin: 0;
+        }
+
+        &__subframe-input {
+            --input--background-color: transparent;
+
+            max-width: 100%;
+        }
+
+        &__subframe-notice {
+            @include typestyle-small;
+
+            margin: 0;
+        }
+
+        // Matches &__recommendation-source, so the two group titles read as the same
+        // kind of heading as "Recommendations based on". The rule above the second
+        // group is what separates required from optional, so the first one drops it.
+        &__group-heading {
+            @include typestyle-h5;
+
+            font-weight: 400;
+            margin: var(--space--xl) 0 var(--space--s);
+            padding-top: var(--space--m);
+            border-top: 2px solid var(--color--brand-1);
+
+            &:first-of-type {
+                margin-top: 0;
+                padding-top: 0;
+                border-top: 0;
+            }
+        }
+
+        &__item-name {
+            @include typestyle-h6;
+
+            font-size: #{px-to-rem(20)};
+            font-weight: 400;
+            border-bottom: 1px solid var(--color--brand-1);
+            padding-bottom: #{px-to-rem(12)};
+            margin-bottom: #{px-to-rem(20)};
+
+            a {
+                text-decoration: none;
+            }
+        }
+
+        &__item-qty {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: var(--space--l);
+
+            @include mq(small) {
+                flex-direction: row;
+            }
+
+            label {
+                @include typestyle-small;
+
+                display: block;
+                margin-bottom: var(--space--3xs);
+            }
+        }
+
+        &__item-qty-control {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
+        }
+
+        &__item-action {
+            @include mq(small) {
+                align-self: flex-end;
+            }
+        }
+
+        &__qty-control {
+            display: inline-grid;
+            grid-template-columns: 2rem 4.25rem 2rem;
+            align-items: center;
+            border: 1px solid #8f8a83;
+            background: transparent;
+            min-height: #{px-to-rem(48)};
+        }
+
+        &__qty-button,
+        &__qty-input {
+            border: 0;
+            background: transparent;
+            color: var(--color--foreground);
+            height: 100%;
+            margin: 0;
+        }
+
+        &__qty-button {
+            @include typestyle-h5;
+
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            line-height: 1;
+            width: fit-content;
+
+            &:first-child {
+                border-right: 1px solid #8f8a83;
+            }
+
+            &:last-child {
+                border-left: 1px solid #8f8a83;
+            }
+
+            &:focus-visible {
+                outline: 2px solid var(--color--foreground);
+                outline-offset: -2px;
+            }
+        }
+
+        &__qty-input {
+            @include typestyle-h6;
+
+            width: 100%;
+            text-align: center;
+            -moz-appearance: textfield;
+            appearance: textfield;
+
+            &::-webkit-outer-spin-button,
+            &::-webkit-inner-spin-button {
+                -webkit-appearance: none;
+                margin: 0;
+            }
+
+            &:focus-visible {
+                outline: 2px solid var(--color--foreground);
+                outline-offset: -2px;
+            }
+        }
+
+        @include mq($until: small) {
+            // The tick column is hidden at this width, so the selection it
+            // describes can be neither seen nor changed. Ed Lumb, Sep 2026: hide
+            // the button that acts on that hidden selection, and the summary that
+            // describes it, so mobile is a per-row flow. The per-row Add buttons
+            // read only their own product id, never the tick map, so they carry
+            // the flow on their own.
+            &__action-primary,
+            &__summary {
+                display: none;
+            }
+
+            &__project-type-controls {
+                width: 100%;
+            }
+
+            &__project-type-option {
+                // Side by side was the intent here, but it cannot work on a
+                // phone: 50% + 50% + the gap never fits, and even with the gap
+                // accounted for the two labels need 316px of min-content in a
+                // 302px row. Stack them instead, which also gives a full-width
+                // tap target rather than two cramped ones.
+                flex: 1 1 100%;
+            }
+
+            &__project-type-label {
+                width: 100%;
+            }
+
+            &-modal {
+                &__dialog {
+                    padding: var(--space--m);
+                }
+
+                &__title {
+                    @include typestyle-h3;
+                }
+
+                &__actions {
+                    align-items: stretch;
+                    flex-direction: column;
+                }
+            }
+        }
+    }
+}
