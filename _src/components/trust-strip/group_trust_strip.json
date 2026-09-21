@@ -1,0 +1,207 @@
+{
+    "key": "group_trust_strip",
+    "title": "Block - Trust Strip",
+    "fields": [
+        {
+            "key": "field_trust_strip_items",
+            "label": "Points",
+            "name": "items",
+            "aria-label": "",
+            "type": "repeater",
+            "instructions": "Everything here is a claim that has to be evidenced. Do not enter a warranty term, a review score or a country of manufacture that has not been checked for this locale.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "layout": "block",
+            "pagination": 0,
+            "min": 0,
+            "max": 5,
+            "collapsed": "field_trust_strip_label",
+            "button_label": "Add a point",
+            "rows_per_page": 20,
+            "sub_fields": [
+                {
+                    "key": "field_trust_strip_type",
+                    "label": "Type",
+                    "name": "type",
+                    "aria-label": "",
+                    "type": "button_group",
+                    "instructions": "A review score needs a source. Leave it alone until there is one.",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "",
+                        "class": "",
+                        "id": ""
+                    },
+                    "choices": {
+                        "statement": "Statement",
+                        "rating": "Review score"
+                    },
+                    "default_value": "statement",
+                    "return_format": "value",
+                    "allow_null": 0,
+                    "layout": "horizontal",
+                    "parent_repeater": "field_trust_strip_items"
+                },
+                {
+                    "key": "field_trust_strip_label",
+                    "label": "Label",
+                    "name": "label",
+                    "aria-label": "",
+                    "type": "text",
+                    "instructions": "For example \"Hand moulded in Britain\".",
+                    "required": 0,
+                    "conditional_logic": [
+                        [
+                            {
+                                "field": "field_trust_strip_type",
+                                "operator": "==",
+                                "value": "statement"
+                            }
+                        ]
+                    ],
+                    "wrapper": {
+                        "width": "",
+                        "class": "",
+                        "id": ""
+                    },
+                    "default_value": "",
+                    "maxlength": "",
+                    "allow_in_bindings": 0,
+                    "placeholder": "",
+                    "prepend": "",
+                    "append": "",
+                    "parent_repeater": "field_trust_strip_items"
+                },
+                {
+                    "key": "field_trust_strip_rating",
+                    "label": "Score",
+                    "name": "rating",
+                    "aria-label": "",
+                    "type": "number",
+                    "instructions": "The row is left off the page unless both a score and a source are filled in.",
+                    "required": 0,
+                    "conditional_logic": [
+                        [
+                            {
+                                "field": "field_trust_strip_type",
+                                "operator": "==",
+                                "value": "rating"
+                            }
+                        ]
+                    ],
+                    "wrapper": {
+                        "width": "50",
+                        "class": "",
+                        "id": ""
+                    },
+                    "default_value": "",
+                    "min": 0,
+                    "max": 10,
+                    "allow_in_bindings": 0,
+                    "placeholder": "",
+                    "step": "0.1",
+                    "prepend": "",
+                    "append": "",
+                    "parent_repeater": "field_trust_strip_items"
+                },
+                {
+                    "key": "field_trust_strip_out_of",
+                    "label": "Out of",
+                    "name": "out_of",
+                    "aria-label": "",
+                    "type": "number",
+                    "instructions": "",
+                    "required": 0,
+                    "conditional_logic": [
+                        [
+                            {
+                                "field": "field_trust_strip_type",
+                                "operator": "==",
+                                "value": "rating"
+                            }
+                        ]
+                    ],
+                    "wrapper": {
+                        "width": "50",
+                        "class": "",
+                        "id": ""
+                    },
+                    "default_value": 5,
+                    "min": 1,
+                    "max": 10,
+                    "allow_in_bindings": 0,
+                    "placeholder": "",
+                    "step": 1,
+                    "prepend": "",
+                    "append": "",
+                    "parent_repeater": "field_trust_strip_items"
+                },
+                {
+                    "key": "field_trust_strip_detail",
+                    "label": "Detail",
+                    "name": "detail",
+                    "aria-label": "",
+                    "type": "text",
+                    "instructions": "The smaller line beneath. For a review score this is the source and the count, for example \"1,284 reviews on Trustpilot\".",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "",
+                        "class": "",
+                        "id": ""
+                    },
+                    "default_value": "",
+                    "maxlength": "",
+                    "allow_in_bindings": 0,
+                    "placeholder": "",
+                    "prepend": "",
+                    "append": "",
+                    "parent_repeater": "field_trust_strip_items"
+                },
+                {
+                    "key": "field_trust_strip_url",
+                    "label": "Link",
+                    "name": "url",
+                    "aria-label": "",
+                    "type": "url",
+                    "instructions": "Where the claim can be checked, for example the review profile or the warranty page.",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "",
+                        "class": "",
+                        "id": ""
+                    },
+                    "default_value": "",
+                    "allow_in_bindings": 0,
+                    "placeholder": "",
+                    "parent_repeater": "field_trust_strip_items"
+                }
+            ]
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "block",
+                "operator": "==",
+                "value": "acf/trust-strip"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "",
+    "show_in_rest": 0
+}

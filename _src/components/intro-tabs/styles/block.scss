@@ -1,0 +1,94 @@
+// =============================================================================
+// Intro Tabs
+// Introductory copy above a product grid, held in a tab set so the words can
+// be there without pushing the products off the screen.
+//
+// Panels render open. Only once the JS has enhanced the block (.is-enhanced)
+// do the inactive ones hide, so with no JavaScript the copy is all readable.
+// =============================================================================
+
+.intro-tabs {
+    --it--accent: var(--color--olivegreen);
+    --it--muted: #{rgba(#151716, 0.66)};
+    --it--line: #{rgba(#151716, 0.18)};
+
+    // Padded both ends. With only top padding the copy ran straight into the
+    // next section's background, which was hidden before only because the
+    // theme's block margin was still there.
+    padding: clamp(32px, 4vw, 48px) 0;
+    // The theme gives every block a vertical margin. These sections carry
+    // their own padding and several have their own background, so that
+    // margin shows as a stripe of page colour between them.
+    margin-block: 0;
+
+    &__inner {
+        max-width: var(--width--responsive--l);
+        margin: 0 auto;
+    }
+
+    // ---- Tab bar ------------------------------------------------------------
+    &__list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: px-to-rem(28);
+        border-bottom: 1px solid var(--it--line);
+    }
+
+    &__tab {
+        position: relative;
+        padding: px-to-rem(12) 0;
+        border: 0;
+        background: transparent;
+        color: var(--it--muted);
+        font-size: px-to-rem(12);
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        cursor: pointer;
+
+        &::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            bottom: -1px;
+            left: 0;
+            height: 2px;
+            background: transparent;
+        }
+
+        &.is-active {
+            color: var(--color--black);
+
+            &::after {
+                background: var(--it--accent);
+            }
+        }
+    }
+
+    // ---- Panels -------------------------------------------------------------
+    &__panels {
+        padding-top: px-to-rem(28);
+        max-width: 64em;
+    }
+
+    &__content {
+        display: grid;
+        gap: px-to-rem(20);
+        grid-template-columns: repeat(auto-fit, minmax(px-to-rem(260), 1fr));
+
+        p {
+            margin: 0;
+            line-height: 1.7;
+        }
+    }
+
+    // Before enhancement every panel is visible, separated so the copy reads as
+    // continuous prose rather than a jumble.
+    &:not(.is-enhanced) &__panel + &__panel {
+        margin-top: px-to-rem(28);
+    }
+
+    &:not(.is-enhanced) &__list {
+        display: none;
+    }
+}
