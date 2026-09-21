@@ -1,0 +1,44 @@
+{
+    "$schema": "https://raw.githubusercontent.com/AdvancedCustomFields/schemas/main/json/block.json",
+    "apiVersion": 3,
+    "name": "acf/category-header",
+    "title": "Category Header",
+    "category": "granola-blocks",
+    "description": "Opening block for a shop category page: trail, heading, answer-first intro, calls to action and a supporting image. Separate from page-header so the category pages can change without touching the rest of the site.",
+    "icon": "align-pull-left",
+    "keywords": [
+        "category",
+        "header",
+        "shop",
+        "hero"
+    ],
+    "acf": {
+        "mode": "auto",
+        "blockVersion": 3,
+        "autoInlineEditing": false,
+        "hideFieldsInSidebar": false,
+        "renderCallback": "\\Granola\\Component::acf_render_callback",
+        "postTypes": [
+            "granola-template",
+            "page"
+        ]
+    },
+    "supports": {
+        "align": [
+            "wide",
+            "full",
+            "center"
+        ],
+        "anchor": true,
+        "color": {
+            "text": false
+        },
+        "mode": false
+    },
+    "attributes": {
+        "align": {
+            "type": "string",
+            "default": "full"
+        }
+    }
+}

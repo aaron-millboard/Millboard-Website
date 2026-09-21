@@ -1,0 +1,44 @@
+{
+    "$schema": "https://raw.githubusercontent.com/AdvancedCustomFields/schemas/main/json/block.json",
+    "apiVersion": 3,
+    "name": "acf/category-links",
+    "title": "Category Links",
+    "category": "granola-blocks",
+    "description": "A row of labelled links where the whole tile is the link. Used for the planning tools and for the related categories that make the child categories reachable.",
+    "icon": "grid-view",
+    "keywords": [
+        "links",
+        "tiles",
+        "category",
+        "tools"
+    ],
+    "acf": {
+        "mode": "auto",
+        "blockVersion": 3,
+        "autoInlineEditing": false,
+        "hideFieldsInSidebar": false,
+        "renderCallback": "\\Granola\\Component::acf_render_callback",
+        "postTypes": [
+            "granola-template",
+            "page"
+        ]
+    },
+    "supports": {
+        "align": [
+            "wide",
+            "full",
+            "center"
+        ],
+        "anchor": true,
+        "color": {
+            "text": false
+        },
+        "mode": false
+    },
+    "attributes": {
+        "align": {
+            "type": "string",
+            "default": "full"
+        }
+    }
+}

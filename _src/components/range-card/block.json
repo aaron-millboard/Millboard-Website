@@ -1,0 +1,44 @@
+{
+    "$schema": "https://raw.githubusercontent.com/AdvancedCustomFields/schemas/main/json/block.json",
+    "apiVersion": 3,
+    "name": "acf/range-card",
+    "title": "Range Cards",
+    "category": "granola-blocks",
+    "description": "Presents the collections within a shop category as cards, so a category page opens with the ranges rather than a flat list of every product.",
+    "icon": "screenoptions",
+    "keywords": [
+        "range",
+        "collection",
+        "category",
+        "shop"
+    ],
+    "acf": {
+        "mode": "auto",
+        "blockVersion": 3,
+        "autoInlineEditing": false,
+        "hideFieldsInSidebar": false,
+        "renderCallback": "\\Granola\\Component::acf_render_callback",
+        "postTypes": [
+            "granola-template",
+            "page"
+        ]
+    },
+    "supports": {
+        "align": [
+            "wide",
+            "full",
+            "center"
+        ],
+        "anchor": true,
+        "color": {
+            "text": false
+        },
+        "mode": false
+    },
+    "attributes": {
+        "align": {
+            "type": "string",
+            "default": "full"
+        }
+    }
+}
