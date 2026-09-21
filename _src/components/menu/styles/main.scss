@@ -5,205 +5,323 @@
     }
 }
 
+// =============================================================================
+// Mega menu panel
+// =============================================================================
+// Two panels, picked in mega-menu-list from the menu's own content: picture
+// tiles with a rail of links beside them, or a grid of titled links with a
+// sentence under each.
+//
+// The panel stays a child of the menu item it belongs to, because that is what
+// keeps the button and the thing it opens related for a screen reader. It is
+// laid out against the header instead, which is why the header is the nearest
+// positioned ancestor and the item itself must not be.
+// =============================================================================
+
 .mega-menu-list {
-    --mega-menu--column-gap: var(--space--xl);
-    --mega-menu--widget-gap: var(--space--2xs);
-
-    display: flex;
-    flex-direction: column;
-    gap: var(--space--l);
-    margin: 0;
-
-    @include mq('site-header') {
-        max-width: var(--width--responsive--l);
-        margin: 0 auto;
-        padding: var(--space--xl) 0;
-    }
+    --mega-menu--rail-width: #{px-to-rem(260)};
+    --mega-menu--rule: #{rgba(#2f292e, 0.2)};
+    --mega-menu--hover: #{rgba(#2f292e, 0.05)};
 
     &__inner {
-        @include mq('site-header') {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: var(--mega-menu--column-gap);
-        }
-    }
-
-    &__cta {
-        width: 100%;
-
-        a {
-            width: 100%;
-            text-align: center;
-        }
-    }
-
-    // When widget is present, adjust grid for 2 menu columns + 1 widget column
-    &--has-widget &__inner {
-        @include mq('site-header') {
-            grid-template-columns: 1.5fr 1.5fr 1fr;
-        }
-    }
-
-    &__column {
-        min-width: 0; // Prevent grid blowout
-
-        @include mq($until: 'site-header') {
-            &:not(:last-child) {
-                margin-bottom: var(--space--m);
-            }
-        }
-
-        &--widget {
-            display: flex;
-            flex-direction: column;
-            gap: var(--mega-menu--widget-gap);
-            align-items: flex-start;
-
-            a {
-                img {
-                    transition: opacity 0.2s ease;
-                }
-
-                &:hover,
-                &:focus {
-                    img {
-                        opacity: 0.8;
-                    }
-                }
-            }
-        }
-    }
-
-    &__items {
-        display: flex;
-        flex-direction: column;
-        gap: var(--space--m);
-        padding: 0;
-        margin: 0;
-    }
-
-    &__widget {
-        &__image {
-            width: 100%;
-            overflow: hidden;
-            border-radius: var(--border-radius--m);
-
-            img {
-                display: block;
-                width: 100%;
-                height: auto;
-            }
-        }
-
-        &__cta {
-            width: 100%;
-
-            &__button {
-                @include typestyle-h6;
-
-                width: 100%;
-                display: flex;
-                gap: var(--space--s);
-                justify-content: space-between;
-                align-items: center;
-
-                &::after {
-                    width: #{px-to-rem(16)};
-                    height: #{px-to-rem(16)};
-                    background-color: var(--color--foreground);
-                    content: '';
-                    mask-image: url(#{asset-path('images/icons/chevron-right.svg')});
-                    mask-position: center;
-                    mask-repeat: no-repeat;
-                    mask-size: #{px-to-rem(16)};
-                }
-            }
-        }
-    }
-}
-
-.mega-menu-item {
-    --mega-menu-item--gap: var(--space--m);
-    --mega-menu-item--image-size: #{px-to-rem(96)};
-
-    padding-bottom: var(--space--s);
-    border-bottom: 1px solid var(--color--brand-2);
-
-    &:last-child {
-        border-bottom: none;
-    }
-
-    &__card {
-        width: 100%;
-        display: flex;
-        gap: var(--mega-menu-item--gap);
-        align-items: flex-start;
-        justify-content: start;
-        text-decoration: none;
-        color: inherit;
-        transition: opacity 0.2s ease;
-
-        &:hover,
-        &:focus {
-            opacity: 0.8;
-        }
-    }
-
-    &__image {
-        flex-shrink: 0;
-        width: var(--mega-menu-item--image-size);
-        height: var(--mega-menu-item--image-size);
-        overflow: hidden;
-        border-radius: var(--border-radius--s);
-
-        img {
-            display: block;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-    }
-
-    &__content {
-        display: flex;
-        flex-direction: column;
-        justify-content: start;
+        display: grid;
+        gap: clamp(#{px-to-rem(28)}, 3.4vw, #{px-to-rem(56)});
         align-items: start;
-        gap: var(--space--4xs);
-        padding: var(--space--4xs) 0;
+        max-width: var(--mbh-container, #{px-to-rem(1440)});
+        margin: 0 auto;
+        padding:
+            clamp(#{px-to-rem(26)}, 2.6vw, #{px-to-rem(44)})
+            clamp(#{px-to-rem(24)}, 4vw, #{px-to-rem(56)})
+            clamp(#{px-to-rem(30)}, 3vw, #{px-to-rem(48)});
+        // The panel scrolls rather than running off the bottom of a short
+        // window. --site-header--height is the live header height, so what is
+        // left is whatever the header is not using.
+        max-height: calc(100svh - var(--site-header--height, #{px-to-rem(132)}) - #{px-to-rem(16)});
+        overflow-y: auto;
+        overscroll-behavior: contain;
     }
 
-    &__title {
-        @include typestyle-h6;
+    // Cards on the left, rail on the right. Below the header's own breakpoint
+    // the panel is not drawn at all -- that is the drawer's job -- so this
+    // needs no narrow case of its own.
+    &--has-rail &__inner {
+        grid-template-columns: minmax(0, 3fr) var(--mega-menu--rail-width);
     }
 
-    &__description {
-        @include typestyle-small;
-        text-align: left;
+    // -------------------------------------------------------------------------
+    // Picture tiles.
+    // -------------------------------------------------------------------------
+    &__cards {
+        @include list-reset-hard;
+        @include list-reset-hard--li;
+
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, #{px-to-rem(170)}), 1fr));
+        gap: clamp(#{px-to-rem(16)}, 1.8vw, #{px-to-rem(26)});
+        grid-auto-rows: 1fr;
     }
 
-    &__children {
+    // -------------------------------------------------------------------------
+    // The rail beside them.
+    // -------------------------------------------------------------------------
+    &__rail {
+        display: grid;
+        gap: clamp(#{px-to-rem(22)}, 2.4vw, #{px-to-rem(34)});
+        padding-left: clamp(#{px-to-rem(20)}, 2.2vw, #{px-to-rem(36)});
+        border-left: 1px solid var(--mega-menu--rule);
+    }
+
+    &__group-title {
+        margin: 0 0 #{px-to-rem(10)};
+        font-size: #{px-to-rem(11)};
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--color--foreground);
+    }
+
+    &__group-links {
         @include list-reset-hard;
         @include list-reset-hard--li;
 
         display: flex;
         flex-direction: column;
-        gap: var(--space--2xs);
-        margin-top: var(--space--xs);
-        padding-left: 0;
+    }
 
-        .menu-item {
-            a {
-                @include typestyle-small;
-                font-weight: var(--font-weight--regular);
-                color: var(--color--text-subdued);
-            }
+    // -------------------------------------------------------------------------
+    // The text-only panel.
+    // -------------------------------------------------------------------------
+    &__links {
+        @include list-reset-hard;
+        @include list-reset-hard--li;
+
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, #{px-to-rem(260)}), 1fr));
+        gap: 0 clamp(#{px-to-rem(28)}, 4vw, #{px-to-rem(72)});
+        // Every row as tall as the tallest cell in the panel, not as tall as
+        // its own longest sentence. Without this the rules step up and down
+        // across the columns as each description happens to wrap, which is
+        // what made the panels look ragged.
+        grid-auto-rows: 1fr;
+    }
+
+    &__cta {
+        // Across both columns where there is a rail, so a long button label
+        // has the panel's width rather than the rail's.
+        grid-column: 1 / -1;
+        margin-top: #{px-to-rem(8)};
+    }
+}
+
+// =============================================================================
+// Where the header's own menu rules stop
+// =============================================================================
+// The nav styles every link inside it as `.site-header__navigation a`
+// (inline-flex) and every row as `.site-header__navigation .menu-item` (flex
+// with padding and a rule under it). Both are right for the nav itself and
+// wrong inside the panel, where a card stacks and a line brings its own
+// padding, and both outrank a single class.
+//
+// Matched here one step more specifically rather than by hoping this
+// stylesheet lands after the header's in the bundle, which is not something
+// the component order guarantees.
+// =============================================================================
+
+.sub-menu--mega {
+    li.mega-menu-item {
+        display: block;
+        padding: 0;
+        border-bottom: 0;
+    }
+
+    a.mega-menu-item__card,
+    a.mega-menu-item__rail,
+    a.mega-menu-item__text {
+        // The nav's own `a` rule runs link--2, which sets
+        // --link--text-decoration--hover: underline at a specificity a single
+        // class cannot reach. Setting the pair here is what actually stops the
+        // whole card underlining on hover.
+        --link--text-decoration: none;
+        --link--text-decoration--hover: none;
+    }
+
+    a.mega-menu-item__card {
+        // A column filling its cell, so the title -- which carries the rule --
+        // can be pushed to the bottom and line up with its neighbours.
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    a.mega-menu-item__rail {
+        display: flex;
+    }
+
+    a.mega-menu-item__text {
+        display: grid;
+        // Fills the equalised row, so the rule sits on the row's baseline
+        // rather than under the last line of its own sentence.
+        height: 100%;
+    }
+}
+
+// =============================================================================
+// Mega menu entry
+// =============================================================================
+
+.mega-menu-item {
+    // -------------------------------------------------------------------------
+    // Card.
+    // -------------------------------------------------------------------------
+    &__card {
+        display: block;
+    }
+
+    &__frame {
+        display: block;
+        overflow: hidden;
+        background-color: #{rgba(#2f292e, 0.08)};
+    }
+
+    &__image {
+        display: block;
+        width: 100%;
+        // Portrait, so a row of ranges reads as tall windows rather than a
+        // filmstrip. Capped against the viewport so the panel still fits on a
+        // short laptop screen.
+        aspect-ratio: 3 / 4;
+        max-height: min(#{px-to-rem(420)}, 42svh);
+        max-width: none;
+        object-fit: cover;
+        transition: transform 700ms var(--mbh-ease, ease);
+    }
+
+    &__card:hover &__image,
+    &__card:focus-visible &__image {
+        transform: scale(1.05);
+    }
+
+    &__card &__title {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: #{px-to-rem(12)};
+        // auto rather than a fixed 14, so a title that wraps to two lines does
+        // not drag its own rule below everyone else's. The padding keeps the
+        // 14 as a minimum where the cell has no slack to give.
+        margin-top: auto;
+        padding-top: #{px-to-rem(14)};
+        padding-bottom: #{px-to-rem(8)};
+        border-bottom: 1px solid #{rgba(#2f292e, 0.2)};
+        font-size: #{px-to-rem(12)};
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--color--foreground);
+        transition: border-color 220ms var(--mbh-ease, ease);
+    }
+
+    &__card:hover &__title,
+    &__card:focus-visible &__title {
+        border-bottom-color: var(--color--olivegreen);
+    }
+
+    &__arrow {
+        // The theme resets every svg to width: 100%.
+        flex: none;
+        width: #{px-to-rem(14)};
+        height: #{px-to-rem(14)};
+        max-height: none;
+        color: var(--color--olivegreen);
+    }
+
+    // -------------------------------------------------------------------------
+    // Rail line.
+    // -------------------------------------------------------------------------
+    &__rail {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: #{px-to-rem(12)};
+        // 42 tall, which clears the 24px minimum of WCAG 2.5.8 outright rather
+        // than leaning on the spacing exception.
+        min-height: #{px-to-rem(42)};
+        padding: 0 #{px-to-rem(12)};
+        margin: 0 #{px-to-rem(-12)};
+        font-size: #{px-to-rem(13)};
+        font-weight: 300;
+        letter-spacing: 0.02em;
+        color: var(--color--foreground);
+        transition:
+            background-color 220ms var(--mbh-ease, ease),
+            padding-left 220ms var(--mbh-ease, ease);
+
+        &:hover,
+        &:focus-visible {
+            background-color: var(--mega-menu--hover, #{rgba(#2f292e, 0.05)});
+            padding-left: #{px-to-rem(18)};
         }
     }
 
-    &--has-children {
-        .mega-menu-item__card {
-            margin-bottom: var(--space--2xs);
+    &__chevron {
+        flex: none;
+        width: #{px-to-rem(13)};
+        height: #{px-to-rem(13)};
+        max-height: none;
+        color: var(--color--olivegreen);
+    }
+
+    // -------------------------------------------------------------------------
+    // Titled paragraph.
+    // -------------------------------------------------------------------------
+    &__text {
+        display: grid;
+        gap: #{px-to-rem(6)};
+        align-content: center;
+        min-height: #{px-to-rem(56)};
+        padding: #{px-to-rem(14)} #{px-to-rem(16)};
+        margin: 0 #{px-to-rem(-16)};
+        border-bottom: 1px solid #{rgba(#2f292e, 0.16)};
+        transition:
+            background-color 220ms var(--mbh-ease, ease),
+            padding-left 220ms var(--mbh-ease, ease);
+
+        &:hover,
+        &:focus-visible {
+            background-color: var(--mega-menu--hover, #{rgba(#2f292e, 0.05)});
+            padding-left: #{px-to-rem(22)};
+        }
+    }
+
+    &__text &__title {
+        font-size: #{px-to-rem(12)};
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--color--foreground);
+    }
+
+    &__description {
+        font-weight: 300;
+        font-size: #{px-to-rem(13)};
+        line-height: 1.5;
+        // 0.85 of the body colour on Spring Wood is still 10.5:1, so stepping
+        // the sentence back from its title costs nothing against 1.4.3.
+        color: #{rgba(#2f292e, 0.85)};
+        text-wrap: pretty;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        &__image,
+        &__rail,
+        &__text,
+        &__card &__title {
+            transition: none;
+        }
+
+        &__card:hover &__image,
+        &__card:focus-visible &__image {
+            transform: none;
         }
     }
 }

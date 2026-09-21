@@ -278,6 +278,21 @@
                     // the fallback for the first paint, before that lands.
                     width: var(--site-header--viewport, 100vw);
                     max-width: var(--site-header--viewport, 100vw);
+
+                    // The panel is a sheet the width of the page, not a
+                    // floating card: square, on Spring Wood, separated from the
+                    // header by a hairline rather than by a gap. The shadow is
+                    // pulled almost entirely upward by the negative spread, so
+                    // it reads as depth under the sheet without a grey band
+                    // around it.
+                    --submenu--translate-y: #{px-to-rem(-10)};
+
+                    min-width: 0;
+                    border-radius: 0;
+                    border-top: 1px solid #{rgba(#2f292e, 0.14)};
+                    background-color: var(--color--springwood);
+                    box-shadow: 0 #{px-to-rem(30)} #{px-to-rem(60)} #{px-to-rem(-40)} #{rgba(#2f292e, 0.5)};
+                    color: var(--color--black);
                 }
 
                 .menu-list {
