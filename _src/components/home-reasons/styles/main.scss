@@ -86,8 +86,13 @@
     &__icon {
         // The theme resets every svg to width: 100%, so both dimensions are
         // restated rather than left to the glyph.
-        width: #{px-to-rem(24)};
-        height: #{px-to-rem(24)};
+        //
+        // 34 because that is the size the brand icons are drawn at. Their
+        // strokes are 0.75px to 1.3px on a 34.02 canvas, so at the 24 this
+        // used to be they scale to under a pixel and the detail turns to a
+        // smudge. At native size they stay legible.
+        width: #{px-to-rem(34)};
+        height: #{px-to-rem(34)};
         max-height: none;
         flex: none;
         color: var(--color--foreground);

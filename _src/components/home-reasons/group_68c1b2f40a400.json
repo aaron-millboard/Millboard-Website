@@ -77,15 +77,15 @@
                         "id": ""
                     },
                     "choices": {
-                        "factory": "Factory / UK made",
-                        "hand": "Hand / craft",
-                        "grain": "Leaf / wood grain",
-                        "shield": "Shield / durability",
-                        "refresh": "Cycle / low maintenance",
-                        "recycle": "Recycle",
-                        "board": "Board / layers",
-                        "medal": "Medal / quality",
-                        "clock": "Clock / lifespan"
+                        "factory": "Made in Britain",
+                        "hand": "Hand moulded",
+                        "grain": "Natural wood look",
+                        "shield": "Durable",
+                        "refresh": "Maintenance",
+                        "recycle": "Recycled",
+                        "board": "Wood free",
+                        "medal": "Quality assurance",
+                        "clock": "Long lifespan"
                     },
                     "default_value": "factory",
                     "allow_null": 0,

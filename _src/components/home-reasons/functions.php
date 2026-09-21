@@ -3,27 +3,53 @@
 namespace Granola\Components\HomeReasons;
 
 /**
- * The line icons this block can draw.
+ * The brand icon for each reason.
  *
- * Held in code rather than offered as an upload. The brand guide is explicit
- * that icons are "small, borderless and line-based" and should not dominate a
- * layout, and an upload field is how a layout ends up with nine different
- * illustration styles. Each entry is the inner markup of a 24x24 viewBox drawn
- * on a 1.4 stroke.
+ * These are the Millboard icon set as supplied, held in the media library.
+ * Matched on file name rather than attachment id because the id differs on
+ * every subsite: Made-In-Britain-Icon is 221 on en-gb, 5904 on en-us and 9084
+ * on de-de, so an id baked in here would draw the wrong picture on five of the
+ * six sites.
  */
 function icons(): array
 {
     return [
-        'factory' => '<path d="M4 20V9l8-5 8 5v11"></path><path d="M9 20v-6h6v6"></path>',
-        'hand' => '<path d="M14.5 4.5 19 9l-9.5 9.5L4 20l1.5-5.5Z"></path><path d="m12.5 6.5 5 5"></path>',
-        'grain' => '<path d="M12 3c4 4 4 14 0 18-4-4-4-14 0-18Z"></path><path d="M12 3c-4 4-4 14 0 18"></path>',
-        'shield' => '<path d="M12 3.5 19.5 7v6c0 4-3.2 6.6-7.5 7.8C7.7 19.6 4.5 17 4.5 13V7Z"></path>',
-        'refresh' => '<path d="M5 12a7 7 0 0 1 12-5"></path><path d="M19 12a7 7 0 0 1-12 5"></path><path d="M17 3v4h-4M7 21v-4h4"></path>',
-        'recycle' => '<path d="M7 8 4.5 12l2 3.5"></path><path d="M12 4.5 14.5 8 12 11.5"></path><path d="M19.5 15.5 17 12l-3.5-.5"></path><circle cx="12" cy="12" r="9"></circle>',
-        'board' => '<path d="M4 7h16v10H4z"></path><path d="M4 11h16M4 14h16"></path>',
-        'medal' => '<circle cx="12" cy="10" r="5.5"></circle><path d="m8.5 15-1 6 4.5-2.4L16.5 21l-1-6"></path>',
-        'clock' => '<circle cx="12" cy="12" r="8.5"></circle><path d="M12 7v5.4l3.4 2"></path>',
+        'factory' => 'Made-In-Britain-Icon.svg',
+        'hand'    => 'Hand-Moulded-Icon.svg',
+        'grain'   => 'Natural-Wood-Look-Icon.svg',
+        'shield'  => 'Durable-Icon.svg',
+        'refresh' => 'Maintenance-Icon.svg',
+        'recycle' => 'Recycled-Icon.svg',
+        'board'   => 'Wood-Free-Icon.svg',
+        'medal'   => 'Quality-Assurance-Icon.svg',
+        'clock'   => 'Long-Lifespan-Icon.svg',
     ];
+}
+
+/**
+ * The attachment id for an icon on the site being rendered.
+ *
+ * Looked up once per file per request. A miss returns 0 and the item simply
+ * renders without an icon, which is better than a broken image.
+ */
+function icon_id(string $file): int
+{
+    static $cache = [];
+
+    $key = get_current_blog_id() . ':' . $file;
+
+    if (!isset($cache[$key])) {
+        global $wpdb;
+
+        $cache[$key] = (int) $wpdb->get_var($wpdb->prepare(
+            "SELECT post_id FROM {$wpdb->postmeta}
+             WHERE meta_key = '_wp_attached_file' AND meta_value LIKE %s
+             ORDER BY post_id ASC LIMIT 1",
+            '%/' . $wpdb->esc_like($file)
+        ));
+    }
+
+    return $cache[$key];
 }
 
 function filter_args(array $args): ?array
@@ -68,7 +94,7 @@ function filter_args(array $args): ?array
     $args['reasons'] = array_map(function ($reason, $index) use ($available) {
         $key = $reason['icon'] ?? '';
 
-        $reason['icon_markup'] = $available[$key] ?? '';
+        $reason['icon_id'] = isset($available[$key]) ? icon_id($available[$key]) : 0;
         $reason['delay'] = ($index % 3) * 126;
 
         return $reason;

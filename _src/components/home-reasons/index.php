@@ -36,22 +36,29 @@
                         class="home-reasons__item mbh-reveal"
                         style="--mbh-reveal-delay: <?= (int) $reason['delay']; ?>ms"
                     >
-                        <?php if (!empty($reason['icon_markup'])) { ?>
+                        <?php if (!empty($reason['icon_id'])) { ?>
                             <?php
                             // Decorative: the title beside it is the name, and
-                            // an announced icon would only repeat it.
+                            // an announced icon would only repeat it. An empty
+                            // alt is what makes the image component mark it as
+                            // presentational.
+                            //
+                            // Eager, because these sit inside a revealed block
+                            // and a lazy icon arrives after its own animation.
                             ?>
-                            <svg
-                                class="home-reasons__icon"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="1.4"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                aria-hidden="true"
-                                focusable="false"
-                            ><?= $reason['icon_markup']; ?></svg>
+                            <?= \Granola\Component::get('image', [
+                                'attachment_id' => $reason['icon_id'],
+                                'alt' => '',
+                                'size' => 'full',
+                                'loading' => 'eager',
+                                // skip-lazy because the lazy loader ignores
+                                // loading="eager" on its own, and an icon that
+                                // arrives mid-reveal pops into a block that has
+                                // already finished animating. Nine line icons
+                                // are a few KB between them.
+                                'classes' => ['home-reasons__icon', 'skip-lazy'],
+                                'attributes' => ['data-no-lazy' => '1'],
+                            ]); ?>
                         <?php } ?>
 
                         <?php if (!empty($reason['title'])) { ?>
