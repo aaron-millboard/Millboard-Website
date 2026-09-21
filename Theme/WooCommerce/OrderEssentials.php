@@ -678,7 +678,16 @@ class OrderEssentials
             return (int) ($item['missing_qty'] ?? 0) > 0;
         }));
 
-        $acknowledged = isset($data[self::CHECKOUT_ACK_FIELD]);
+        // The acknowledgement is rendered by an action hook, not registered through
+        // woocommerce_checkout_fields, so it never reaches $data: that is built by
+        // WC_Checkout::get_posted_data() from REGISTERED fields only. Reading $data
+        // alone recorded "no" on every order, including the ones where the customer
+        // did tick the box, which is the opposite of the truth and the whole point
+        // of keeping this record. validate_checkout_acknowledgement() reads $_POST
+        // and enforces correctly; this has to agree with it. Both are checked so it
+        // keeps working if the field is ever registered properly.
+        $acknowledged = isset($data[self::CHECKOUT_ACK_FIELD])
+            || isset($_POST[self::CHECKOUT_ACK_FIELD]); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
         $order->update_meta_data('_millboard_order_essentials_project_type', $project_type);
         $order->update_meta_data('_millboard_order_essentials_acknowledged', $acknowledged ? 'yes' : 'no');
