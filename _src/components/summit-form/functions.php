@@ -147,6 +147,12 @@ function filter_args(array $args): ?array
         )),
     ];
 
+    // France chooses its company from a list instead of typing one, so the
+    // per-company cap binds to a key we control rather than to free text.
+    $args['company_options'] = Audiences::company_options($args['audience']);
+    $args['select_prompt'] = Strings::t('select_prompt', $args['audience'],
+        __('Please Select', 'granola'));
+
     $args['dates'] = Audiences::UK_CHOOSABLE_DAYS;
     $args['workshops'] = Gate::ALLOWED_WORKSHOPS;
     $args['fr_attending_yes'] = Gate::FR_ATTENDING_YES;

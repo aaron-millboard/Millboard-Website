@@ -80,6 +80,8 @@ class Strings
         'err_email' => 'Merci d\'indiquer une adresse e-mail valide.',
         'err_company' => 'Merci d\'indiquer le nom de votre entreprise.',
         'err_attending' => 'Merci de nous indiquer si vous pourrez être présent(e).',
+        'err_company_choice' => 'Merci de sélectionner votre entreprise dans la liste.',
+        'select_prompt' => 'Merci de sélectionner',
 
         // --- refusals
         'not_invited' => 'Nous ne trouvons pas cette adresse e-mail parmi nos invitations. Le Summit '
