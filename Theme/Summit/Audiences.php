@@ -67,7 +67,12 @@ class Audiences
      * and in French.
      */
     private const FIELDS = [
-        self::UK => ['preferred_date', 'workshops', 'factory_tour', 'opt_out'],
+        // Workshops and the factory tour were dropped from the UK form on
+        // 22 Sep 2026. Registrations taken before that keep their answers:
+        // the meta is never rewritten, and the export still carries both
+        // columns, so the 31 already in are unchanged. Only the question
+        // stops being asked, and with it the validation that required it.
+        self::UK => ['preferred_date', 'opt_out'],
         self::INT => ['opt_out'],
         self::US => ['opt_out'],
         // FR asked for the two contact-consent radios to be replaced with the

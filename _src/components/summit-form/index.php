@@ -6,7 +6,7 @@
  * audience set on the block, read from \Theme\Summit\Audiences so the form can
  * never offer something the gate would reject:
  *
- *   UK   picks one day (4th or 5th), plus workshops and a factory tour
+ *   UK   picks one day (4th or 5th)
  *   INT  no date question, automatically the 3rd and 4th
  *   US   no date question, automatically all three days
  *   FR   asked whether they can attend, plus two contact-consent questions
