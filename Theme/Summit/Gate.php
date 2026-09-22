@@ -197,9 +197,9 @@ class Gate
             // the per-company cap included, is then unchanged: the cap still
             // counts against a key we control rather than free text, because
             // the only companies accepted are the ones on the list.
-            if (!in_array($company, Audiences::FR_COMPANIES, true)) {
-                return $fail('bad_company', Strings::t('err_company_choice', $audience, __(
-                    'Please choose your company from the list.',
+            if ($company === '') {
+                return $fail('bad_company', Strings::t('err_company', $audience, __(
+                    'Please enter your company name.',
                     'granola'
                 )));
             }
@@ -408,16 +408,7 @@ class Gate
             $errors['email'] = Strings::t('err_email', $audience,
                 __('Please enter a valid email address.', 'granola'));
         }
-        $company_options = Audiences::company_options($audience);
-
-        if ($company_options !== []) {
-            // Chosen from a list rather than typed, so anything else is either
-            // a stale page or someone editing the request.
-            if (!in_array($company_typed, $company_options, true)) {
-                $errors['company_typed'] = Strings::t('err_company_choice', $audience,
-                    __('Please choose your company from the list.', 'granola'));
-            }
-        } elseif ($company_typed === '') {
+        if ($company_typed === '') {
             $errors['company_typed'] = Strings::t('err_company', $audience,
                 __('Please enter your company name.', 'granola'));
         }
