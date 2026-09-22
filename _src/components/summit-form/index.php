@@ -6,7 +6,7 @@
  * audience set on the block, read from \Theme\Summit\Audiences so the form can
  * never offer something the gate would reject:
  *
- *   UK   picks one day (4th or 5th), plus workshops and a factory tour
+ *   UK   picks one day (4th or 5th)
  *   INT  no date question, automatically the 3rd and 4th
  *   US   no date question, automatically all three days
  *   FR   asked whether they can attend, plus two contact-consent questions
@@ -24,6 +24,8 @@ $workshops = (array) ($args['workshops'] ?? []);
 $assigned_days = (array) ($args['assigned_days'] ?? []);
 $assigned_days_text = (string) ($args['assigned_days_text'] ?? '');
 $privacy_url = trim((string) ($args['privacy_url'] ?? ''));
+$company_options = (array) ($args['company_options'] ?? []);
+$select_prompt = (string) ($args['select_prompt'] ?? '');
 $t = (array) ($args['t'] ?? []);
 
 // The block cannot work without knowing its audience. filter_args returns null
@@ -129,7 +131,16 @@ $consent_paragraphs = preg_split('/\R{2,}/', $consent_text, -1, PREG_SPLIT_NO_EM
                 <label class="summit-form__label" for="summit-company">
                     <?= esc_html($t['company']); ?><span class="summit-form__required" aria-hidden="true">*</span>
                 </label>
-                <input class="summit-form__input" id="summit-company" name="company_typed" type="text" autocomplete="organization" required>
+                <?php if ($company_options !== []) { ?>
+                    <select class="summit-form__input" id="summit-company" name="company_typed" required>
+                        <option value=""><?= esc_html($select_prompt); ?></option>
+                        <?php foreach ($company_options as $company_option) { ?>
+                            <option value="<?= esc_attr($company_option); ?>"><?= esc_html($company_option); ?></option>
+                        <?php } ?>
+                    </select>
+                <?php } else { ?>
+                    <input class="summit-form__input" id="summit-company" name="company_typed" type="text" autocomplete="organization" required>
+                <?php } ?>
                 <p class="summit-form__field-error" data-summit-error="company_typed" hidden></p>
             </div>
 

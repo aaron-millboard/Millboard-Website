@@ -67,7 +67,12 @@ class Audiences
      * and in French.
      */
     private const FIELDS = [
-        self::UK => ['preferred_date', 'workshops', 'factory_tour', 'opt_out'],
+        // Workshops and the factory tour were dropped from the UK form on
+        // 22 Sep 2026. Registrations taken before that keep their answers:
+        // the meta is never rewritten, and the export still carries both
+        // columns, so the 31 already in are unchanged. Only the question
+        // stops being asked, and with it the validation that required it.
+        self::UK => ['preferred_date', 'opt_out'],
         self::INT => ['opt_out'],
         self::US => ['opt_out'],
         // FR asked for the two contact-consent radios to be replaced with the
@@ -77,9 +82,47 @@ class Audiences
         self::FR => ['attending', 'opt_out'],
     ];
 
+    /**
+     * The French companies, and nothing else, may register on the FR page.
+     *
+     * France was opened up on 22 Sep 2026. The French team invited people by
+     * name through their own channels and do not know which address each guest
+     * will use, so an email allowlist would refuse genuine attendees. Their
+     * numbers are held by this list instead: the company is chosen from it, so
+     * the per-company cap still binds and France cannot exceed the total the
+     * business agreed. The headcounts themselves are NOT here, they are cap
+     * overrides in the database, so a number can change without a deploy.
+     */
+    public const FR_COMPANIES = [
+        'Casa Habitat',
+        'Esprit Paysage',
+        'Gillet Studio',
+        'Heartwood',
+        'Hybre Architecture',
+        'Jérôme Concept',
+        'Sibat',
+        'Waho',
+    ];
+
     public static function is_valid(string $audience): bool
     {
         return in_array($audience, self::ALL, true);
+    }
+
+    /**
+     * Does this audience's form check the address against the invite list?
+     *
+     * Everyone except France. See FR_COMPANIES for why.
+     */
+    public static function requires_invite(string $audience): bool
+    {
+        return $audience !== self::FR;
+    }
+
+    /** The companies this audience may choose from, empty when it types one. */
+    public static function company_options(string $audience): array
+    {
+        return $audience === self::FR ? self::FR_COMPANIES : [];
     }
 
     /** Does this audience choose its own day? */

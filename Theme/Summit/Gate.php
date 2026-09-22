@@ -143,13 +143,15 @@ class Gate
      * @param  string $audience   The audience of the PAGE the form sits on.
      * @param  string $chosen_day A UK guest's chosen day; ignored otherwise.
      * @param  bool   $declining  FR only: they answered that they cannot come.
+     * @param  string $company    FR only: the company chosen from the list.
      * @return array{ok:bool,reason:string,message:string,invite:?array,days:array}
      */
     private static function evaluate(
         string $email,
         string $audience,
         string $chosen_day = '',
-        bool $declining = false
+        bool $declining = false,
+        string $company = ''
     ): array {
         $fail = static function (string $reason, string $message, ?array $invite = null): array {
             return [
@@ -168,25 +170,47 @@ class Gate
             )));
         }
 
-        $invite = InviteList::find($email);
+        if (Audiences::requires_invite($audience)) {
+            $invite = InviteList::find($email);
 
-        if ($invite === null) {
-            // Deliberately says nothing about whether the address exists
-            // elsewhere, and never names anyone.
-            return $fail('not_invited', Strings::t('not_invited', $audience, __(
-                'We cannot match that email address to an invitation. The Summit is invite only, so please use the address your invitation was sent to. If you think this is wrong, reply to your invitation and we will sort it out.',
-                'granola'
-            )));
-        }
+            if ($invite === null) {
+                // Deliberately says nothing about whether the address exists
+                // elsewhere, and never names anyone.
+                return $fail('not_invited', Strings::t('not_invited', $audience, __(
+                    'We cannot match that email address to an invitation. The Summit is invite only, so please use the address your invitation was sent to. If you think this is wrong, reply to your invitation and we will sort it out.',
+                    'granola'
+                )));
+            }
 
-        // Rule 2. A US invitee arriving on the UK page would otherwise be given
-        // a single UK day instead of all three, which would quietly under-book
-        // them and misreport the seat counts.
-        if (($invite['audience'] ?? '') !== $audience) {
-            return $fail('wrong_page', Strings::t('wrong_page', $audience, __(
-                'Your invitation is for a different session. Please use the registration link from your own invitation email, or reply to it and we will help.',
-                'granola'
-            )), $invite);
+            // Rule 2. A US invitee arriving on the UK page would otherwise be
+            // given a single UK day instead of all three, which would quietly
+            // under-book them and misreport the seat counts.
+            if (($invite['audience'] ?? '') !== $audience) {
+                return $fail('wrong_page', Strings::t('wrong_page', $audience, __(
+                    'Your invitation is for a different session. Please use the registration link from your own invitation email, or reply to it and we will help.',
+                    'granola'
+                )), $invite);
+            }
+        } else {
+            // France registers without an allowlist, so the company chosen on
+            // the form stands in for the invite record. Everything downstream,
+            // the per-company cap included, is then unchanged: the cap still
+            // counts against a key we control rather than free text, because
+            // the only companies accepted are the ones on the list.
+            if (!in_array($company, Audiences::FR_COMPANIES, true)) {
+                return $fail('bad_company', Strings::t('err_company_choice', $audience, __(
+                    'Please choose your company from the list.',
+                    'granola'
+                )));
+            }
+
+            $invite = [
+                'name' => '',
+                'company' => $company,
+                'company_key' => InviteList::company_key($company),
+                'category' => Audiences::label($audience) . ' - open registration',
+                'audience' => $audience,
+            ];
         }
 
         // An FR guest telling us they cannot come is recorded but consumes no
@@ -307,6 +331,13 @@ class Gate
             ], 200);
         }
 
+        // France has no allowlist, so there is nothing an address can be
+        // checked against as they leave the field. Saying nothing is correct:
+        // the company cap and the day cap are still applied on submit.
+        if (!Audiences::requires_invite($audience)) {
+            return new \WP_REST_Response(['ok' => true, 'reason' => 'ok', 'message' => ''], 200);
+        }
+
         // A UK guest has not picked a day yet at this point, so the day cap
         // cannot be judged. Skip it here and let submit decide; reporting "full"
         // against a day they have not chosen would be wrong.
@@ -377,7 +408,16 @@ class Gate
             $errors['email'] = Strings::t('err_email', $audience,
                 __('Please enter a valid email address.', 'granola'));
         }
-        if ($company_typed === '') {
+        $company_options = Audiences::company_options($audience);
+
+        if ($company_options !== []) {
+            // Chosen from a list rather than typed, so anything else is either
+            // a stale page or someone editing the request.
+            if (!in_array($company_typed, $company_options, true)) {
+                $errors['company_typed'] = Strings::t('err_company_choice', $audience,
+                    __('Please choose your company from the list.', 'granola'));
+            }
+        } elseif ($company_typed === '') {
             $errors['company_typed'] = Strings::t('err_company', $audience,
                 __('Please enter your company name.', 'granola'));
         }
@@ -464,7 +504,7 @@ class Gate
         \set_transient(self::LOCK_KEY, 1, self::LOCK_SECONDS);
 
         try {
-            $result = self::evaluate($email, $audience, $chosen_day, $declining);
+            $result = self::evaluate($email, $audience, $chosen_day, $declining, $company_typed);
 
             if (!$result['ok']) {
                 return new \WP_REST_Response([
