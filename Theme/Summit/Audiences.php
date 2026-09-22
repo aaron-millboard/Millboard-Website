@@ -82,28 +82,6 @@ class Audiences
         self::FR => ['attending', 'opt_out'],
     ];
 
-    /**
-     * The French companies, and nothing else, may register on the FR page.
-     *
-     * France was opened up on 22 Sep 2026. The French team invited people by
-     * name through their own channels and do not know which address each guest
-     * will use, so an email allowlist would refuse genuine attendees. Their
-     * numbers are held by this list instead: the company is chosen from it, so
-     * the per-company cap still binds and France cannot exceed the total the
-     * business agreed. The headcounts themselves are NOT here, they are cap
-     * overrides in the database, so a number can change without a deploy.
-     */
-    public const FR_COMPANIES = [
-        'Casa Habitat',
-        'Esprit Paysage',
-        'Gillet Studio',
-        'Heartwood',
-        'Hybre Architecture',
-        'Jérôme Concept',
-        'Sibat',
-        'Waho',
-    ];
-
     public static function is_valid(string $audience): bool
     {
         return in_array($audience, self::ALL, true);
@@ -112,17 +90,27 @@ class Audiences
     /**
      * Does this audience's form check the address against the invite list?
      *
-     * Everyone except France. See FR_COMPANIES for why.
+     * Everyone except France, which registers openly because the French
+     * team do not know which address each guest will use.
      */
     public static function requires_invite(string $audience): bool
     {
         return $audience !== self::FR;
     }
 
-    /** The companies this audience may choose from, empty when it types one. */
+    /**
+     * The companies this audience may choose from.
+     *
+     * Always empty: every audience types its company. France briefly had a
+     * fixed list so the per-company cap keyed on a value we controlled, but
+     * that was removed on 22 Sep 2026 at the French team's request, as it was
+     * refusing people whose company was not spelled exactly as listed. The cap
+     * now counts against whatever is typed, so two spellings of one company
+     * open two allocations.
+     */
     public static function company_options(string $audience): array
     {
-        return $audience === self::FR ? self::FR_COMPANIES : [];
+        return [];
     }
 
     /** Does this audience choose its own day? */
