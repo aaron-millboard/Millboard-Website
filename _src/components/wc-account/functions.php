@@ -49,6 +49,38 @@ function is_team_member(?int $user_id = null): bool
 }
 
 /**
+ * Is the IT team's sample ordering widget installed?
+ *
+ * It ships as six files required from the child theme's functions.php and
+ * defines MB_SOF_VERSION on load. Detected rather than assumed, because the
+ * account section has to work both before and after it lands.
+ */
+function sample_widget_installed(): bool
+{
+    return \defined('MB_SOF_VERSION') || \shortcode_exists(get_sample_shortcode());
+}
+
+/**
+ * The widget's shortcode tag.
+ */
+function get_sample_shortcode(): string
+{
+    return (string) \apply_filters('millboard/account/sample_ordering_shortcode', 'millboard_sample_ordering');
+}
+
+/**
+ * The endpoint slug the sample panel lives at.
+ *
+ * The widget declares its own as MB_SOF_ENDPOINT, defaulting to the same
+ * `sample-ordering` this component uses. Reading the constant when it exists
+ * means both halves agree on one URL instead of racing to register two.
+ */
+function get_sample_endpoint(): string
+{
+    return \defined('MB_SOF_ENDPOINT') ? (string) \MB_SOF_ENDPOINT : ENDPOINT_SAMPLE_ORDERING;
+}
+
+/**
  * What a non-team user sees if they type a team panel's URL.
  *
  * The navigation never links here, so this is the answer to a guessed address

@@ -18,7 +18,7 @@ namespace Granola\Components\WC_Account;
  * a panel. Flushing on every load would rewrite the option on all 13,000 hits.
  */
 \add_action('init', function (): void {
-    $endpoints = [ENDPOINT_BRAND_ASSETS, ENDPOINT_SAMPLE_ORDERING];
+    $endpoints = [ENDPOINT_BRAND_ASSETS, get_sample_endpoint()];
 
     foreach ($endpoints as $endpoint) {
         \add_rewrite_endpoint($endpoint, EP_PAGES);
@@ -37,10 +37,20 @@ namespace Granola\Components\WC_Account;
  */
 \add_filter('woocommerce_get_query_vars', function (array $vars): array {
     $vars[ENDPOINT_BRAND_ASSETS] = ENDPOINT_BRAND_ASSETS;
-    $vars[ENDPOINT_SAMPLE_ORDERING] = ENDPOINT_SAMPLE_ORDERING;
+    $vars[get_sample_endpoint()] = get_sample_endpoint();
 
     return $vars;
 });
+
+/**
+ * One gate, not two.
+ *
+ * The widget has its own `mb_sof_user_can_order` filter deciding who sees its
+ * tab and may submit. Pointing it at the same team test this component uses
+ * means access is decided in one place, and their handover's first blocking
+ * question is answered.
+ */
+\add_filter('mb_sof_user_can_order', fn(): bool => is_team_member());
 
 /**
  * The navigation, in the design's order.
@@ -56,9 +66,19 @@ namespace Granola\Components\WC_Account;
     $logout = $items['customer-logout'] ?? null;
     unset($items['customer-logout']);
 
+    $sample = get_sample_endpoint();
+
     if (is_team_member()) {
         $items[ENDPOINT_BRAND_ASSETS] = \__('Brand assets', 'granola');
-        $items[ENDPOINT_SAMPLE_ORDERING] = \__('Sample ordering', 'granola');
+
+        // The widget adds its own item under this same key, labelled from
+        // MB_SOF_LABEL ("Sample Ordering"). Setting it here rather than only
+        // when absent means one item either way, with the design's sentence
+        // case rather than the widget's title case.
+        $items[$sample] = \__('Sample ordering', 'granola');
+    } else {
+        // Not team: make sure the widget's own item cannot survive.
+        unset($items[$sample]);
     }
 
     $order = [
@@ -68,7 +88,7 @@ namespace Granola\Components\WC_Account;
         'payment-methods',
         'edit-account',
         ENDPOINT_BRAND_ASSETS,
-        ENDPOINT_SAMPLE_ORDERING,
+        $sample,
     ];
 
     $sorted = [];
@@ -104,10 +124,29 @@ namespace Granola\Components\WC_Account;
         : render_no_access();
 });
 
-\add_action('woocommerce_account_' . ENDPOINT_SAMPLE_ORDERING . '_endpoint', function (): void {
-    echo is_team_member()
-        ? \Granola\Component::get('wc-account-sample-ordering')
-        : render_no_access();
+/**
+ * The sample panel.
+ *
+ * The widget registers its own callback on this action to print the form
+ * bare. That is cleared and the form rendered inside this component's chrome
+ * instead, because the widget deliberately dropped its own <h1> on the
+ * assumption that WooCommerce prints a tab heading -- and here it does not,
+ * every panel prints its own. Left alone the tab would arrive headingless.
+ *
+ * Done on wp_loaded, after every plugin and the theme have registered and
+ * before anything renders. Clearing from inside the action would be too late:
+ * priority 10 has already printed by the time a later priority runs.
+ */
+\add_action('wp_loaded', function (): void {
+    $hook = 'woocommerce_account_' . get_sample_endpoint() . '_endpoint';
+
+    \remove_all_actions($hook);
+
+    \add_action($hook, function (): void {
+        echo is_team_member()
+            ? \Granola\Component::get('wc-account-sample-ordering')
+            : render_no_access();
+    });
 });
 
 /**

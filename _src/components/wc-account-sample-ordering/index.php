@@ -15,7 +15,9 @@
  * design's 560px so the page does not change shape when the real thing lands.
  */
 
-$shortcode = (string) apply_filters('millboard/account/sample_ordering_shortcode', 'mb_sample_ordering');
+use function Granola\Components\WC_Account\get_sample_shortcode;
+
+$shortcode = get_sample_shortcode();
 $has_widget = shortcode_exists($shortcode);
 
 ?>
