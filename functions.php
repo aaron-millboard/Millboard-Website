@@ -69,6 +69,7 @@ if (file_exists($autoloader = __DIR__ . '/vendor/autoload.php')) {
 \Theme\PostTypes\AdviceCentre::init();
 \Theme\PostTypes\CaseStudy::init();
 \Theme\PostTypes\Image::init();
+\Theme\PostTypes\ApplicationImage::init();
 \Theme\PostTypes\Installer::init();
 \Theme\PostTypes\Page::init();
 \Theme\PostTypes\Post::init();
@@ -83,6 +84,7 @@ if (file_exists($autoloader = __DIR__ . '/vendor/autoload.php')) {
 \Theme\Taxonomies\AdviceCategory::init();
 \Theme\Taxonomies\Category::init();
 \Theme\Taxonomies\ImageCategory::init();
+\Theme\Taxonomies\ApplicationCategory::init();
 \Theme\Taxonomies\DistributorType::init();
 \Theme\Taxonomies\InstallerType::init();
 \Theme\Taxonomies\ProductCategory::init();

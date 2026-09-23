@@ -1,0 +1,21 @@
+{
+    "key": "group_tax_application_category",
+    "title": "Application Category Settings",
+    "fields": [
+        {
+            "key": "tax_application_category_image",
+            "label": "Select thumbnail",
+            "name": "image",
+            "type": "image"
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "taxonomy",
+                "operator": "==",
+                "value": "application_category"
+            }
+        ]
+    ]
+}
