@@ -1,94 +1,1377 @@
-.woocommerce .account {
+// =============================================================================
+// My Account
+// =============================================================================
+// The account section of the 2026 redesign. Same vocabulary as the homepage
+// blocks: square corners, hairline rules, one easing curve, Light and Bold
+// only, and olive reserved for accents rather than text.
+//
+// Type runs on the redesign's 15-18px scale via the --mbh-* tokens, not the
+// legacy 20px body scale. That is deliberate and matches the homepage: two
+// scales on one page is what makes the smaller one read as a mistake.
+// =============================================================================
 
-    $this: &;
+// The account sets its own measure and the sign-in screen is full bleed, so
+// both opt out of the container `.blocks > *` imposes on every other page.
+.is-mb-account {
+    .site-main__content > .woocommerce {
+        --block--max-width: 100%;
 
-    display: grid;
-    grid-template-columns: 1fr;
-    column-gap: var(--space--3xl);
-    row-gap: var(--space--l);
+        max-width: 100%;
+        padding-right: 0;
+    }
+}
 
-    @include mq('large') {
-        grid-template-columns: 1fr 2fr;
+.is-mb-account-auth {
+    // Nothing else is on this screen: no masthead, no content padding, and no
+    // gap between the split and whatever the theme puts after it.
+    .site-main__content {
+        --blocks--margin-bottom: 0;
+    }
+
+    .site-main__inner {
+        padding: 0;
+    }
+}
+
+.mb-account {
+    // ---------------------------------------------------------------------
+    // Local tokens. Anything the redesign already names is read from --mbh-*
+    // rather than restated, so a change to the shared vocabulary reaches here.
+    // ---------------------------------------------------------------------
+    --mba-ink: var(--color--foreground);
+    --mba-muted: #6e6a6c;
+    --mba-rule: var(--mbh-rule, #{rgba(#2f292e, 0.18)});
+    --mba-accent: var(--color--brand-4);
+    --mba-wash: var(--color--brand-1);
+    --mba-ease: var(--mbh-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
+    --mba-dur: var(--mbh-dur-ui, 240ms);
+
+    --mba-fs-body: #{px-to-rem(16)};
+    --mba-fs-lead: #{px-to-rem(18)};
+    --mba-fs-small: #{px-to-rem(15)};
+    --mba-fs-note: #{px-to-rem(13)};
+    --mba-fs-label: #{px-to-rem(12)};
+    --mba-fs-micro: #{px-to-rem(11)};
+
+    --mba-gap: clamp(#{px-to-rem(32)}, 5vw, #{px-to-rem(80)});
+
+    max-width: var(--mbh-container, #{px-to-rem(1440)});
+    margin-inline: auto;
+    padding-block: clamp(#{px-to-rem(32)}, 5vw, #{px-to-rem(72)}) clamp(#{px-to-rem(64)}, 8vw, #{px-to-rem(144)});
+    padding-inline: clamp(#{px-to-rem(20)}, 4vw, #{px-to-rem(64)});
+    color: var(--mba-ink);
+    font-weight: 300;
+
+    // -------------------------------------------------------------
+    // Masthead
+    // -------------------------------------------------------------
+    &__masthead {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: var(--space--m);
+        flex-wrap: wrap;
+        padding-bottom: #{px-to-rem(28)};
+        border-bottom: 1px solid var(--mba-rule);
+        margin-bottom: clamp(#{px-to-rem(32)}, 5vw, #{px-to-rem(64)});
+    }
+
+    &__rule {
+        display: block;
+        width: #{px-to-rem(48)};
+        height: #{px-to-rem(2)};
+        background-color: var(--mba-accent);
+        margin-bottom: #{px-to-rem(20)};
+    }
+
+    &__heading {
+        margin: 0;
+        font-weight: 300;
+        font-size: clamp(#{px-to-rem(28)}, 3.4vw, #{px-to-rem(40)});
+        line-height: 1.15;
+        letter-spacing: var(--mbh-tracking-heading, 0.2em);
+        text-transform: uppercase;
+    }
+
+    &__identity {
+        // Right-aligned only while it sits opposite the title. Once the
+        // masthead wraps, a right-aligned block on its own line reads as a
+        // mistake rather than as an alignment.
+        text-align: left;
+
+        @include mq('large') {
+            text-align: right;
+        }
+    }
+
+    &__identity-label {
+        display: block;
+        font-size: var(--mba-fs-micro);
+        font-weight: 700;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+        color: var(--mba-muted);
+        margin-bottom: #{px-to-rem(6)};
+    }
+
+    &__identity-value {
+        display: block;
+        font-size: var(--mba-fs-small);
+        overflow-wrap: anywhere;
+    }
+
+    // -------------------------------------------------------------
+    // Two-column body
+    // -------------------------------------------------------------
+    &__body {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--mba-gap);
+        align-items: flex-start;
     }
 
     &__nav {
+        flex: 1 1 #{px-to-rem(220)};
+        min-width: #{px-to-rem(200)};
+        max-width: 100%;
+
+        @include mq('large') {
+            max-width: #{px-to-rem(280)};
+            position: sticky;
+            top: #{px-to-rem(24)};
+        }
+    }
+
+    &__nav-list {
+        list-style: none;
         margin: 0;
         padding: 0;
 
-        &__items {
-            list-style: none;
-            margin: 0;
-            padding: 0;
+        // Stacked under the masthead, the masthead's own rule already closes
+        // the top of the list. Two hairlines a gap apart look like a slip.
+        @include mq('large') {
+            border-top: 1px solid var(--mba-rule);
+        }
+    }
+
+    &__nav-item {
+        margin: 0;
+        padding: 0;
+        border-bottom: 1px solid var(--mba-rule);
+    }
+
+    &__nav-link {
+        display: flex;
+        align-items: center;
+        gap: #{px-to-rem(14)};
+        padding: #{px-to-rem(17)} #{px-to-rem(16)};
+        font-size: var(--mba-fs-label);
+        font-weight: 700;
+        letter-spacing: var(--mbh-tracking-sub, 0.16em);
+        text-transform: uppercase;
+        color: var(--mba-ink);
+        text-decoration: none;
+        transition: background-color var(--mba-dur) var(--mba-ease);
+
+        &:hover,
+        &:focus-visible {
+            background-color: rgba(222, 219, 210, 0.5);
+        }
+    }
+
+    &__nav-bar {
+        display: block;
+        flex: 0 0 #{px-to-rem(2)};
+        width: #{px-to-rem(2)};
+        height: #{px-to-rem(15)};
+        background-color: transparent;
+    }
+
+    &__nav-item.is-current {
+        .mb-account__nav-link {
+            background-color: var(--mba-wash);
         }
 
-        &__item {
-            margin: 0;
-            padding: var(--space--2xs);
-            border-bottom: 1px solid var(--color--brand-5);
+        .mb-account__nav-bar {
+            background-color: var(--mba-accent);
+        }
+    }
 
-            a {
-                @include typestyle-h6;
-                text-decoration: none;
+    &__logout {
+        display: inline-flex;
+        align-items: center;
+        gap: #{px-to-rem(10)};
+        margin-top: #{px-to-rem(28)};
+        margin-left: #{px-to-rem(16)};
+        font-size: var(--mba-fs-micro);
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--mba-muted);
+        text-decoration: none;
+        border-bottom: 1px solid transparent;
+
+        &:hover,
+        &:focus-visible {
+            color: var(--mba-ink);
+            border-bottom-color: var(--mba-accent);
+        }
+    }
+
+    &__logout-chevron {
+        font-size: #{px-to-rem(14)};
+    }
+
+    &__main {
+        flex: 4 1 #{px-to-rem(520)};
+        min-width: 0;
+        font-size: var(--mba-fs-body);
+
+        // WooCommerce prints its notices inside the panel. They keep the
+        // theme's own styling; this only stops them colliding with the
+        // heading immediately beneath.
+        .woocommerce-notices-wrapper:not(:empty) {
+            margin-bottom: var(--space--l);
+        }
+    }
+}
+
+// =============================================================================
+// Shared panel furniture
+// =============================================================================
+// Used by every panel, so they are written once at the root rather than nested
+// inside .mb-account -- the WooCommerce templates that output them are not all
+// descendants of the same wrapper (the auth screen uses them too).
+// =============================================================================
+
+.mb-account-panel {
+    &__title {
+        margin: 0 0 #{px-to-rem(16)};
+        font-weight: 300;
+        font-size: clamp(#{px-to-rem(24)}, 2.6vw, #{px-to-rem(32)});
+        line-height: 1.15;
+        letter-spacing: var(--mbh-tracking-heading, 0.2em);
+        text-transform: uppercase;
+    }
+
+    &__intro {
+        margin: 0 0 clamp(#{px-to-rem(40)}, 5vw, #{px-to-rem(56)});
+        max-width: 60ch;
+        font-size: #{px-to-rem(16)};
+        line-height: 1.7;
+        color: #6e6a6c;
+
+        a {
+            color: var(--color--foreground);
+            text-decoration: none;
+            border-bottom: 1px solid var(--mbh-rule, #{rgba(#2f292e, 0.18)});
+
+            &:hover,
+            &:focus-visible {
+                border-bottom-color: var(--color--brand-4);
             }
+        }
+    }
 
-            &--active {
-                background-color: var(--color--brand-5);
-                color: var(--color--brand-1);
-            }
+    &__head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: var(--space--2xs);
+        flex-wrap: wrap;
+        margin-bottom: #{px-to-rem(20)};
+    }
 
-            &--active a {
+    &__badge {
+        display: inline-block;
+        font-size: #{px-to-rem(11)};
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        padding: #{px-to-rem(6)} #{px-to-rem(12)};
+        border: 1px solid var(--color--brand-4);
+    }
+}
+
+// Section heading: bold, uppercase, tracked, with a rule under it.
+.mb-account-section {
+    margin: 0 0 #{px-to-rem(20)};
+    padding-bottom: #{px-to-rem(14)};
+    border-bottom: 1px solid var(--mbh-rule, #{rgba(#2f292e, 0.18)});
+    font-size: #{px-to-rem(14)};
+    font-weight: 700;
+    letter-spacing: var(--mbh-tracking-sub, 0.16em);
+    text-transform: uppercase;
+
+    &--accent {
+        border-bottom-color: var(--color--brand-4);
+    }
+
+    &--spaced {
+        margin-top: #{px-to-rem(48)};
+    }
+}
+
+// Status pill. Olive border while the order is live, hairline once it is not.
+.mb-account-pill {
+    display: inline-block;
+    font-size: #{px-to-rem(11)};
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding: #{px-to-rem(6)} #{px-to-rem(10)};
+    border: 1px solid var(--color--brand-4);
+    white-space: nowrap;
+
+    &--closed {
+        border-color: var(--mbh-rule, #{rgba(#2f292e, 0.18)});
+        color: #6e6a6c;
+    }
+}
+
+// Empty states: centred, hairline box, olive tick above the heading.
+.mb-account-empty {
+    border: 1px solid var(--mbh-rule, #{rgba(#2f292e, 0.18)});
+    padding: clamp(#{px-to-rem(40)}, 6vw, #{px-to-rem(72)}) clamp(#{px-to-rem(28)}, 4vw, #{px-to-rem(48)});
+    text-align: center;
+
+    &__rule {
+        display: block;
+        width: #{px-to-rem(48)};
+        height: #{px-to-rem(2)};
+        background-color: var(--color--brand-4);
+        margin: 0 auto #{px-to-rem(24)};
+    }
+
+    &__title {
+        margin: 0 0 #{px-to-rem(14)};
+        font-size: #{px-to-rem(14)};
+        font-weight: 700;
+        letter-spacing: var(--mbh-tracking-sub, 0.16em);
+        text-transform: uppercase;
+    }
+
+    &__body {
+        margin: 0 auto #{px-to-rem(28)};
+        max-width: 44ch;
+        font-size: #{px-to-rem(15)};
+        line-height: 1.7;
+        color: #6e6a6c;
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
+}
+
+// Buttons. Square, tracked, two weights: solid for the primary act on a panel,
+// outline for everything else.
+.mb-account-btn {
+    display: inline-block;
+    appearance: none;
+    font-family: inherit;
+    font-size: #{px-to-rem(13)};
+    font-weight: 700;
+    letter-spacing: var(--mbh-tracking-sub, 0.16em);
+    text-transform: uppercase;
+    padding: #{px-to-rem(16)} #{px-to-rem(28)};
+    background-color: var(--color--foreground);
+    color: var(--color--brand-2);
+    border: 1px solid var(--color--foreground);
+    border-radius: 0;
+    text-decoration: none;
+    cursor: pointer;
+    transition: opacity var(--mbh-dur-ui, 240ms) var(--mbh-ease, ease);
+
+    &:hover,
+    &:focus-visible {
+        opacity: 0.92;
+        color: var(--color--brand-2);
+    }
+
+    &--ghost {
+        background-color: transparent;
+        color: var(--color--foreground);
+        transition: border-color var(--mbh-dur-ui, 240ms) var(--mbh-ease, ease);
+
+        &:hover,
+        &:focus-visible {
+            opacity: 1;
+            color: var(--color--foreground);
+            border-color: var(--color--brand-4);
+        }
+    }
+}
+
+// Quiet inline link: hairline underline that turns olive on hover.
+.mb-account-link {
+    font-size: #{px-to-rem(13)};
+    color: var(--color--foreground);
+    text-decoration: none;
+    border-bottom: 1px solid var(--mbh-rule, #{rgba(#2f292e, 0.18)});
+
+    &:hover,
+    &:focus-visible {
+        color: var(--color--foreground);
+        border-bottom-color: var(--color--brand-4);
+    }
+}
+
+.mb-account-back {
+    display: inline-flex;
+    align-items: center;
+    gap: #{px-to-rem(10)};
+    margin-bottom: #{px-to-rem(28)};
+    font-size: #{px-to-rem(11)};
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #6e6a6c;
+    text-decoration: none;
+
+    &:hover,
+    &:focus-visible {
+        color: var(--color--foreground);
+    }
+}
+
+// =============================================================================
+// Forms
+// =============================================================================
+// Underline fields throughout: no boxes, no fills, a hairline that turns olive
+// on focus. WooCommerce supplies its own .form-row markup on some panels, so
+// these selectors cover both the theme's own fields and Woo's.
+// =============================================================================
+
+.mb-account-fields {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(#{px-to-rem(220)}, 1fr));
+    gap: #{px-to-rem(32)} #{px-to-rem(40)};
+
+    &--tight {
+        gap: #{px-to-rem(28)} #{px-to-rem(32)};
+    }
+
+    // A pair that has to stay side by side in a narrow column -- first and
+    // last name on the register form, where the column is only 440px and a
+    // 220px minimum would wrap them into a stack.
+    &--pair {
+        grid-template-columns: repeat(auto-fit, minmax(#{px-to-rem(150)}, 1fr));
+        gap: #{px-to-rem(24)};
+    }
+
+    &--single {
+        grid-template-columns: 1fr;
+    }
+}
+
+.mb-account-field {
+    display: flex;
+    flex-direction: column;
+    gap: #{px-to-rem(8)};
+    min-width: 0;
+
+    &--wide {
+        grid-column: 1 / -1;
+    }
+
+    label,
+    &__label {
+        font-size: #{px-to-rem(12)};
+        font-weight: 700;
+        letter-spacing: var(--mbh-tracking-sub, 0.16em);
+        text-transform: uppercase;
+        line-height: 1.4;
+    }
+
+    .required {
+        color: var(--color--brand-4);
+        text-decoration: none;
+        border: 0;
+    }
+
+    input[type='text'],
+    input[type='email'],
+    input[type='tel'],
+    input[type='password'],
+    input[type='number'],
+    input[type='search'],
+    select,
+    textarea,
+    .select2-container .select2-selection--single {
+        width: 100%;
+        font-family: inherit;
+        font-size: #{px-to-rem(15)};
+        font-weight: 300;
+        line-height: 1.5;
+        padding: #{px-to-rem(10)} 0;
+        background-color: transparent;
+        border: 0;
+        border-bottom: 1px solid var(--mbh-rule, #{rgba(#2f292e, 0.18)});
+        border-radius: 0;
+        color: var(--color--foreground);
+        outline: none;
+        box-shadow: none;
+
+        &:focus,
+        &:focus-visible {
+            border-bottom-color: var(--color--brand-4);
+            outline: none;
+        }
+
+        &::placeholder {
+            color: #9a9598;
+        }
+    }
+
+    // Select2 is what WooCommerce uses for country and state. Strip its chrome
+    // back to the same underline rather than leaving a rounded grey box in the
+    // middle of a row of hairlines.
+    .select2-container .select2-selection--single {
+        height: auto;
+        display: flex;
+        align-items: center;
+
+        .select2-selection__rendered {
+            padding: 0;
+            line-height: inherit;
+            color: inherit;
+        }
+
+        .select2-selection__arrow {
+            height: 100%;
+            right: 0;
+        }
+    }
+
+    &__note {
+        font-size: #{px-to-rem(13)};
+        line-height: 1.5;
+        color: #6e6a6c;
+    }
+
+    // WooCommerce's own inline validation message.
+    em {
+        font-size: #{px-to-rem(13)};
+        font-style: normal;
+        color: #6e6a6c;
+    }
+}
+
+.mb-account-check {
+    display: flex;
+    align-items: flex-start;
+    gap: #{px-to-rem(12)};
+    font-size: #{px-to-rem(15)};
+    line-height: 1.7;
+    color: #6e6a6c;
+    cursor: pointer;
+    max-width: 60ch;
+
+    input[type='checkbox'] {
+        flex: 0 0 auto;
+        width: #{px-to-rem(15)};
+        height: #{px-to-rem(15)};
+        margin-top: #{px-to-rem(5)};
+        accent-color: var(--color--brand-4);
+    }
+}
+
+.mb-account-actions {
+    display: flex;
+    gap: #{px-to-rem(24)};
+    align-items: center;
+    flex-wrap: wrap;
+    margin-top: #{px-to-rem(44)};
+
+    &--ruled {
+        margin-top: #{px-to-rem(56)};
+        padding-top: #{px-to-rem(40)};
+        border-top: 1px solid var(--mbh-rule, #{rgba(#2f292e, 0.18)});
+    }
+
+    &__note {
+        font-size: #{px-to-rem(13)};
+        color: #6e6a6c;
+    }
+}
+
+.mb-account-cancel {
+    font-size: #{px-to-rem(12)};
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #6e6a6c;
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+
+    &:hover,
+    &:focus-visible {
+        color: var(--color--foreground);
+        border-bottom-color: var(--color--brand-4);
+    }
+}
+
+// =============================================================================
+// Dashboard
+// =============================================================================
+
+.mb-account-dash {
+    &__greeting {
+        margin: 0 0 #{px-to-rem(16)};
+        font-weight: 300;
+        font-size: clamp(#{px-to-rem(24)}, 2.6vw, #{px-to-rem(32)});
+        line-height: 1.15;
+        letter-spacing: var(--mbh-tracking-heading, 0.2em);
+        text-transform: uppercase;
+    }
+
+    &__intro {
+        margin: 0 0 clamp(#{px-to-rem(40)}, 5vw, #{px-to-rem(64)});
+        max-width: 60ch;
+        font-size: #{px-to-rem(18)};
+        line-height: 1.7;
+        color: #6e6a6c;
+    }
+
+    &__actions {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(#{px-to-rem(220)}, 1fr));
+        gap: #{px-to-rem(20)};
+        margin-bottom: clamp(#{px-to-rem(48)}, 6vw, #{px-to-rem(80)});
+    }
+
+    &__action {
+        display: block;
+        background-color: var(--color--brand-2);
+        border: 1px solid var(--mbh-rule, #{rgba(#2f292e, 0.18)});
+        padding: #{px-to-rem(28)} #{px-to-rem(24)} #{px-to-rem(26)};
+        text-decoration: none;
+        color: var(--color--foreground);
+        transition: background-color var(--mbh-dur-ui, 240ms) var(--mbh-ease, ease);
+
+        &:hover,
+        &:focus-visible {
+            background-color: var(--color--brand-1);
+            color: var(--color--foreground);
+        }
+    }
+
+    &__action-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: #{px-to-rem(12)};
+        margin-bottom: #{px-to-rem(12)};
+    }
+
+    &__action-label {
+        font-size: #{px-to-rem(12)};
+        font-weight: 700;
+        letter-spacing: var(--mbh-tracking-sub, 0.16em);
+        text-transform: uppercase;
+    }
+
+    &__action-arrow {
+        font-size: #{px-to-rem(16)};
+        color: var(--color--brand-4);
+    }
+
+    &__action-note {
+        margin: 0;
+        font-size: #{px-to-rem(14)};
+        line-height: 1.6;
+        color: #6e6a6c;
+    }
+
+    &__tracker {
+        border: 1px solid var(--mbh-rule, #{rgba(#2f292e, 0.18)});
+        padding: clamp(#{px-to-rem(24)}, 3vw, #{px-to-rem(36)});
+        margin-bottom: clamp(#{px-to-rem(48)}, 6vw, #{px-to-rem(80)});
+    }
+
+    &__tracker-head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: #{px-to-rem(16)};
+        flex-wrap: wrap;
+        margin-bottom: #{px-to-rem(8)};
+    }
+
+    &__tracker-title {
+        margin: 0;
+        font-size: #{px-to-rem(14)};
+        font-weight: 700;
+        letter-spacing: var(--mbh-tracking-sub, 0.16em);
+        text-transform: uppercase;
+    }
+
+    &__tracker-meta {
+        margin: 0 0 #{px-to-rem(8)};
+        font-size: #{px-to-rem(14)};
+        color: #6e6a6c;
+    }
+
+    &__columns {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(#{px-to-rem(260)}, 1fr));
+        gap: clamp(#{px-to-rem(32)}, 4vw, #{px-to-rem(56)});
+    }
+
+    &__summary {
+        margin: 0 0 #{px-to-rem(16)};
+        font-size: #{px-to-rem(15)};
+        line-height: 1.8;
+        color: #6e6a6c;
+    }
+}
+
+// The four-step bar. A grid rather than flex so the columns stay equal and the
+// labels below them line up whatever their length.
+.mb-account-steps {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: #{px-to-rem(4)} #{px-to-rem(8)};
+
+    @include mq('small') {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    &__step {
+        padding: #{px-to-rem(20)} 0 #{px-to-rem(4)};
+        min-width: 0;
+    }
+
+    &__dot {
+        display: block;
+        height: #{px-to-rem(2)};
+        background-color: rgba(47, 41, 46, 0.22);
+        margin-bottom: #{px-to-rem(14)};
+    }
+
+    &__label {
+        font-size: #{px-to-rem(11)};
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        margin-bottom: #{px-to-rem(6)};
+        color: #6e6a6c;
+    }
+
+    &__when {
+        font-size: #{px-to-rem(13)};
+        line-height: 1.4;
+        color: #6e6a6c;
+    }
+
+    &__step.is-reached {
+        .mb-account-steps__dot {
+            background-color: var(--color--brand-4);
+        }
+
+        .mb-account-steps__label {
+            color: var(--color--foreground);
+        }
+    }
+}
+
+// =============================================================================
+// Orders list
+// =============================================================================
+
+.mb-account-orders {
+    &__tabs {
+        display: flex;
+        gap: #{px-to-rem(26)};
+        flex-wrap: wrap;
+        border-bottom: 1px solid var(--mbh-rule, #{rgba(#2f292e, 0.18)});
+        margin-bottom: #{px-to-rem(8)};
+    }
+
+    &__tab {
+        padding: 0 0 #{px-to-rem(12)};
+        margin-bottom: -1px;
+        font-size: #{px-to-rem(12)};
+        font-weight: 700;
+        letter-spacing: var(--mbh-tracking-sub, 0.16em);
+        text-transform: uppercase;
+        color: #6e6a6c;
+        text-decoration: none;
+        border-bottom: 2px solid transparent;
+
+        &:hover,
+        &:focus-visible {
+            color: var(--color--foreground);
+        }
+
+        &.is-current {
+            color: var(--color--foreground);
+            border-bottom-color: var(--color--brand-4);
+        }
+    }
+
+    // One grid definition shared by the header row and every order row, so the
+    // columns cannot drift apart.
+    --mba-order-cols: minmax(0, 1fr) auto;
+
+    @include mq('large') {
+        --mba-order-cols: minmax(#{px-to-rem(96)}, #{px-to-rem(108)}) minmax(#{px-to-rem(96)}, #{px-to-rem(120)}) minmax(#{px-to-rem(160)}, 2fr) #{px-to-rem(112)} minmax(#{px-to-rem(64)}, #{px-to-rem(78)});
+    }
+
+    &__head {
+        display: none;
+        grid-template-columns: var(--mba-order-cols);
+        gap: #{px-to-rem(16)};
+        padding: #{px-to-rem(18)} #{px-to-rem(4)} #{px-to-rem(12)};
+        border-bottom: 1px solid var(--mbh-rule, #{rgba(#2f292e, 0.18)});
+
+        @include mq('large') {
+            display: grid;
+        }
+
+        span {
+            font-size: #{px-to-rem(11)};
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: #6e6a6c;
+            min-width: 0;
+        }
+    }
+
+    &__list {
+        border-top: 1px solid var(--color--brand-4);
+
+        &--flush {
+            border-top: 0;
+        }
+    }
+
+    &__row {
+        display: grid;
+        grid-template-columns: var(--mba-order-cols);
+        gap: #{px-to-rem(12)} #{px-to-rem(16)};
+        align-items: center;
+        padding: #{px-to-rem(22)} #{px-to-rem(4)};
+        border-bottom: 1px solid var(--mbh-rule, #{rgba(#2f292e, 0.18)});
+        text-decoration: none;
+        color: var(--color--foreground);
+        transition: background-color var(--mbh-dur-ui, 240ms) var(--mbh-ease, ease);
+
+        &:hover,
+        &:focus-visible {
+            background-color: rgba(222, 219, 210, 0.4);
+            color: var(--color--foreground);
+        }
+    }
+
+    // Narrow layout: id and total on the first line, date and status on the
+    // second, the item summary spanning the third.
+    &__id {
+        grid-area: 1 / 1 / 2 / 2;
+        font-size: #{px-to-rem(14)};
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        min-width: 0;
+    }
+
+    &__total {
+        grid-area: 1 / 2 / 2 / 3;
+        font-size: #{px-to-rem(14)};
+        text-align: right;
+        min-width: 0;
+    }
+
+    &__date {
+        grid-area: 2 / 1 / 3 / 2;
+        font-size: #{px-to-rem(14)};
+        color: #6e6a6c;
+        min-width: 0;
+    }
+
+    &__status {
+        grid-area: 2 / 2 / 3 / 3;
+        min-width: 0;
+        justify-self: end;
+    }
+
+    &__summary {
+        grid-area: 3 / 1 / 4 / 3;
+        font-size: #{px-to-rem(14)};
+        line-height: 1.45;
+        color: #6e6a6c;
+        min-width: 0;
+    }
+
+    @include mq('large') {
+        &__id,
+        &__date,
+        &__summary,
+        &__status,
+        &__total {
+            grid-area: auto;
+        }
+
+        &__status {
+            justify-self: start;
+        }
+    }
+
+    &__count {
+        margin: #{px-to-rem(24)} 0 0;
+        font-size: #{px-to-rem(13)};
+        color: #6e6a6c;
+    }
+
+    &__pagination {
+        display: flex;
+        gap: #{px-to-rem(20)};
+        flex-wrap: wrap;
+        margin-top: #{px-to-rem(32)};
+    }
+}
+
+// =============================================================================
+// Order detail
+// =============================================================================
+
+.mb-account-order {
+    &__head {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: #{px-to-rem(20)};
+        flex-wrap: wrap;
+        margin-bottom: #{px-to-rem(12)};
+    }
+
+    &__title {
+        margin: 0;
+        font-weight: 300;
+        font-size: clamp(#{px-to-rem(24)}, 2.6vw, #{px-to-rem(32)});
+        line-height: 1.15;
+        letter-spacing: var(--mbh-tracking-heading, 0.2em);
+        text-transform: uppercase;
+    }
+
+    &__meta {
+        margin: 0 0 #{px-to-rem(48)};
+        font-size: #{px-to-rem(15)};
+        color: #6e6a6c;
+    }
+
+    &__steps {
+        display: flex;
+        flex-wrap: wrap;
+        border-top: 1px solid var(--color--brand-4);
+        border-bottom: 1px solid var(--mbh-rule, #{rgba(#2f292e, 0.18)});
+        margin-bottom: #{px-to-rem(56)};
+    }
+
+    &__step {
+        flex: 1 1 #{px-to-rem(140)};
+        padding: #{px-to-rem(22)} #{px-to-rem(20)} #{px-to-rem(22)} 0;
+    }
+
+    &__step-dot {
+        display: block;
+        width: #{px-to-rem(8)};
+        height: #{px-to-rem(8)};
+        border-radius: 50%;
+        background-color: rgba(47, 41, 46, 0.22);
+        margin-bottom: #{px-to-rem(14)};
+    }
+
+    &__step-label {
+        font-size: #{px-to-rem(12)};
+        font-weight: 700;
+        letter-spacing: var(--mbh-tracking-sub, 0.16em);
+        text-transform: uppercase;
+        margin-bottom: #{px-to-rem(6)};
+        color: #6e6a6c;
+    }
+
+    &__step-when {
+        font-size: #{px-to-rem(13)};
+        color: #6e6a6c;
+    }
+
+    &__step.is-reached {
+        .mb-account-order__step-dot {
+            background-color: var(--color--brand-4);
+        }
+
+        .mb-account-order__step-label {
+            color: var(--color--foreground);
+        }
+    }
+
+    &__item {
+        display: flex;
+        align-items: center;
+        gap: #{px-to-rem(20)};
+        flex-wrap: wrap;
+        padding: #{px-to-rem(20)} 0;
+        border-bottom: 1px solid var(--mbh-rule, #{rgba(#2f292e, 0.18)});
+    }
+
+    &__thumb {
+        flex: 0 0 #{px-to-rem(44)};
+        width: #{px-to-rem(44)};
+        height: #{px-to-rem(44)};
+        background-color: var(--color--brand-1);
+        overflow: hidden;
+
+        img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    }
+
+    &__item-text {
+        flex: 1 1 #{px-to-rem(200)};
+        min-width: 0;
+    }
+
+    &__item-name {
+        display: block;
+        font-size: #{px-to-rem(15)};
+
+        a {
+            color: inherit;
+            text-decoration: none;
+
+            &:hover,
+            &:focus-visible {
                 text-decoration: underline;
             }
         }
+    }
 
-        &__logout {
-            @include typestyle-h6;
-            font-weight: normal;
-            text-transform: uppercase;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: var(--space--s);
-            margin-left: auto;
-            margin-top: var(--space--l);
+    &__item-sub {
+        display: block;
+        font-size: #{px-to-rem(13)};
+        color: #6e6a6c;
+    }
 
-            &::after {
-                width: #{px-to-rem(16)};
-                height: #{px-to-rem(16)};
-                background-color: var(--color--foreground);
-                content: '';
-                mask-image: url(#{asset-path('images/icons/chevron-right.svg')});
-                mask-position: center;
-                mask-repeat: no-repeat;
-                mask-size: #{px-to-rem(16)};
-            }
+    &__item-qty {
+        font-size: #{px-to-rem(14)};
+        color: #6e6a6c;
+        min-width: #{px-to-rem(60)};
+    }
+
+    &__item-price {
+        font-size: #{px-to-rem(15)};
+        min-width: #{px-to-rem(80)};
+        text-align: right;
+    }
+
+    &__totals {
+        margin-top: #{px-to-rem(24)};
+    }
+
+    &__total-row {
+        display: flex;
+        justify-content: flex-end;
+        gap: #{px-to-rem(48)};
+        padding: #{px-to-rem(8)} 0;
+
+        &--grand {
+            padding-top: #{px-to-rem(16)};
         }
     }
 
-    &__content {
+    &__total-label {
+        font-size: #{px-to-rem(12)};
+        font-weight: 700;
+        letter-spacing: var(--mbh-tracking-sub, 0.16em);
+        text-transform: uppercase;
+    }
 
-        h2 {
-            @include typestyle-h4;
-            margin-top: 0;
+    &__total-value {
+        font-size: #{px-to-rem(15)};
+        min-width: #{px-to-rem(80)};
+        text-align: right;
+
+        .mb-account-order__total-row--grand & {
+            font-size: #{px-to-rem(18)};
+        }
+    }
+
+    &__columns {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(#{px-to-rem(240)}, 1fr));
+        gap: clamp(#{px-to-rem(32)}, 4vw, #{px-to-rem(56)});
+        margin-top: #{px-to-rem(64)};
+    }
+
+    &__address {
+        margin: 0 0 #{px-to-rem(16)};
+        font-size: #{px-to-rem(15)};
+        line-height: 1.8;
+        color: #6e6a6c;
+        font-style: normal;
+
+        &:last-child {
             margin-bottom: 0;
         }
-
-        .account__form {
-            display: flex;
-            flex-direction: column;
-            gap: var(--space--s);
-
-            fieldset {
-                border: none;
-                padding: 0;
-                margin: 0;
-            }
-        }
-
-        .woocommerce__actions {
-            margin-top: var(--space--l);
-        }
-
     }
 
+    &__notes {
+        list-style: none;
+        margin: #{px-to-rem(48)} 0 0;
+        padding: 0;
+        border-top: 1px solid var(--mbh-rule, #{rgba(#2f292e, 0.18)});
+    }
+
+    &__note {
+        padding: #{px-to-rem(20)} 0;
+        border-bottom: 1px solid var(--mbh-rule, #{rgba(#2f292e, 0.18)});
+    }
+
+    &__note-date {
+        display: block;
+        font-size: #{px-to-rem(11)};
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: #6e6a6c;
+        margin-bottom: #{px-to-rem(8)};
+    }
+
+    &__note-body {
+        font-size: #{px-to-rem(15)};
+        line-height: 1.7;
+        color: #6e6a6c;
+
+        p {
+            margin: 0;
+        }
+    }
+}
+
+// =============================================================================
+// Addresses
+// =============================================================================
+
+.mb-account-addresses {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(#{px-to-rem(280)}, 1fr));
+    gap: #{px-to-rem(20)};
+
+    &__card {
+        background-color: var(--color--brand-2);
+        border: 1px solid var(--mbh-rule, #{rgba(#2f292e, 0.18)});
+        padding: #{px-to-rem(32)} #{px-to-rem(28)} #{px-to-rem(28)};
+    }
+
+    &__head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: #{px-to-rem(16)};
+        margin-bottom: #{px-to-rem(22)};
+    }
+
+    &__title {
+        margin: 0;
+        font-size: #{px-to-rem(14)};
+        font-weight: 700;
+        letter-spacing: var(--mbh-tracking-sub, 0.16em);
+        text-transform: uppercase;
+    }
+
+    &__edit {
+        font-size: #{px-to-rem(12)};
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--color--foreground);
+        text-decoration: none;
+        border-bottom: 1px solid var(--mbh-rule, #{rgba(#2f292e, 0.18)});
+        white-space: nowrap;
+
+        &:hover,
+        &:focus-visible {
+            color: var(--color--foreground);
+            border-bottom-color: var(--color--brand-4);
+        }
+    }
+
+    &__body {
+        margin: 0;
+        font-size: #{px-to-rem(15)};
+        line-height: 1.9;
+        color: #6e6a6c;
+        font-style: normal;
+    }
+}
+
+.mb-account-address-form {
+    border: 1px solid var(--mbh-rule, #{rgba(#2f292e, 0.18)});
+    padding: clamp(#{px-to-rem(28)}, 4vw, #{px-to-rem(44)});
+
+    &__title {
+        margin: 0 0 #{px-to-rem(32)};
+        font-size: #{px-to-rem(14)};
+        font-weight: 700;
+        letter-spacing: var(--mbh-tracking-sub, 0.16em);
+        text-transform: uppercase;
+    }
+}
+
+// =============================================================================
+// Payment methods
+// =============================================================================
+
+.mb-account-cards {
+    border-top: 1px solid var(--color--brand-4);
+    margin-bottom: #{px-to-rem(40)};
+
+    &__row {
+        display: flex;
+        align-items: center;
+        gap: #{px-to-rem(24)};
+        flex-wrap: wrap;
+        padding: #{px-to-rem(24)} #{px-to-rem(4)};
+        border-bottom: 1px solid var(--mbh-rule, #{rgba(#2f292e, 0.18)});
+    }
+
+    &__brand {
+        font-size: #{px-to-rem(12)};
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        padding: #{px-to-rem(7)} #{px-to-rem(12)};
+        border: 1px solid var(--mbh-rule, #{rgba(#2f292e, 0.18)});
+        min-width: #{px-to-rem(76)};
+        text-align: center;
+    }
+
+    &__number {
+        font-size: #{px-to-rem(15)};
+        flex: 1 1 #{px-to-rem(180)};
+    }
+
+    &__expiry {
+        font-size: #{px-to-rem(14)};
+        color: #6e6a6c;
+        min-width: #{px-to-rem(110)};
+    }
+
+    &__flag {
+        min-width: #{px-to-rem(90)};
+    }
+
+    &__actions {
+        display: flex;
+        gap: #{px-to-rem(16)};
+        align-items: center;
+    }
+
+    &__action {
+        font-size: #{px-to-rem(12)};
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #6e6a6c;
+        text-decoration: none;
+        background: none;
+        border: 0;
+        border-bottom: 1px solid transparent;
+        padding: 0;
+        cursor: pointer;
+        font-family: inherit;
+
+        &:hover,
+        &:focus-visible {
+            color: var(--color--foreground);
+            border-bottom-color: var(--color--brand-4);
+        }
+    }
+}
+
+// =============================================================================
+// Team panels: brand assets and sample ordering
+// =============================================================================
+
+.mb-account-embed {
+    position: relative;
+    border: 1px solid var(--mbh-rule, #{rgba(#2f292e, 0.18)});
+    background-color: var(--color--brand-1);
+
+    // The theme gives every iframe a vertical margin in _type-elements.scss,
+    // which would leave a band inside this frame.
+    iframe {
+        display: block;
+        width: 100%;
+        height: #{px-to-rem(800)};
+        border: 0;
+        margin: 0;
+
+        // A class selector beats [hidden]'s display:none, so a frame the
+        // script has hidden would otherwise keep its 800px and leave an empty
+        // band above the fallback.
+        &[hidden] {
+            display: none;
+        }
+    }
+
+    &--placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: #{px-to-rem(560)};
+        padding: #{px-to-rem(48)};
+        text-align: center;
+    }
+
+    &__placeholder-inner {
+        max-width: 44ch;
+    }
+
+    // The theme resets every svg to width:100%, so the monogram needs its own
+    // size or it fills the panel.
+    &__mark {
+        width: #{px-to-rem(40)};
+        height: auto;
+        opacity: 0.5;
+        margin: 0 auto #{px-to-rem(24)};
+    }
+
+    &__eyebrow {
+        font-size: #{px-to-rem(12)};
+        font-weight: 700;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+        color: #6e6a6c;
+        margin-bottom: #{px-to-rem(12)};
+    }
+
+    &__body {
+        margin: 0;
+        font-size: #{px-to-rem(15)};
+        line-height: 1.7;
+        color: #6e6a6c;
+    }
+}
+
+.mb-account-embed-note {
+    margin: #{px-to-rem(20)} 0 0;
+    font-size: #{px-to-rem(13)};
+    color: #6e6a6c;
+
+    a {
+        color: var(--color--foreground);
+        text-decoration: none;
+        border-bottom: 1px solid var(--mbh-rule, #{rgba(#2f292e, 0.18)});
+
+        &:hover,
+        &:focus-visible {
+            border-bottom-color: var(--color--brand-4);
+        }
+    }
 }

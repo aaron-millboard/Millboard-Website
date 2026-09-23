@@ -1,0 +1,56 @@
+// =============================================================================
+// Sample ordering
+// =============================================================================
+// The slot the mb-sof widget sits in, and the widget's palette re-pointed at
+// the brand.
+//
+// The widget declares its own palette as custom properties on `.mb-sof`, and
+// its handover names re-pointing them as the intended way to bring it in line
+// with a design system. Doing it here rather than in the widget's stylesheet
+// keeps its file hand-maintained by IT and this file ours, so a future drop of
+// their code does not overwrite the brand mapping.
+//
+// NOT YET VERIFIED AGAINST THE WIDGET. The package has not been installed on
+// this machine, so these are written from the handover's documented token list
+// and need a look once it is in. Structural overrides are deliberately absent
+// until then: guessing at class names from prose is how you ship a stylesheet
+// that targets selectors which do not exist.
+// =============================================================================
+
+.mb-account-samples {
+    &__widget {
+        // The widget asks for nothing but a normal content column.
+        min-width: 0;
+    }
+
+    .mb-sof {
+        // ---- palette ----
+        --green: var(--color--brand-4); // olive, for accents and UI marks
+        --ink: var(--color--foreground); // Charcoal Black 440
+        --grey-bg: var(--color--brand-2); // Spring Wood
+        --grey-1: #{rgba(#2f292e, 0.18)}; // hairline, matches --mbh-rule
+        --grey-2: #{rgba(#2f292e, 0.18)};
+        --grey-3: #6e6a6c; // muted text, as everywhere else in the account
+        --white: var(--color--brand-2);
+        --red: #a50d09; // the theme's error red
+
+        // ---- type ----
+        // F37 Ginger, so the widget stops asking for Archivo and Hanken
+        // Grotesk. Drop the mb-sof-fonts dependency in the widget's PHP as
+        // well, or the site still pays for two Google Fonts it never paints.
+        --font-h: var(--type--1--font-family);
+        --font-b: var(--type--1--font-family);
+
+        // ---- geometry ----
+        // Square corners throughout the redesign, no exceptions.
+        --radius: 0;
+
+        // Flush with the account column rather than a grey panel inside it.
+        // The handover offers both; flush is what every other panel here does,
+        // and it needs the cards bordered so they do not vanish into the page.
+        // That border is the one structural override, and it is scoped to the
+        // widget's own container so it cannot reach anything else.
+        background: transparent;
+        padding: 0;
+    }
+}

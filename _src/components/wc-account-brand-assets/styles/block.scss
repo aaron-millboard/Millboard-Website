@@ -1,0 +1,26 @@
+// =============================================================================
+// Brand assets
+// =============================================================================
+// The Canto frame and the fallback that replaces it while Canto refuses to be
+// embedded. Shared embed furniture lives in wc-account's block.scss; this file
+// only carries what is specific to the fallback state.
+// =============================================================================
+
+.mb-account-embed {
+    &__fallback {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: #{px-to-rem(360)};
+        padding: clamp(#{px-to-rem(40)}, 6vw, #{px-to-rem(72)}) clamp(#{px-to-rem(28)}, 4vw, #{px-to-rem(48)});
+        text-align: center;
+
+        &[hidden] {
+            display: none;
+        }
+    }
+
+    &__actions {
+        margin: #{px-to-rem(28)} 0 0;
+    }
+}
