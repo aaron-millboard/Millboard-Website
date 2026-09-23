@@ -181,7 +181,10 @@ function process_image(array $row, int $key, array $args, int $pattern_part, boo
 
             // If colour_taxonomy is a term ID, get the term name
             if (!empty($colour_taxonomy) && is_numeric($colour_taxonomy)) {
-                $term = \get_term($colour_taxonomy, 'image_category');
+                $colour_tax = \get_post_type($gallery_post_id) === \Theme\PostTypes\ApplicationImage::SLUG
+                    ? \Theme\PostTypes\ApplicationImage::TAXONOMY
+                    : 'image_category';
+                $term = \get_term($colour_taxonomy, $colour_tax);
                 if ($term && !is_wp_error($term)) {
                     $colour_taxonomy = $term->name;
                 }

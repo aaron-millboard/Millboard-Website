@@ -12,7 +12,7 @@
         <?=  \Granola\Component::get('pagination', $args['pagination_args']); ?>
     <?php } else { ?>
         <?= \Granola\Component::get('no-content', [
-            'object' => \get_post_type_object('image'),
+            'object' => \get_post_type_object($args['post_type']),
         ]); ?>
     <?php } ?>
 </section>
