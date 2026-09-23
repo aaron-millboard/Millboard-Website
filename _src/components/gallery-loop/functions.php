@@ -27,18 +27,24 @@ function filter_args(array $args): ?array
     // ---------------------------------------
     $paged = (get_query_var('paged')) ? get_query_var('paged') : 1;
 
-    if (\is_post_type_archive('image')) {
+    // The Applications Gallery (en-us) reuses this loop with its own post type and categories.
+    $is_applications = \is_post_type_archive(\Theme\PostTypes\ApplicationImage::SLUG);
+    $post_type_class = $is_applications ? \Theme\PostTypes\ApplicationImage::class : \Theme\PostTypes\Image::class;
+    $args['post_type'] = $is_applications ? \Theme\PostTypes\ApplicationImage::SLUG : 'image';
+    $taxonomy = $is_applications ? \Theme\PostTypes\ApplicationImage::TAXONOMY : 'image_category';
+
+    if (\is_post_type_archive($args['post_type'])) {
         global $wp_query;
         $query = $wp_query;
     } else {
         $query_args = [
-            'post_type' => 'image',
+            'post_type' => $args['post_type'],
             'posts_per_page' => $args['limit'],
             'post_status' => 'publish',
             'paged' => $paged,
         ];
 
-        $tax_query = \Theme\PostTypes\Image::get_category_tax_query_from_request();
+        $tax_query = $post_type_class::get_category_tax_query_from_request();
 
         if (!empty($tax_query)) {
             $query_args['tax_query'] = $tax_query;
@@ -92,7 +98,8 @@ function filter_args(array $args): ?array
     // ---------------------------------------
     $args['taxonomy_filters_args'] = [
         'label' => \__('Explore and filter gallery images', 'granola'),
-        'taxonomy' => 'image_category',
+        'taxonomy' => $taxonomy,
+        'post_type' => $args['post_type'],
         'object' => null,
         'show_images' => true,
         'preserve_url' => true,
