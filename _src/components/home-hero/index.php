@@ -159,10 +159,6 @@
                             <path d="M8 6h3v12H8zM13 6h3v12h-3z"></path>
                         </svg>
                     </span>
-
-                    <?php if (!empty($args['film_description'])) : ?>
-                        <span class="home-hero__ring-label"><?= esc_html__('The film', 'granola'); ?></span>
-                    <?php endif; ?>
                 </div>
             <?php endif; ?>
         </div>

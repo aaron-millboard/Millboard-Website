@@ -44,6 +44,45 @@
                 ]); ?>
 
                 <?= \Granola\Component::get('language/switcher'); ?>
+
+                <?php
+                // Trustpilot's Micro Star TrustBox.
+                //
+                // The widget markup has to be printed as Trustpilot specify it:
+                // their bootstrap script finds .trustpilot-widget and reads the
+                // data attributes off it. The bootstrap itself is already
+                // enqueued site-wide under the 'trustpilot' handle by the
+                // iframe component, so there is nothing to load here.
+                //
+                // The inner link is Trustpilot's own fallback: it is what shows
+                // if the script is blocked, and their terms ask for it to stay.
+                //
+                // data-locale follows the site rather than being fixed to
+                // en-GB, so the German and French headers do not get English
+                // widget furniture. It is the widget's display language, not a
+                // filter on which reviews are counted -- the business unit is
+                // the same one everywhere, which is where the reviews live.
+                $tp_locales = [
+                    'en_GB' => 'en-GB',
+                    'en_US' => 'en-US',
+                    'en_IE' => 'en-IE',
+                    'en_AU' => 'en-AU',
+                    'de_DE' => 'de-DE',
+                    'fr_FR' => 'fr-FR',
+                ];
+                $tp_locale = $tp_locales[\get_locale()] ?? 'en-GB';
+                ?>
+                <div
+                    class="site-header__trustpilot trustpilot-widget"
+                    data-locale="<?= esc_attr($tp_locale); ?>"
+                    data-template-id="5419b732fbfb950b10de65e5"
+                    data-businessunit-id="660bb7d2baae927d3621b4ef"
+                    data-style-height="24px"
+                    data-style-width="100%"
+                    data-token="137e824c-e976-4552-b7e4-1b21049a83a5"
+                >
+                    <a href="https://uk.trustpilot.com/review/millboard.com" target="_blank" rel="noopener">Trustpilot</a>
+                </div>
             </div>
 
             <div class="site-header__utility-group site-header__utility-group--end">

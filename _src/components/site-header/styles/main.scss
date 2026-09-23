@@ -449,6 +449,42 @@ body {
             border-top: 1px solid var(--mbh-rule);
         }
     }
+    // Trustpilot's Micro Star TrustBox, beside the language switcher.
+    //
+    // The widget is told data-style-width: 100%, which is what Trustpilot's
+    // own generator emits and what their iframe sizes itself against. In a flex
+    // row that would have it swallow the rest of the strip, so the box is given
+    // a width here and stopped from growing. 24px tall is the height the widget
+    // is configured with; the min-height keeps the strip from jumping while the
+    // iframe is still arriving.
+    &__trustpilot {
+        flex: 0 0 auto;
+        // 200, not the 130 it was. Trustpilot's iframe lays itself out against
+        // the width it is given: at 130 the Micro Star wrapped onto three lines
+        // and reported itself 92px tall, which would have pushed the strip open
+        // to three times its height.
+        width: #{px-to-rem(200)};
+        height: #{px-to-rem(24)};
+        line-height: 0;
+
+        iframe {
+            display: block;
+            width: 100%;
+            height: #{px-to-rem(24)};
+        }
+
+        // Before the script swaps it for an iframe, this is Trustpilot's own
+        // fallback link. It should read as part of the strip rather than as a
+        // stray word.
+        > a {
+            font-size: #{px-to-rem(11)};
+            font-weight: 700;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--color--foreground);
+        }
+    }
+
     &__utility-group {
         display: flex;
         flex-wrap: wrap;

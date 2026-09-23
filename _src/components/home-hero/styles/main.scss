@@ -300,12 +300,12 @@
         left: 0;
         top: 0;
         display: flex;
-        flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: #{px-to-rem(7)};
-        width: #{px-to-rem(108)};
-        height: #{px-to-rem(108)};
+        // 48, not the 108 it was, and no label under the glyph: just the circle
+        // and the play or pause mark inside it.
+        width: #{px-to-rem(48)};
+        height: #{px-to-rem(48)};
         border: 1px solid #{rgba(#f8f4f0, 0.75)};
         border-radius: 50%;
         background: #{rgba(#2f292e, 0.14)};
@@ -352,13 +352,6 @@
         &--pause {
             opacity: calc(1 - var(--home-hero--paused, 0));
         }
-    }
-
-    &__ring-label {
-        font-size: #{px-to-rem(9)};
-        font-weight: 700;
-        letter-spacing: 0.22em;
-        text-transform: uppercase;
     }
 
     // -------------------------------------------------------------------------
