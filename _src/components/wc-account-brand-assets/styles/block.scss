@@ -1,26 +1,174 @@
 // =============================================================================
 // Brand assets
 // =============================================================================
-// The Canto frame and the fallback that replaces it while Canto refuses to be
-// embedded. Shared embed furniture lives in wc-account's block.scss; this file
-// only carries what is specific to the fallback state.
+// The Canto library, read through its API and drawn in the account's own
+// language: hairlines, square corners, olive only as an accent.
+//
+// Not an iframe. Canto sends X-Frame-Options: DENY on every response and its
+// CSP has no frame-ancestors directive, so nothing can frame it.
 // =============================================================================
 
-.mb-account-embed {
-    &__fallback {
+.mb-assets {
+    &__search {
         display: flex;
-        align-items: center;
-        justify-content: center;
-        min-height: #{px-to-rem(360)};
-        padding: clamp(#{px-to-rem(40)}, 6vw, #{px-to-rem(72)}) clamp(#{px-to-rem(28)}, 4vw, #{px-to-rem(48)});
-        text-align: center;
+        gap: #{px-to-rem(12)};
+        align-items: stretch;
+        margin-bottom: #{px-to-rem(24)};
 
-        &[hidden] {
-            display: none;
+        input[type='search'] {
+            flex: 1 1 auto;
+            min-width: 0;
+            font-family: inherit;
+            font-size: #{px-to-rem(15)};
+            font-weight: 300;
+            padding: #{px-to-rem(12)} #{px-to-rem(14)};
+            background-color: transparent;
+            border: 1px solid var(--mbh-rule, #{rgba(#2f292e, 0.18)});
+            border-radius: 0;
+            color: var(--color--foreground);
+            outline: none;
+
+            &:focus,
+            &:focus-visible {
+                border-color: var(--color--brand-4);
+            }
+
+            &::placeholder {
+                color: #9a9598;
+            }
         }
     }
 
+    &__bar {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: #{px-to-rem(16)};
+        flex-wrap: wrap;
+        min-height: #{px-to-rem(22)};
+        margin-bottom: #{px-to-rem(20)};
+    }
+
+    &__crumb {
+        margin: 0;
+
+        .mb-account-back {
+            margin-bottom: 0;
+        }
+    }
+
+    &__count {
+        margin: 0;
+        font-size: #{px-to-rem(12)};
+        font-weight: 700;
+        letter-spacing: var(--mbh-tracking-sub, 0.16em);
+        text-transform: uppercase;
+        color: #6e6a6c;
+    }
+
+    // -------------------------------------------------------------
+    // The grid
+    // -------------------------------------------------------------
+    &__grid {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(#{px-to-rem(180)}, 1fr));
+        gap: #{px-to-rem(20)};
+    }
+
+    &__item {
+        margin: 0;
+        padding: 0;
+        border: 1px solid var(--mbh-rule, #{rgba(#2f292e, 0.18)});
+        min-width: 0;
+    }
+
+    // ---- folders and albums ----
+    &__link {
+        display: flex;
+        flex-direction: column;
+        gap: #{px-to-rem(10)};
+        height: 100%;
+        padding: #{px-to-rem(24)} #{px-to-rem(20)};
+        text-decoration: none;
+        color: var(--color--foreground);
+        transition: background-color var(--mbh-dur-ui, 240ms) var(--mbh-ease, ease);
+
+        &:hover,
+        &:focus-visible {
+            background-color: #{rgba(#dedbd2, 0.45)};
+            color: var(--color--foreground);
+        }
+    }
+
+    // A 2px olive tick rather than a drawn folder icon: the brand set has no
+    // folder glyph, and inventing one is what the icon rule exists to prevent.
+    &__folder-mark {
+        display: block;
+        width: #{px-to-rem(28)};
+        height: #{px-to-rem(2)};
+        background-color: var(--color--brand-4);
+    }
+
+    &__name {
+        display: block;
+        font-size: #{px-to-rem(15)};
+        line-height: 1.4;
+        overflow-wrap: anywhere;
+    }
+
+    &__meta {
+        display: block;
+        margin-top: auto;
+        font-size: #{px-to-rem(11)};
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: #6e6a6c;
+    }
+
+    // ---- assets ----
+    &__asset {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        margin: 0;
+    }
+
+    &__thumb {
+        display: block;
+        aspect-ratio: 4 / 3;
+        background-color: var(--color--brand-1);
+        overflow: hidden;
+
+        img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    }
+
+    &__caption {
+        display: flex;
+        flex-direction: column;
+        gap: #{px-to-rem(10)};
+        flex: 1 1 auto;
+        padding: #{px-to-rem(16)} #{px-to-rem(16)} #{px-to-rem(18)};
+    }
+
     &__actions {
-        margin: #{px-to-rem(28)} 0 0;
+        display: flex;
+        gap: #{px-to-rem(16)};
+        flex-wrap: wrap;
+        margin-top: auto;
+    }
+
+    &__more {
+        margin: #{px-to-rem(24)} 0 0;
+        font-size: #{px-to-rem(13)};
+        color: #6e6a6c;
     }
 }

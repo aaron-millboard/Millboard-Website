@@ -1297,67 +1297,9 @@
 // =============================================================================
 // Team panels: brand assets and sample ordering
 // =============================================================================
-
-.mb-account-embed {
-    position: relative;
-    border: 1px solid var(--mbh-rule, #{rgba(#2f292e, 0.18)});
-    background-color: var(--color--brand-1);
-
-    // The theme gives every iframe a vertical margin in _type-elements.scss,
-    // which would leave a band inside this frame.
-    iframe {
-        display: block;
-        width: 100%;
-        height: #{px-to-rem(800)};
-        border: 0;
-        margin: 0;
-
-        // A class selector beats [hidden]'s display:none, so a frame the
-        // script has hidden would otherwise keep its 800px and leave an empty
-        // band above the fallback.
-        &[hidden] {
-            display: none;
-        }
-    }
-
-    &--placeholder {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-height: #{px-to-rem(560)};
-        padding: #{px-to-rem(48)};
-        text-align: center;
-    }
-
-    &__placeholder-inner {
-        max-width: 44ch;
-    }
-
-    // The theme resets every svg to width:100%, so the monogram needs its own
-    // size or it fills the panel.
-    &__mark {
-        width: #{px-to-rem(40)};
-        height: auto;
-        opacity: 0.5;
-        margin: 0 auto #{px-to-rem(24)};
-    }
-
-    &__eyebrow {
-        font-size: #{px-to-rem(12)};
-        font-weight: 700;
-        letter-spacing: 0.24em;
-        text-transform: uppercase;
-        color: #6e6a6c;
-        margin-bottom: #{px-to-rem(12)};
-    }
-
-    &__body {
-        margin: 0;
-        font-size: #{px-to-rem(15)};
-        line-height: 1.7;
-        color: #6e6a6c;
-    }
-}
+// The iframe rules that used to live here are gone with the frame. Canto
+// refuses to be embedded and the sample widget renders inline, so nothing in
+// the account is framed any more.
 
 .mb-account-embed-note {
     margin: #{px-to-rem(20)} 0 0;
