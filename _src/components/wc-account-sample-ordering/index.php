@@ -16,9 +16,10 @@
  */
 
 use function Granola\Components\WC_Account\get_sample_shortcode;
+use function Granola\Components\WC_Account_Sample_Ordering\has_catalogue;
 
 $shortcode = get_sample_shortcode();
-$has_widget = shortcode_exists($shortcode);
+$has_widget = shortcode_exists($shortcode) && has_catalogue();
 
 ?>
 
@@ -41,23 +42,15 @@ $has_widget = shortcode_exists($shortcode);
 
     <?php else : ?>
 
-        <div class="mb-account-embed mb-account-embed--placeholder">
-            <div class="mb-account-embed__placeholder-inner">
-                <?php
-                // An <img>, not inline SVG, so the theme's global svg reset is
-                // not in play -- but it still needs a declared size.
-                echo \Granola\Image::get('logo-monogram.svg', [
-                    'alt' => '',
-                    'classes' => ['mb-account-embed__mark'],
-                ]);
-                ?>
-
-                <div class="mb-account-embed__eyebrow"><?php esc_html_e('Sample ordering form', 'granola'); ?></div>
-
-                <p class="mb-account-embed__body">
-                    <?php esc_html_e('The sample ordering form loads here, inheriting the page width and the account chrome around it. It appears as soon as the widget is installed.', 'granola'); ?>
-                </p>
-            </div>
+        <div class="mb-account-empty">
+            <span class="mb-account-empty__rule" aria-hidden="true"></span>
+            <h3 class="mb-account-empty__title"><?php esc_html_e('No sample catalogue yet', 'granola'); ?></h3>
+            <p class="mb-account-empty__body">
+                <?php esc_html_e('The form is installed and ready, but it cannot see the sample products yet. On this store a sample is a size option on a board rather than a product of its own, and the form reads products only.', 'granola'); ?>
+            </p>
+            <p class="mb-account-empty__body">
+                <?php esc_html_e('Nothing can be ordered here until that is connected, so no order placed through this tab can go out wrong in the meantime.', 'granola'); ?>
+            </p>
         </div>
 
     <?php endif; ?>

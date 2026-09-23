@@ -1,20 +1,16 @@
 // =============================================================================
 // Sample ordering
 // =============================================================================
-// The slot the mb-sof widget sits in, and the widget's palette re-pointed at
-// the brand.
+// The slot the mb-sof widget sits in, and the widget brought onto the brand.
 //
-// The widget declares its own palette as custom properties on `.mb-sof`, and
-// its handover names re-pointing them as the intended way to bring it in line
-// with a design system. Doing it here rather than in the widget's stylesheet
-// keeps its file hand-maintained by IT and this file ours, so a future drop of
-// their code does not overwrite the brand mapping.
+// The widget declares its palette as custom properties on `.mb-sof`, and its
+// handover names re-pointing them as the intended way to adopt a design
+// system. Doing it here rather than in the widget's own stylesheet keeps that
+// file hand-maintained by IT: a future drop from them overwrites nothing of
+// ours, and this file needs no edit unless they rename a class.
 //
-// NOT YET VERIFIED AGAINST THE WIDGET. The package has not been installed on
-// this machine, so these are written from the handover's documented token list
-// and need a look once it is in. Structural overrides are deliberately absent
-// until then: guessing at class names from prose is how you ship a stylesheet
-// that targets selectors which do not exist.
+// Written against the real stylesheet, not the handover's prose: every
+// selector below appears in sample-ordering/assets/sample-ordering.css.
 // =============================================================================
 
 .mb-account-samples {
@@ -24,33 +20,183 @@
     }
 
     .mb-sof {
-        // ---- palette ----
-        --green: var(--color--brand-4); // olive, for accents and UI marks
+        // -------------------------------------------------------------
+        // Palette
+        // -------------------------------------------------------------
+        --green: var(--color--brand-4); // olive, accents and UI marks
         --ink: var(--color--foreground); // Charcoal Black 440
-        --grey-bg: var(--color--brand-2); // Spring Wood
-        --grey-1: #{rgba(#2f292e, 0.18)}; // hairline, matches --mbh-rule
+        --grey-bg: var(--color--brand-1); // Mist, for the toggle and hovers
+        --grey-1: #{rgba(#2f292e, 0.18)}; // hairline, same as --mbh-rule
         --grey-2: #{rgba(#2f292e, 0.18)};
         --grey-3: #6e6a6c; // muted text, as everywhere else in the account
-        --white: var(--color--brand-2);
+        --white: var(--color--brand-2); // Spring Wood: the account's own ground
         --red: #a50d09; // the theme's error red
 
-        // ---- type ----
-        // F37 Ginger, so the widget stops asking for Archivo and Hanken
-        // Grotesk. Drop the mb-sof-fonts dependency in the widget's PHP as
-        // well, or the site still pays for two Google Fonts it never paints.
+        // -------------------------------------------------------------
+        // Type
+        // -------------------------------------------------------------
+        // F37 Ginger for both. The Google Fonts request the widget registers
+        // as a dependency is neutralised in the component's functions.php, so
+        // the site does not pay for two faces it never paints.
         --font-h: var(--type--1--font-family);
         --font-b: var(--type--1--font-family);
 
-        // ---- geometry ----
-        // Square corners throughout the redesign, no exceptions.
+        // -------------------------------------------------------------
+        // Geometry
+        // -------------------------------------------------------------
+        // Square corners and flat composition throughout the redesign.
         --radius: 0;
+        --shadow: none;
 
         // Flush with the account column rather than a grey panel inside it.
-        // The handover offers both; flush is what every other panel here does,
-        // and it needs the cards bordered so they do not vanish into the page.
-        // That border is the one structural override, and it is scoped to the
-        // widget's own container so it cannot reach anything else.
+        // The handover offers both and warns that flush needs the cards
+        // bordered first -- they already are, in --grey-1, which is now the
+        // same hairline every other panel here uses.
         background: transparent;
-        padding: 0;
+        color: var(--color--foreground);
+        font-weight: 300;
+
+        // The widget's own subtitle. The panel above it already carries an
+        // intro, and the <h1> was dropped upstream on the assumption that
+        // WooCommerce prints a heading, so this is the duplicate half.
+        .page-title {
+            display: none;
+        }
+
+        // ---- toolbar ------------------------------------------------
+        // The theme resets every svg to `width: 100%; height: auto`, and an
+        // element selector beats the svg's own width/height attributes, so the
+        // search icon renders full-width inside the field. The widget's own
+        // rule only positions it. One inline svg in the package, this one.
+        .search-wrap svg {
+            width: #{px-to-rem(15)};
+            height: #{px-to-rem(15)};
+            max-height: none;
+        }
+
+        .search-input {
+            font-weight: 300;
+
+            &:focus {
+                border-color: var(--color--brand-4);
+            }
+        }
+
+        // The three toolbar controls. Upstream these are underlined text, which
+        // reads as links next to a search field. They do things, so they are
+        // drawn as the account's own ghost button: square, hairline, olive on
+        // hover.
+        .btn-link {
+            font-size: #{px-to-rem(12)};
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            text-decoration: none;
+            color: var(--color--foreground);
+            background-color: transparent;
+            border: 1px solid #{rgba(#2f292e, 0.18)};
+            border-radius: 0;
+            padding: #{px-to-rem(10)} #{px-to-rem(16)};
+            line-height: 1;
+            transition: border-color var(--mbh-dur-ui, 240ms) var(--mbh-ease, ease),
+                background-color var(--mbh-dur-ui, 240ms) var(--mbh-ease, ease);
+
+            &:hover,
+            &:focus-visible {
+                color: var(--color--foreground);
+                border-color: var(--color--brand-4);
+                background-color: #{rgba(#dedbd2, 0.4)};
+            }
+        }
+
+        // Clear order has nothing to clear until something is in the order, so
+        // it stays out of the way until then. The class is toggled by this
+        // component's script, which watches the widget's own line counter.
+        #btn-clear-order {
+            display: none;
+        }
+
+        &.has-order #btn-clear-order {
+            display: inline-block;
+        }
+
+        // ---- accordions ---------------------------------------------
+        .accordion-title {
+            font-size: #{px-to-rem(13)};
+            font-weight: 700;
+            letter-spacing: var(--mbh-tracking-sub, 0.16em);
+            text-transform: uppercase;
+        }
+
+        // A circle among square corners reads as a stray. The toggle keeps
+        // its size and its open/closed colours, square.
+        .accordion-toggle {
+            border-radius: 0;
+        }
+
+        .product-name {
+            font-size: #{px-to-rem(15)};
+        }
+
+        .product-sku {
+            font-size: #{px-to-rem(13)};
+            color: #6e6a6c;
+        }
+
+        // ---- the primary button -------------------------------------
+        // The one place the token swap alone gives a wrong answer: upstream
+        // this is charcoal text on the accent colour, and Charcoal Black on
+        // olive measures 4.4:1, just under AA for 14px semibold. The account's
+        // own button -- charcoal ground, Spring Wood text -- is the design's
+        // treatment anyway, and measures 13.4:1.
+        .btn-primary {
+            background-color: var(--color--foreground);
+            color: var(--color--brand-2);
+            border: 1px solid var(--color--foreground);
+            font-size: #{px-to-rem(13)};
+            font-weight: 700;
+            letter-spacing: var(--mbh-tracking-sub, 0.16em);
+            text-transform: uppercase;
+            padding: #{px-to-rem(16)} #{px-to-rem(28)};
+
+            &:disabled {
+                opacity: 0.4;
+            }
+        }
+
+        // ---- the sticky basket bar ----------------------------------
+        // Sticky works in this column: the account body sets no overflow, and
+        // the nav beside it pins from the same ancestry.
+        .order-bar {
+            background-color: var(--color--foreground);
+            color: var(--color--brand-2);
+            box-shadow: none;
+            border: 0;
+            padding: #{px-to-rem(16)} #{px-to-rem(20)};
+        }
+
+        .order-bar-stat {
+            font-size: #{px-to-rem(12)};
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .order-bar-stat strong {
+            font-size: #{px-to-rem(18)};
+            font-weight: 300;
+            letter-spacing: 0;
+        }
+
+        // The bar is charcoal, so its button inverts to stay visible.
+        .order-bar .btn-primary {
+            background-color: var(--color--brand-2);
+            color: var(--color--foreground);
+            border-color: var(--color--brand-2);
+        }
+
+        .no-results {
+            font-size: #{px-to-rem(15)};
+        }
     }
 }
