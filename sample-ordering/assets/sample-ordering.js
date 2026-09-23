@@ -23,6 +23,22 @@
   var CATEGORY_ORDER = DATA.categories || [];
   var MAX_QTY = DATA.maxQty || 99;
 
+  // MILLBOARD EDIT - each line carries its own ceiling.
+  // The portal caps every SKU individually (1, 3, 5, 10, 22 and 30 are all in
+  // use, and two colours of one board can differ), so MAX_QTY is only the
+  // fallback for anything the limits file does not name.
+  var MAX_BY_ID = (function () {
+    var m = {};
+    (DATA.catalogue || []).forEach(function (p) {
+      if (p && p.max_qty != null) m[p.id] = parseInt(p.max_qty, 10) || 0;
+    });
+    return m;
+  }());
+
+  function maxFor(id) {
+    return MAX_BY_ID[id] != null ? MAX_BY_ID[id] : MAX_QTY;
+  }
+
   function byId(id) { return ROOT.querySelector('#' + id); }
   function qs(sel) { return ROOT.querySelector(sel); }
   function qsa(sel) { return ROOT.querySelectorAll(sel); }
@@ -79,7 +95,7 @@
         '<div class="stepper' + (qty > 0 ? ' has-qty' : '') + '" data-id="' + p.id + '">' +
           '<button type="button" class="stepper-btn" data-action="dec" data-id="' + p.id + '"' +
             (qty === 0 ? ' disabled' : '') + ' aria-label="Decrease">&minus;</button>' +
-          '<input class="stepper-qty" type="number" min="0" max="' + MAX_QTY + '" value="' + qty + '"' +
+          '<input class="stepper-qty" type="number" min="0" max="' + maxFor(p.id) + '" value="' + qty + '"' +
             ' data-id="' + p.id + '" aria-label="Quantity for ' + escapeHtml(p.name) + '">' +
           '<button type="button" class="stepper-btn" data-action="inc" data-id="' + p.id + '"' +
             ' aria-label="Increase">+</button>' +
@@ -165,7 +181,7 @@
   }
 
   function setQty(id, qty) {
-    qty = Math.max(0, Math.min(MAX_QTY, qty));
+    qty = Math.max(0, Math.min(maxFor(id), qty));
 
     if (qty === 0) {
       delete order[id];

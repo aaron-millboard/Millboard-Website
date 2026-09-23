@@ -47,7 +47,6 @@ function mb_sof_maybe_handle_submit() {
 	// Only ids that are genuinely in the sample catalogue may be added. Without
 	// this, a forged post could drop any product in the shop into the basket.
 	$allowed = mb_sof_catalogue_by_id();
-	$max     = mb_sof_max_qty();
 
 	$lines = array();
 	foreach ( $raw as $id => $qty ) {
@@ -57,6 +56,21 @@ function mb_sof_maybe_handle_submit() {
 		if ( ! $id || ! $qty || ! isset( $allowed[ $id ] ) ) {
 			continue;
 		}
+
+		/*
+		 * MILLBOARD EDIT — the ceiling is per SKU, not one figure for the
+		 * form. The browser clamps too, but a posted quantity is a claim, not
+		 * a fact, so the real limit is applied here.
+		 */
+		$max = isset( $allowed[ $id ]['max_qty'] )
+			? (int) $allowed[ $id ]['max_qty']
+			: (int) mb_sof_max_qty();
+
+		if ( $max < 1 ) {
+			// A limit of zero means the line is not orderable at all.
+			continue;
+		}
+
 		$lines[ $id ] = min( $qty, $max );
 	}
 
@@ -71,9 +85,34 @@ function mb_sof_maybe_handle_submit() {
 	$failed = array();
 
 	foreach ( $lines as $id => $qty ) {
+		/*
+		 * MILLBOARD EDIT — variations.
+		 *
+		 * A sample here is a variation of a board, so the id in the catalogue
+		 * is a variation id. add_to_cart() wants the PARENT as its product id
+		 * and the variation separately; handed a variation id as the product
+		 * it refuses with "Please choose product options".
+		 *
+		 * Anything with no parent is an ordinary simple product and is added
+		 * exactly as it was before.
+		 */
+		$parent_id    = isset( $allowed[ $id ]['parent_id'] ) ? (int) $allowed[ $id ]['parent_id'] : 0;
+		$variation_id = $parent_id ? $id : 0;
+		$product_id   = $parent_id ? $parent_id : $id;
+
+		$attributes = array();
+
+		if ( $variation_id ) {
+			$variation = wc_get_product( $variation_id );
+
+			if ( $variation instanceof WC_Product_Variation ) {
+				$attributes = $variation->get_variation_attributes();
+			}
+		}
+
 		// add_to_cart() merges quantities for a product already in the basket,
 		// which is the behaviour we want on a repeat submission.
-		$result = WC()->cart->add_to_cart( $id, $qty );
+		$result = WC()->cart->add_to_cart( $product_id, $qty, $variation_id, $attributes );
 
 		if ( $result ) {
 			++$added;

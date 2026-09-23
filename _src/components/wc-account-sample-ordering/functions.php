@@ -62,6 +62,110 @@ function has_catalogue(): bool
  */
 
 /**
+ * Is this request the sample tool posting an order?
+ *
+ * The widget posts back to its own URL with `mb_sof_action=add` and handles it
+ * on template_redirect. Everything below keys off that, so none of it can
+ * touch a basket a customer filled from the shop.
+ */
+function is_tool_submit(): bool
+{
+    // phpcs:ignore WordPress.Security.NonceVerification.Missing -- the widget verifies its own nonce before adding anything; this only decides whose basket rules apply.
+    return isset($_POST['mb_sof_action']) && 'add' === $_POST['mb_sof_action'];
+}
+
+const CART_FLAG = 'millboard_sample_order';
+
+/**
+ * Mark every line the tool puts in the basket.
+ *
+ * Also keeps them as their own cart line: WooCommerce hashes this data into
+ * the line key, so a free staff sample never merges with the same variation a
+ * customer added at its real price.
+ */
+\add_filter('woocommerce_add_cart_item_data', function (array $data): array {
+    if (is_tool_submit()) {
+        $data[CART_FLAG] = true;
+    }
+
+    return $data;
+}, 10, 1);
+
+/**
+ * Staff pay nothing, whatever the sample costs in the shop.
+ *
+ * The small (100mm) samples are already £0. The large (300mm) ones carry a
+ * real price, and Aaron's call is that both go out free when a rep sends them,
+ * so the price is zeroed on the flagged lines only. The same variation bought
+ * from the shop is untouched.
+ */
+\add_action('woocommerce_before_calculate_totals', function ($cart): void {
+    if (!$cart instanceof \WC_Cart) {
+        return;
+    }
+
+    foreach ($cart->get_cart() as $item) {
+        if (empty($item[CART_FLAG]) || empty($item['data']) || !$item['data'] instanceof \WC_Product) {
+            continue;
+        }
+
+        $item['data']->set_price(0);
+    }
+}, 20);
+
+/**
+ * Say so on the order, so fulfilment and the office can tell these apart.
+ */
+\add_filter('woocommerce_get_item_data', function (array $item_data, array $cart_item): array {
+    if (!empty($cart_item[CART_FLAG])) {
+        // `display` as well as `value`: the theme's cart-item-data template
+        // renders $data['display'], so value alone prints an empty row.
+        $item_data[] = [
+            'key' => \__('Sample order', 'granola'),
+            'value' => \__('Sent by the Millboard team', 'granola'),
+            'display' => \__('Sent by the Millboard team', 'granola'),
+        ];
+    }
+
+    return $item_data;
+}, 10, 2);
+
+\add_action('woocommerce_checkout_create_order_line_item', function ($item, $key, $values): void {
+    if (!empty($values[CART_FLAG]) && \is_object($item) && \method_exists($item, 'add_meta_data')) {
+        $item->add_meta_data(\__('Sample order', 'granola'), \__('Sent by the Millboard team', 'granola'));
+    }
+}, 10, 3);
+
+/**
+ * The three-free-sample cap does not apply to the team.
+ *
+ * `MAX_SAMPLES = 3` in the product-samples component is a commercial rule for
+ * customers, enforced on woocommerce_add_to_cart_validation. A rep sending a
+ * customer a spread of colours is the case it was never about, so this runs
+ * after it (priority 99) and lets the tool's own lines through.
+ *
+ * It is deliberately NOT a change to MAX_SAMPLES: that constant still governs
+ * every ordinary add-to-cart on every locale, which is what it is for.
+ */
+\add_filter('woocommerce_add_to_cart_validation', function ($passed) {
+    return is_tool_submit() ? true : $passed;
+}, 99);
+
+/**
+ * The fallback ceiling, for a SKU the limits file does not name.
+ *
+ * Real limits are per SKU and come from `sample-ordering/data/sample-limits.json`
+ * (see mb_sof_limit_for_sku). This only catches anything added to WooCommerce
+ * that the portal export did not list. 10 is the conservative choice: the
+ * portal's own values run 1, 3, 5, 10, 22 and 30, so an unknown line gets a
+ * middling cap rather than the most generous one.
+ *
+ * ⚠️ The limits themselves are being audited. Replacing that JSON file is how
+ * the reviewed numbers land; nothing here needs to change for it.
+ */
+\add_filter('mb_sof_max_qty', fn(): int => 10);
+
+/**
  * Stop the widget fetching Archivo and Hanken Grotesk from Google.
  *
  * Its stylesheet is registered with `mb-sof-fonts` as a dependency, so simply

@@ -110,12 +110,27 @@ function mb_sof_has_any( $haystack, array $needles ) {
  * deliberately out of scope (all 600mm, 300mm Fascia, 300mm flexible edges,
  * rigid Square Step Edge (Standard)) and for anything that matches nothing.
  *
- * @param string $name Product name.
+ * MILLBOARD EDIT — $size_override.
+ *
+ * Upstream the 100/300 split is read out of the product name, because the
+ * HubSpot catalogue encoded the sample's own dimension there. On this store a
+ * sample is a VARIATION of a board, and the size lives in the `pa_sample-size`
+ * attribute instead: small is the 100mm sample, large the 300mm. Worse, the
+ * decking parents carry the board width in their name ("Enhanced Grain 126mm
+ * Antique Oak"), so mb_sof_leading_size() reads 126 and every sample of that
+ * board lands in one category whatever its size.
+ *
+ * Passing the size in fixes that without touching a rule. Left null the
+ * function behaves exactly as before, so the 460-row validation still holds
+ * for anything named the old way.
+ *
+ * @param string   $name          Product name.
+ * @param int|null $size_override Sample size in mm (100 or 300), when known.
  * @return string|null Category name, or null if out of scope.
  */
-function mb_sof_classify( $name ) {
+function mb_sof_classify( $name, $size_override = null ) {
 	$n    = function_exists( 'mb_strtolower' ) ? mb_strtolower( $name, 'UTF-8' ) : strtolower( $name );
-	$size = mb_sof_leading_size( $name );
+	$size = null !== $size_override ? (int) $size_override : mb_sof_leading_size( $name );
 
 	// ── Exclusions (drop entirely) ──
 	if ( 600 === $size ) {
@@ -328,6 +343,132 @@ function mb_sof_fetch_products() {
 }
 
 /**
+ * MILLBOARD ADDITION — per-SKU order limits.
+ *
+ * The portal this replaces caps each SKU individually rather than applying one
+ * figure: 1, 3, 5, 10, 22 and 30 are all in use, and two colours of the same
+ * board can differ. `mb_sof_max_qty` is a single number for the whole form, so
+ * it stays as the fallback and this supplies the per-line ceiling.
+ *
+ * Seeded from the portal export and NOT yet audited -- swapping
+ * data/sample-limits.json is how the reviewed numbers land.
+ *
+ * @return array<string,int> Upper-case SKU => max units.
+ */
+function mb_sof_sku_limits() {
+	static $limits = null;
+
+	if ( is_array( $limits ) ) {
+		return $limits;
+	}
+
+	$limits = array();
+	$file   = __DIR__ . '/../data/sample-limits.json';
+
+	if ( is_readable( $file ) ) {
+		$json = json_decode( (string) file_get_contents( $file ), true );
+
+		if ( isset( $json['limits'] ) && is_array( $json['limits'] ) ) {
+			foreach ( $json['limits'] as $sku => $max ) {
+				$limits[ strtoupper( trim( (string) $sku ) ) ] = (int) $max;
+			}
+		}
+	}
+
+	$limits = (array) apply_filters( 'mb_sof_sku_limits', $limits );
+
+	return $limits;
+}
+
+/**
+ * The ceiling for one SKU: its own limit, or the form-wide default.
+ *
+ * @param string $sku Product SKU.
+ * @return int
+ */
+function mb_sof_limit_for_sku( $sku ) {
+	$limits = mb_sof_sku_limits();
+	$key    = strtoupper( trim( (string) $sku ) );
+
+	$max = isset( $limits[ $key ] ) ? (int) $limits[ $key ] : (int) mb_sof_max_qty();
+
+	return max( 0, $max );
+}
+
+/**
+ * MILLBOARD ADDITION — the sample variations.
+ *
+ * On this store a sample is not a product. It is a variation of a board, under
+ * the `pa_sample-size` attribute: `small` is the 100mm sample, `large` the
+ * 300mm one, and `full` is the board itself and never a sample. The SKUs are
+ * the AM* codes (AME105A, AME305A and the rest).
+ *
+ * One query for the same reason the upstream one is: three columns for the
+ * whole catalogue, and the result is cached.
+ *
+ * The name is the parent's, with the size appended so two variations of one
+ * board are tellable apart in the list. Classification does NOT read that
+ * name for the size -- it is passed explicitly, see mb_sof_classify().
+ *
+ * @return array[] Rows of { id, name, sku, sample_size, parent_id }.
+ */
+function mb_sof_fetch_sample_variations() {
+	global $wpdb;
+
+	$sql = "
+		SELECT
+			v.ID              AS id,
+			v.post_parent     AS parent_id,
+			parent.post_title AS name,
+			COALESCE( sku.meta_value, '' ) AS sku,
+			size_term.slug    AS size_slug
+		FROM {$wpdb->posts} v
+		INNER JOIN {$wpdb->posts} parent ON parent.ID = v.post_parent AND parent.post_status = 'publish'
+		LEFT JOIN {$wpdb->postmeta} sku ON sku.post_id = v.ID AND sku.meta_key = '_sku'
+		INNER JOIN {$wpdb->postmeta} size_meta
+			ON size_meta.post_id = v.ID AND size_meta.meta_key = 'attribute_pa_sample-size'
+		INNER JOIN {$wpdb->terms} size_term ON size_term.slug = size_meta.meta_value
+		INNER JOIN {$wpdb->term_taxonomy} size_tax
+			ON size_tax.term_id = size_term.term_id AND size_tax.taxonomy = 'pa_sample-size'
+		WHERE v.post_type = 'product_variation'
+			AND v.post_status = 'publish'
+			AND size_meta.meta_value IN ( 'small', 'large' )
+		GROUP BY v.ID
+	";
+
+	// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- no user input in this statement.
+	$rows = $wpdb->get_results( $sql, ARRAY_A );
+
+	if ( ! is_array( $rows ) ) {
+		return array();
+	}
+
+	$out = array();
+
+	foreach ( $rows as $row ) {
+		$is_small = ( 'small' === $row['size_slug'] );
+
+		/*
+		 * post_title stores HTML entities, so "Board & Batten+" arrives as
+		 * "Board &amp; Batten+". The classifier matches a literal "&" and
+		 * would drop all twenty of them, and the widget escapes names again
+		 * on output, so an undecoded one renders as "&amp;" on screen.
+		 */
+		$name = html_entity_decode( (string) $row['name'], ENT_QUOTES, 'UTF-8' );
+
+		$out[] = array(
+			'id'          => (int) $row['id'],
+			'parent_id'   => (int) $row['parent_id'],
+			'sku'         => (string) $row['sku'],
+			'name'        => $name . ( $is_small ? ' — 100mm sample' : ' — 300mm sample' ),
+			'sample_size' => $is_small ? 100 : 300,
+		);
+	}
+
+	return $out;
+}
+
+/**
  * Stock status for a set of product ids, in one query.
  *
  * @param int[] $ids Product ids.
@@ -383,11 +524,37 @@ function mb_sof_get_catalogue( $force = false ) {
 	$valid = array_flip( mb_sof_category_order() );
 	$items = array();
 
+	/*
+	 * MILLBOARD EDIT — sample variations are read first, and are in scope by
+	 * definition: carrying a `pa_sample-size` of small or large IS what makes
+	 * something a sample here, so there is no name to test. Their size is
+	 * passed to the classifier rather than parsed back out of a string.
+	 */
+	foreach ( mb_sof_fetch_sample_variations() as $row ) {
+		$category = mb_sof_classify( $row['name'], $row['sample_size'] );
+
+		if ( null === $category || ! isset( $valid[ $category ] ) ) {
+			continue;
+		}
+
+		$items[] = array(
+			'id'          => (int) $row['id'],
+			'parent_id'   => (int) $row['parent_id'],
+			'sku'         => (string) $row['sku'],
+			'name'        => (string) $row['name'],
+			'category'    => $category,
+			'sample_size' => (int) $row['sample_size'],
+		);
+	}
+
+	$seen = array_flip( wp_list_pluck( $items, 'id' ) );
+
 	foreach ( mb_sof_fetch_products() as $row ) {
-		$name = (string) $row['name'];
+		// Entities, for the same reason as the variations above.
+		$name = html_entity_decode( (string) $row['name'], ENT_QUOTES, 'UTF-8' );
 		$sku  = (string) $row['sku'];
 
-		if ( ! mb_sof_in_scope( $name, $sku ) ) {
+		if ( isset( $seen[ (int) $row['id'] ] ) || ! mb_sof_in_scope( $name, $sku ) ) {
 			continue;
 		}
 
@@ -397,10 +564,11 @@ function mb_sof_get_catalogue( $force = false ) {
 		}
 
 		$items[] = array(
-			'id'       => (int) $row['id'],
-			'sku'      => $sku,
-			'name'     => $name,
-			'category' => $category,
+			'id'        => (int) $row['id'],
+			'parent_id' => 0,
+			'sku'       => $sku,
+			'name'      => $name,
+			'category'  => $category,
 		);
 	}
 
@@ -409,6 +577,9 @@ function mb_sof_get_catalogue( $force = false ) {
 	foreach ( $items as &$item ) {
 		$status            = isset( $stock[ $item['id'] ] ) ? $stock[ $item['id'] ] : 'instock';
 		$item['in_stock'] = ( 'outofstock' !== $status );
+
+		// MILLBOARD EDIT — each line carries its own ceiling.
+		$item['max_qty'] = mb_sof_limit_for_sku( $item['sku'] );
 	}
 	unset( $item );
 
