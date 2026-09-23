@@ -77,7 +77,7 @@
                     data-locale="<?= esc_attr($tp_locale); ?>"
                     data-template-id="5419b732fbfb950b10de65e5"
                     data-businessunit-id="660bb7d2baae927d3621b4ef"
-                    data-style-height="24px"
+                    data-style-height="20px"
                     data-style-width="100%"
                     data-token="137e824c-e976-4552-b7e4-1b21049a83a5"
                 >

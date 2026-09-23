@@ -463,14 +463,21 @@ body {
         // the width it is given: at 130 the Micro Star wrapped onto three lines
         // and reported itself 92px tall, which would have pushed the strip open
         // to three times its height.
+        // Trustpilot sizes its own type to the height it is configured with,
+        // so the widget is asked for 20px rather than 24 -- at 24 its
+        // "Excellent" read as oversized beside the strip's 11px caps.
+        //
+        // Scaling it with a transform was tried first and does not work: their
+        // script writes an inline width onto the iframe, so the width set here
+        // never applied, the box came out narrower than the Micro Star needs
+        // and the widget re-rendered without its stars.
         width: #{px-to-rem(200)};
-        height: #{px-to-rem(24)};
+        height: #{px-to-rem(20)};
         line-height: 0;
 
         iframe {
             display: block;
-            width: 100%;
-            height: #{px-to-rem(24)};
+            height: #{px-to-rem(20)};
         }
 
         // Before the script swaps it for an iframe, this is Trustpilot's own
