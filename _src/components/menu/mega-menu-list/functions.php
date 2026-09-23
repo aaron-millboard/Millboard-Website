@@ -36,6 +36,7 @@ function filter_args(array $args): ?array
         'max_depth' => null,
         'widget' => null,
         'cta' => null,
+        'parent_title' => null,
     ], $args);
 
     // ---------------------------------------

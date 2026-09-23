@@ -22,6 +22,7 @@ function filter_args(array $args): ?array
         'item' => null,
         'shape' => 'text',
         'depth' => 0,
+        'row_index' => null,
     ], $args);
 
     // ---------------------------------------
@@ -45,6 +46,22 @@ function filter_args(array $args): ?array
     $args['classes'][] = 'menu-item--depth-' . $args['depth'];
 
     $args['attributes']['id'] = 'menu-item-' . $item->ID;
+
+    // ---------------------------------------
+    // Where this row sits in the panel, counted straight through.
+    //
+    // The drawer staggers a pane's rows as they arrive, and nth-child cannot
+    // do the counting: a panel is several lists -- the cards, then a list per
+    // group -- so nth-child restarts at every one of them and the fifth row on
+    // screen was arriving at the same moment as the first. mega-menu-list
+    // counts once, in the order it prints, and hands each row its place.
+    //
+    // Only the drawer reads it; above the breakpoint the panel is already open
+    // by the time it is seen and nothing is staggered.
+    // ---------------------------------------
+    if ($args['row_index'] !== null) {
+        $args['attributes']['style']['--mbh-drawer--row-index'] = (int) $args['row_index'];
+    }
 
     // ---------------------------------------
     // The picture, for a card.

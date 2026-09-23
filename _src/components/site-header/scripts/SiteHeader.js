@@ -54,11 +54,23 @@ export default class SiteHeader {
         window.addEventListener('scrollchange', this);
         window.addEventListener('scrolldown', this);
 
-        // Escape closes the drawer, returning focus to the burger.
+        // Escape steps back one level: out of an open pane first, and only then
+        // out of the drawer. Closing the whole drawer from inside a pane would
+        // throw away two steps of navigation for one key, and the reader who
+        // pressed it is most likely trying to leave the pane.
         window.addEventListener('keydown', (event) => {
-            if (event.key === 'Escape' && this.el.classList.contains('is-open')) {
-                this.closeHeader();
+            if (event.key !== 'Escape' || !this.el.classList.contains('is-open')) {
+                return;
             }
+
+            const openPane = this.el.querySelector('.menu-item.is-submenu-expanded');
+
+            if (openPane && this.isBurgerModeActive()) {
+                this.closeMegaMenuPane(openPane);
+                return;
+            }
+
+            this.closeHeader();
         });
 
         if (this.isBurgerModeActive()) {
@@ -177,8 +189,58 @@ export default class SiteHeader {
 
             if (parentItem) {
                 parentItem.classList.add('is-submenu-expanded');
+
+                // In the drawer the panel arrives as a pane over the menu, so
+                // focus goes to its back button. Without this, tabbing from the
+                // section you just opened carries on down the menu behind it.
+                if (this.isBurgerModeActive()) {
+                    const back = parentItem.querySelector('[data-mega-menu-back]');
+
+                    if (back) {
+                        back.focus({ preventScroll: true });
+                    }
+                }
             }
         });
+
+        this.setUpMegaMenuPanes();
+    }
+
+    /**
+     * The drawer's back buttons.
+     *
+     * Each one collapses the pane it sits in. The pane is opened by the item's
+     * own chevron, which by then is scrolled off the top of a phone screen, so
+     * the button is the way back rather than a second way in.
+     *
+     * It defers to the existing toggler instead of collapsing the element
+     * itself, so the expanded state, the aria-expanded on the chevron and the
+     * classes all stay with the one mechanism that already owns them.
+     */
+    setUpMegaMenuPanes() {
+        this.el.querySelectorAll('[data-mega-menu-back]').forEach((button) => {
+            button.addEventListener('click', () => {
+                const parentItem = button.closest('.menu-item');
+
+                if (parentItem) {
+                    this.closeMegaMenuPane(parentItem);
+                }
+            });
+        });
+    }
+
+    /**
+     * Close one drawer pane and put focus back on the row that opened it.
+     */
+    closeMegaMenuPane(parentItem) {
+        const toggler = parentItem.querySelector(':scope > .menu-item__wrap > .sub-menu-toggler');
+
+        if (!toggler) {
+            return;
+        }
+
+        toggler.click();
+        toggler.focus({ preventScroll: true });
     }
 
     /**

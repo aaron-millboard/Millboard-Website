@@ -357,3 +357,458 @@
         }
     }
 }
+
+// =============================================================================
+// The drawer's panes
+// =============================================================================
+// Below the header breakpoint a mega menu stops being a panel that drops from
+// the nav and becomes a pane that slides over the drawer, headed by a back
+// button and the section's name.
+//
+// The pane is `fixed`, covering the drawer from under the bar to the bottom of
+// the screen, which is why nothing between it and the viewport may carry a
+// transform: a transformed ancestor becomes the containing block for a fixed
+// descendant and the pane would be positioned against the nav row instead of
+// the screen. That rules out sliding the menu behind it, which is what the
+// design does, so the menu is taken out with `visibility` instead -- which the
+// pane overrides on itself, and which takes the menu out of the tab order at
+// the same time, so focus cannot wander into the list hidden underneath.
+// =============================================================================
+
+@include mq($until: 'site-header') {
+    .site-header {
+        // --------------------------------------------------------------------
+        // The pane has to stay rendered to be able to move.
+        //
+        // The expander hides a closed sub-menu with the `hidden` attribute,
+        // which resolves to `display: none` -- and a display: none element has
+        // no transition to run, so the pane simply appeared. It is laid out at
+        // all times down here and hidden with `visibility` instead, which keeps
+        // it out of the tab order and away from a screen reader just as
+        // `hidden` did, while leaving something for the motion to work on.
+        // --------------------------------------------------------------------
+        .sub-menu--mega[hidden] {
+            display: block;
+        }
+
+        // --------------------------------------------------------------------
+        // A level leaves; the next one arrives. They are never both on screen.
+        //
+        // The pane used to slide the full width of the phone and sit on top of
+        // the menu, which is what made Back look broken -- two levels visible
+        // at once, one sliding over the other. The design does something much
+        // quieter: the level on screen moves --dist and fades out, and a beat
+        // later the next level's rows arrive from --dist on the other side. The
+        // handover happens in the gap, so there is nothing to overlap.
+        //
+        // Leaving is one movement for the whole level. Only the arriving rows
+        // are staggered: a list that unpicks itself on the way out reads as
+        // slow, and the eye is already following what is coming in.
+        // --------------------------------------------------------------------
+        .sub-menu--mega {
+            position: fixed;
+            left: 0;
+            // Width, not `right: 0`. A fixed element resolves its insets
+            // against the viewport including the scrollbar, so on any browser
+            // drawing a classic one -- a desktop window narrowed past the
+            // breakpoint, which is how this gets checked -- the pane came out
+            // the scrollbar's width too wide and clipped the chevron off every
+            // row. This variable is the page's real width, kept by
+            // SiteHeader.js for the full-bleed desktop panel, which has the
+            // same problem.
+            width: var(--site-header--viewport, 100%);
+            // Under the bar, whatever height it currently is.
+            top: var(--site-header--height);
+            bottom: 0;
+            z-index: 4;
+            margin: 0;
+            padding: 0 var(--mbh-drawer--gutter) #{px-to-rem(56)};
+            overflow-y: auto;
+            // A pane at its end should not start scrolling the page behind it.
+            overscroll-behavior: contain;
+            background-color: var(--color--springwood);
+
+            // Same as the drawer behind it: no bar down the edge.
+            scrollbar-width: none;
+
+            &::-webkit-scrollbar {
+                display: none;
+            }
+
+            // Away, and on its way out: the level moves off to the right and
+            // fades, opacity finishing first so the fade leads the move.
+            opacity: 0;
+            transform: translateX(var(--mbh-drawer--dist));
+            visibility: hidden;
+            transition:
+                opacity var(--mbh-drawer--out-fade) var(--mbh-drawer--ease),
+                transform var(--mbh-drawer--out-move) var(--mbh-drawer--ease),
+                visibility 0s linear var(--mbh-drawer--out-move);
+        }
+
+        // Arriving, the pane itself does not move at all -- it is the surface
+        // the rows arrive on, and moving it too would double the motion. It
+        // simply takes over at the swap point, by which time the menu has gone.
+        .menu-item--depth-0.is-submenu-expanded > .sub-menu--mega {
+            opacity: 1;
+            transform: none;
+            visibility: visible;
+            transition:
+                opacity 0s linear var(--mbh-drawer--swap),
+                transform 0s linear var(--mbh-drawer--swap),
+                visibility 0s linear var(--mbh-drawer--swap);
+        }
+
+        // --------------------------------------------------------------------
+        // The menu is the level underneath.
+        //
+        // The rows are moved, not the nav that contains them: the pane is
+        // `fixed` and a transformed ancestor would become its containing block,
+        // which would peg it to the nav row instead of the screen.
+        //
+        // On the wrap rather than the link, because the link carries the
+        // drawer's own opening animation and an animation with `both` fill
+        // holds its end state -- it would refuse to let a transition move the
+        // same properties for the rest of the session.
+        // --------------------------------------------------------------------
+        .menu-item--depth-0 > .menu-item__wrap,
+        .site-header__mobile-links,
+        .site-header__utility {
+            // Returning: staggered, from the side it left towards.
+            transition:
+                opacity var(--mbh-drawer--row) var(--mbh-drawer--ease),
+                transform var(--mbh-drawer--row) var(--mbh-drawer--ease),
+                visibility 0s;
+            transition-delay: var(--mbh-drawer--swap);
+        }
+
+        .is-site-header-submenu-expanded & {
+            .menu-item--depth-0 > .menu-item__wrap,
+            .site-header__mobile-links,
+            .site-header__utility {
+                opacity: 0;
+                transform: translateX(calc(var(--mbh-drawer--dist) * -1));
+                visibility: hidden;
+                // Leaving: together, and immediately.
+                transition:
+                    opacity var(--mbh-drawer--out-fade) var(--mbh-drawer--ease),
+                    transform var(--mbh-drawer--out-move) var(--mbh-drawer--ease),
+                    visibility 0s linear var(--mbh-drawer--out-move);
+                transition-delay: 0s;
+            }
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // The pane's head.
+    // -------------------------------------------------------------------------
+    .mega-menu-list {
+        &__pane-head {
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            padding-top: #{px-to-rem(8)};
+            padding-bottom: #{px-to-rem(4)};
+            background-color: var(--color--springwood);
+        }
+
+        &__back {
+            display: flex;
+            align-items: center;
+            gap: #{px-to-rem(10)};
+            // 44 rather than the design's 52, which is the minimum a thumb
+            // wants and clears WCAG 2.5.8 outright.
+            min-height: #{px-to-rem(44)};
+            // Pulled back by its own padding so the label, not the padding,
+            // lines up with the rows below it.
+            margin-left: #{px-to-rem(-6)};
+            padding: 0 #{px-to-rem(6)};
+            border: 0;
+            background: transparent;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: #{px-to-rem(11)};
+            font-weight: 700;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            color: var(--color--foreground);
+        }
+
+        &__back-icon {
+            // The theme resets every svg to width: 100%.
+            flex: none;
+            width: #{px-to-rem(16)};
+            height: #{px-to-rem(16)};
+            max-height: none;
+            color: var(--color--olivegreen);
+        }
+
+        &__pane-title {
+            margin: #{px-to-rem(2)} 0 #{px-to-rem(16)};
+            font-weight: 300;
+            // Two of these wrap to a second line on a small phone and the
+            // design lets them; balanced so the break falls somewhere sensible.
+            font-size: clamp(#{px-to-rem(22)}, 6.2vw, #{px-to-rem(27)});
+            line-height: 1.18;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            text-wrap: balance;
+            color: var(--color--foreground);
+        }
+
+        // One column in the drawer, whatever shape the panel takes on desktop.
+        &__inner {
+            display: block;
+            max-height: none;
+            padding: 0;
+            overflow: visible;
+        }
+
+        &__cards,
+        &__links {
+            grid-template-columns: minmax(0, 1fr);
+            gap: 0;
+            // The desktop panel equalises its rows against each other; down
+            // here every row is its own width and there is nothing to equalise.
+            grid-auto-rows: auto;
+        }
+
+        &__rail {
+            padding-left: 0;
+            border-left: 0;
+            margin-top: #{px-to-rem(24)};
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // A card becomes a row.
+    //
+    // The tall 3/4 tile is a desktop shape. At drawer width it filled the
+    // screen -- one range per scroll -- so down here a card takes the same
+    // shape as every other row in the pane: a small picture, the title, and
+    // the arrow that says it goes somewhere.
+    // -------------------------------------------------------------------------
+    .sub-menu--mega .mega-menu-item {
+        &--card a.mega-menu-item__card {
+            display: grid;
+            grid-template-columns: #{px-to-rem(64)} minmax(0, 1fr) auto;
+            align-items: center;
+            gap: #{px-to-rem(16)};
+            padding: #{px-to-rem(12)} 0;
+            border-bottom: 1px solid #{rgba(#2f292e, 0.16)};
+        }
+
+        // Portrait, not square: a board photographed along its length reads as
+        // a board at 64x80 and as a smudge at 64x64.
+        &--card a.mega-menu-item__card .mega-menu-item__frame {
+            width: #{px-to-rem(64)};
+            height: #{px-to-rem(80)};
+        }
+
+        &--card a.mega-menu-item__card .mega-menu-item__image {
+            width: #{px-to-rem(64)};
+            height: #{px-to-rem(80)};
+            aspect-ratio: 4 / 5;
+            max-height: none;
+        }
+
+        // No rule of its own -- the row already carries one -- and no auto
+        // margin, which was there to line tile titles up with each other.
+        &--card a.mega-menu-item__card .mega-menu-item__title {
+            margin: 0;
+            padding: 0;
+            border-bottom: 0;
+        }
+
+        // Rows, not a grid of paragraphs.
+        &--text a.mega-menu-item__text {
+            min-height: #{px-to-rem(52)};
+            padding: #{px-to-rem(8)} 0;
+            margin: 0;
+        }
+
+        &--rail a.mega-menu-item__rail,
+        &--text a.mega-menu-item__text {
+            font-size: #{px-to-rem(15)};
+            font-weight: 300;
+            line-height: 1.4;
+        }
+
+        &--rail a.mega-menu-item__rail {
+            min-height: #{px-to-rem(52)};
+            padding: #{px-to-rem(8)} 0;
+            margin: 0;
+            border-bottom: 1px solid #{rgba(#2f292e, 0.16)};
+        }
+    }
+}
+
+// Above the breakpoint the pane head is not drawn at all.
+@include mq('site-header') {
+    .mega-menu-list__pane-head {
+        display: none;
+    }
+}
+
+// =============================================================================
+// The drawer's rows arrive one after another
+// =============================================================================
+// Three entrances, one per direction, because a row should arrive from where
+// the thing it belongs to came from:
+//
+//   opening the drawer   the rows rise into place
+//   going deeper         they arrive from the right, following the tap
+//   coming back          they arrive from the left, following Back
+//
+// All three are keyframe animations rather than transitions. The nav is
+// `display: none` until the drawer opens, and an element that was not being
+// laid out has no previous value to transition from -- which is why the rows
+// used to arrive "at random", each one jumping into place at whatever moment
+// layout happened to reach it. An animation runs from the moment an element is
+// first displayed, which is exactly the moment wanted here.
+// =============================================================================
+
+@include mq($until: 'site-header') {
+    .site-header {
+        // The drawer's own rows, on open. On the link, not the row: the row is
+        // what moves when a level changes, and an animation with `both` fill
+        // holds its end state and would refuse to let that transition move it.
+        .menu-item--depth-0 > .menu-item__wrap > a {
+            animation: mbDrawerRise var(--mbh-drawer--row) var(--mbh-drawer--ease) both;
+            animation-play-state: paused;
+        }
+
+        &.is-open .menu-item--depth-0 > .menu-item__wrap > a {
+            animation-play-state: running;
+        }
+
+        // The nav is two lists, not one. The wordmark sits between its halves
+        // on a wide screen, so the menu renders twice and stacks in the drawer
+        // -- which means nth-child restarts at the second half and rows 4, 5
+        // and 6 were arriving at the same moment as 1, 2 and 3. The second
+        // list carries the first list's length as an offset so the six rows
+        // count straight through.
+        .site-header__navigation--end {
+            --mbh-drawer--row-offset: 3;
+        }
+
+        // Eight covers the six sections the menu has today and leaves room for
+        // two more before anyone has to think about this number again.
+        @for $i from 1 through 8 {
+            &.is-open .menu-list > .menu-item--depth-0:nth-child(#{$i}) > .menu-item__wrap > a {
+                animation-delay: calc(
+                    (#{$i - 1} + var(--mbh-drawer--row-offset, 0)) * var(--mbh-drawer--stagger)
+                );
+            }
+
+            // The same rows returning from a pane. A transition this time, not
+            // an animation -- these rows are on screen and have somewhere to
+            // come back from, and the wrap is already carrying the transition
+            // that took them away.
+            .menu-list > .menu-item--depth-0:nth-child(#{$i}) > .menu-item__wrap {
+                transition-delay: calc(
+                    var(--mbh-drawer--swap) +
+                        (#{$i - 1} + var(--mbh-drawer--row-offset, 0)) * var(--mbh-drawer--stagger)
+                );
+            }
+        }
+
+        // The pane's rows, arriving from the right behind the tap. Held until
+        // the swap point so they start as the menu underneath finishes leaving.
+        .sub-menu--mega .mega-menu-item,
+        .mega-menu-list__pane-head,
+        .mega-menu-list__group-title,
+        .mega-menu-list__cta {
+            animation: mbDrawerForward var(--mbh-drawer--row) var(--mbh-drawer--ease) both;
+            animation-play-state: paused;
+        }
+
+        .menu-item--depth-0.is-submenu-expanded .sub-menu--mega .mega-menu-item,
+        .menu-item--depth-0.is-submenu-expanded .mega-menu-list__pane-head,
+        .menu-item--depth-0.is-submenu-expanded .mega-menu-list__group-title,
+        .menu-item--depth-0.is-submenu-expanded .mega-menu-list__cta {
+            animation-play-state: running;
+        }
+
+        // The head goes first, so the title and Back are there to read while
+        // the rows are still arriving underneath.
+        .menu-item--depth-0.is-submenu-expanded .mega-menu-list__pane-head {
+            animation-delay: var(--mbh-drawer--swap);
+        }
+
+        // Every other row takes the place the panel counted for it.
+        //
+        // nth-child cannot do this. A panel is several lists -- the cards, then
+        // one per group -- so nth-child restarts at each, and the fifth row on
+        // screen was arriving at the same moment as the first. mega-menu-list
+        // numbers them straight through as it prints, headings included, and
+        // each carries its own number on a custom property.
+        .menu-item--depth-0.is-submenu-expanded .sub-menu--mega .mega-menu-item,
+        .menu-item--depth-0.is-submenu-expanded .mega-menu-list__group-title,
+        .menu-item--depth-0.is-submenu-expanded .mega-menu-list__cta {
+            animation-delay: calc(
+                var(--mbh-drawer--swap) +
+                    var(--mbh-drawer--row-index, 1) * var(--mbh-drawer--stagger)
+            );
+        }
+
+        // The same small green arrow the panel's own rows carry, rather than a
+        // chevron. Drawn pointing right, so it is not rotated: pointing down it
+        // is accordion language and says the row will expand in place. It does
+        // not -- it hands the screen over to the next level.
+        .sub-menu-toggler::after,
+        .sub-menu-toggler[aria-expanded='true']::after {
+            transform: none;
+            mask-image: url(#{asset-path('images/icons/arrow-right.svg')});
+            background-color: var(--color--olivegreen);
+        }
+    }
+
+    // Nothing moves for a reader who has asked for stillness. The rows simply
+    // are where they belong, and the pane is simply there.
+    @media (prefers-reduced-motion: reduce) {
+        .site-header {
+            .menu-item--depth-0 > .menu-item__wrap,
+            .site-header__mobile-links,
+            .site-header__utility,
+            .sub-menu--mega,
+            .sub-menu--mega .mega-menu-item,
+            .mega-menu-list__pane-head,
+            .mega-menu-list__group-title,
+            .mega-menu-list__cta {
+                transform: none;
+                transition: none;
+                animation-duration: 1ms;
+                animation-delay: 0s;
+            }
+        }
+    }
+}
+
+// The three entrances. Distance is shared with the leaving transitions, so a
+// level always arrives from exactly as far as the last one left.
+@keyframes mbDrawerRise {
+    from {
+        opacity: 0;
+        // Shorter than a sideways move: the drawer is not coming from anywhere,
+        // it is settling, and a full 24px of drop reads as a bounce.
+        transform: translateY(calc(var(--mbh-drawer--dist) * 0.6));
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@keyframes mbDrawerForward {
+    from {
+        opacity: 0;
+        transform: translateX(var(--mbh-drawer--dist));
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}

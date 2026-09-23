@@ -89,6 +89,34 @@ body {
 .site-header {
     --site-header--spacing: var(--space--m);
     --site-header--button-size: #{px-to-rem(48)};
+
+    // The drawer's motion, as the design states it. One place, because the
+    // pane, the menu leaving under it and the staggered rows all have to move
+    // on the same curve or the whole thing reads as several animations that
+    // happen to overlap.
+    //
+    // The design does not slide a full-width pane across. A level leaves by
+    // travelling --dist and fading, the next arrives from --dist on the other
+    // side, and only the arriving rows are staggered. Small distance, long
+    // duration: it reads as a settle rather than a swipe, and nothing has to
+    // cross the whole screen to get where it is going.
+    --mbh-drawer--ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+    --mbh-drawer--dist: #{px-to-rem(24)};
+    // One row's entrance. Long, because it overlaps its neighbours -- the list
+    // is still one movement, not eight, as long as the stagger is short.
+    --mbh-drawer--row: 520ms;
+    --mbh-drawer--stagger: 45ms;
+    // The outgoing level. Opacity finishes first so the fade leads the move.
+    --mbh-drawer--out-fade: 200ms;
+    --mbh-drawer--out-move: 240ms;
+    // When the levels change hands. Slightly before the outgoing move ends, so
+    // the arriving rows are already on their way as the last of it clears --
+    // waiting for it leaves a hole where neither level is on screen.
+    --mbh-drawer--swap: 220ms;
+    // The whole panel, on open and close. Only ever a fade: the panel is the
+    // surface the levels move on, so moving it too would double the motion.
+    --mbh-drawer--panel: 280ms;
+    --mbh-drawer--gutter: clamp(#{px-to-rem(20)}, 5vw, #{px-to-rem(48)});
     --site-header--pad: clamp(#{px-to-rem(16)}, 3vw, #{px-to-rem(56)});
 
     // The gap between top-level nav links, and between the nav and the icons.
@@ -211,11 +239,19 @@ body {
         // justify-self, rather than each owning a column. That frees the nav
         // rows below to be two equal columns at tablet width without the bar
         // having to agree to the same column structure.
-        grid-template-columns: 1fr;
+        // Three columns, so the bar's three items each own one.
+        //
+        // They used to share a single `bar` area and separate themselves with
+        // justify-self, which is what let a centred wordmark run into the
+        // icons: nothing in that arrangement knows the other two are there. A
+        // 1fr middle column between two auto columns cannot overlap by
+        // construction, and the wordmark keeps its natural size until the
+        // column itself is too narrow for it.
+        grid-template-columns: auto 1fr auto;
         grid-template-areas:
-            'bar'
-            'navstart'
-            'navend';
+            'burger logo icons'
+            'navstart navstart navstart'
+            'navend navend navend';
         // 12px, as the design specifies for the compact bar, and stated rather
         // than inherited: --space--2xs is fluid and came out near 24px at tablet,
         // which left the bar's area 16px short of the viewport and the wordmark
@@ -232,10 +268,10 @@ body {
         // trailing holes. Side by side, they are three items down the left and
         // three down the right, in menu order, with nothing missing.
         @include mq($from: 'home-compact') {
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: auto 1fr auto;
             grid-template-areas:
-                'bar bar'
-                'navstart navend';
+                'burger logo icons'
+                'navstart navstart navend';
             column-gap: clamp(#{px-to-rem(24)}, 5vw, #{px-to-rem(64)});
             align-items: start;
         }
@@ -397,8 +433,6 @@ body {
     // -------------------------------------------------------------------------
     @include mq($until: 'site-header') {
         &__inner { order: 1; }
-        &__utility { order: 2; }
-        &__mobile-links { order: 3; }
 
         &__utility {
             // No `display` here. The strip is `display: none` while the drawer
@@ -417,36 +451,167 @@ body {
         //    the strip's padding and again by its own margins -- so it came out
         //    310px wide in a 390px drawer.
         &__call-to-action-1 {
-            order: 1;
-            width: 100%;
-            min-height: #{px-to-rem(50)};
-            margin: var(--space--s) 0 0;
+            order: 2;
+            // Not `width: 100%`. The drawer's column stretches it already, and
+            // a declared full width would ignore the gutter margins and run
+            // the button off both edges.
+            width: auto;
+            min-height: #{px-to-rem(52)};
+            margin-top: var(--space--s);
             justify-content: center;
         }
 
-        // 2. Audience, then the finder links, then the locale: one column on a
-        //    phone, two from tablet up, all sharing the same left edge. The
-        //    locale was floating out to the right on its own.
-        &__navigation--top { order: 2; }
+        // ---------------------------------------------------------------------
+        // 2. Everything under the samples button, as three kinds of thing
+        //    rather than one list of leftovers.
+        //
+        //    The design gives the tail of the drawer a shape: the primary
+        //    action, then the places you can go, then the two switchers that
+        //    say which Millboard you are looking at. They were previously six
+        //    identical small-caps links in a two-column grid, which read as
+        //    whatever would not fit anywhere else.
+        //
+        //    The switchers come last here rather than in the design's order.
+        //    The design has no account or help links in its drawer and ours
+        //    does, and they belong with the other places-to-go; a switcher
+        //    sitting between them and the finders would split the group.
+        // ---------------------------------------------------------------------
         &__navigation--utility { order: 3; }
 
+        &__mobile-links { order: 4; }
+
+        &__navigation--top { order: 5; }
+
         .language-switcher {
-            order: 4;
+            order: 6;
             // Its own component sets `align-self: center` and `margin-left:
             // auto` for the old header. In a column flex container that centres
             // it, so the locale sat at x=173 while every link beside it started
             // at the 20px gutter.
             align-self: flex-start;
             min-height: #{px-to-rem(44)};
-            margin-left: 0;
+            margin-top: var(--space--s);
             padding-inline: 0;
         }
 
-        // The hairline the design puts under the button.
+        // ---------------------------------------------------------------------
+        // The places you can go: find an installer, find a distributor, your
+        // account, help.
+        //
+        // Full-width rows with a hairline between them and a quiet chevron at
+        // the end, matching the leaf links inside a panel. Sentence case and
+        // light, not small caps: caps is the language this header uses for
+        // navigation that opens something, and none of these do.
+        //
+        // The design puts a small icon at the head of each of these. They are
+        // per-item, and a WP menu item has nowhere to keep one -- keying them
+        // off the title or the slug breaks on the first locale that translates
+        // either. They want a field on the menu item before they can be drawn.
+        // ---------------------------------------------------------------------
+        &.is-open &__navigation--utility .menu-list,
+        &.is-open &__mobile-links {
+            display: flex;
+            flex-direction: column;
+        }
+
+        &.is-open &__navigation--utility .menu-item {
+            padding: 0;
+            border-bottom: 0;
+        }
+
+        &.is-open &__navigation--utility .menu-item,
+        &.is-open &__navigation--utility .menu-item > .menu-item__wrap {
+            display: block;
+            width: 100%;
+        }
+
+        &.is-open &__navigation--utility .menu-item > .menu-item__wrap > a,
+        &.is-open &__mobile-links > a {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: #{px-to-rem(14)};
+            // The design's 52. Clears WCAG 2.5.8 with room to spare.
+            min-height: #{px-to-rem(52)};
+            padding: #{px-to-rem(8)} 0;
+            border-top: 1px solid var(--mbh-rule);
+            border-bottom: 0;
+            font-size: #{px-to-rem(15)};
+            font-weight: 300;
+            letter-spacing: 0;
+            text-transform: none;
+            color: var(--color--foreground);
+
+            // The same quiet chevron a leaf link inside a panel carries, so a
+            // row that goes straight somewhere looks the same wherever it is.
+            // Not the green arrow: that one belongs to rows that hand the
+            // screen over to another level, and these do not.
+            &::after {
+                flex: none;
+                width: #{px-to-rem(13)};
+                height: #{px-to-rem(13)};
+                background-color: #{rgba(#2f292e, 0.55)};
+                mask-image: url(#{asset-path('images/icons/chevron-right.svg')});
+                mask-repeat: no-repeat;
+                mask-position: center;
+                mask-size: contain;
+                content: '';
+            }
+        }
+
+        // One hairline closes the block, rather than each half closing itself.
+        &.is-open &__mobile-links > a:last-child {
+            border-bottom: 1px solid var(--mbh-rule);
+        }
+
+        &__mobile-links {
+            margin-top: 0;
+            padding-top: 0;
+            border-top: 0;
+        }
+
+        // ---------------------------------------------------------------------
+        // Residential / Commercial, as a switch rather than two links.
+        //
+        // One bordered group with the current site filled in: the pair is a
+        // choice between two states of the same thing, and two separate links
+        // do not say that.
+        // ---------------------------------------------------------------------
         &__navigation--top {
             margin-top: var(--space--m);
-            padding-top: var(--space--s);
-            border-top: 1px solid var(--mbh-rule);
+        }
+
+        &.is-open &__navigation--top .menu-list {
+            display: inline-flex;
+            width: fit-content;
+            border: 1px solid #{rgba(#2f292e, 0.3)};
+        }
+
+        &.is-open &__navigation--top .menu-item {
+            padding: 0;
+            border-bottom: 0;
+        }
+
+        &.is-open &__navigation--top .menu-item > .menu-item__wrap > a {
+            display: flex;
+            align-items: center;
+            min-height: #{px-to-rem(40)};
+            padding: 0 #{px-to-rem(14)};
+            border: 0;
+            font-size: #{px-to-rem(11)};
+            font-weight: 700;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--color--foreground);
+        }
+
+        // The site you are on. Filled, so the switch reads as a switch and not
+        // as two buttons that happen to sit together.
+        &.is-open &__navigation--top .menu-item--current > .menu-item__wrap > a,
+        &.is-open &__navigation--top .current-menu-item > .menu-item__wrap > a {
+            background-color: var(--color--foreground);
+            color: var(--color--springwood);
         }
     }
     // Trustpilot's Micro Star TrustBox, beside the language switcher.
@@ -459,6 +624,13 @@ body {
     // iframe is still arriving.
     &__trustpilot {
         flex: 0 0 auto;
+
+        // Desktop only. In the drawer the utility strip stacks, and the widget
+        // landed on top of the samples button; the design's drawer does not
+        // carry it either.
+        @include mq($until: 'site-header') {
+            display: none;
+        }
         // 200, not the 130 it was. Trustpilot's iframe lays itself out against
         // the width it is given: at 130 the Micro Star wrapped onto three lines
         // and reported itself 92px tall, which would have pushed the strip open
@@ -603,12 +775,6 @@ body {
             margin: 0;
             padding: 0;
             list-style: none;
-
-            @include mq($until: 'site-header') {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(min(100%, #{px-to-rem(200)}), 1fr));
-                gap: 0 var(--space--m);
-            }
         }
 
         // Matched to `_menu.scss`'s own depth-0 selector, which sets these links
@@ -640,14 +806,6 @@ body {
 
             &:hover {
                 border-bottom-color: var(--color--olivegreen);
-            }
-
-            // In the drawer these are stacked rows rather than a tight line,
-            // so the design lifts them to 12px on 44px targets.
-            @include mq($until: 'site-header') {
-                min-height: #{px-to-rem(44)};
-                font-size: #{px-to-rem(12)};
-                border-bottom: 0;
             }
         }
 
@@ -845,13 +1003,19 @@ body {
                 align-items: center;
                 justify-content: space-between;
                 gap: var(--space--s);
-                min-height: #{px-to-rem(60)};
+                min-height: #{px-to-rem(64)};
                 border-bottom: 1px solid var(--mbh-rule);
             }
 
             .menu-item--depth-0 > .menu-item__wrap > a {
-                font-size: #{px-to-rem(20)};
-                letter-spacing: var(--mbh-tracking-sub);
+                // The design's size, which is fluid for a reason: "Composite
+                // decking" and "Composite cladding" are the longest labels the
+                // menu has, and at a fixed 20 they both wrapped to two lines on
+                // a 375 or 360 phone. Tied to the viewport they come down to
+                // about 18 on a 375 and stay on one line, and a wide phone
+                // still gets the full 20.
+                font-size: clamp(#{px-to-rem(17)}, 4.9vw, #{px-to-rem(20)});
+                letter-spacing: 0.14em;
                 border-bottom: 0;
                 padding-bottom: 0;
             }
@@ -861,10 +1025,33 @@ body {
     // -------------------------------------------------------------------------
     // Wordmark. 28px shrinking to 22px on scroll; 24px on the compact bar.
     // -------------------------------------------------------------------------
+    // The account link leaves the compact bar. It is the third of three glyphs
+    // squeezing a centred wordmark, and the drawer already names it in full as
+    // "Your account" -- an icon and a row for the same destination is one too
+    // many. This is what the design's compact bar draws.
+    &__account-link {
+        @include mq($until: 'site-header') {
+            display: none;
+        }
+    }
+
+    // An empty basket says nothing worth the space on a phone.
+    //
+    // The badge is only rendered when the count is non-zero, and SampleBasket.js
+    // creates and removes it as the basket changes, so :has() tracks it live --
+    // add a sample and the icon appears without a reload.
+    &__basket-link {
+        @include mq($until: 'site-header') {
+            &:not(:has(.site-header__basket-count)) {
+                display: none;
+            }
+        }
+    }
+
     &__logo {
-        // `bar` on compact, where the three bar items share one area; `logo`
-        // on wide, where it has a column of its own between the nav halves.
-        grid-area: bar;
+        // Its own column at every width now: `logo` between the burger and the
+        // icons on compact, and between the nav halves on wide.
+        grid-area: logo;
         display: flex;
         align-items: center;
         justify-self: center;
@@ -878,6 +1065,30 @@ body {
             display: block;
             width: auto;
             height: #{px-to-rem(24)};
+        }
+
+        // On compact the three bar items share one grid area and are placed
+        // with justify-self, so nothing stops a centred wordmark running into
+        // the icons: it overlapped the search glyph by 7px at 375 and by 34 at
+        // 320. Being centred, the binding constraint is symmetric -- whatever
+        // the wider side needs, twice. The icons are the wider side, so the
+        // wordmark is capped to what is left between them and scales inside it
+        // rather than being cropped.
+        @include mq($until: 'site-header') {
+            // No width arithmetic. The column it sits in already ends where the
+            // icons begin, so the wordmark only has to agree not to overflow
+            // it -- and it keeps its full 24px until the column is genuinely
+            // too narrow, which is where an earlier symmetric max-width was
+            // shrinking it on every phone.
+            max-width: 100%;
+
+            img,
+            svg {
+                width: auto;
+                height: auto;
+                max-width: 100%;
+                max-height: #{px-to-rem(24)};
+            }
         }
 
         @include mq('site-header') {
@@ -910,7 +1121,7 @@ body {
     }
 
     &__icons {
-        grid-area: bar;
+        grid-area: icons;
         z-index: $internal-z-index * 4;
         display: flex;
         align-items: center;
@@ -956,9 +1167,26 @@ body {
             // The drawer scrolls, the page behind it does not (the script locks
             // the body). dvh rather than vh so a mobile browser's collapsing
             // toolbar cannot leave the last row unreachable.
+            //
+            // min as well as max, because this was a ceiling with no floor: a
+            // menu shorter than the screen left the page showing underneath it,
+            // which is why a stray line of breadcrumb was sitting at the bottom
+            // of the drawer. The drawer now fills the screen whatever is in it.
+            min-height: calc(100dvh - var(--wp--admin-bar-height--sticky));
             max-height: calc(100dvh - var(--wp--admin-bar-height--sticky));
             overflow-y: auto;
             overscroll-behavior: contain;
+
+            // No scrollbar. Unlike the projects rail, which keeps a quiet one
+            // because a sideways rail gives no other sign it runs past the
+            // edge, a full-screen menu is obviously scrollable and the bar is
+            // just a line down the design. It still scrolls, by touch and by
+            // keyboard.
+            scrollbar-width: none;
+
+            &::-webkit-scrollbar {
+                display: none;
+            }
             padding-bottom: var(--space--xl);
 
             #{$this}__navigation--primary,
@@ -966,27 +1194,39 @@ body {
                 display: block;
             }
 
-            // Flex, not block: the strip is the drawer's column and `order` on
-            // its children only means anything to a flex container. As block it
-            // laid the samples button out in DOM order, below the links it is
-            // meant to sit above.
+            // `contents`, not flex. As a flex container of its own the strip
+            // could sequence its own children, but the account links are its
+            // sibling rather than its child, so they could only go before all
+            // of it or after all of it -- which left them stranded under the
+            // switchers. With the strip's box gone its children become rows of
+            // the drawer's column alongside the account links, and one `order`
+            // run sequences every row in the tail.
             #{$this}__utility {
-                display: flex;
+                display: contents;
             }
 
             // The gutter lives here now. `display: contents` on the inner
             // wrapper removes its box, and its padding with it, so the
             // secondary links were sitting flush against x=0.
             #{$this}__navigation--primary,
-            #{$this}__utility {
-                padding-inline: clamp(#{px-to-rem(20)}, 5vw, #{px-to-rem(48)});
+            #{$this}__navigation--top,
+            #{$this}__navigation--utility,
+            #{$this}__mobile-links {
+                padding-inline: var(--mbh-drawer--gutter);
             }
 
-            // The samples call to action goes full width above the hairline.
+            #{$this}__call-to-action-1,
+            .language-switcher {
+                margin-inline: var(--mbh-drawer--gutter);
+            }
+
+            // The samples call to action goes full width above the hairline --
+            // full width of the drawer's text column, that is, not of the
+            // screen. `width: 100%` and a zeroed margin were fighting the
+            // gutter every other row keeps, and the button ran edge to edge.
             #{$this}__call-to-action-1 {
                 display: flex;
-                width: 100%;
-                margin-inline: 0;
+                width: auto;
                 justify-content: center;
             }
         }
@@ -1046,7 +1286,7 @@ body {
 
         --burger--size: #{px-to-rem(48)};
 
-        grid-area: bar;
+        grid-area: burger;
         justify-self: start;
         flex: 0 0 auto;
 
