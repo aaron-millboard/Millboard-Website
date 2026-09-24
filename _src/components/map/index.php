@@ -156,18 +156,53 @@
         <div class="map__content alignwide">
             <div id="map-sidebar" class="map__sidebar map__tab-panel">
                 <?php if (!empty($args['installer_filters'])) { ?>
-                    <div class="map__sidebar__head">
-                        <div class="map__sidebar__head__row">
-                            <?= \Granola\Component::get('heading', $args['sidebar_heading']) ?>
+                    <?php
+                    /**
+                     * Installer map: the count and a one-line summary of the filters stay in
+                     * view, and the tiles sit in a panel behind the Filter button so they do not
+                     * push the results down ("Installer Filters v3" design). Map.js rewrites the
+                     * heading, summary and button label from the data-template attributes.
+                     */
+                    ?>
+                    <?php /* translators: %s: the number of map results. */ ?>
+                    <div
+                        class="map__installer-filters"
+                        data-installer-filters
+                        data-heading-one="<?= esc_attr__('%s result', 'granola'); ?>"
+                        data-heading-other="<?= esc_attr__('%s results', 'granola'); ?>"
+                    >
+                        <div class="map__sidebar__head">
+                            <div class="map__sidebar__head__text">
+                                <?= \Granola\Component::get('heading', $args['sidebar_heading']) ?>
 
-                            <button type="button" class="map__installer-filters__clear" data-installer-filters-clear hidden>
-                                <?= esc_html__('Clear', 'granola'); ?>
+                                <p class="map__sidebar__summary">
+                                    <span data-installer-filters-summary><?= esc_html__('All installers', 'granola'); ?></span>
+
+                                    <button type="button" class="map__installer-filters__clear" data-installer-filters-clear hidden>
+                                        <?= esc_html__('Clear', 'granola'); ?>
+                                    </button>
+                                </p>
+                            </div>
+
+                            <button
+                                type="button"
+                                class="map__installer-filters__toggle"
+                                data-installer-filters-toggle
+                                aria-expanded="false"
+                                aria-controls="map-installer-filters-panel"
+                            >
+                                <?php /* translators: %s: how many filters are switched on. */ ?>
+                                <span
+                                    data-installer-filters-toggle-label
+                                    data-label="<?= esc_attr__('Filter', 'granola'); ?>"
+                                    data-template="<?= esc_attr__('Filter (%s)', 'granola'); ?>"
+                                ><?= esc_html__('Filter', 'granola'); ?></span>
+
+                                <svg class="map__installer-filters__chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
                             </button>
                         </div>
 
-                        <p class="map__sidebar__hint">
-                            <?= esc_html__('Click a tile below to filter the list and map.', 'granola'); ?>
-                        </p>
+                        <?= \Granola\Components\Map\render_installer_filters($args['installer_filters'], count($args['items'])); ?>
                     </div>
                 <?php } else { ?>
                     <?= \Granola\Component::get('heading', $args['sidebar_heading']) ?>
@@ -181,9 +216,7 @@
                     hidden
                 ></p>
 
-                <?php if (!empty($args['installer_filters'])) { ?>
-                    <?= \Granola\Components\Map\render_installer_filters($args['installer_filters']); ?>
-                <?php } elseif (!empty($args['filters'])) { ?>
+                <?php if (empty($args['installer_filters']) && !empty($args['filters'])) { ?>
                     <div class="map__filters map__filters--sidebar">
                         <?php foreach ($args['filters'] as $filter) { ?>
                             <button 

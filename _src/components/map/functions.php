@@ -136,6 +136,15 @@ function filter_args(array $args): ?array
     $args['filters'] = generate_filters($args);
     $args['installer_filters'] = generate_installer_type_filters($args);
 
+    // The installer filter bar leads with the bare count, "138 results".
+    if (!empty($args['installer_filters'])) {
+        $args['sidebar_heading']['content'] = sprintf(
+            // translators: the number of map results.
+            \_n('%1$s result', '%1$s results', $results_count, 'granola'),
+            number_format_i18n($results_count)
+        );
+    }
+
     // Linked from the appointed market distributor note. Resolved per locale so each site
     // links to its own copy of the page.
     if (empty($args['global_distributors_url'])) {
@@ -627,12 +636,16 @@ function generate_installer_tier_filters($args): array
 }
 
 /**
- * Tile filters for the installer map, per Aaron's "Installer Filters" design (24 Sep 2026).
+ * Tile filters for the installer map, per Aaron's "Installer Filters" designs (24 Sep 2026,
+ * v3 is current).
  *
  * Installer type is a pick-one set of four tiles. They overlap on purpose: Decking lists
  * every installer who does decking, including those who also do cladding, and "Decking &
  * cladding" lists only those who do both. The Approved / Advanced accreditation is a
- * decking accreditation, so its tiles only open once a decking type is chosen.
+ * decking accreditation, so its tiles only show once a decking type is chosen.
+ *
+ * Each option also carries the words the summary line under the result count uses, e.g.
+ * "Decking & cladding installers · Advanced".
  *
  * Returns [] unless both specialisms are present, in which case the map falls back to the
  * plain tier chips: on a locale where every installer is still decking only, the type
@@ -663,18 +676,19 @@ function generate_installer_type_filters($args): array
     }
 
     $types = [
-        'all' => \__('All', 'granola'),
-        'both' => \__('Decking & cladding', 'granola'),
-        'decking' => \__('Decking', 'granola'),
-        'cladding' => \__('Cladding', 'granola'),
+        'all' => [\__('All', 'granola'), \__('All installers', 'granola')],
+        'both' => [\__('Decking & cladding', 'granola'), \__('Decking & cladding installers', 'granola')],
+        'decking' => [\__('Decking', 'granola'), \__('Decking installers', 'granola')],
+        'cladding' => [\__('Cladding', 'granola'), \__('Cladding installers', 'granola')],
     ];
 
     $filters = ['types' => [], 'tiers' => []];
 
-    foreach ($types as $value => $label) {
+    foreach ($types as $value => [$label, $summary]) {
         $filters['types'][] = [
             'value' => $value,
             'label' => $label,
+            'summary' => $summary,
             'count' => $counts[$value],
         ];
     }
@@ -699,16 +713,14 @@ function generate_installer_type_filters($args): array
 }
 
 /**
- * The installer tile panel: Installer type, then the Decking accreditation tiles.
+ * The installer filter panel that the Filter button opens ("Installer Filters v3").
  *
- * The accreditation group is rendered closed (inert, so its tiles are out of the tab
- * order) and Map.js opens it when a decking type is chosen. Choosing a decking type also
- * folds the type grid into the one-line summary bar, so the open accreditation group does
- * not push the results down; "Change" unfolds it again ("Installer Filters2" design).
- * The tiles carry their own data attributes rather than data-filter-value, so the pick-one
- * chip handling in Map.js never picks them up.
+ * Rendered closed and inert, so none of its controls are in the tab order until Map.js
+ * opens it. The accreditation group is hidden until a decking type is chosen. The tiles
+ * carry their own data attributes rather than data-filter-value, so the pick-one chip
+ * handling in Map.js never picks them up.
  */
-function render_installer_filters(array $filters): string
+function render_installer_filters(array $filters, int $results_count): string
 {
     if (empty($filters['types'])) {
         return '';
@@ -716,46 +728,37 @@ function render_installer_filters(array $filters): string
 
     ob_start();
     ?>
-    <div class="map__installer-filters" data-installer-filters>
-        <div class="map__installer-filters__group">
-            <p class="map__installer-filters__label" id="map-installer-type-label">
-                <?= \esc_html__('Installer type', 'granola'); ?>
-            </p>
+    <div class="map__installer-filters__panel" id="map-installer-filters-panel" data-installer-filters-panel inert>
+        <div class="map__installer-filters__panel__inner">
+            <div class="map__installer-filters__body">
+                <p class="map__installer-filters__hint">
+                    <?= \esc_html__('Click to filter the list and map.', 'granola'); ?>
+                </p>
 
-            <?php // Filled in by Map.js from the chosen tile when the grid folds away. ?>
-            <button
-                type="button"
-                class="map__installer-filters__summary"
-                data-installer-summary
-                aria-expanded="false"
-                aria-controls="map-installer-type-grid"
-                hidden
-            >
-                <span class="map__installer-filters__summary__label" data-installer-summary-label></span>
-                <span class="map__installer-filters__summary__count" data-installer-summary-count></span>
-                <span class="map__installer-filters__summary__change"><?= \esc_html__('Change', 'granola'); ?></span>
-            </button>
+                <div class="map__installer-filters__group">
+                    <p class="map__installer-filters__label" id="map-installer-type-label">
+                        <?= \esc_html__('Installer type', 'granola'); ?>
+                    </p>
 
-            <div class="map__installer-filters__grid" id="map-installer-type-grid" role="group" aria-labelledby="map-installer-type-label">
-                <?php foreach ($filters['types'] as $type) { ?>
-                    <?php $is_all = $type['value'] === 'all'; ?>
-                    <button
-                        type="button"
-                        class="map__tile map__tile--type<?= $is_all ? ' map__tile--active' : ''; ?>"
-                        data-installer-type="<?= \esc_attr($type['value']); ?>"
-                        aria-pressed="<?= $is_all ? 'true' : 'false'; ?>"
-                    >
-                        <span class="map__tile__label"><?= \esc_html($type['label']); ?></span>
-                        <span class="map__tile__count" data-tile-count><?= \esc_html($type['count']); ?></span>
-                    </button>
-                <?php } ?>
-            </div>
-        </div>
+                    <div class="map__installer-filters__grid" role="group" aria-labelledby="map-installer-type-label">
+                        <?php foreach ($filters['types'] as $type) { ?>
+                            <?php $is_all = $type['value'] === 'all'; ?>
+                            <button
+                                type="button"
+                                class="map__tile<?= $is_all ? ' map__tile--active' : ''; ?>"
+                                data-installer-type="<?= \esc_attr($type['value']); ?>"
+                                data-summary="<?= \esc_attr($type['summary']); ?>"
+                                aria-pressed="<?= $is_all ? 'true' : 'false'; ?>"
+                            >
+                                <span class="map__tile__label"><?= \esc_html($type['label']); ?></span>
+                                <span class="map__tile__count" data-tile-count><?= \esc_html($type['count']); ?></span>
+                            </button>
+                        <?php } ?>
+                    </div>
+                </div>
 
-        <?php if (!empty($filters['tiers'])) { ?>
-            <div class="map__installer-filters__reveal" data-installer-tiers inert>
-                <div class="map__installer-filters__reveal__inner">
-                    <div class="map__installer-filters__group map__installer-filters__group--tiers">
+                <?php if (!empty($filters['tiers'])) { ?>
+                    <div class="map__installer-filters__group" data-installer-tiers hidden>
                         <div class="map__installer-filters__label-row">
                             <p class="map__installer-filters__label" id="map-installer-tier-label">
                                 <?= \esc_html__('Decking accreditation', 'granola'); ?>
@@ -769,8 +772,9 @@ function render_installer_filters(array $filters): string
                             <?php foreach ($filters['tiers'] as $tier) { ?>
                                 <button
                                     type="button"
-                                    class="map__tile map__tile--tier"
+                                    class="map__tile"
                                     data-installer-tier="<?= \esc_attr($tier['value']); ?>"
+                                    data-summary="<?= \esc_attr($tier['label']); ?>"
                                     aria-pressed="false"
                                 >
                                     <span class="map__tile__label"><?= \esc_html($tier['label']); ?></span>
@@ -779,9 +783,23 @@ function render_installer_filters(array $filters): string
                             <?php } ?>
                         </div>
                     </div>
-                </div>
+                <?php } ?>
+
+                <?php /* translators: %s: the number of installers the filters leave. */ ?>
+                <button
+                    type="button"
+                    class="map__installer-filters__show"
+                    data-installer-filters-toggle
+                    data-template-one="<?= \esc_attr__('Show %s result', 'granola'); ?>"
+                    data-template-other="<?= \esc_attr__('Show %s results', 'granola'); ?>"
+                >
+                    <?= \esc_html(sprintf(
+                        \_n('Show %s result', 'Show %s results', $results_count, 'granola'),
+                        number_format_i18n($results_count)
+                    )); ?>
+                </button>
             </div>
-        <?php } ?>
+        </div>
     </div>
     <?php
 

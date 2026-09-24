@@ -86,8 +86,8 @@ class Map {
             both: ['decking', 'cladding'],
         };
         this.installerType = 'all';
-        // True while the visitor has unfolded the type grid with "Change".
-        this.installerTypeEditing = false;
+        // Whether the Filter button has the tile panel open. Closed on load.
+        this.installerFiltersOpen = false;
         this.activeSpecialisms = new Set();
 
         this.googleApiKey = window.params.google_api_key;
@@ -806,11 +806,14 @@ let markerHtml = `
     }
 
     /**
-     * Installer tile filters (installer map only).
+     * Installer tile filters (installer map only), "Installer Filters v3".
+     *
+     * The count and a summary of the filters stay in view; the tiles sit in a panel that
+     * the Filter button (and the panel's own Show results button) opens and closes.
      *
      * Installer type is pick-one. Decking and Cladding each include the installers who do
      * both, and "Decking & cladding" is only those. The Approved / Advanced tiles are a
-     * decking accreditation, so they open only for a decking type, can be clicked again to
+     * decking accreditation, so they show only for a decking type, can be clicked again to
      * deselect, and are reset when the visitor moves to All or Cladding. The accreditation
      * reuses activePostTypeFilter ("installer-approved" / "installer-advanced"), so the
      * matching and the counts go through the same code as the chips.
@@ -822,10 +825,11 @@ let markerHtml = `
             return;
         }
 
+        this.installerPanelEl = this.installerFiltersEl.querySelector('[data-installer-filters-panel]');
         this.installerTiersEl = this.installerFiltersEl.querySelector('[data-installer-tiers]');
-        this.installerTypeGridEl = this.installerFiltersEl.querySelector('#map-installer-type-grid');
-        this.installerSummaryButton = this.installerFiltersEl.querySelector('[data-installer-summary]');
-        this.installerClearButton = this.el.querySelector('[data-installer-filters-clear]');
+        this.installerToggleButton = this.installerFiltersEl.querySelector('.map__installer-filters__toggle');
+        this.installerShowButton = this.installerFiltersEl.querySelector('.map__installer-filters__show');
+        this.installerClearButton = this.installerFiltersEl.querySelector('[data-installer-filters-clear]');
 
         this.installerFiltersEl.querySelectorAll('[data-installer-type]').forEach((tile) => {
             tile.addEventListener('click', () => {
@@ -846,30 +850,27 @@ let markerHtml = `
             });
         });
 
-        if (this.installerSummaryButton) {
-            this.installerSummaryButton.addEventListener('click', () => {
-                this.installerTypeEditing = true;
+        // The Filter button and the panel's Show results button both open and close it.
+        this.installerFiltersEl.querySelectorAll('[data-installer-filters-toggle]').forEach((button) => {
+            button.addEventListener('click', () => {
+                this.installerFiltersOpen = !this.installerFiltersOpen;
                 this.syncInstallerFilters();
 
-                // The bar that had focus has just gone, so hand focus to the chosen tile.
-                const activeTile = this.installerTypeGridEl
-                    && this.installerTypeGridEl.querySelector('.map__tile--active');
-
-                if (activeTile) {
-                    activeTile.focus();
+                // Show results sits inside the panel that has just closed, so keep focus
+                // on a control that is still there.
+                if (!this.installerFiltersOpen && this.installerToggleButton) {
+                    this.installerToggleButton.focus();
                 }
             });
-        }
+        });
 
         if (this.installerClearButton) {
             this.installerClearButton.addEventListener('click', () => {
                 this.setInstallerType('all');
 
-                // Clear hides itself, so focus moves to the tile it just selected.
-                const allTile = this.installerFiltersEl.querySelector('[data-installer-type="all"]');
-
-                if (allTile) {
-                    allTile.focus();
+                // Clear hides itself, so focus moves to the Filter button beside it.
+                if (this.installerToggleButton) {
+                    this.installerToggleButton.focus();
                 }
             });
         }
@@ -887,7 +888,6 @@ let markerHtml = `
         }
 
         this.installerType = type;
-        this.installerTypeEditing = false;
         this.activeSpecialisms = new Set(this.INSTALLER_TYPE_SPECIALISMS[type]);
 
         // The accreditation only applies to decking, so it goes when decking does.
@@ -904,14 +904,17 @@ let markerHtml = `
             return;
         }
 
-        this.installerFiltersEl.querySelectorAll('[data-installer-type]').forEach((tile) => {
+        const typeTiles = [...this.installerFiltersEl.querySelectorAll('[data-installer-type]')];
+        const tierTiles = [...this.installerFiltersEl.querySelectorAll('[data-installer-tier]')];
+
+        typeTiles.forEach((tile) => {
             const isActive = tile.dataset.installerType === this.installerType;
 
             tile.classList.toggle('map__tile--active', isActive);
             tile.setAttribute('aria-pressed', isActive ? 'true' : 'false');
         });
 
-        this.installerFiltersEl.querySelectorAll('[data-installer-tier]').forEach((tile) => {
+        tierTiles.forEach((tile) => {
             const isActive = tile.dataset.installerTier === this.activePostTypeFilter;
 
             tile.classList.toggle('map__tile--active', isActive);
@@ -919,60 +922,57 @@ let markerHtml = `
         });
 
         if (this.installerTiersEl) {
-            const isOpen = this.installerTypeHasDecking(this.installerType);
-
-            this.installerTiersEl.classList.toggle('is-open', isOpen);
-            // Closed tiles are out of the tab order and hidden from assistive tech.
-            this.installerTiersEl.inert = !isOpen;
+            this.installerTiersEl.hidden = !this.installerTypeHasDecking(this.installerType);
         }
+
+        // "Decking & cladding installers · Advanced", or "All installers".
+        const activeType = typeTiles.find((tile) => tile.dataset.installerType === this.installerType);
+        const activeTier = tierTiles.find((tile) => tile.dataset.installerTier === this.activePostTypeFilter);
+        const summaryEl = this.installerFiltersEl.querySelector('[data-installer-filters-summary]');
+
+        if (summaryEl && activeType) {
+            summaryEl.textContent = [activeType, activeTier]
+                .filter(Boolean)
+                .map((tile) => tile.dataset.summary)
+                .join(' · ');
+        }
+
+        const activeCount = (this.installerType !== 'all' ? 1 : 0) + (activeTier ? 1 : 0);
 
         if (this.installerClearButton) {
-            this.installerClearButton.hidden = this.installerType === 'all';
+            this.installerClearButton.hidden = activeCount === 0;
         }
 
-        // A decking type folds the grid into the summary bar, so the accreditation group
-        // opening underneath does not push the results further down the panel. All and
-        // Cladding leave the grid out, as there is nothing below it.
-        if (this.installerSummaryButton && this.installerTypeGridEl) {
-            const isFolded = this.installerTypeHasDecking(this.installerType) && !this.installerTypeEditing;
-            const focusWasInGrid = this.installerTypeGridEl.contains(document.activeElement);
+        if (this.installerToggleButton) {
+            const labelEl = this.installerToggleButton.querySelector('[data-installer-filters-toggle-label]');
 
-            this.installerSummaryButton.hidden = !isFolded;
-            this.installerTypeGridEl.hidden = isFolded;
-            this.syncInstallerSummary();
-
-            // Keyboard users clicked a tile that has just been hidden.
-            if (isFolded && focusWasInGrid) {
-                this.installerSummaryButton.focus();
+            if (labelEl) {
+                if (activeCount) {
+                    this.fillTemplate(labelEl, String(activeCount));
+                } else {
+                    labelEl.textContent = labelEl.dataset.label;
+                }
             }
+
+            this.installerToggleButton.setAttribute('aria-expanded', this.installerFiltersOpen ? 'true' : 'false');
+            this.installerToggleButton.classList.toggle('is-active', this.installerFiltersOpen || activeCount > 0);
+        }
+
+        if (this.installerPanelEl) {
+            this.installerPanelEl.classList.toggle('is-open', this.installerFiltersOpen);
+            // Closed, nothing in the panel is in the tab order or read out.
+            this.installerPanelEl.inert = !this.installerFiltersOpen;
         }
     }
 
     /**
-     * The summary bar repeats the chosen tile's label and count, so it follows the count
-     * as searches and the accreditation change it.
+     * "138 results" and "Show 138 results", singular or plural from the templates PHP
+     * printed so the words are translated.
      */
-    syncInstallerSummary() {
-        if (!this.installerSummaryButton || !this.installerTypeGridEl) {
-            return;
-        }
+    formatCount(el, prefix, count) {
+        const template = el.dataset[count === 1 ? `${prefix}One` : `${prefix}Other`] || '';
 
-        const activeTile = this.installerTypeGridEl.querySelector(`[data-installer-type="${this.installerType}"]`);
-
-        if (!activeTile) {
-            return;
-        }
-
-        const label = this.installerSummaryButton.querySelector('[data-installer-summary-label]');
-        const count = this.installerSummaryButton.querySelector('[data-installer-summary-count]');
-
-        if (label) {
-            label.textContent = activeTile.querySelector('.map__tile__label').textContent.trim();
-        }
-
-        if (count) {
-            count.textContent = activeTile.querySelector('[data-tile-count]').textContent.trim();
-        }
+        return template.replace('%s', String(count));
     }
 
     /**
@@ -1323,7 +1323,6 @@ let markerHtml = `
         });
 
         this.activeSpecialisms = activeSpecialisms;
-        this.syncInstallerSummary();
 
         tierTiles.forEach((tile) => {
             const tier = tile.dataset.installerTier;
@@ -1804,7 +1803,21 @@ let markerHtml = `
      * Result count heading and the empty state.
      */
     updateResultsCount(markerCount) {
-        if (this.listingsHeading) {
+        const installerFiltersEl = this.installerFiltersEl || this.el.querySelector('[data-installer-filters]');
+
+        if (installerFiltersEl) {
+            // The installer filter bar leads with the bare count and repeats it on the
+            // panel's Show results button.
+            if (this.listingsHeading) {
+                this.listingsHeading.textContent = this.formatCount(installerFiltersEl, 'heading', markerCount);
+            }
+
+            const showButton = installerFiltersEl.querySelector('.map__installer-filters__show');
+
+            if (showButton) {
+                showButton.textContent = this.formatCount(showButton, 'template', markerCount);
+            }
+        } else if (this.listingsHeading) {
             this.listingsHeading.textContent = markerCount === 1
                 ? `Displaying: ${markerCount} result`
                 : `Displaying: ${markerCount} results`;
