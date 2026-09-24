@@ -117,7 +117,7 @@
             ]); ?>
         </div>
 
-        <?php if (!empty($args['filters'])) { ?>
+        <?php if (!empty($args['filters']) || !empty($args['toggles'])) { ?>
             <div class="map__filters map__filters--mobile alignwide">
                 <?php foreach ($args['filters'] as $filter) { ?>
                     <button
@@ -129,6 +129,8 @@
                         <span class="map__filter__count"><?= esc_html($filter['count']); ?></span>
                     </button>
                 <?php } ?>
+
+                <?= \Granola\Components\Map\render_specialism_toggles($args['toggles']); ?>
             </div>
         <?php } ?>
 
@@ -165,7 +167,7 @@
                     hidden
                 ></p>
 
-                <?php if (!empty($args['filters'])) { ?>
+                <?php if (!empty($args['filters']) || !empty($args['toggles'])) { ?>
                     <div class="map__filters map__filters--sidebar">
                         <?php foreach ($args['filters'] as $filter) { ?>
                             <button 
@@ -177,6 +179,8 @@
                                 <span class="map__filter__count"><?= esc_html($filter['count']); ?></span>
                             </button>
                         <?php } ?>
+
+                        <?= \Granola\Components\Map\render_specialism_toggles($args['toggles']); ?>
                     </div>
                 <?php } ?>
 
