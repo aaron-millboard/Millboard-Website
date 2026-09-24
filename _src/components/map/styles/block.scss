@@ -446,20 +446,19 @@
             color: var(--mb-ink);
         }
 
-        // Installer map: the heading shares a row with Clear, with the hint beneath
-        // ("Installer Filters" design, 24 Sep 2026).
+        // Installer map: count and filter summary on the left, the Filter button on the
+        // right ("Installer Filters v3" design, 24 Sep 2026).
         &__head {
             display: flex;
-            flex: none;
-            flex-direction: column;
-            gap: px-to-rem(6);
-            padding: var(--space--m) px-to-rem(22) 0;
+            align-items: center;
+            justify-content: space-between;
+            gap: px-to-rem(12);
 
-            &__row {
+            &__text {
                 display: flex;
-                align-items: center;
-                justify-content: space-between;
-                gap: px-to-rem(12);
+                flex-direction: column;
+                gap: px-to-rem(4);
+                min-width: 0;
             }
 
             #{$this}__sidebar__heading {
@@ -468,7 +467,11 @@
             }
         }
 
-        &__hint {
+        &__summary {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: baseline;
+            gap: px-to-rem(10);
             margin: 0;
             color: var(--mb-ink);
             font-size: px-to-rem(13);
@@ -593,28 +596,104 @@
         }
     }
 
-    // ---- Installer tile filters ("Installer Filters" design, 24 Sep 2026) ----
-    // Sizes follow the design except where it went below 13px, the floor agreed for
-    // small labels on the finder.
+    // ---- Installer filters ("Installer Filters v3" design, 24 Sep 2026) ----
+    // The count, a summary and the Filter button stay in view; the tiles sit in a panel
+    // behind the button. Sizes follow the design except where it went below 13px, the
+    // floor agreed for small labels on the finder.
     &__installer-filters {
         --map-tile-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
-        --map-installer-filters-gap: #{px-to-rem(24)};
 
-        display: flex;
         flex: none;
-        flex-direction: column;
-        gap: var(--map-installer-filters-gap);
-        padding: var(--map-installer-filters-gap) px-to-rem(22) var(--space--m);
+        padding: px-to-rem(20) px-to-rem(22);
         border-bottom: 1px solid var(--mb-rule);
+
+        &__toggle {
+            @include button-reset-hard;
+
+            display: flex;
+            flex-shrink: 0;
+            align-items: center;
+            gap: px-to-rem(8);
+            padding: px-to-rem(9) px-to-rem(14);
+            border: 1px solid var(--mb-rule);
+            border-radius: 0;
+            background: transparent;
+            color: var(--mb-ink);
+            font-family: inherit;
+            font-size: px-to-rem(13);
+            font-weight: 700;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: border-color var(--dur--base, 240ms) var(--map-tile-ease);
+
+            @include interact {
+                background: transparent;
+                border-color: var(--mb-olive);
+                color: var(--mb-ink);
+            }
+
+            // Open, or holding filters.
+            &.is-active {
+                border-color: var(--mb-ink);
+            }
+        }
+
+        &__chevron {
+            flex: none;
+            width: px-to-rem(14);
+            height: px-to-rem(14);
+            transition: transform 320ms var(--map-tile-ease);
+
+            [aria-expanded='true'] > & {
+                transform: rotate(180deg);
+            }
+        }
+
+        // Closed, the panel collapses to nothing; open, it slides down to its content.
+        &__panel {
+            display: grid;
+            grid-template-rows: 0fr;
+            opacity: 0;
+            transition:
+                grid-template-rows 360ms var(--map-tile-ease),
+                opacity 360ms var(--map-tile-ease);
+
+            &.is-open {
+                grid-template-rows: 1fr;
+                opacity: 1;
+            }
+
+            &__inner {
+                min-height: 0;
+                overflow: hidden;
+            }
+        }
+
+        &__body {
+            display: flex;
+            flex-direction: column;
+            gap: px-to-rem(16);
+            margin-top: px-to-rem(16);
+            padding-top: px-to-rem(16);
+            border-top: 1px solid var(--mb-rule);
+        }
+
+        &__hint {
+            margin: 0;
+            color: var(--mb-ink);
+            font-size: px-to-rem(13);
+            font-weight: var(--fw-light, 300);
+        }
 
         &__group {
             display: flex;
             flex-direction: column;
-            gap: px-to-rem(10);
+            gap: px-to-rem(8);
 
-            &--tiers {
-                padding-top: px-to-rem(16);
-                border-top: 1px solid var(--mb-rule);
+            &[hidden] {
+                display: none;
             }
         }
 
@@ -644,30 +723,23 @@
         &__grid {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: px-to-rem(8);
-
-            // display: grid would otherwise win over the hidden attribute.
-            &[hidden] {
-                display: none;
-            }
+            gap: px-to-rem(6);
         }
 
-        // The type grid folded to one line once a decking type is chosen, styled as the
-        // selected tile it stands for ("Installer Filters2" design).
-        &__summary {
+        &__show {
             @include button-reset-hard;
 
-            display: flex;
-            align-items: center;
-            gap: px-to-rem(10);
             width: 100%;
-            padding: px-to-rem(10) px-to-rem(12);
+            padding: px-to-rem(11) px-to-rem(16);
             border: 1px solid var(--mb-ink);
-            border-radius: px-to-rem(2);
+            border-radius: 0;
             background: var(--mb-ink);
             color: var(--mb-spring-wood);
             font-family: inherit;
-            text-align: left;
+            font-size: px-to-rem(13);
+            font-weight: 700;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
             cursor: pointer;
             transition: opacity var(--dur--base, 240ms) var(--map-tile-ease);
 
@@ -677,58 +749,8 @@
                 opacity: 0.92;
             }
 
-            &[hidden] {
-                display: none;
-            }
-
-            &__label {
-                flex: 1 1 auto;
-                min-width: 0;
-                font-size: px-to-rem(13);
-                font-weight: 700;
-                letter-spacing: 0.14em;
-                text-transform: uppercase;
-            }
-
-            &__count,
-            &__change {
-                font-size: px-to-rem(13);
-                font-weight: var(--fw-light, 300);
-            }
-
-            &__change {
-                padding-left: px-to-rem(10);
-                border-left: 1px solid rgba(248, 244, 240, 0.3);
-                text-decoration: underline;
-                text-underline-offset: 3px;
-            }
-        }
-
-        // Closed, the group collapses to nothing and pulls back over the flex gap
-        // above it, so the panel ends at the type tiles.
-        &__reveal {
-            display: grid;
-            grid-template-rows: 0fr;
-            margin-top: calc(var(--map-installer-filters-gap) * -1);
-            opacity: 0;
-            transition:
-                grid-template-rows 360ms var(--map-tile-ease),
-                opacity 360ms var(--map-tile-ease),
-                margin-top 360ms var(--map-tile-ease);
-
-            &.is-open {
-                grid-template-rows: 1fr;
-                margin-top: 0;
-                opacity: 1;
-            }
-
-            &__inner {
-                min-height: 0;
-                overflow: hidden;
-            }
-
-            @media (prefers-reduced-motion: reduce) {
-                transition: none;
+            &:active {
+                opacity: 0.88;
             }
         }
 
@@ -754,22 +776,30 @@
                 display: none;
             }
         }
+
+        @media (prefers-reduced-motion: reduce) {
+            &__panel,
+            &__chevron {
+                transition: none;
+            }
+        }
     }
 
+    // One line: label left, count right.
     &__tile {
         @include button-reset-hard;
 
         display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: px-to-rem(4);
-        padding: px-to-rem(12) px-to-rem(12) px-to-rem(11);
+        align-items: center;
+        justify-content: space-between;
+        gap: px-to-rem(8);
+        min-height: px-to-rem(48);
+        padding: px-to-rem(9) px-to-rem(12);
         border: 1px solid var(--mb-rule);
         border-radius: px-to-rem(2);
         background: transparent;
         color: var(--mb-ink);
         font-family: inherit;
-        line-height: 1.3;
         text-align: left;
         cursor: pointer;
         transition:
@@ -785,28 +815,16 @@
             color: var(--mb-ink);
         }
 
-        &--type {
-            justify-content: space-between;
-            min-height: px-to-rem(76);
-        }
-
-        // One line: label left, count right.
-        &--tier {
-            flex-direction: row;
-            align-items: center;
-            justify-content: space-between;
-            gap: px-to-rem(8);
-            padding: px-to-rem(10) px-to-rem(12);
-        }
-
         &__label {
             font-size: px-to-rem(13);
             font-weight: 700;
-            letter-spacing: 0.14em;
+            letter-spacing: 0.12em;
+            line-height: 1.3;
             text-transform: uppercase;
         }
 
         &__count {
+            flex: none;
             font-size: px-to-rem(13);
             font-weight: var(--fw-light, 300);
         }
