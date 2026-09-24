@@ -77,7 +77,15 @@ class Map {
         this.filteredMarkersGroup = new L.FeatureGroup();
 
         this.activePostTypeFilter = ''; // Empty string means all post types
-        // Decking / Cladding toggles switched on (installer map). Empty means no requirement.
+        // Installer map: the chosen installer type tile, and the specialisms it requires.
+        // Empty means no requirement, which is what the distributor map always has.
+        this.INSTALLER_TYPE_SPECIALISMS = {
+            all: [],
+            decking: ['decking'],
+            cladding: ['cladding'],
+            both: ['decking', 'cladding'],
+        };
+        this.installerType = 'all';
         this.activeSpecialisms = new Set();
 
         this.googleApiKey = window.params.google_api_key;
@@ -163,7 +171,7 @@ class Map {
         this.initSearch();
         this.initDistanceFilter();
         this.initPostTypeFilters();
-        this.initSpecialismToggles();
+        this.initInstallerFilters();
         this.initShowMore();
         this.initTablist();
         this.initClickTracking();
@@ -760,7 +768,7 @@ let markerHtml = `
     }
 
     initPostTypeFilters() {
-        const filterButtons = this.el.querySelectorAll('.map__filter[data-filter-value]');
+        const filterButtons = this.el.querySelectorAll('.map__filter');
         if (!filterButtons || filterButtons.length === 0) {
             return;
         }
@@ -788,7 +796,7 @@ let markerHtml = `
     setActivePostTypeFilter(filterValue = '') {
         this.activePostTypeFilter = filterValue;
 
-        const filterButtons = this.el.querySelectorAll('.map__filter[data-filter-value]');
+        const filterButtons = this.el.querySelectorAll('.map__filter');
         filterButtons.forEach((button) => {
             const buttonValue = button.dataset.filterValue || '';
             button.classList.toggle('map__filter--active', buttonValue === this.activePostTypeFilter);
@@ -796,41 +804,104 @@ let markerHtml = `
     }
 
     /**
-     * Decking / Cladding toggles on the installer map.
+     * Installer tile filters (installer map only).
      *
-     * Independent of the pick-one chips: each switches on or off by itself and adds a
-     * requirement, so both on lists only installers who do both. The same value is printed
-     * in the sidebar and mobile bars, so state lives here and both copies are synced.
+     * Installer type is pick-one. Decking and Cladding each include the installers who do
+     * both, and "Decking & cladding" is only those. The Approved / Advanced tiles are a
+     * decking accreditation, so they open only for a decking type, can be clicked again to
+     * deselect, and are reset when the visitor moves to All or Cladding. The accreditation
+     * reuses activePostTypeFilter ("installer-approved" / "installer-advanced"), so the
+     * matching and the counts go through the same code as the chips.
      */
-    initSpecialismToggles() {
-        const toggles = this.el.querySelectorAll('.map__toggle');
+    initInstallerFilters() {
+        this.installerFiltersEl = this.el.querySelector('[data-installer-filters]');
 
-        toggles.forEach((toggle) => {
-            toggle.addEventListener('click', () => {
-                const value = toggle.dataset.specialismValue;
+        if (!this.installerFiltersEl) {
+            return;
+        }
 
-                if (this.activeSpecialisms.has(value)) {
-                    this.activeSpecialisms.delete(value);
-                } else {
-                    this.activeSpecialisms.add(value);
-                }
+        this.installerTiersEl = this.installerFiltersEl.querySelector('[data-installer-tiers]');
+        this.installerClearButton = this.el.querySelector('[data-installer-filters-clear]');
 
-                this.syncSpecialismToggles();
+        this.installerFiltersEl.querySelectorAll('[data-installer-type]').forEach((tile) => {
+            tile.addEventListener('click', () => {
+                this.setInstallerType(tile.dataset.installerType);
+            });
+        });
+
+        this.installerFiltersEl.querySelectorAll('[data-installer-tier]').forEach((tile) => {
+            tile.addEventListener('click', () => {
+                const tier = tile.dataset.installerTier;
+
+                this.activePostTypeFilter = this.activePostTypeFilter === tier ? '' : tier;
+                this.syncInstallerFilters();
 
                 // Map stays put, as for the chips: this narrows the list, it is not a
                 // request to go somewhere else.
                 this.filterByDistanceAndPostType(false);
             });
         });
+
+        if (this.installerClearButton) {
+            this.installerClearButton.addEventListener('click', () => {
+                this.setInstallerType('all');
+            });
+        }
+
+        this.syncInstallerFilters();
     }
 
-    syncSpecialismToggles() {
-        this.el.querySelectorAll('.map__toggle').forEach((toggle) => {
-            const isOn = this.activeSpecialisms.has(toggle.dataset.specialismValue);
+    installerTypeHasDecking(type) {
+        return (this.INSTALLER_TYPE_SPECIALISMS[type] || []).includes('decking');
+    }
 
-            toggle.classList.toggle('map__filter--active', isOn);
-            toggle.setAttribute('aria-pressed', isOn ? 'true' : 'false');
+    setInstallerType(type) {
+        if (!this.INSTALLER_TYPE_SPECIALISMS[type]) {
+            return;
+        }
+
+        this.installerType = type;
+        this.activeSpecialisms = new Set(this.INSTALLER_TYPE_SPECIALISMS[type]);
+
+        // The accreditation only applies to decking, so it goes when decking does.
+        if (!this.installerTypeHasDecking(type)) {
+            this.activePostTypeFilter = '';
+        }
+
+        this.syncInstallerFilters();
+        this.filterByDistanceAndPostType(false);
+    }
+
+    syncInstallerFilters() {
+        if (!this.installerFiltersEl) {
+            return;
+        }
+
+        this.installerFiltersEl.querySelectorAll('[data-installer-type]').forEach((tile) => {
+            const isActive = tile.dataset.installerType === this.installerType;
+
+            tile.classList.toggle('map__tile--active', isActive);
+            tile.setAttribute('aria-pressed', isActive ? 'true' : 'false');
         });
+
+        this.installerFiltersEl.querySelectorAll('[data-installer-tier]').forEach((tile) => {
+            const isActive = tile.dataset.installerTier === this.activePostTypeFilter;
+
+            tile.classList.toggle('map__tile--active', isActive);
+            tile.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+        });
+
+        if (this.installerTiersEl) {
+            const isOpen = this.installerTypeHasDecking(this.installerType);
+
+            this.installerTiersEl.classList.toggle('is-open', isOpen);
+            // Closed tiles are out of the tab order and hidden from assistive tech.
+            this.installerTiersEl.inert = !isOpen;
+        }
+
+        if (this.installerClearButton) {
+            this.installerClearButton.hidden = this.installerType === 'all';
+        }
     }
 
     /**
@@ -1122,10 +1193,11 @@ let markerHtml = `
      * would return nothing is disabled rather than hidden, so the row does not reflow.
      */
     updateFilterCounts(markersInScope) {
-        const buttons = this.el.querySelectorAll('.map__filter[data-filter-value]');
-        const toggles = this.el.querySelectorAll('.map__toggle');
+        const buttons = this.el.querySelectorAll('.map__filter');
+        const typeTiles = this.el.querySelectorAll('[data-installer-type]');
+        const tierTiles = this.el.querySelectorAll('[data-installer-tier]');
 
-        if (!buttons.length && !toggles.length) {
+        if (!buttons.length && !typeTiles.length) {
             return;
         }
 
@@ -1152,28 +1224,46 @@ let markerHtml = `
 
         this.activePostTypeFilter = active;
 
-        // Each toggle counts what the list would hold with it switched on, on top of the
-        // others already on and the active chip. Swapped and restored the same way.
+        // Installer tiles, each counting what clicking it would give, swapped and restored
+        // the same way. A decking type keeps the chosen accreditation and All or Cladding
+        // drop it, exactly as clicking them does.
         const activeSpecialisms = this.activeSpecialisms;
 
-        toggles.forEach((toggle) => {
-            const value = toggle.dataset.specialismValue;
-            const isOn = activeSpecialisms.has(value);
-
-            this.activeSpecialisms = new Set([...activeSpecialisms, value]);
-
-            const count = markersInScope.filter((marker) => this.matchesCategoryFilter(marker)).length;
-            const countEl = toggle.querySelector('.map__filter__count');
+        const setTileCount = (tile, count, isActive) => {
+            const countEl = tile.querySelector('[data-tile-count]');
 
             if (countEl) {
                 countEl.textContent = String(count);
             }
 
-            toggle.disabled = count === 0 && !isOn;
-            toggle.classList.toggle('map__filter--empty', count === 0);
+            tile.disabled = count === 0 && !isActive;
+            tile.classList.toggle('map__tile--empty', count === 0);
+        };
+
+        typeTiles.forEach((tile) => {
+            const type = tile.dataset.installerType;
+
+            this.activeSpecialisms = new Set(this.INSTALLER_TYPE_SPECIALISMS[type] || []);
+            this.activePostTypeFilter = this.installerTypeHasDecking(type) ? active : '';
+
+            const count = markersInScope.filter((marker) => this.matchesCategoryFilter(marker)).length;
+
+            setTileCount(tile, count, type === this.installerType);
         });
 
         this.activeSpecialisms = activeSpecialisms;
+
+        tierTiles.forEach((tile) => {
+            const tier = tile.dataset.installerTier;
+
+            this.activePostTypeFilter = tier;
+
+            const count = markersInScope.filter((marker) => this.matchesCategoryFilter(marker)).length;
+
+            setTileCount(tile, count, tier === active);
+        });
+
+        this.activePostTypeFilter = active;
     }
 
     /**
