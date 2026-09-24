@@ -9,3 +9,4 @@ namespace Granola\Components\WC_Checkout;
 
 // Point Irish addresses at the office, as there is no online delivery to Ireland.
 \add_filter('woocommerce_no_shipping_available_html', __NAMESPACE__ . '\\ireland_no_shipping_message');
+\add_action('woocommerce_after_checkout_validation', __NAMESPACE__ . '\\ireland_checkout_error', 10, 2);
