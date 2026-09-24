@@ -117,7 +117,7 @@
             ]); ?>
         </div>
 
-        <?php if (!empty($args['filters']) || !empty($args['toggles'])) { ?>
+        <?php if (!empty($args['filters']) && empty($args['installer_filters'])) { ?>
             <div class="map__filters map__filters--mobile alignwide">
                 <?php foreach ($args['filters'] as $filter) { ?>
                     <button
@@ -129,8 +129,6 @@
                         <span class="map__filter__count"><?= esc_html($filter['count']); ?></span>
                     </button>
                 <?php } ?>
-
-                <?= \Granola\Components\Map\render_specialism_toggles($args['toggles']); ?>
             </div>
         <?php } ?>
 
@@ -157,7 +155,23 @@
 
         <div class="map__content alignwide">
             <div id="map-sidebar" class="map__sidebar map__tab-panel">
-                <?= \Granola\Component::get('heading', $args['sidebar_heading']) ?>
+                <?php if (!empty($args['installer_filters'])) { ?>
+                    <div class="map__sidebar__head">
+                        <div class="map__sidebar__head__row">
+                            <?= \Granola\Component::get('heading', $args['sidebar_heading']) ?>
+
+                            <button type="button" class="map__installer-filters__clear" data-installer-filters-clear hidden>
+                                <?= esc_html__('Clear', 'granola'); ?>
+                            </button>
+                        </div>
+
+                        <p class="map__sidebar__hint">
+                            <?= esc_html__('Click a tile below to filter the list and map.', 'granola'); ?>
+                        </p>
+                    </div>
+                <?php } else { ?>
+                    <?= \Granola\Component::get('heading', $args['sidebar_heading']) ?>
+                <?php } ?>
 
                 <?php /* translators: %s: the countries the appointed distributor covers. */ ?>
                 <p
@@ -167,7 +181,9 @@
                     hidden
                 ></p>
 
-                <?php if (!empty($args['filters']) || !empty($args['toggles'])) { ?>
+                <?php if (!empty($args['installer_filters'])) { ?>
+                    <?= \Granola\Components\Map\render_installer_filters($args['installer_filters']); ?>
+                <?php } elseif (!empty($args['filters'])) { ?>
                     <div class="map__filters map__filters--sidebar">
                         <?php foreach ($args['filters'] as $filter) { ?>
                             <button 
@@ -179,8 +195,6 @@
                                 <span class="map__filter__count"><?= esc_html($filter['count']); ?></span>
                             </button>
                         <?php } ?>
-
-                        <?= \Granola\Components\Map\render_specialism_toggles($args['toggles']); ?>
                     </div>
                 <?php } ?>
 
