@@ -77,6 +77,8 @@ class Map {
         this.filteredMarkersGroup = new L.FeatureGroup();
 
         this.activePostTypeFilter = ''; // Empty string means all post types
+        // Decking / Cladding toggles switched on (installer map). Empty means no requirement.
+        this.activeSpecialisms = new Set();
 
         this.googleApiKey = window.params.google_api_key;
         this.roadDistancesEndpoint = window.params.road_distances_endpoint;
@@ -161,6 +163,7 @@ class Map {
         this.initSearch();
         this.initDistanceFilter();
         this.initPostTypeFilters();
+        this.initSpecialismToggles();
         this.initShowMore();
         this.initTablist();
         this.initClickTracking();
@@ -545,6 +548,7 @@ let markerHtml = `
                     distanceInMiles: this.calcLatLngDistanceMilesFromMapCenter(listingLatLng),
                     postType: listingData.postType,
                     advancedInstaller: isAdvancedInstaller,
+                    specialisms: (el.dataset.mapItemSpecialisms || '').split(' ').filter(Boolean),
                 },
             });
 
@@ -758,7 +762,7 @@ let markerHtml = `
     }
 
     initPostTypeFilters() {
-        const filterButtons = this.el.querySelectorAll('.map__filter');
+        const filterButtons = this.el.querySelectorAll('.map__filter[data-filter-value]');
         if (!filterButtons || filterButtons.length === 0) {
             return;
         }
@@ -786,10 +790,48 @@ let markerHtml = `
     setActivePostTypeFilter(filterValue = '') {
         this.activePostTypeFilter = filterValue;
 
-        const filterButtons = this.el.querySelectorAll('.map__filter');
+        const filterButtons = this.el.querySelectorAll('.map__filter[data-filter-value]');
         filterButtons.forEach((button) => {
             const buttonValue = button.dataset.filterValue || '';
             button.classList.toggle('map__filter--active', buttonValue === this.activePostTypeFilter);
+        });
+    }
+
+    /**
+     * Decking / Cladding toggles on the installer map.
+     *
+     * Independent of the pick-one chips: each switches on or off by itself and adds a
+     * requirement, so both on lists only installers who do both. The same value is printed
+     * in the sidebar and mobile bars, so state lives here and both copies are synced.
+     */
+    initSpecialismToggles() {
+        const toggles = this.el.querySelectorAll('.map__toggle');
+
+        toggles.forEach((toggle) => {
+            toggle.addEventListener('click', () => {
+                const value = toggle.dataset.specialismValue;
+
+                if (this.activeSpecialisms.has(value)) {
+                    this.activeSpecialisms.delete(value);
+                } else {
+                    this.activeSpecialisms.add(value);
+                }
+
+                this.syncSpecialismToggles();
+
+                // Map stays put, as for the chips: this narrows the list, it is not a
+                // request to go somewhere else.
+                this.filterByDistanceAndPostType(false);
+            });
+        });
+    }
+
+    syncSpecialismToggles() {
+        this.el.querySelectorAll('.map__toggle').forEach((toggle) => {
+            const isOn = this.activeSpecialisms.has(toggle.dataset.specialismValue);
+
+            toggle.classList.toggle('map__filter--active', isOn);
+            toggle.setAttribute('aria-pressed', isOn ? 'true' : 'false');
         });
     }
 
@@ -798,10 +840,17 @@ let markerHtml = `
      *
      * The distributor map filters by post type; the installer map has a single
      * post type and filters by tier instead ("installer-approved" /
-     * "installer-advanced"). Both go through here so the filter bar, the key and
-     * the listing/marker filtering stay one mechanism.
+     * "installer-advanced"), plus the Decking / Cladding toggles. All of it goes
+     * through here so the filter bar, the key and the listing/marker filtering stay
+     * one mechanism.
      */
     matchesCategoryFilter(marker) {
+        const offered = marker.options.themeData.specialisms || [];
+
+        if (![...this.activeSpecialisms].every((specialism) => offered.includes(specialism))) {
+            return false;
+        }
+
         const active = this.activePostTypeFilter;
 
         if (active === '') {
@@ -935,6 +984,9 @@ let markerHtml = `
 
         const distance = parseFloat(this.distanceSelect.value) || 0;
 
+        // Everything inside the distance, before the category filter, for the chip counts.
+        const inRange = [];
+
         // Process all markers.
         this.allMarkersGroup.eachLayer((marker) => {
             // Updating marker distance data.
@@ -944,7 +996,16 @@ let markerHtml = `
             marker.options.themeData.roadDurationInSeconds = null;
             marker.options.themeData.roadDistanceUnroutable = false;
 
-            if (distance === 0 || distanceInMiles <= distance) {
+            const passesDistanceFilter = distance === 0 || distanceInMiles <= distance;
+
+            if (passesDistanceFilter) {
+                inRange.push(marker);
+            }
+
+            // This path (search, geolocate, a location in the URL) used to skip the category
+            // filter, so picking Advanced Installer and then searching listed every installer
+            // while the chip still read as selected.
+            if (passesDistanceFilter && this.matchesCategoryFilter(marker)) {
                 this.filteredMarkersGroup.addLayer(marker);
                 marker.options.themeData.listingElement.removeAttribute('hidden', '');
                 marker.options.themeData.distanceInMiles = distanceInMiles;
@@ -965,9 +1026,7 @@ let markerHtml = `
         const markerCount = filteredLayers.length;
 
         this.updateResultsCount(markerCount);
-        // This path applies no category filter, so the visible set is the in-scope set.
-        // No-ops on the installer map, which has a single post type and so no chips.
-        this.updateFilterCounts(filteredLayers);
+        this.updateFilterCounts(inRange);
 
         if (shouldAdjustMapBounds) {
             this.fitToResults(filteredLayers);
@@ -1065,9 +1124,10 @@ let markerHtml = `
      * would return nothing is disabled rather than hidden, so the row does not reflow.
      */
     updateFilterCounts(markersInScope) {
-        const buttons = this.el.querySelectorAll('.map__filter');
+        const buttons = this.el.querySelectorAll('.map__filter[data-filter-value]');
+        const toggles = this.el.querySelectorAll('.map__toggle');
 
-        if (!buttons.length) {
+        if (!buttons.length && !toggles.length) {
             return;
         }
 
@@ -1093,6 +1153,29 @@ let markerHtml = `
         });
 
         this.activePostTypeFilter = active;
+
+        // Each toggle counts what the list would hold with it switched on, on top of the
+        // others already on and the active chip. Swapped and restored the same way.
+        const activeSpecialisms = this.activeSpecialisms;
+
+        toggles.forEach((toggle) => {
+            const value = toggle.dataset.specialismValue;
+            const isOn = activeSpecialisms.has(value);
+
+            this.activeSpecialisms = new Set([...activeSpecialisms, value]);
+
+            const count = markersInScope.filter((marker) => this.matchesCategoryFilter(marker)).length;
+            const countEl = toggle.querySelector('.map__filter__count');
+
+            if (countEl) {
+                countEl.textContent = String(count);
+            }
+
+            toggle.disabled = count === 0 && !isOn;
+            toggle.classList.toggle('map__filter--empty', count === 0);
+        });
+
+        this.activeSpecialisms = activeSpecialisms;
     }
 
     /**

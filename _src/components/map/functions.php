@@ -134,6 +134,7 @@ function filter_args(array $args): ?array
 
     // Generate filters if multiple post types are present
     $args['filters'] = generate_filters($args);
+    $args['toggles'] = generate_installer_specialism_toggles($args);
 
     // Linked from the appointed market distributor note. Resolved per locale so each site
     // links to its own copy of the page.
@@ -276,6 +277,36 @@ function get_type_label(\WP_Post $wp_post, bool $is_advanced_installer = false):
     return '';
 }
 
+/**
+ * The kinds of work an installer is approved for: 'decking', 'cladding' or both.
+ *
+ * Read from the installer_type term, whose slugs name the specialism
+ * (approved-decking-installer, approved-cladding-installer,
+ * approved-decking-and-cladding-installer), so a term carrying both words means both.
+ *
+ * An installer with no term counts as decking. The approved programme was decking only
+ * until the cladding installers were added in Sep 2026, so an untagged record is a decking
+ * installer that nobody tagged, and dropping it whenever a visitor switches on the Decking
+ * toggle would hide a real partner.
+ */
+function get_installer_specialisms(\WP_Post $wp_post): array
+{
+    $terms = \get_the_terms($wp_post->ID, 'installer_type');
+    $specialisms = [];
+
+    if (!empty($terms) && !\is_wp_error($terms)) {
+        foreach ($terms as $term) {
+            foreach (['decking', 'cladding'] as $specialism) {
+                if (str_contains($term->slug, $specialism)) {
+                    $specialisms[] = $specialism;
+                }
+            }
+        }
+    }
+
+    return $specialisms ? array_values(array_unique($specialisms)) : ['decking'];
+}
+
 
 function get_item_data($args): array|null
 {
@@ -338,11 +369,14 @@ function get_item_data($args): array|null
         // distributor-only meaning for anything else reading it.
         $prioritised = $preferred || $advanced_installer;
 
+        $specialisms = $post_type === 'installer' ? get_installer_specialisms($wp_post) : [];
+
         $items[] = [
             'id' => $wp_post_id,
             'title' => $wp_post->post_title,
             'address' => $address,
             'advanced_installer' => $advanced_installer,
+            'specialisms' => $specialisms,
             'phone' => \get_field('phone', $wp_post_id),
             'email' => \get_field('email', $wp_post_id),
             'website' => \get_field('website', $wp_post_id),
@@ -375,6 +409,8 @@ function get_item_data($args): array|null
                 'data-map-item-territory' => $territory ? implode(',', $territory) : null,
                 'data-map-item-territory-names' => $territory ? implode(', ', territory_country_names($territory)) : null,
                 'data-map-item-has-display' => $has_display ? '1' : null,
+                // Read by the Decking / Cladding toggles on the installer map.
+                'data-map-item-specialisms' => $specialisms ? implode(' ', $specialisms) : null,
             ],
         ];
     }
@@ -589,6 +625,86 @@ function generate_installer_tier_filters($args): array
             'marker' => 'installer-advanced',
         ],
     ];
+}
+
+/**
+ * Decking / Cladding toggles for the installer map.
+ *
+ * A second, independent choice beside the tier chips rather than more options in that
+ * pick-one row, so a visitor can ask for, say, an Advanced installer who does cladding.
+ * Each toggle switches on or off by itself and adds a requirement: Decking on lists the
+ * installers who do decking, both on lists only those who do both. An installer approved
+ * for both appears under either.
+ *
+ * Returns [] unless both specialisms are present and at least one would narrow the list,
+ * so the row stays hidden on any locale where every installer is still decking only.
+ */
+function generate_installer_specialism_toggles($args): array
+{
+    if (empty($args['items']) || get_selected_post_types($args) !== ['installer']) {
+        return [];
+    }
+
+    $total = count($args['items']);
+    $counts = ['decking' => 0, 'cladding' => 0];
+
+    foreach ($args['items'] as $item) {
+        foreach ($item['specialisms'] ?? [] as $specialism) {
+            if (isset($counts[$specialism])) {
+                $counts[$specialism]++;
+            }
+        }
+    }
+
+    if (in_array(0, $counts, true) || ($counts['decking'] === $total && $counts['cladding'] === $total)) {
+        return [];
+    }
+
+    return [
+        [
+            'label' => \esc_html__('Decking Installer', 'granola'),
+            'value' => 'decking',
+            'count' => $counts['decking'],
+        ],
+        [
+            'label' => \esc_html__('Cladding Installer', 'granola'),
+            'value' => 'cladding',
+            'count' => $counts['cladding'],
+        ],
+    ];
+}
+
+/**
+ * The toggle row, printed inside both chip bars (sidebar and mobile).
+ *
+ * Styled as chips but carrying data-specialism-value rather than data-filter-value, so
+ * the pick-one chip handling in Map.js never picks them up, and aria-pressed because
+ * each is an on/off switch rather than one option of several.
+ */
+function render_specialism_toggles(array $toggles): string
+{
+    if (empty($toggles)) {
+        return '';
+    }
+
+    ob_start();
+    ?>
+    <div class="map__toggles" role="group" aria-label="<?= \esc_attr_x('Installer specialism', 'Map toggle group label', 'granola'); ?>">
+        <?php foreach ($toggles as $toggle) { ?>
+            <button
+                type="button"
+                class="g-button map__filter map__toggle"
+                data-specialism-value="<?= \esc_attr($toggle['value']); ?>"
+                aria-pressed="false"
+            >
+                <?= \esc_html($toggle['label']); ?>
+                <span class="map__filter__count"><?= \esc_html($toggle['count']); ?></span>
+            </button>
+        <?php } ?>
+    </div>
+    <?php
+
+    return (string) ob_get_clean();
 }
 
 /**
