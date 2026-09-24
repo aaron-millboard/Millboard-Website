@@ -77,6 +77,18 @@ class Map {
         this.filteredMarkersGroup = new L.FeatureGroup();
 
         this.activePostTypeFilter = ''; // Empty string means all post types
+        // Installer map: the chosen installer type tile, and the specialisms it requires.
+        // Empty means no requirement, which is what the distributor map always has.
+        this.INSTALLER_TYPE_SPECIALISMS = {
+            all: [],
+            decking: ['decking'],
+            cladding: ['cladding'],
+            both: ['decking', 'cladding'],
+        };
+        this.installerType = 'all';
+        // Whether the Filter button has the tile panel open. Closed on load.
+        this.installerFiltersOpen = false;
+        this.activeSpecialisms = new Set();
 
         this.googleApiKey = window.params.google_api_key;
         this.roadDistancesEndpoint = window.params.road_distances_endpoint;
@@ -161,6 +173,7 @@ class Map {
         this.initSearch();
         this.initDistanceFilter();
         this.initPostTypeFilters();
+        this.initInstallerFilters();
         this.initShowMore();
         this.initTablist();
         this.initClickTracking();
@@ -545,6 +558,7 @@ let markerHtml = `
                     distanceInMiles: this.calcLatLngDistanceMilesFromMapCenter(listingLatLng),
                     postType: listingData.postType,
                     advancedInstaller: isAdvancedInstaller,
+                    specialisms: (el.dataset.mapItemSpecialisms || '').split(' ').filter(Boolean),
                 },
             });
 
@@ -794,14 +808,191 @@ let markerHtml = `
     }
 
     /**
+     * Installer tile filters (installer map only), "Installer Filters v3".
+     *
+     * The count and a summary of the filters stay in view; the tiles sit in a panel that
+     * the Filter button (and the panel's own Show results button) opens and closes.
+     *
+     * Installer type is pick-one. Decking and Cladding each include the installers who do
+     * both, and "Decking & cladding" is only those. The Approved / Advanced tiles are a
+     * decking accreditation, so they show only for a decking type, can be clicked again to
+     * deselect, and are reset when the visitor moves to All or Cladding. The accreditation
+     * reuses activePostTypeFilter ("installer-approved" / "installer-advanced"), so the
+     * matching and the counts go through the same code as the chips.
+     */
+    initInstallerFilters() {
+        this.installerFiltersEl = this.el.querySelector('[data-installer-filters]');
+
+        if (!this.installerFiltersEl) {
+            return;
+        }
+
+        this.installerPanelEl = this.installerFiltersEl.querySelector('[data-installer-filters-panel]');
+        this.installerTiersEl = this.installerFiltersEl.querySelector('[data-installer-tiers]');
+        this.installerToggleButton = this.installerFiltersEl.querySelector('.map__installer-filters__toggle');
+        this.installerShowButton = this.installerFiltersEl.querySelector('.map__installer-filters__show');
+        this.installerClearButton = this.installerFiltersEl.querySelector('[data-installer-filters-clear]');
+
+        this.installerFiltersEl.querySelectorAll('[data-installer-type]').forEach((tile) => {
+            tile.addEventListener('click', () => {
+                this.setInstallerType(tile.dataset.installerType);
+            });
+        });
+
+        this.installerFiltersEl.querySelectorAll('[data-installer-tier]').forEach((tile) => {
+            tile.addEventListener('click', () => {
+                const tier = tile.dataset.installerTier;
+
+                this.activePostTypeFilter = this.activePostTypeFilter === tier ? '' : tier;
+                this.syncInstallerFilters();
+
+                // Map stays put, as for the chips: this narrows the list, it is not a
+                // request to go somewhere else.
+                this.filterByDistanceAndPostType(false);
+            });
+        });
+
+        // The Filter button and the panel's Show results button both open and close it.
+        this.installerFiltersEl.querySelectorAll('[data-installer-filters-toggle]').forEach((button) => {
+            button.addEventListener('click', () => {
+                this.installerFiltersOpen = !this.installerFiltersOpen;
+                this.syncInstallerFilters();
+
+                // Show results sits inside the panel that has just closed, so keep focus
+                // on a control that is still there.
+                if (!this.installerFiltersOpen && this.installerToggleButton) {
+                    this.installerToggleButton.focus();
+                }
+            });
+        });
+
+        if (this.installerClearButton) {
+            this.installerClearButton.addEventListener('click', () => {
+                this.setInstallerType('all');
+
+                // Clear hides itself, so focus moves to the Filter button beside it.
+                if (this.installerToggleButton) {
+                    this.installerToggleButton.focus();
+                }
+            });
+        }
+
+        this.syncInstallerFilters();
+    }
+
+    installerTypeHasDecking(type) {
+        return (this.INSTALLER_TYPE_SPECIALISMS[type] || []).includes('decking');
+    }
+
+    setInstallerType(type) {
+        if (!this.INSTALLER_TYPE_SPECIALISMS[type]) {
+            return;
+        }
+
+        this.installerType = type;
+        this.activeSpecialisms = new Set(this.INSTALLER_TYPE_SPECIALISMS[type]);
+
+        // The accreditation only applies to decking, so it goes when decking does.
+        if (!this.installerTypeHasDecking(type)) {
+            this.activePostTypeFilter = '';
+        }
+
+        this.syncInstallerFilters();
+        this.filterByDistanceAndPostType(false);
+    }
+
+    syncInstallerFilters() {
+        if (!this.installerFiltersEl) {
+            return;
+        }
+
+        const typeTiles = [...this.installerFiltersEl.querySelectorAll('[data-installer-type]')];
+        const tierTiles = [...this.installerFiltersEl.querySelectorAll('[data-installer-tier]')];
+
+        typeTiles.forEach((tile) => {
+            const isActive = tile.dataset.installerType === this.installerType;
+
+            tile.classList.toggle('map__tile--active', isActive);
+            tile.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+        });
+
+        tierTiles.forEach((tile) => {
+            const isActive = tile.dataset.installerTier === this.activePostTypeFilter;
+
+            tile.classList.toggle('map__tile--active', isActive);
+            tile.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+        });
+
+        if (this.installerTiersEl) {
+            this.installerTiersEl.hidden = !this.installerTypeHasDecking(this.installerType);
+        }
+
+        // "Decking & cladding installers · Advanced", or "All installers".
+        const activeType = typeTiles.find((tile) => tile.dataset.installerType === this.installerType);
+        const activeTier = tierTiles.find((tile) => tile.dataset.installerTier === this.activePostTypeFilter);
+        const summaryEl = this.installerFiltersEl.querySelector('[data-installer-filters-summary]');
+
+        if (summaryEl && activeType) {
+            summaryEl.textContent = [activeType, activeTier]
+                .filter(Boolean)
+                .map((tile) => tile.dataset.summary)
+                .join(' · ');
+        }
+
+        const activeCount = (this.installerType !== 'all' ? 1 : 0) + (activeTier ? 1 : 0);
+
+        if (this.installerClearButton) {
+            this.installerClearButton.hidden = activeCount === 0;
+        }
+
+        if (this.installerToggleButton) {
+            const labelEl = this.installerToggleButton.querySelector('[data-installer-filters-toggle-label]');
+
+            if (labelEl) {
+                if (activeCount) {
+                    this.fillTemplate(labelEl, String(activeCount));
+                } else {
+                    labelEl.textContent = labelEl.dataset.label;
+                }
+            }
+
+            this.installerToggleButton.setAttribute('aria-expanded', this.installerFiltersOpen ? 'true' : 'false');
+            this.installerToggleButton.classList.toggle('is-active', this.installerFiltersOpen || activeCount > 0);
+        }
+
+        if (this.installerPanelEl) {
+            this.installerPanelEl.classList.toggle('is-open', this.installerFiltersOpen);
+            // Closed, nothing in the panel is in the tab order or read out.
+            this.installerPanelEl.inert = !this.installerFiltersOpen;
+        }
+    }
+
+    /**
+     * "138 results" and "Show 138 results", singular or plural from the templates PHP
+     * printed so the words are translated.
+     */
+    formatCount(el, prefix, count) {
+        const template = el.dataset[count === 1 ? `${prefix}One` : `${prefix}Other`] || '';
+
+        return template.replace('%s', String(count));
+    }
+
+    /**
      * Does a marker pass the active category filter?
      *
      * The distributor map filters by post type; the installer map has a single
      * post type and filters by tier instead ("installer-approved" /
-     * "installer-advanced"). Both go through here so the filter bar, the key and
-     * the listing/marker filtering stay one mechanism.
+     * "installer-advanced"), plus the Decking / Cladding toggles. All of it goes
+     * through here so the filter bar, the key and the listing/marker filtering stay
+     * one mechanism.
      */
     matchesCategoryFilter(marker) {
+        const offered = marker.options.themeData.specialisms || [];
+
+        if (![...this.activeSpecialisms].every((specialism) => offered.includes(specialism))) {
+            return false;
+        }
+
         const active = this.activePostTypeFilter;
 
         if (active === '') {
@@ -935,6 +1126,9 @@ let markerHtml = `
 
         const distance = parseFloat(this.distanceSelect.value) || 0;
 
+        // Everything inside the distance, before the category filter, for the chip counts.
+        const inRange = [];
+
         // Process all markers.
         this.allMarkersGroup.eachLayer((marker) => {
             // Updating marker distance data.
@@ -944,7 +1138,16 @@ let markerHtml = `
             marker.options.themeData.roadDurationInSeconds = null;
             marker.options.themeData.roadDistanceUnroutable = false;
 
-            if (distance === 0 || distanceInMiles <= distance) {
+            const passesDistanceFilter = distance === 0 || distanceInMiles <= distance;
+
+            if (passesDistanceFilter) {
+                inRange.push(marker);
+            }
+
+            // This path (search, geolocate, a location in the URL) used to skip the category
+            // filter, so picking Advanced Installer and then searching listed every installer
+            // while the chip still read as selected.
+            if (passesDistanceFilter && this.matchesCategoryFilter(marker)) {
                 this.filteredMarkersGroup.addLayer(marker);
                 marker.options.themeData.listingElement.removeAttribute('hidden', '');
                 marker.options.themeData.distanceInMiles = distanceInMiles;
@@ -965,9 +1168,7 @@ let markerHtml = `
         const markerCount = filteredLayers.length;
 
         this.updateResultsCount(markerCount);
-        // This path applies no category filter, so the visible set is the in-scope set.
-        // No-ops on the installer map, which has a single post type and so no chips.
-        this.updateFilterCounts(filteredLayers);
+        this.updateFilterCounts(inRange);
 
         if (shouldAdjustMapBounds) {
             this.fitToResults(filteredLayers);
@@ -1066,8 +1267,10 @@ let markerHtml = `
      */
     updateFilterCounts(markersInScope) {
         const buttons = this.el.querySelectorAll('.map__filter');
+        const typeTiles = this.el.querySelectorAll('[data-installer-type]');
+        const tierTiles = this.el.querySelectorAll('[data-installer-tier]');
 
-        if (!buttons.length) {
+        if (!buttons.length && !typeTiles.length) {
             return;
         }
 
@@ -1090,6 +1293,47 @@ let markerHtml = `
 
             button.disabled = count === 0 && value !== active;
             button.classList.toggle('map__filter--empty', count === 0);
+        });
+
+        this.activePostTypeFilter = active;
+
+        // Installer tiles, each counting what clicking it would give, swapped and restored
+        // the same way. A decking type keeps the chosen accreditation and All or Cladding
+        // drop it, exactly as clicking them does.
+        const activeSpecialisms = this.activeSpecialisms;
+
+        const setTileCount = (tile, count, isActive) => {
+            const countEl = tile.querySelector('[data-tile-count]');
+
+            if (countEl) {
+                countEl.textContent = String(count);
+            }
+
+            tile.disabled = count === 0 && !isActive;
+            tile.classList.toggle('map__tile--empty', count === 0);
+        };
+
+        typeTiles.forEach((tile) => {
+            const type = tile.dataset.installerType;
+
+            this.activeSpecialisms = new Set(this.INSTALLER_TYPE_SPECIALISMS[type] || []);
+            this.activePostTypeFilter = this.installerTypeHasDecking(type) ? active : '';
+
+            const count = markersInScope.filter((marker) => this.matchesCategoryFilter(marker)).length;
+
+            setTileCount(tile, count, type === this.installerType);
+        });
+
+        this.activeSpecialisms = activeSpecialisms;
+
+        tierTiles.forEach((tile) => {
+            const tier = tile.dataset.installerTier;
+
+            this.activePostTypeFilter = tier;
+
+            const count = markersInScope.filter((marker) => this.matchesCategoryFilter(marker)).length;
+
+            setTileCount(tile, count, tier === active);
         });
 
         this.activePostTypeFilter = active;
@@ -1561,7 +1805,21 @@ let markerHtml = `
      * Result count heading and the empty state.
      */
     updateResultsCount(markerCount) {
-        if (this.listingsHeading) {
+        const installerFiltersEl = this.installerFiltersEl || this.el.querySelector('[data-installer-filters]');
+
+        if (installerFiltersEl) {
+            // The installer filter bar leads with the bare count and repeats it on the
+            // panel's Show results button.
+            if (this.listingsHeading) {
+                this.listingsHeading.textContent = this.formatCount(installerFiltersEl, 'heading', markerCount);
+            }
+
+            const showButton = installerFiltersEl.querySelector('.map__installer-filters__show');
+
+            if (showButton) {
+                showButton.textContent = this.formatCount(showButton, 'template', markerCount);
+            }
+        } else if (this.listingsHeading) {
             this.listingsHeading.textContent = markerCount === 1
                 ? `Displaying: ${markerCount} result`
                 : `Displaying: ${markerCount} results`;

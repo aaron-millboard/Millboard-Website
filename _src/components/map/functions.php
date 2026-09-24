@@ -134,6 +134,16 @@ function filter_args(array $args): ?array
 
     // Generate filters if multiple post types are present
     $args['filters'] = generate_filters($args);
+    $args['installer_filters'] = generate_installer_type_filters($args);
+
+    // The installer filter bar leads with the bare count, "138 results".
+    if (!empty($args['installer_filters'])) {
+        $args['sidebar_heading']['content'] = sprintf(
+            // translators: the number of map results.
+            \_n('%1$s result', '%1$s results', $results_count, 'granola'),
+            number_format_i18n($results_count)
+        );
+    }
 
     // Linked from the appointed market distributor note. Resolved per locale so each site
     // links to its own copy of the page.
@@ -276,6 +286,36 @@ function get_type_label(\WP_Post $wp_post, bool $is_advanced_installer = false):
     return '';
 }
 
+/**
+ * The kinds of work an installer is approved for: 'decking', 'cladding' or both.
+ *
+ * Read from the installer_type term, whose slugs name the specialism
+ * (approved-decking-installer, approved-cladding-installer,
+ * approved-decking-and-cladding-installer), so a term carrying both words means both.
+ *
+ * An installer with no term counts as decking. The approved programme was decking only
+ * until the cladding installers were added in Sep 2026, so an untagged record is a decking
+ * installer that nobody tagged, and dropping it whenever a visitor switches on the Decking
+ * toggle would hide a real partner.
+ */
+function get_installer_specialisms(\WP_Post $wp_post): array
+{
+    $terms = \get_the_terms($wp_post->ID, 'installer_type');
+    $specialisms = [];
+
+    if (!empty($terms) && !\is_wp_error($terms)) {
+        foreach ($terms as $term) {
+            foreach (['decking', 'cladding'] as $specialism) {
+                if (str_contains($term->slug, $specialism)) {
+                    $specialisms[] = $specialism;
+                }
+            }
+        }
+    }
+
+    return $specialisms ? array_values(array_unique($specialisms)) : ['decking'];
+}
+
 
 function get_item_data($args): array|null
 {
@@ -338,11 +378,14 @@ function get_item_data($args): array|null
         // distributor-only meaning for anything else reading it.
         $prioritised = $preferred || $advanced_installer;
 
+        $specialisms = $post_type === 'installer' ? get_installer_specialisms($wp_post) : [];
+
         $items[] = [
             'id' => $wp_post_id,
             'title' => $wp_post->post_title,
             'address' => $address,
             'advanced_installer' => $advanced_installer,
+            'specialisms' => $specialisms,
             'phone' => \get_field('phone', $wp_post_id),
             'email' => \get_field('email', $wp_post_id),
             'website' => \get_field('website', $wp_post_id),
@@ -375,6 +418,8 @@ function get_item_data($args): array|null
                 'data-map-item-territory' => $territory ? implode(',', $territory) : null,
                 'data-map-item-territory-names' => $territory ? implode(', ', territory_country_names($territory)) : null,
                 'data-map-item-has-display' => $has_display ? '1' : null,
+                // Read by the installer type tiles on the installer map.
+                'data-map-item-specialisms' => $specialisms ? implode(' ', $specialisms) : null,
             ],
         ];
     }
@@ -589,6 +634,177 @@ function generate_installer_tier_filters($args): array
             'marker' => 'installer-advanced',
         ],
     ];
+}
+
+/**
+ * Tile filters for the installer map, per Aaron's "Installer Filters" designs (24 Sep 2026,
+ * v3 is current).
+ *
+ * Installer type is a pick-one set of four tiles. They overlap on purpose: Decking lists
+ * every installer who does decking, including those who also do cladding, and "Decking &
+ * cladding" lists only those who do both. The Approved / Advanced accreditation is a
+ * decking accreditation, so its tiles only show once a decking type is chosen.
+ *
+ * Each option also carries the words the summary line under the result count uses, e.g.
+ * "Decking & cladding installers · Advanced".
+ *
+ * Returns [] unless both specialisms are present, in which case the map falls back to the
+ * plain tier chips: on a locale where every installer is still decking only, the type
+ * tiles would all say the same thing.
+ */
+function generate_installer_type_filters($args): array
+{
+    if (empty($args['items']) || get_selected_post_types($args) !== ['installer']) {
+        return [];
+    }
+
+    $counts = ['all' => count($args['items']), 'both' => 0, 'decking' => 0, 'cladding' => 0];
+    $advanced = 0;
+
+    foreach ($args['items'] as $item) {
+        $specialisms = $item['specialisms'] ?? [];
+        $does_decking = in_array('decking', $specialisms, true);
+        $does_cladding = in_array('cladding', $specialisms, true);
+
+        $counts['decking'] += $does_decking ? 1 : 0;
+        $counts['cladding'] += $does_cladding ? 1 : 0;
+        $counts['both'] += ($does_decking && $does_cladding) ? 1 : 0;
+        $advanced += !empty($item['advanced_installer']) ? 1 : 0;
+    }
+
+    if ($counts['decking'] === 0 || $counts['cladding'] === 0) {
+        return [];
+    }
+
+    $types = [
+        'all' => [\__('All', 'granola'), \__('All installers', 'granola')],
+        'both' => [\__('Decking & cladding', 'granola'), \__('Decking & cladding installers', 'granola')],
+        'decking' => [\__('Decking', 'granola'), \__('Decking installers', 'granola')],
+        'cladding' => [\__('Cladding', 'granola'), \__('Cladding installers', 'granola')],
+    ];
+
+    $filters = ['types' => [], 'tiers' => []];
+
+    foreach ($types as $value => [$label, $summary]) {
+        $filters['types'][] = [
+            'value' => $value,
+            'label' => $label,
+            'summary' => $summary,
+            'count' => $counts[$value],
+        ];
+    }
+
+    // Only worth offering when installers sit in both tiers.
+    if ($advanced > 0 && $advanced < $counts['all']) {
+        $filters['tiers'] = [
+            [
+                'value' => 'installer-approved',
+                'label' => \__('Approved', 'granola'),
+                'count' => $counts['all'] - $advanced,
+            ],
+            [
+                'value' => 'installer-advanced',
+                'label' => \__('Advanced', 'granola'),
+                'count' => $advanced,
+            ],
+        ];
+    }
+
+    return $filters;
+}
+
+/**
+ * The installer filter panel that the Filter button opens ("Installer Filters v3").
+ *
+ * Rendered closed and inert, so none of its controls are in the tab order until Map.js
+ * opens it. The accreditation group is hidden until a decking type is chosen. The tiles
+ * carry their own data attributes rather than data-filter-value, so the pick-one chip
+ * handling in Map.js never picks them up.
+ */
+function render_installer_filters(array $filters, int $results_count): string
+{
+    if (empty($filters['types'])) {
+        return '';
+    }
+
+    ob_start();
+    ?>
+    <div class="map__installer-filters__panel" id="map-installer-filters-panel" data-installer-filters-panel inert>
+        <div class="map__installer-filters__panel__inner">
+            <div class="map__installer-filters__body">
+                <p class="map__installer-filters__hint">
+                    <?= \esc_html__('Click to filter the list and map.', 'granola'); ?>
+                </p>
+
+                <div class="map__installer-filters__group">
+                    <p class="map__installer-filters__label" id="map-installer-type-label">
+                        <?= \esc_html__('Installer type', 'granola'); ?>
+                    </p>
+
+                    <div class="map__installer-filters__grid" role="group" aria-labelledby="map-installer-type-label">
+                        <?php foreach ($filters['types'] as $type) { ?>
+                            <?php $is_all = $type['value'] === 'all'; ?>
+                            <button
+                                type="button"
+                                class="map__tile<?= $is_all ? ' map__tile--active' : ''; ?>"
+                                data-installer-type="<?= \esc_attr($type['value']); ?>"
+                                data-summary="<?= \esc_attr($type['summary']); ?>"
+                                aria-pressed="<?= $is_all ? 'true' : 'false'; ?>"
+                            >
+                                <span class="map__tile__label"><?= \esc_html($type['label']); ?></span>
+                                <span class="map__tile__count" data-tile-count><?= \esc_html($type['count']); ?></span>
+                            </button>
+                        <?php } ?>
+                    </div>
+                </div>
+
+                <?php if (!empty($filters['tiers'])) { ?>
+                    <div class="map__installer-filters__group" data-installer-tiers hidden>
+                        <div class="map__installer-filters__label-row">
+                            <p class="map__installer-filters__label" id="map-installer-tier-label">
+                                <?= \esc_html__('Decking accreditation', 'granola'); ?>
+                            </p>
+                            <span class="map__installer-filters__optional">
+                                <?= \esc_html__('Optional', 'granola'); ?>
+                            </span>
+                        </div>
+
+                        <div class="map__installer-filters__grid" role="group" aria-labelledby="map-installer-tier-label">
+                            <?php foreach ($filters['tiers'] as $tier) { ?>
+                                <button
+                                    type="button"
+                                    class="map__tile"
+                                    data-installer-tier="<?= \esc_attr($tier['value']); ?>"
+                                    data-summary="<?= \esc_attr($tier['label']); ?>"
+                                    aria-pressed="false"
+                                >
+                                    <span class="map__tile__label"><?= \esc_html($tier['label']); ?></span>
+                                    <span class="map__tile__count" data-tile-count><?= \esc_html($tier['count']); ?></span>
+                                </button>
+                            <?php } ?>
+                        </div>
+                    </div>
+                <?php } ?>
+
+                <?php /* translators: %s: the number of installers the filters leave. */ ?>
+                <button
+                    type="button"
+                    class="map__installer-filters__show"
+                    data-installer-filters-toggle
+                    data-template-one="<?= \esc_attr__('Show %s result', 'granola'); ?>"
+                    data-template-other="<?= \esc_attr__('Show %s results', 'granola'); ?>"
+                >
+                    <?= \esc_html(sprintf(
+                        \_n('Show %s result', 'Show %s results', $results_count, 'granola'),
+                        number_format_i18n($results_count)
+                    )); ?>
+                </button>
+            </div>
+        </div>
+    </div>
+    <?php
+
+    return (string) ob_get_clean();
 }
 
 /**
