@@ -686,13 +686,11 @@ function generate_installer_type_filters($args): array
             [
                 'value' => 'installer-approved',
                 'label' => \__('Approved', 'granola'),
-                'description' => \__('Trained and accredited by Millboard', 'granola'),
                 'count' => $counts['all'] - $advanced,
             ],
             [
                 'value' => 'installer-advanced',
                 'label' => \__('Advanced', 'granola'),
-                'description' => \__('Our most experienced installers', 'granola'),
                 'count' => $advanced,
             ],
         ];
@@ -705,9 +703,11 @@ function generate_installer_type_filters($args): array
  * The installer tile panel: Installer type, then the Decking accreditation tiles.
  *
  * The accreditation group is rendered closed (inert, so its tiles are out of the tab
- * order) and Map.js opens it when a decking type is chosen. The tiles carry their own
- * data attributes rather than data-filter-value, so the pick-one chip handling in Map.js
- * never picks them up.
+ * order) and Map.js opens it when a decking type is chosen. Choosing a decking type also
+ * folds the type grid into the one-line summary bar, so the open accreditation group does
+ * not push the results down; "Change" unfolds it again ("Installer Filters2" design).
+ * The tiles carry their own data attributes rather than data-filter-value, so the pick-one
+ * chip handling in Map.js never picks them up.
  */
 function render_installer_filters(array $filters): string
 {
@@ -723,7 +723,21 @@ function render_installer_filters(array $filters): string
                 <?= \esc_html__('Installer type', 'granola'); ?>
             </p>
 
-            <div class="map__installer-filters__grid" role="group" aria-labelledby="map-installer-type-label">
+            <?php // Filled in by Map.js from the chosen tile when the grid folds away. ?>
+            <button
+                type="button"
+                class="map__installer-filters__summary"
+                data-installer-summary
+                aria-expanded="false"
+                aria-controls="map-installer-type-grid"
+                hidden
+            >
+                <span class="map__installer-filters__summary__label" data-installer-summary-label></span>
+                <span class="map__installer-filters__summary__count" data-installer-summary-count></span>
+                <span class="map__installer-filters__summary__change"><?= \esc_html__('Change', 'granola'); ?></span>
+            </button>
+
+            <div class="map__installer-filters__grid" id="map-installer-type-grid" role="group" aria-labelledby="map-installer-type-label">
                 <?php foreach ($filters['types'] as $type) { ?>
                     <?php $is_all = $type['value'] === 'all'; ?>
                     <button
@@ -760,11 +774,8 @@ function render_installer_filters(array $filters): string
                                     data-installer-tier="<?= \esc_attr($tier['value']); ?>"
                                     aria-pressed="false"
                                 >
-                                    <span class="map__tile__top">
-                                        <span class="map__tile__label"><?= \esc_html($tier['label']); ?></span>
-                                        <span class="map__tile__count" data-tile-count><?= \esc_html($tier['count']); ?></span>
-                                    </span>
-                                    <span class="map__tile__description"><?= \esc_html($tier['description']); ?></span>
+                                    <span class="map__tile__label"><?= \esc_html($tier['label']); ?></span>
+                                    <span class="map__tile__count" data-tile-count><?= \esc_html($tier['count']); ?></span>
                                 </button>
                             <?php } ?>
                         </div>

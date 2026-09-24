@@ -86,6 +86,8 @@ class Map {
             both: ['decking', 'cladding'],
         };
         this.installerType = 'all';
+        // True while the visitor has unfolded the type grid with "Change".
+        this.installerTypeEditing = false;
         this.activeSpecialisms = new Set();
 
         this.googleApiKey = window.params.google_api_key;
@@ -823,6 +825,8 @@ let markerHtml = `
         }
 
         this.installerTiersEl = this.installerFiltersEl.querySelector('[data-installer-tiers]');
+        this.installerTypeGridEl = this.installerFiltersEl.querySelector('#map-installer-type-grid');
+        this.installerSummaryButton = this.installerFiltersEl.querySelector('[data-installer-summary]');
         this.installerClearButton = this.el.querySelector('[data-installer-filters-clear]');
 
         this.installerFiltersEl.querySelectorAll('[data-installer-type]').forEach((tile) => {
@@ -844,9 +848,31 @@ let markerHtml = `
             });
         });
 
+        if (this.installerSummaryButton) {
+            this.installerSummaryButton.addEventListener('click', () => {
+                this.installerTypeEditing = true;
+                this.syncInstallerFilters();
+
+                // The bar that had focus has just gone, so hand focus to the chosen tile.
+                const activeTile = this.installerTypeGridEl
+                    && this.installerTypeGridEl.querySelector('.map__tile--active');
+
+                if (activeTile) {
+                    activeTile.focus();
+                }
+            });
+        }
+
         if (this.installerClearButton) {
             this.installerClearButton.addEventListener('click', () => {
                 this.setInstallerType('all');
+
+                // Clear hides itself, so focus moves to the tile it just selected.
+                const allTile = this.installerFiltersEl.querySelector('[data-installer-type="all"]');
+
+                if (allTile) {
+                    allTile.focus();
+                }
             });
         }
 
@@ -863,6 +889,7 @@ let markerHtml = `
         }
 
         this.installerType = type;
+        this.installerTypeEditing = false;
         this.activeSpecialisms = new Set(this.INSTALLER_TYPE_SPECIALISMS[type]);
 
         // The accreditation only applies to decking, so it goes when decking does.
@@ -903,6 +930,50 @@ let markerHtml = `
 
         if (this.installerClearButton) {
             this.installerClearButton.hidden = this.installerType === 'all';
+        }
+
+        // A decking type folds the grid into the summary bar, so the accreditation group
+        // opening underneath does not push the results further down the panel. All and
+        // Cladding leave the grid out, as there is nothing below it.
+        if (this.installerSummaryButton && this.installerTypeGridEl) {
+            const isFolded = this.installerTypeHasDecking(this.installerType) && !this.installerTypeEditing;
+            const focusWasInGrid = this.installerTypeGridEl.contains(document.activeElement);
+
+            this.installerSummaryButton.hidden = !isFolded;
+            this.installerTypeGridEl.hidden = isFolded;
+            this.syncInstallerSummary();
+
+            // Keyboard users clicked a tile that has just been hidden.
+            if (isFolded && focusWasInGrid) {
+                this.installerSummaryButton.focus();
+            }
+        }
+    }
+
+    /**
+     * The summary bar repeats the chosen tile's label and count, so it follows the count
+     * as searches and the accreditation change it.
+     */
+    syncInstallerSummary() {
+        if (!this.installerSummaryButton || !this.installerTypeGridEl) {
+            return;
+        }
+
+        const activeTile = this.installerTypeGridEl.querySelector(`[data-installer-type="${this.installerType}"]`);
+
+        if (!activeTile) {
+            return;
+        }
+
+        const label = this.installerSummaryButton.querySelector('[data-installer-summary-label]');
+        const count = this.installerSummaryButton.querySelector('[data-installer-summary-count]');
+
+        if (label) {
+            label.textContent = activeTile.querySelector('.map__tile__label').textContent.trim();
+        }
+
+        if (count) {
+            count.textContent = activeTile.querySelector('[data-tile-count]').textContent.trim();
         }
     }
 
@@ -1254,6 +1325,7 @@ let markerHtml = `
         });
 
         this.activeSpecialisms = activeSpecialisms;
+        this.syncInstallerSummary();
 
         tierTiles.forEach((tile) => {
             const tier = tile.dataset.installerTier;
