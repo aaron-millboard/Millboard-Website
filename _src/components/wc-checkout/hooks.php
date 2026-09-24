@@ -6,3 +6,7 @@ namespace Granola\Components\WC_Checkout;
 
 // Allow shipping section to be updated as part of WC's 'update_order_review' ajax call.
 \add_filter('woocommerce_update_order_review_fragments', __NAMESPACE__ . '\\update_shipping_methods_fragment');
+
+// Point Irish addresses at the office, as there is no online delivery to Ireland.
+\add_filter('woocommerce_no_shipping_available_html', __NAMESPACE__ . '\\ireland_no_shipping_message');
+\add_action('woocommerce_after_checkout_validation', __NAMESPACE__ . '\\ireland_checkout_error', 10, 2);
