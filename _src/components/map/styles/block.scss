@@ -591,7 +591,7 @@
             gap: px-to-rem(10);
 
             &--tiers {
-                padding-top: px-to-rem(20);
+                padding-top: px-to-rem(16);
                 border-top: 1px solid var(--mb-rule);
             }
         }
@@ -623,6 +623,63 @@
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: px-to-rem(8);
+
+            // display: grid would otherwise win over the hidden attribute.
+            &[hidden] {
+                display: none;
+            }
+        }
+
+        // The type grid folded to one line once a decking type is chosen, styled as the
+        // selected tile it stands for ("Installer Filters2" design).
+        &__summary {
+            @include button-reset-hard;
+
+            display: flex;
+            align-items: center;
+            gap: px-to-rem(10);
+            width: 100%;
+            padding: px-to-rem(10) px-to-rem(12);
+            border: 1px solid var(--mb-ink);
+            border-radius: px-to-rem(2);
+            background: var(--mb-ink);
+            color: var(--mb-spring-wood);
+            font-family: inherit;
+            text-align: left;
+            cursor: pointer;
+            transition: opacity var(--dur--base, 240ms) var(--map-tile-ease);
+
+            @include interact {
+                background: var(--mb-ink);
+                color: var(--mb-spring-wood);
+                opacity: 0.92;
+            }
+
+            &[hidden] {
+                display: none;
+            }
+
+            &__label {
+                flex: 1 1 auto;
+                min-width: 0;
+                font-size: px-to-rem(13);
+                font-weight: 700;
+                letter-spacing: 0.14em;
+                text-transform: uppercase;
+            }
+
+            &__count,
+            &__change {
+                font-size: px-to-rem(13);
+                font-weight: var(--fw-light, 300);
+            }
+
+            &__change {
+                padding-left: px-to-rem(10);
+                border-left: 1px solid rgba(248, 244, 240, 0.3);
+                text-decoration: underline;
+                text-underline-offset: 3px;
+            }
         }
 
         // Closed, the group collapses to nothing and pulls back over the flex gap
@@ -711,16 +768,13 @@
             min-height: px-to-rem(76);
         }
 
+        // One line: label left, count right.
         &--tier {
-            gap: px-to-rem(6);
-        }
-
-        &__top {
-            display: flex;
+            flex-direction: row;
             align-items: center;
             justify-content: space-between;
             gap: px-to-rem(8);
-            width: 100%;
+            padding: px-to-rem(10) px-to-rem(12);
         }
 
         &__label {
@@ -730,14 +784,9 @@
             text-transform: uppercase;
         }
 
-        &__count,
-        &__description {
+        &__count {
             font-size: px-to-rem(13);
             font-weight: var(--fw-light, 300);
-        }
-
-        &__description {
-            line-height: 1.4;
         }
 
         &--active {
