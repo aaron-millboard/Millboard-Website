@@ -496,12 +496,14 @@
     }
 
     // Decking / Cladding toggles: their own line under the tier chips, since they are
-    // a separate on/off choice rather than more options in that pick-one row.
+    // a separate on/off choice rather than more options in that pick-one row. The extra
+    // space above keeps the two groups from reading as one list when the chips wrap.
     &__toggles {
         display: flex;
         flex-basis: 100%;
         flex-wrap: wrap;
         gap: var(--space--2xs);
+        margin-top: var(--space--2xs);
     }
 
     &__filter {
