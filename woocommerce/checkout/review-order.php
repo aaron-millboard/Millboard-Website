@@ -145,8 +145,21 @@ defined('ABSPATH') || exit;
                 <div class="label"><?php esc_html_e('Shipping', 'woocommerce'); ?></div>
                 <div class="value">
                     <?php if (WC()->cart->show_shipping() && WC()->cart->has_calculated_shipping()) {
-                        // Get shipping total cost (incl. tax).
-                        echo WC()->cart->get_cart_shipping_total();
+                        // A package with no rates costs 0, which get_cart_shipping_total() labels "Free!".
+                        $shipping_unavailable = false;
+                        foreach (WC()->shipping()->get_packages() as $package) {
+                            if (empty($package['rates'])) {
+                                $shipping_unavailable = true;
+                                break;
+                            }
+                        }
+
+                        if ($shipping_unavailable) {
+                            esc_html_e('Not available to this address', 'granola');
+                        } else {
+                            // Get shipping total cost (incl. tax).
+                            echo WC()->cart->get_cart_shipping_total();
+                        }
                     } else {
                         esc_html_e('Taxes will be calculated after you enter your address', 'granola');
                     }
