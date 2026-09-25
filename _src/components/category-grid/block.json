@@ -1,0 +1,44 @@
+{
+    "$schema": "https://raw.githubusercontent.com/AdvancedCustomFields/schemas/main/json/block.json",
+    "apiVersion": 3,
+    "name": "acf/category-grid",
+    "title": "Category Grid",
+    "category": "granola-blocks",
+    "description": "The product listing for a shop category, with filters, sorting and load more. Every product is in the markup, so the page stays indexable and filtering creates no new URLs.",
+    "icon": "grid-view",
+    "keywords": [
+        "grid",
+        "products",
+        "category",
+        "shop"
+    ],
+    "acf": {
+        "mode": "auto",
+        "blockVersion": 3,
+        "autoInlineEditing": false,
+        "hideFieldsInSidebar": false,
+        "renderCallback": "\\Granola\\Component::acf_render_callback",
+        "postTypes": [
+            "granola-template",
+            "page"
+        ]
+    },
+    "supports": {
+        "align": [
+            "wide",
+            "full",
+            "center"
+        ],
+        "anchor": true,
+        "color": {
+            "text": false
+        },
+        "mode": false
+    },
+    "attributes": {
+        "align": {
+            "type": "string",
+            "default": "full"
+        }
+    }
+}

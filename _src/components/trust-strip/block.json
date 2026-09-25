@@ -1,0 +1,44 @@
+{
+    "$schema": "https://raw.githubusercontent.com/AdvancedCustomFields/schemas/main/json/block.json",
+    "apiVersion": 3,
+    "name": "acf/trust-strip",
+    "title": "Trust Strip",
+    "category": "granola-blocks",
+    "description": "A short band of reassurance points under a category header. Every figure is entered by hand, so nothing is claimed that cannot be evidenced.",
+    "icon": "awards",
+    "keywords": [
+        "trust",
+        "reassurance",
+        "category",
+        "reviews"
+    ],
+    "acf": {
+        "mode": "auto",
+        "blockVersion": 3,
+        "autoInlineEditing": false,
+        "hideFieldsInSidebar": false,
+        "renderCallback": "\\Granola\\Component::acf_render_callback",
+        "postTypes": [
+            "granola-template",
+            "page"
+        ]
+    },
+    "supports": {
+        "align": [
+            "wide",
+            "full",
+            "center"
+        ],
+        "anchor": true,
+        "color": {
+            "text": false
+        },
+        "mode": false
+    },
+    "attributes": {
+        "align": {
+            "type": "string",
+            "default": "full"
+        }
+    }
+}

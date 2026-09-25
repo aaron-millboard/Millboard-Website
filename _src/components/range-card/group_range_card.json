@@ -1,0 +1,298 @@
+{
+    "key": "group_range_card",
+    "title": "Block - Range Cards",
+    "fields": [
+        {
+            "key": "field_range_card_meta_prefix",
+            "label": "Meta prefix",
+            "name": "meta_prefix",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "Small label above the heading, for example \"The collections\".",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": { "width": "", "class": "", "id": "" },
+            "default_value": "",
+            "maxlength": "",
+            "allow_in_bindings": 0,
+            "placeholder": "",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_range_card_heading",
+            "label": "Heading",
+            "name": "heading",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": { "width": "", "class": "", "id": "" },
+            "default_value": "Choose your collection",
+            "maxlength": "",
+            "allow_in_bindings": 0,
+            "placeholder": "",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_range_card_intro",
+            "label": "Intro",
+            "name": "intro",
+            "aria-label": "",
+            "type": "textarea",
+            "instructions": "One or two sentences introducing the collections.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": { "width": "", "class": "", "id": "" },
+            "default_value": "",
+            "maxlength": "",
+            "allow_in_bindings": 0,
+            "rows": 3,
+            "placeholder": "",
+            "new_lines": ""
+        },
+        {
+            "key": "field_range_card_source",
+            "label": "Collections",
+            "name": "source",
+            "aria-label": "",
+            "type": "button_group",
+            "instructions": "Automatic uses the child categories of the category being viewed.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": { "width": "", "class": "", "id": "" },
+            "choices": {
+                "automatic": "Automatic",
+                "manual": "Choose them"
+            },
+            "default_value": "automatic",
+            "return_format": "value",
+            "allow_null": 0,
+            "layout": "horizontal"
+        },
+        {
+            "key": "field_range_card_parent_category",
+            "label": "Parent category",
+            "name": "parent_category",
+            "aria-label": "",
+            "type": "taxonomy",
+            "instructions": "Leave empty on a category page to use the category being viewed.",
+            "required": 0,
+            "conditional_logic": [
+                [
+                    {
+                        "field": "field_range_card_source",
+                        "operator": "==",
+                        "value": "automatic"
+                    }
+                ]
+            ],
+            "wrapper": { "width": "", "class": "", "id": "" },
+            "taxonomy": "product_cat",
+            "add_term": 0,
+            "save_terms": 0,
+            "load_terms": 0,
+            "return_format": "id",
+            "field_type": "select",
+            "allow_null": 1,
+            "bidirectional": 0,
+            "multiple": 0,
+            "bidirectional_target": []
+        },
+        {
+            "key": "field_range_card_exclude",
+            "label": "Leave out",
+            "name": "exclude_categories",
+            "aria-label": "",
+            "type": "taxonomy",
+            "instructions": "Child categories that are not collections, for example Decking Accessories, Edging, Fascias and Subframes.",
+            "required": 0,
+            "conditional_logic": [
+                [
+                    {
+                        "field": "field_range_card_source",
+                        "operator": "==",
+                        "value": "automatic"
+                    }
+                ]
+            ],
+            "wrapper": { "width": "", "class": "", "id": "" },
+            "taxonomy": "product_cat",
+            "add_term": 0,
+            "save_terms": 0,
+            "load_terms": 0,
+            "return_format": "id",
+            "field_type": "multi_select",
+            "allow_null": 1,
+            "bidirectional": 0,
+            "multiple": 0,
+            "bidirectional_target": []
+        },
+        {
+            "key": "field_range_card_ranges",
+            "label": "Collections",
+            "name": "ranges",
+            "aria-label": "",
+            "type": "repeater",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": [
+                [
+                    {
+                        "field": "field_range_card_source",
+                        "operator": "==",
+                        "value": "manual"
+                    }
+                ]
+            ],
+            "wrapper": { "width": "", "class": "", "id": "" },
+            "layout": "block",
+            "pagination": 0,
+            "min": 0,
+            "max": 0,
+            "collapsed": "field_range_card_row_category",
+            "button_label": "Add collection",
+            "rows_per_page": 20,
+            "sub_fields": [
+                {
+                    "key": "field_range_card_row_category",
+                    "label": "Category",
+                    "name": "product_category",
+                    "aria-label": "",
+                    "type": "taxonomy",
+                    "instructions": "",
+                    "required": 1,
+                    "conditional_logic": 0,
+                    "wrapper": { "width": "", "class": "", "id": "" },
+                    "taxonomy": "product_cat",
+                    "add_term": 0,
+                    "save_terms": 0,
+                    "load_terms": 0,
+                    "return_format": "id",
+                    "field_type": "select",
+                    "allow_null": 0,
+                    "bidirectional": 0,
+                    "multiple": 0,
+                    "bidirectional_target": [],
+                    "parent_repeater": "field_range_card_ranges"
+                },
+                {
+                    "key": "field_range_card_row_name",
+                    "label": "Name override",
+                    "name": "name",
+                    "aria-label": "",
+                    "type": "text",
+                    "instructions": "Leave empty to use the category name.",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": { "width": "50", "class": "", "id": "" },
+                    "default_value": "",
+                    "maxlength": "",
+                    "allow_in_bindings": 0,
+                    "placeholder": "",
+                    "prepend": "",
+                    "append": "",
+                    "parent_repeater": "field_range_card_ranges"
+                },
+                {
+                    "key": "field_range_card_row_image",
+                    "label": "Image override",
+                    "name": "image_id",
+                    "aria-label": "",
+                    "type": "image",
+                    "instructions": "Leave empty to use the category image.",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": { "width": "50", "class": "", "id": "" },
+                    "return_format": "id",
+                    "library": "all",
+                    "min_width": "",
+                    "min_height": "",
+                    "min_size": "",
+                    "max_width": "",
+                    "max_height": "",
+                    "max_size": "",
+                    "mime_types": "",
+                    "allow_in_bindings": 0,
+                    "preview_size": "medium",
+                    "parent_repeater": "field_range_card_ranges"
+                },
+                {
+                    "key": "field_range_card_row_line",
+                    "label": "Description override",
+                    "name": "line",
+                    "aria-label": "",
+                    "type": "textarea",
+                    "instructions": "Leave empty to use the category description.",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": { "width": "", "class": "", "id": "" },
+                    "default_value": "",
+                    "maxlength": "",
+                    "allow_in_bindings": 0,
+                    "rows": 2,
+                    "placeholder": "",
+                    "new_lines": "",
+                    "parent_repeater": "field_range_card_ranges"
+                },
+                {
+                    "key": "field_range_card_row_chips",
+                    "label": "Spec chips",
+                    "name": "chips",
+                    "aria-label": "",
+                    "type": "textarea",
+                    "instructions": "One per line, for example board width, finish, slip rating.",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": { "width": "", "class": "", "id": "" },
+                    "default_value": "",
+                    "maxlength": "",
+                    "allow_in_bindings": 0,
+                    "rows": 3,
+                    "placeholder": "",
+                    "new_lines": "",
+                    "parent_repeater": "field_range_card_ranges"
+                }
+            ]
+        },
+        {
+            "key": "field_range_card_swatch_limit",
+            "label": "Swatches per card",
+            "name": "swatch_limit",
+            "aria-label": "",
+            "type": "number",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": { "width": "", "class": "", "id": "" },
+            "default_value": 6,
+            "min": 0,
+            "max": 12,
+            "allow_in_bindings": 0,
+            "placeholder": "",
+            "step": 1,
+            "prepend": "",
+            "append": ""
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "block",
+                "operator": "==",
+                "value": "acf/range-card"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "",
+    "show_in_rest": 0
+}
