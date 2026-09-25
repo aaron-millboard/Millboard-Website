@@ -110,6 +110,16 @@ if (file_exists($autoloader = __DIR__ . '/vendor/autoload.php')) {
 \Theme\WooCommerce\ScriptOptimisation::init();
 
 // ----------------------------------------------------
+// Internal sample ordering (IT team's mb-sof package).
+// ----------------------------------------------------
+// Hand-maintained by IT and kept verbatim apart from one asset-path edit,
+// which is commented in the file. The My Account tab it renders into is the
+// wc-account component's; see that component's hooks.php for how the two
+// halves agree on one endpoint, one menu item and one access gate.
+// ----------------------------------------------------
+require_once __DIR__ . '/sample-ordering/inc/millboard-sample-ordering.php';
+
+// ----------------------------------------------------
 // Other custom functionality.
 // ----------------------------------------------------
 \Theme\Hubspot\WriteGuard::init();

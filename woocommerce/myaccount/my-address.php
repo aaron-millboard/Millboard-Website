@@ -1,93 +1,79 @@
 <?php
+
 /**
- * My Addresses
+ * Addresses.
  *
- * This template can be overridden by copying it to yourtheme/woocommerce/myaccount/my-address.php.
+ * Overridden from WooCommerce to match the 2026 account design: one hairline
+ * card per address with an Edit link in its header.
  *
- * HOWEVER, on occasion WooCommerce will need to update template files and you
- * (the theme developer) will need to copy the new files to your theme to
- * maintain compatibility. We try to do this as little as possible, but it does
- * happen. When this occurs the version of the template file will be bumped and
- * the readme will list any important changes.
+ * The design draws the edit form opening in place. WooCommerce edits an address
+ * at its own URL (/my-account/edit-address/billing/), which is what the Edit
+ * link goes to, and form-edit-address.php styles that page to match the panel
+ * the design shows. Keeping Woo's URL means the form survives a refresh, can be
+ * linked to from an email, and validates server-side as it already does.
  *
- * @see     https://woocommerce.com/document/template-structure/
+ * @see https://woocommerce.com/document/template-structure/
  * @package WooCommerce\Templates
  * @version 9.3.0
  */
 
-defined( 'ABSPATH' ) || exit;
+defined('ABSPATH') || exit;
 
 $customer_id = get_current_user_id();
 
-if ( ! wc_ship_to_billing_address_only() && wc_shipping_enabled() ) {
-	$get_addresses = apply_filters(
-		'woocommerce_my_account_get_addresses',
-		array(
-			'billing'  => __( 'Billing address', 'woocommerce' ),
-			'shipping' => __( 'Shipping address', 'woocommerce' ),
-		),
-		$customer_id
-	);
+if (!wc_ship_to_billing_address_only() && wc_shipping_enabled()) {
+    $get_addresses = apply_filters(
+        'woocommerce_my_account_get_addresses',
+        [
+            'billing' => __('Billing address', 'woocommerce'),
+            'shipping' => __('Shipping address', 'woocommerce'),
+        ],
+        $customer_id
+    );
 } else {
-	$get_addresses = apply_filters(
-		'woocommerce_my_account_get_addresses',
-		array(
-			'billing' => __( 'Billing address', 'woocommerce' ),
-		),
-		$customer_id
-	);
+    $get_addresses = apply_filters(
+        'woocommerce_my_account_get_addresses',
+        [
+            'billing' => __('Billing address', 'woocommerce'),
+        ],
+        $customer_id
+    );
 }
 
-$oldcol = 1;
-$col    = 1;
 ?>
 
-<p>
-	<?php echo apply_filters( 'woocommerce_my_account_my_address_description', esc_html__( 'The following addresses will be used on the checkout page by default.', 'woocommerce' ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+<h2 class="mb-account-panel__title"><?php esc_html_e('Addresses', 'granola'); ?></h2>
+
+<p class="mb-account-panel__intro">
+    <?php esc_html_e('These addresses are used at checkout by default. You can always change them as you order.', 'granola'); ?>
 </p>
 
-<?php if ( ! wc_ship_to_billing_address_only() && wc_shipping_enabled() ) : ?>
-	<div class="u-columns woocommerce-Addresses col2-set addresses">
-<?php endif; ?>
+<div class="mb-account-addresses">
+    <?php foreach ($get_addresses as $name => $title) :
+        $address = wc_get_account_formatted_address($name);
+        ?>
+        <div class="mb-account-addresses__card">
+            <div class="mb-account-addresses__head">
+                <h3 class="mb-account-addresses__title"><?php echo esc_html($title); ?></h3>
+                <a
+                    class="mb-account-addresses__edit"
+                    href="<?php echo esc_url(wc_get_endpoint_url('edit-address', $name)); ?>"
+                    aria-label="<?php
+                        /* translators: %s: the address type, billing or shipping. */
+                        echo esc_attr(sprintf(__('Edit %s', 'granola'), strtolower($title)));
+                    ?>"
+                >
+                    <?php echo $address ? esc_html__('Edit', 'granola') : esc_html__('Add', 'granola'); ?>
+                </a>
+            </div>
 
-<?php foreach ( $get_addresses as $name => $address_title ) : ?>
-	<?php
-		$address = wc_get_account_formatted_address( $name );
-		$col     = $col * -1;
-		$oldcol  = $oldcol * -1;
-	?>
-
-	<div class="u-column<?php echo $col < 0 ? 1 : 2; ?> col-<?php echo $oldcol < 0 ? 1 : 2; ?> woocommerce-Address">
-		<header class="woocommerce-Address-title title">
-			<h2><?php echo esc_html( $address_title ); ?></h2>
-			<a href="<?php echo esc_url( wc_get_endpoint_url( 'edit-address', $name ) ); ?>" class="edit">
-				<?php
-					printf(
-						/* translators: %s: Address title */
-						$address ? esc_html__( 'Edit %s', 'woocommerce' ) : esc_html__( 'Add %s', 'woocommerce' ),
-						esc_html( $address_title )
-					);
-				?>
-			</a>
-		</header>
-		<address>
-			<?php
-				echo $address ? wp_kses_post( $address ) : esc_html_e( 'You have not set up this type of address yet.', 'woocommerce' );
-
-				/**
-				 * Used to output content after core address fields.
-				 *
-				 * @param string $name Address type.
-				 * @since 8.7.0
-				 */
-				do_action( 'woocommerce_my_account_after_my_address', $name );
-			?>
-		</address>
-	</div>
-
-<?php endforeach; ?>
-
-<?php if ( ! wc_ship_to_billing_address_only() && wc_shipping_enabled() ) : ?>
-	</div>
-	<?php
-endif;
+            <address class="mb-account-addresses__body">
+                <?php
+                echo $address
+                    ? wp_kses_post($address)
+                    : esc_html__('You have not set up this address yet.', 'woocommerce');
+                ?>
+            </address>
+        </div>
+    <?php endforeach; ?>
+</div>

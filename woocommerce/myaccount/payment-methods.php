@@ -1,78 +1,107 @@
 <?php
+
 /**
- * Payment methods
+ * Payment methods.
  *
- * Shows customer payment methods on the account page.
- *
- * This template can be overridden by copying it to yourtheme/woocommerce/myaccount/payment-methods.php.
- *
- * HOWEVER, on occasion WooCommerce will need to update template files and you
- * (the theme developer) will need to copy the new files to your theme to
- * maintain compatibility. We try to do this as little as possible, but it does
- * happen. When this occurs the version of the template file will be bumped and
- * the readme will list any important changes.
+ * Overridden from WooCommerce to match the 2026 account design: a hairline row
+ * per saved card with a Default or Backup marker, or the empty panel.
  *
  * @see https://woocommerce.com/document/template-structure/
  * @package WooCommerce\Templates
  * @version 8.9.0
  */
 
-defined( 'ABSPATH' ) || exit;
+defined('ABSPATH') || exit;
 
-$saved_methods = wc_get_customer_saved_methods_list( get_current_user_id() );
-$has_methods   = (bool) $saved_methods;
-$types         = wc_get_account_payment_methods_types();
+$saved_methods = wc_get_customer_saved_methods_list(get_current_user_id());
+$has_methods = (bool) $saved_methods;
 
-do_action( 'woocommerce_before_account_payment_methods', $has_methods ); ?>
+do_action('woocommerce_before_account_payment_methods', $has_methods);
 
-<?php if ( $has_methods ) : ?>
+?>
 
-	<table class="woocommerce-MyAccount-paymentMethods shop_table shop_table_responsive account-payment-methods-table">
-		<thead>
-			<tr>
-				<?php foreach ( wc_get_account_payment_methods_columns() as $column_id => $column_name ) : ?>
-					<th class="woocommerce-PaymentMethod woocommerce-PaymentMethod--<?php echo esc_attr( $column_id ); ?> payment-method-<?php echo esc_attr( $column_id ); ?>"><span class="nobr"><?php echo esc_html( $column_name ); ?></span></th>
-				<?php endforeach; ?>
-			</tr>
-		</thead>
-		<?php foreach ( $saved_methods as $type => $methods ) : // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited ?>
-			<?php foreach ( $methods as $method ) : ?>
-				<tr class="payment-method<?php echo ! empty( $method['is_default'] ) ? ' default-payment-method' : ''; ?>">
-					<?php foreach ( wc_get_account_payment_methods_columns() as $column_id => $column_name ) : ?>
-						<td class="woocommerce-PaymentMethod woocommerce-PaymentMethod--<?php echo esc_attr( $column_id ); ?> payment-method-<?php echo esc_attr( $column_id ); ?>" data-title="<?php echo esc_attr( $column_name ); ?>">
-							<?php
-							if ( has_action( 'woocommerce_account_payment_methods_column_' . $column_id ) ) {
-								do_action( 'woocommerce_account_payment_methods_column_' . $column_id, $method );
-							} elseif ( 'method' === $column_id ) {
-								if ( ! empty( $method['method']['last4'] ) ) {
-									/* translators: 1: credit card type 2: last 4 digits */
-									echo sprintf( esc_html__( '%1$s ending in %2$s', 'woocommerce' ), esc_html( wc_get_credit_card_type_label( $method['method']['brand'] ) ), esc_html( $method['method']['last4'] ) );
-								} else {
-									echo esc_html( wc_get_credit_card_type_label( $method['method']['brand'] ) );
-								}
-							} elseif ( 'expires' === $column_id ) {
-								echo esc_html( $method['expires'] );
-							} elseif ( 'actions' === $column_id ) {
-								foreach ( $method['actions'] as $key => $action ) { // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-									echo '<a href="' . esc_url( $action['url'] ) . '" class="button ' . sanitize_html_class( $key ) . '">' . esc_html( $action['name'] ) . '</a>&nbsp;';
-								}
-							}
-							?>
-						</td>
-					<?php endforeach; ?>
-				</tr>
-			<?php endforeach; ?>
-		<?php endforeach; ?>
-	</table>
+<h2 class="mb-account-panel__title"><?php esc_html_e('Payment methods', 'granola'); ?></h2>
+
+<p class="mb-account-panel__intro">
+    <?php esc_html_e('Save a card to make repeat orders quicker. Card details are held securely by our payment provider: we never store them ourselves.', 'granola'); ?>
+</p>
+
+<?php if ($has_methods) : ?>
+
+    <div class="mb-account-cards">
+        <?php foreach ($saved_methods as $type => $methods) : ?>
+            <?php foreach ($methods as $method) : ?>
+                <div class="mb-account-cards__row">
+                    <span class="mb-account-cards__brand">
+                        <?php
+                        echo esc_html(
+                            !empty($method['method']['brand'])
+                                ? wc_get_credit_card_type_label($method['method']['brand'])
+                                : __('Card', 'granola')
+                        );
+                        ?>
+                    </span>
+
+                    <span class="mb-account-cards__number">
+                        <?php
+                        if (!empty($method['method']['last4'])) {
+                            /* translators: %s: the last four digits of the card. */
+                            printf(esc_html__('Ending %s', 'granola'), esc_html($method['method']['last4']));
+                        } else {
+                            esc_html_e('Saved method', 'granola');
+                        }
+                        ?>
+                    </span>
+
+                    <span class="mb-account-cards__expiry">
+                        <?php if (!empty($method['expires']) && 'N/A' !== $method['expires']) : ?>
+                            <?php
+                            /* translators: %s: the card expiry date. */
+                            printf(esc_html__('Expires %s', 'granola'), esc_html($method['expires']));
+                            ?>
+                        <?php endif; ?>
+                    </span>
+
+                    <span class="mb-account-cards__flag">
+                        <span class="mb-account-pill<?php echo empty($method['is_default']) ? ' mb-account-pill--closed' : ''; ?>">
+                            <?php
+                            echo empty($method['is_default'])
+                                ? esc_html__('Backup', 'granola')
+                                : esc_html__('Default', 'granola');
+                            ?>
+                        </span>
+                    </span>
+
+                    <span class="mb-account-cards__actions">
+                        <?php foreach ((array) $method['actions'] as $key => $action) : ?>
+                            <a class="mb-account-cards__action <?php echo esc_attr(sanitize_html_class($key)); ?>" href="<?php echo esc_url($action['url']); ?>">
+                                <?php echo esc_html($action['name']); ?>
+                            </a>
+                        <?php endforeach; ?>
+                    </span>
+                </div>
+            <?php endforeach; ?>
+        <?php endforeach; ?>
+    </div>
 
 <?php else : ?>
 
-	<?php wc_print_notice( esc_html__( 'No saved methods found.', 'woocommerce' ), 'notice' ); ?>
+    <div class="mb-account-empty">
+        <span class="mb-account-empty__rule" aria-hidden="true"></span>
+        <h3 class="mb-account-empty__title"><?php esc_html_e('No saved methods', 'granola'); ?></h3>
+        <p class="mb-account-empty__body">
+            <?php esc_html_e('Nothing saved yet. Add a card now, or save one at checkout the next time you order.', 'granola'); ?>
+        </p>
+    </div>
 
 <?php endif; ?>
 
-<?php do_action( 'woocommerce_after_account_payment_methods', $has_methods ); ?>
+<?php do_action('woocommerce_after_account_payment_methods', $has_methods); ?>
 
-<?php if ( WC()->payment_gateways->get_available_payment_gateways() ) : ?>
-	<a class="button" href="<?php echo esc_url( wc_get_endpoint_url( 'add-payment-method' ) ); ?>"><?php esc_html_e( 'Add payment method', 'woocommerce' ); ?></a>
+<?php if (WC()->payment_gateways->get_available_payment_gateways()) : ?>
+    <p class="mb-account-actions">
+        <a class="mb-account-btn mb-account-btn--ghost" href="<?php echo esc_url(wc_get_endpoint_url('add-payment-method')); ?>">
+            <?php esc_html_e('Add payment method', 'woocommerce'); ?>
+        </a>
+    </p>
 <?php endif; ?>

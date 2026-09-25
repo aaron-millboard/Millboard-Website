@@ -1,120 +1,176 @@
 <?php
+
 /**
- * Orders
+ * Orders list.
  *
- * Shows orders on the account page.
- *
- * This template can be overridden by copying it to yourtheme/woocommerce/myaccount/orders.php.
- *
- * HOWEVER, on occasion WooCommerce will need to update template files and you
- * (the theme developer) will need to copy the new files to your theme to
- * maintain compatibility. We try to do this as little as possible, but it does
- * happen. When this occurs the version of the template file will be bumped and
- * the readme will list any important changes.
+ * Overridden from WooCommerce to match the 2026 account design: the All / Open
+ * / Delivered tabs, then a five-column list that folds to three rows on narrow
+ * screens. The tabs are plain links filtered in the component's hooks.php, so
+ * the list works without JavaScript and each filter is a shareable URL.
  *
  * @see https://woocommerce.com/document/template-structure/
  * @package WooCommerce\Templates
  * @version 9.5.0
  */
 
-defined( 'ABSPATH' ) || exit;
+defined('ABSPATH') || exit;
 
-do_action( 'woocommerce_before_account_orders', $has_orders ); ?>
+use function Granola\Components\WC_Account\get_current_order_tab;
+use function Granola\Components\WC_Account\get_order_counts;
+use function Granola\Components\WC_Account\get_order_summary;
+use function Granola\Components\WC_Account\get_order_tabs;
+use function Granola\Components\WC_Account\is_closed;
 
-<?php if ( $has_orders ) : ?>
+do_action('woocommerce_before_account_orders', $has_orders);
 
-	<table class="woocommerce-orders-table woocommerce-MyAccount-orders shop_table shop_table_responsive my_account_orders account-orders-table">
-		<thead>
-			<tr>
-				<?php foreach ( wc_get_account_orders_columns() as $column_id => $column_name ) : ?>
-					<th scope="col" class="woocommerce-orders-table__header woocommerce-orders-table__header-<?php echo esc_attr( $column_id ); ?>"><span class="nobr"><?php echo esc_html( $column_name ); ?></span></th>
-				<?php endforeach; ?>
-			</tr>
-		</thead>
+$current_tab = get_current_order_tab();
+$tabs = get_order_tabs($current_tab);
+$counts = get_order_counts(get_current_user_id());
+$shown = $has_orders ? count($customer_orders->orders) : 0;
 
-		<tbody>
-			<?php
-			foreach ( $customer_orders->orders as $customer_order ) {
-				$order      = wc_get_order( $customer_order ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-				$item_count = $order->get_item_count() - $order->get_item_count_refunded();
-				?>
-				<tr class="woocommerce-orders-table__row woocommerce-orders-table__row--status-<?php echo esc_attr( $order->get_status() ); ?> order">
-					<?php foreach ( wc_get_account_orders_columns() as $column_id => $column_name ) :
-						$is_order_number = 'order-number' === $column_id;
-					?>
-						<?php if ( $is_order_number ) : ?>
-							<th class="woocommerce-orders-table__cell woocommerce-orders-table__cell-<?php echo esc_attr( $column_id ); ?>" data-title="<?php echo esc_attr( $column_name ); ?>" scope="row">
-						<?php else : ?>
-							<td class="woocommerce-orders-table__cell woocommerce-orders-table__cell-<?php echo esc_attr( $column_id ); ?>" data-title="<?php echo esc_attr( $column_name ); ?>">
-						<?php endif; ?>
+?>
 
-							<?php if ( has_action( 'woocommerce_my_account_my_orders_column_' . $column_id ) ) : ?>
-								<?php do_action( 'woocommerce_my_account_my_orders_column_' . $column_id, $order ); ?>
+<div class="mb-account-orders">
 
-							<?php elseif ( $is_order_number ) : ?>
-								<?php /* translators: %s: the order number, usually accompanied by a leading # */ ?>
-								<a href="<?php echo esc_url( $order->get_view_order_url() ); ?>" aria-label="<?php echo esc_attr( sprintf( __( 'View order number %s', 'woocommerce' ), $order->get_order_number() ) ); ?>">
-									<?php echo esc_html( _x( '#', 'hash before order number', 'woocommerce' ) . $order->get_order_number() ); ?>
-								</a>
+    <h2 class="mb-account-panel__title"><?php esc_html_e('Orders', 'granola'); ?></h2>
 
-							<?php elseif ( 'order-date' === $column_id ) : ?>
-								<time datetime="<?php echo esc_attr( $order->get_date_created()->date( 'c' ) ); ?>"><?php echo esc_html( wc_format_datetime( $order->get_date_created() ) ); ?></time>
+    <p class="mb-account-panel__intro">
+        <?php esc_html_e('Every order and sample request placed with your email address.', 'granola'); ?>
+        <?php
+        printf(
+            /* translators: %1$s: opening link tag, %2$s: closing link tag. */
+            esc_html__('Ordered with us before you had an account? %1$sGet in touch%2$s and we will link those orders here.', 'granola'),
+            '<a href="' . esc_url(get_permalink(get_page_by_path('contact-us'))) . '">',
+            '</a>'
+        );
+        ?>
+    </p>
 
-							<?php elseif ( 'order-status' === $column_id ) : ?>
-								<?php echo esc_html( wc_get_order_status_name( $order->get_status() ) ); ?>
+    <?php if (!$counts['all']) : ?>
 
-							<?php elseif ( 'order-total' === $column_id ) : ?>
-								<?php
-								/* translators: 1: formatted order total 2: total order items */
-								echo wp_kses_post( sprintf( _n( '%1$s for %2$s item', '%1$s for %2$s items', $item_count, 'woocommerce' ), $order->get_formatted_order_total(), $item_count ) );
-								?>
+        <div class="mb-account-empty">
+            <span class="mb-account-empty__rule" aria-hidden="true"></span>
+            <h3 class="mb-account-empty__title"><?php esc_html_e('No orders yet', 'granola'); ?></h3>
+            <p class="mb-account-empty__body">
+                <?php esc_html_e('Your orders will gather here. Start with a few samples: the grain and the weight tell you more than any photograph can.', 'granola'); ?>
+            </p>
+            <?php
+            $samples_link = get_field('header_call_to_action_1', 'option');
+            $samples_url = is_array($samples_link) && !empty($samples_link['url'])
+                ? $samples_link['url']
+                : wc_get_page_permalink('shop');
+            ?>
+            <a class="mb-account-btn mb-account-btn--ghost" href="<?php echo esc_url($samples_url); ?>">
+                <?php esc_html_e('Order samples', 'granola'); ?>
+            </a>
+        </div>
 
-							<?php elseif ( 'order-actions' === $column_id ) : ?>
-								<?php
-								$actions = wc_get_account_orders_actions( $order );
+    <?php else : ?>
 
-								if ( ! empty( $actions ) ) {
-									foreach ( $actions as $key => $action ) { // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
-										if ( empty( $action['aria-label'] ) ) {
-											// Generate the aria-label based on the action name.
-											/* translators: %1$s Action name, %2$s Order number. */
-											$action_aria_label = sprintf( __( '%1$s order number %2$s', 'woocommerce' ), $action['name'], $order->get_order_number() );
-										} else {
-											$action_aria_label = $action['aria-label'];
-										}
-										echo '<a href="' . esc_url( $action['url'] ) . '" class="woocommerce-button' . esc_attr( $wp_button_class ) . ' button ' . sanitize_html_class( $key ) . '" aria-label="' . esc_attr( $action_aria_label ) . '">' . esc_html( $action['name'] ) . '</a>';
-										unset( $action_aria_label );
-									}
-								}
-								?>
-							<?php endif; ?>
+        <div class="mb-account-orders__tabs">
+            <?php foreach ($tabs as $tab) : ?>
+                <a
+                    class="mb-account-orders__tab<?php echo $tab['current'] ? ' is-current' : ''; ?>"
+                    href="<?php echo esc_url($tab['url']); ?>"
+                    <?php echo $tab['current'] ? 'aria-current="true"' : ''; ?>
+                >
+                    <?php echo esc_html($tab['label']); ?>
+                </a>
+            <?php endforeach; ?>
+        </div>
 
-						<?php if ( $is_order_number ) : ?>
-							</th>
-						<?php else : ?>
-							</td>
-						<?php endif; ?>
-					<?php endforeach; ?>
-				</tr>
-				<?php
-			}
-			?>
-		</tbody>
-	</table>
+        <?php if ($has_orders) : ?>
 
-	<?php do_action( 'woocommerce_before_account_orders_pagination' ); ?>
+            <div class="mb-account-orders__head" aria-hidden="true">
+                <span><?php esc_html_e('Order', 'granola'); ?></span>
+                <span><?php esc_html_e('Date', 'granola'); ?></span>
+                <span><?php esc_html_e('Items', 'granola'); ?></span>
+                <span><?php esc_html_e('Status', 'granola'); ?></span>
+                <span><?php esc_html_e('Total', 'granola'); ?></span>
+            </div>
 
-	<?php if ( 1 < $customer_orders->max_num_pages ) : ?>
-		<div class="woocommerce-pagination woocommerce-pagination--without-numbers woocommerce-Pagination">
-			<?php if ( 1 !== $current_page ) : ?>
-				<a class="woocommerce-button woocommerce-button--previous woocommerce-Button woocommerce-Button--previous button<?php echo esc_attr( $wp_button_class ); ?>" href="<?php echo esc_url( wc_get_endpoint_url( 'orders', $current_page - 1 ) ); ?>"><?php esc_html_e( 'Previous', 'woocommerce' ); ?></a>
-			<?php endif; ?>
+            <div class="mb-account-orders__list mb-account-orders__list--flush">
+                <?php foreach ($customer_orders->orders as $customer_order) :
+                    $order = wc_get_order($customer_order);
 
-			<?php if ( intval( $customer_orders->max_num_pages ) !== $current_page ) : ?>
-				<a class="woocommerce-button woocommerce-button--next woocommerce-Button woocommerce-Button--next button<?php echo esc_attr( $wp_button_class ); ?>" href="<?php echo esc_url( wc_get_endpoint_url( 'orders', $current_page + 1 ) ); ?>"><?php esc_html_e( 'Next', 'woocommerce' ); ?></a>
-			<?php endif; ?>
-		</div>
-	<?php endif; ?>
-<?php endif; ?>
+                    if (!$order instanceof WC_Order) {
+                        continue;
+                    }
+                    ?>
+                    <a
+                        class="mb-account-orders__row"
+                        href="<?php echo esc_url($order->get_view_order_url()); ?>"
+                        aria-label="<?php
+                            /* translators: %s: order number. */
+                            echo esc_attr(sprintf(__('View order number %s', 'woocommerce'), $order->get_order_number()));
+                        ?>"
+                    >
+                        <span class="mb-account-orders__id">#<?php echo esc_html($order->get_order_number()); ?></span>
+                        <span class="mb-account-orders__date">
+                            <time datetime="<?php echo esc_attr($order->get_date_created()->date('c')); ?>">
+                                <?php echo esc_html(wc_format_datetime($order->get_date_created(), 'j F Y')); ?>
+                            </time>
+                        </span>
+                        <span class="mb-account-orders__summary"><?php echo wp_kses_post(get_order_summary($order)); ?></span>
+                        <span class="mb-account-orders__status">
+                            <span class="mb-account-pill<?php echo is_closed($order) ? ' mb-account-pill--closed' : ''; ?>">
+                                <?php echo esc_html(wc_get_order_status_name($order->get_status())); ?>
+                            </span>
+                        </span>
+                        <span class="mb-account-orders__total"><?php echo wp_kses_post($order->get_formatted_order_total()); ?></span>
+                    </a>
+                <?php endforeach; ?>
+            </div>
 
-<?php do_action( 'woocommerce_after_account_orders', $has_orders ); ?>
+            <p class="mb-account-orders__count">
+                <?php
+                printf(
+                    /* translators: %1$s: orders on this page, %2$s: total orders on the account. */
+                    esc_html__('Showing %1$s of %2$s orders.', 'granola'),
+                    esc_html(number_format_i18n($shown)),
+                    esc_html(number_format_i18n($counts['all']))
+                );
+                ?>
+            </p>
+
+            <?php do_action('woocommerce_before_account_orders_pagination'); ?>
+
+            <?php if (1 < $customer_orders->max_num_pages) : ?>
+                <div class="mb-account-orders__pagination">
+                    <?php if (1 !== $current_page) : ?>
+                        <a class="mb-account-btn mb-account-btn--ghost" href="<?php echo esc_url(wc_get_endpoint_url('orders', $current_page - 1)); ?>">
+                            <?php esc_html_e('Previous', 'woocommerce'); ?>
+                        </a>
+                    <?php endif; ?>
+
+                    <?php if (intval($customer_orders->max_num_pages) !== $current_page) : ?>
+                        <a class="mb-account-btn mb-account-btn--ghost" href="<?php echo esc_url(wc_get_endpoint_url('orders', $current_page + 1)); ?>">
+                            <?php esc_html_e('Next', 'woocommerce'); ?>
+                        </a>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?>
+
+        <?php else : ?>
+
+            <?php
+            // The account has orders, just none in this tab.
+            ?>
+            <div class="mb-account-empty">
+                <span class="mb-account-empty__rule" aria-hidden="true"></span>
+                <h3 class="mb-account-empty__title"><?php esc_html_e('Nothing in this view', 'granola'); ?></h3>
+                <p class="mb-account-empty__body">
+                    <?php esc_html_e('No orders match this filter at the moment.', 'granola'); ?>
+                </p>
+                <a class="mb-account-btn mb-account-btn--ghost" href="<?php echo esc_url($tabs[0]['url']); ?>">
+                    <?php esc_html_e('Show all orders', 'granola'); ?>
+                </a>
+            </div>
+
+        <?php endif; ?>
+
+    <?php endif; ?>
+
+</div>
+
+<?php do_action('woocommerce_after_account_orders', $has_orders);
