@@ -87,13 +87,14 @@ if (forms.length) {
         }
 
         function post(endpoint, body) {
+            // No X-WP-Nonce. Both endpoints are public, and the nonce was
+            // printed into the page HTML, which the full page cache then served
+            // for longer than the nonce stays valid. Every submission from a
+            // stale copy came back 403 with nothing useful on screen.
             return fetch(endpoint, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'X-WP-Nonce': window.params && window.params.summit_nonce
-                        ? window.params.summit_nonce
-                        : ''
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(body)
             }).then(function (response) {
@@ -197,7 +198,7 @@ if (forms.length) {
                 phone_contact: radio('phone_contact'),
                 workshops: workshops,
                 opt_out_marketing: optOut ? optOut.checked : false,
-                company_website: field('company_website')
+                mb_fld_b: field('mb_fld_b')
             };
 
             post(window.params.summit_register_endpoint, payload)
