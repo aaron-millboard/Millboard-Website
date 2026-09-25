@@ -293,12 +293,21 @@ $consent_paragraphs = preg_split('/\R{2,}/', $consent_text, -1, PREG_SPLIT_NO_EM
                 </div>
             <?php } ?>
 
-            <?php /* Off-screen honeypot. Bots complete every field they can find;
-                     a value here is answered with a bland success so there is
-                     nothing to tune against. Hidden from assistive tech. */ ?>
+            <?php /* Honeypot. Bots complete every field they can find, so a value
+                     here is answered with a bland success and recorded for review.
+
+                     The field is deliberately meaningless. The previous version
+                     was named company_website and labelled "Company website",
+                     which browser autofill and password managers read as a URL
+                     field and filled for real people: six genuine registrations
+                     were discarded between 22 and 25 Sep 2026, each one shown a
+                     success message. A name no autofill engine recognises, and
+                     display:none rather than an off-screen position, keeps it
+                     out of their reach while a bot parsing the HTML still
+                     finds it. */ ?>
             <div class="summit-form__honeypot" aria-hidden="true">
-                <label for="summit-company-website">Company website</label>
-                <input id="summit-company-website" name="company_website" type="text" tabindex="-1" autocomplete="off">
+                <label for="summit-fld-b">Reserved</label>
+                <input id="summit-fld-b" name="mb_fld_b" type="text" tabindex="-1" autocomplete="off">
             </div>
 
             <button class="summit-form__submit" type="submit" data-summit-submit>

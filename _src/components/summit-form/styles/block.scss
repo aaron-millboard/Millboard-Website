@@ -175,14 +175,19 @@
         }
     }
 
-    // Off-screen rather than display:none, because a bot that respects
-    // `display:none` would skip it and the trap would catch nothing.
+    // display:none, not an off-screen position.
+    //
+    // This was deliberately off-screen so that a bot which respects
+    // `display:none` would still find the field. The trade turned out badly:
+    // Chrome's autofill and most password managers also skip what they cannot
+    // render, but will happily fill a field merely pushed off the canvas. In
+    // the four days to 25 Sep 2026 the trap caught six genuine registrations
+    // and no confirmed bot, so it now hides from the fillers instead. A bot
+    // reading the HTML without applying CSS, which is the common sort, still
+    // finds it, and Gate::record_honeypot_hit() logs every catch so this can be
+    // judged on evidence next time rather than on intent.
     &__honeypot {
-        position: absolute;
-        left: -9999px;
-        width: 1px;
-        height: 1px;
-        overflow: hidden;
+        display: none;
     }
 
     &__success {
