@@ -39,8 +39,26 @@ class Roles
     public const CAP_ORDER_SAMPLES = 'mb_order_samples';
     public const CAP_ORDER_POS = 'mb_order_pos';
 
+    public const ROLE_STAFF = 'millboard_staff';
     public const ROLE_DISTRIBUTOR = 'millboard_distributor';
     public const ROLE_INSTALLER = 'millboard_installer';
+    public const ROLE_ARCHITECT = 'millboard_architect';
+    public const ROLE_ASSET_VIEWER = 'millboard_asset_viewer';
+
+    /**
+     * Roles whose holders are Millboard rather than a partner. Wording only.
+     *
+     * @return string[]
+     */
+    public static function staff_roles(): array
+    {
+        return (array) \apply_filters('millboard/accounts/staff_roles', [
+            'administrator',
+            'editor',
+            'shop_manager',
+            self::ROLE_STAFF,
+        ]);
+    }
 
     /**
      * Bump when the map below changes, so existing sites pick it up.
@@ -48,7 +66,7 @@ class Roles
      * Roles live in the database (the `wp_user_roles` option), per site on a
      * multisite, so a code change alone does nothing until they are rewritten.
      */
-    private const VERSION = '1.0.0';
+    private const VERSION = '1.1.0';
 
     private const OPTION = 'millboard_roles_version';
 
@@ -64,15 +82,34 @@ class Roles
      */
     public static function map(): array
     {
-        $staff = [self::CAP_BRAND_ASSETS, self::CAP_ORDER_SAMPLES, self::CAP_ORDER_POS];
+        $everything = [self::CAP_BRAND_ASSETS, self::CAP_ORDER_SAMPLES, self::CAP_ORDER_POS];
+
+        // No POS: no point of sale to stock.
+        $no_pos = [self::CAP_BRAND_ASSETS, self::CAP_ORDER_SAMPLES];
 
         return (array) \apply_filters('millboard/accounts/capability_map', [
-            'administrator' => $staff,
-            'editor' => $staff,
-            'shop_manager' => $staff,
-            self::ROLE_DISTRIBUTOR => $staff,
-            // No mb_order_pos: an installer has no point of sale to stock.
-            self::ROLE_INSTALLER => [self::CAP_BRAND_ASSETS, self::CAP_ORDER_SAMPLES],
+            'administrator' => $everything,
+            'editor' => $everything,
+            'shop_manager' => $everything,
+
+            // Millboard people imported from the portal. The account tools,
+            // and deliberately nothing else: no WooCommerce administration,
+            // no site changes. 35 of them were administrators in Craft, which
+            // is not a reason to make them administrators of a shop holding
+            // 13,780 orders.
+            self::ROLE_STAFF => $everything,
+
+            self::ROLE_DISTRIBUTOR => $everything,
+            self::ROLE_INSTALLER => $no_pos,
+
+            // Architects spec projects and want samples to show clients.
+            // Same access as an installer, kept as its own role because it is
+            // a different relationship and may diverge.
+            self::ROLE_ARCHITECT => $no_pos,
+
+            // The portal's imageLibraryAccess group: the Canto library and
+            // nothing else.
+            self::ROLE_ASSET_VIEWER => [self::CAP_BRAND_ASSETS],
         ]);
     }
 
@@ -100,7 +137,15 @@ class Roles
         $customer = \get_role('customer');
         $base = $customer instanceof \WP_Role ? $customer->capabilities : ['read' => true];
 
-        foreach ([self::ROLE_DISTRIBUTOR => 'Millboard distributor', self::ROLE_INSTALLER => 'Millboard installer'] as $slug => $label) {
+        $labels = [
+            self::ROLE_STAFF => 'Millboard staff',
+            self::ROLE_DISTRIBUTOR => 'Millboard distributor',
+            self::ROLE_INSTALLER => 'Millboard installer',
+            self::ROLE_ARCHITECT => 'Millboard architect',
+            self::ROLE_ASSET_VIEWER => 'Millboard brand assets',
+        ];
+
+        foreach ($labels as $slug => $label) {
             if (!\get_role($slug)) {
                 \add_role($slug, $label, $base);
             }
@@ -165,8 +210,10 @@ class Roles
         $staff = false;
 
         if ($user instanceof \WP_User) {
-            $partner = [self::ROLE_DISTRIBUTOR, self::ROLE_INSTALLER];
-            $staff = (bool) \array_diff($user->roles, \array_merge($partner, ['customer', 'subscriber']));
+            // An explicit list, not "anything that is not a partner": a new
+            // partner role added later would otherwise silently read as staff
+            // and be badged "Millboard team" on a partner's screen.
+            $staff = (bool) \array_intersect($user->roles, self::staff_roles());
         }
 
         return (bool) \apply_filters('millboard/accounts/is_staff', $staff, $user_id);
