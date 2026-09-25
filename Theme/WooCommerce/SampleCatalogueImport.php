@@ -21,7 +21,12 @@ namespace Theme\WooCommerce;
  *
  * ⚠️ Every product is created HIDDEN from the catalogue. These are ordering
  * lines for the account area, not shop stock: they must not appear in shop
- * listings, search or the sitemap.
+ * listings, site search or the sitemap.
+ *
+ * Hidden does NOT cover Google. A hidden product still answers on its own URL
+ * with `index, follow`, so `init()` adds the noindex these pages need. That is
+ * a runtime filter, not a per-product setting, so it applies to anything a
+ * later run of this importer creates.
  */
 class SampleCatalogueImport
 {
@@ -195,6 +200,74 @@ class SampleCatalogueImport
         }
 
         return $out;
+    }
+
+    /**
+     * Keep these pages out of search engines.
+     *
+     * `hidden` catalogue visibility removes a product from shop listings, site
+     * search and the sitemap — but NOT from the web. Every one of these still
+     * answers on its own URL with `index, follow`, and they are internal
+     * ordering lines: sample boxes, presenter packs, name plates, priced at
+     * zero with a live add-to-cart. Nothing anyone should reach from Google.
+     *
+     * Applied as a filter rather than written into each product's Yoast meta,
+     * so it covers anything a later import creates without a second data step,
+     * and so it cannot drift away from the products it describes.
+     *
+     * Scoped by our own marker: a product this importer did not create is
+     * judged on its own settings, the same rule the importer itself follows.
+     */
+    public static function init(): void
+    {
+        \add_filter('wpseo_robots_array', [__CLASS__, 'noindex_yoast'], 10, 1);
+        \add_filter('wp_robots', [__CLASS__, 'noindex_core'], 20, 1);
+    }
+
+    /**
+     * Is the page being rendered one of our ordering lines?
+     */
+    private static function is_ordering_line(): bool
+    {
+        if (!\is_singular('product')) {
+            return false;
+        }
+
+        $id = \get_queried_object_id();
+
+        return $id && '' !== (string) \get_post_meta($id, self::META_PORTAL_SKU, true);
+    }
+
+    /**
+     * @param mixed $robots
+     * @return mixed
+     */
+    public static function noindex_yoast($robots)
+    {
+        if (\is_array($robots) && self::is_ordering_line()) {
+            $robots['index'] = 'noindex';
+        }
+
+        return $robots;
+    }
+
+    /**
+     * The core filter as well, so the directive survives Yoast being absent
+     * or deactivated — on a page that must never be indexed, one mechanism is
+     * not enough.
+     *
+     * @param mixed $robots
+     * @return mixed
+     */
+    public static function noindex_core($robots)
+    {
+        if (\is_array($robots) && self::is_ordering_line()) {
+            unset($robots['index']);
+            $robots['noindex'] = true;
+            $robots['nofollow'] = true;
+        }
+
+        return $robots;
     }
 
     /**
