@@ -5,10 +5,9 @@ namespace Theme\WooCommerce;
 /**
  * Which locales may show a monetary figure.
  *
- * Only en-gb and fr-fr sell. Everywhere else the site shows what a product is
- * and offers a free sample, and pricing is handled by the regional distributor.
- * The live product pages already behave that way: only en-gb and fr-fr render an
- * add to cart button, and en-us, de-de, en-ie and en-au render no visible price.
+ * en-gb, en-ie and fr-fr sell. en-us, de-de and en-au do not: there the site
+ * shows what a product is and offers a free sample, and pricing is handled by
+ * the regional distributor.
  *
  * ⚠️ en-au is not a preference, it is an agreement. Concept Materials is the
  * exclusive Australian distributor and owns Australian retail pricing. They
@@ -16,17 +15,24 @@ namespace Theme\WooCommerce;
  * AUD. The rule since is that NO monetary figure appears on any /en-au/ page:
  * not AUD, not GBP, not a per square metre rate, not a ratio.
  *
- * ⚠️ The product data is NOT a safe signal. en-us, en-ie and en-au all hold real
- * prices and report is_purchasable() as true, they are simply not rendered. So
- * this is an explicit list, and it is the one place to change if a region starts
- * or stops selling.
+ * ⚠️ THIS LIST IS A COMMERCIAL FACT, CONFIRMED BY AARON. Do not try to derive it
+ * from the site or the data, because every available signal lies:
+ *
+ *  - `is_purchasable()` is TRUE on en-us, en-ie and en-au alike.
+ *  - Scraping the rendered page for a currency symbol finds "£0.00" on de-de and
+ *    fr-fr, which is the third-party Deck Planner widget, GBP-only on every
+ *    language route, not a product price.
+ *  - Counting `single_add_to_cart_button` reports 0 for en-ie, which does sell.
+ *
+ * So it is an explicit list, and it is the one place to change when a region
+ * starts or stops selling.
  */
 class RegionalPricing
 {
     /**
      * The locales that may display prices and sell.
      */
-    private const SELLING_LOCALES = ['en-gb', 'fr-fr'];
+    private const SELLING_LOCALES = ['en-gb', 'en-ie', 'fr-fr'];
 
     /**
      * Whether this site may show a monetary figure at all.
