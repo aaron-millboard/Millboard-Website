@@ -501,8 +501,8 @@ function get_lowest_price_in_term(\WP_Term $term): string
                AND variation.post_status = 'publish'
              INNER JOIN {$wpdb->postmeta} AS size
                 ON size.post_id = variation.ID
-               AND size.meta_key = 'attribute_pa_sample-size'
-               AND size.meta_value = 'full'
+               AND size.meta_key IN ('attribute_pa_sample-size', 'attribute_sample-size')
+               AND LOWER(size.meta_value) = 'full'
              INNER JOIN {$wpdb->term_relationships} AS relationships
                 ON relationships.object_id = variation.post_parent
              WHERE price.meta_key = '_price'
