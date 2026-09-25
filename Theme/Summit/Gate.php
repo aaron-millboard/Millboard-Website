@@ -77,9 +77,99 @@ class Gate
     private const LOCK_KEY = 'mb_summit_registration_lock';
     private const LOCK_SECONDS = 15;
 
+    /**
+     * The honeypot field, and where its hits are kept.
+     *
+     * The name is meaningless on purpose. Anything an autofill engine can map
+     * to a real data type, "company_website" being the previous attempt, gets
+     * filled in for genuine visitors.
+     */
+    public const HONEYPOT_FIELD = 'mb_fld_b';
+    public const HONEYPOT_LOG = 'mb_summit_honeypot_log';
+    private const HONEYPOT_LOG_MAX = 100;
+
     public static function init(): void
     {
         \add_action('rest_api_init', [self::class, 'register_routes']);
+
+        // After core's own rest_cookie_check_errors, which runs at 100. Adding
+        // this any earlier would let core put the error straight back.
+        \add_filter('rest_authentication_errors', [self::class, 'allow_stale_nonce'], 110);
+    }
+
+    /**
+     * Stop a stale REST nonce refusing a registration.
+     *
+     * The form used to send X-WP-Nonce with a value printed into the page HTML.
+     * That HTML is served from the full page cache, so as soon as a cached copy
+     * outlived the nonce every submission made from it came back 403
+     * rest_cookie_invalid_nonce, with nothing on screen a visitor could act on.
+     * Seven were refused between 22 and 25 Sep 2026 and at least one person
+     * gave up without registering.
+     *
+     * The header has been removed from the form, but pages already in the cache
+     * keep sending it until they turn over, so the refusal is neutralised here
+     * as well. Both routes are public, their permission_callback is
+     * __return_true, and all they can do is create a registration that anyone
+     * could create anyway, so a forged request reaches nothing privileged.
+     *
+     * @param mixed $result
+     * @return mixed
+     */
+    public static function allow_stale_nonce($result)
+    {
+        if (!\is_wp_error($result) || $result->get_error_code() !== 'rest_cookie_invalid_nonce') {
+            return $result;
+        }
+
+        // null means "no opinion", which lets the request continue as an
+        // ordinary anonymous one. Returning true would instead assert that the
+        // caller is authenticated, which is not what we know.
+        return self::is_summit_route() ? null : $result;
+    }
+
+    private static function is_summit_route(): bool
+    {
+        $route = '';
+
+        if (isset($GLOBALS['wp']->query_vars['rest_route'])) {
+            $route = (string) $GLOBALS['wp']->query_vars['rest_route'];
+        }
+
+        if ($route === '' && isset($_SERVER['REQUEST_URI'])) {
+            $route = (string) \wp_unslash($_SERVER['REQUEST_URI']);
+        }
+
+        return strpos($route, self::NAMESPACE . '/summit/') !== false;
+    }
+
+    /**
+     * Keep what the honeypot caught, so a person it catches by mistake can be
+     * found and registered by hand instead of vanishing.
+     */
+    private static function record_honeypot_hit(\WP_REST_Request $request): void
+    {
+        $log = \get_site_option(self::HONEYPOT_LOG, []);
+        $log = is_array($log) ? $log : [];
+
+        $log[] = [
+            'at' => \current_time('Y-m-d H:i:s'),
+            'audience' => \sanitize_text_field((string) $request->get_param('audience')),
+            'first_name' => \sanitize_text_field((string) $request->get_param('first_name')),
+            'last_name' => \sanitize_text_field((string) $request->get_param('last_name')),
+            'email' => \sanitize_text_field((string) $request->get_param('email')),
+            'company' => \sanitize_text_field((string) $request->get_param('company_typed')),
+            'trap_value' => \sanitize_text_field((string) $request->get_param(self::HONEYPOT_FIELD)),
+            'ip' => isset($_SERVER['REMOTE_ADDR'])
+                ? \sanitize_text_field(\wp_unslash($_SERVER['REMOTE_ADDR']))
+                : '',
+        ];
+
+        if (count($log) > self::HONEYPOT_LOG_MAX) {
+            $log = array_slice($log, -self::HONEYPOT_LOG_MAX);
+        }
+
+        \update_site_option(self::HONEYPOT_LOG, $log);
     }
 
     public static function register_routes(): void
@@ -371,10 +461,21 @@ class Gate
             ], 429);
         }
 
-        // Bots fill every field they can see, including one positioned off
-        // screen. A hit is answered with a bland success so there is nothing to
-        // tune against.
-        if (trim((string) $request->get_param('company_website')) !== '') {
+        // Bots fill every field they can find, including one CSS hides. A hit
+        // is answered with a bland success so there is nothing to tune against,
+        // but it is recorded first: a trap that discards a submission without
+        // trace cannot be audited, and this one was wrong six times running.
+        //
+        // The old field, company_website, is deliberately NOT checked. Browser
+        // autofill read it as a URL field and filled it for genuine people, so
+        // between 22 and 25 Sep 2026 six real registrations were thrown away
+        // and each of those people was told they had registered. Pages served
+        // from the full page cache keep posting that parameter until the cache
+        // turns over, and honouring it would keep destroying registrations for
+        // as long as they do.
+        if (trim((string) $request->get_param(self::HONEYPOT_FIELD)) !== '') {
+            self::record_honeypot_hit($request);
+
             return new \WP_REST_Response(['ok' => true, 'reason' => 'ok', 'message' => ''], 200);
         }
 

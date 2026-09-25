@@ -185,7 +185,11 @@ function add_endpoint_localization($localizations): array
 {
     $localizations['summit_check_endpoint'] = \rest_url(Gate::NAMESPACE . '/summit/check');
     $localizations['summit_register_endpoint'] = \rest_url(Gate::NAMESPACE . '/summit/register');
-    $localizations['summit_nonce'] = \wp_create_nonce('wp_rest');
+
+    // No summit_nonce. A nonce printed into the page is only valid for about a
+    // day, the full page cache serves the page for longer than that, and the
+    // form then gets a 403 it cannot explain to the visitor. Both endpoints are
+    // public, so there is nothing for the nonce to protect.
 
     return $localizations;
 }
