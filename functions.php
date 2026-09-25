@@ -108,6 +108,9 @@ if (file_exists($autoloader = __DIR__ . '/vendor/autoload.php')) {
 \Theme\WooCommerce\Settings::init();
 \Theme\WooCommerce\OrderEssentials::init();
 \Theme\WooCommerce\ScriptOptimisation::init();
+// Keeps the imported sample/POS ordering lines out of Google. They are
+// hidden from the catalogue, which does not stop them being indexed.
+\Theme\WooCommerce\SampleCatalogueImport::init();
 
 // ----------------------------------------------------
 // Partner account types.
