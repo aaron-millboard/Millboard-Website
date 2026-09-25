@@ -245,10 +245,18 @@ function mb_sof_classify( $name, $size_override = null ) {
 	}
 
 	// ── Flexible edges (100 only; 300 excluded above) ──
-	if ( false !== strpos( $n, 'flexible bullnose' ) ) {
+	/*
+	 * MILLBOARD EDIT — the portal words these the other way round.
+	 *
+	 * Upstream looks for "flexible bullnose". Every one of these is actually
+	 * named "Bullnosed Step Edge (Flexible) 100 x 50mm x 32mm ...", so all 22
+	 * fell through to null and the two categories named for them sat empty
+	 * while their products existed. Both spellings are accepted.
+	 */
+	if ( mb_sof_has_any( $n, array( 'flexible bullnose', 'bullnosed step edge (flexible)' ) ) ) {
 		return 'Bullnosed Step Edge (Flexible) 100mm Samples';
 	}
-	if ( false !== strpos( $n, 'flexible square edge' ) ) {
+	if ( mb_sof_has_any( $n, array( 'flexible square edge', 'square step edge (flexible)' ) ) ) {
 		return 'Square Step Edge (Flexible) 100mm Samples';
 	}
 

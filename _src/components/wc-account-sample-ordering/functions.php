@@ -166,6 +166,65 @@ const CART_FLAG = 'millboard_sample_order';
 \add_filter('mb_sof_max_qty', fn(): int => 10);
 
 /**
+ * Let the imported catalogue into the sample tool.
+ *
+ * The widget decides membership by looking for "sample" in a product name.
+ * That is fine for "Millboard Sample Piece 100mm ..." and useless for
+ * "Presenter Pack K", "Envello Teaser Board" or "Name Plate Large" — all of
+ * which are orderable lines from the portal.
+ *
+ * Anything Theme\WooCommerce\SampleCatalogueImport created IS a
+ * sample-ordering line by definition, so the marker it writes is the test.
+ * Nothing else is widened: a product that merely happens to sit in a
+ * category, or happens to be named "sample", is still judged on its own.
+ *
+ * @return array<string, true> Upper-case SKU => true
+ */
+function get_imported_skus(): array
+{
+    static $skus = null;
+
+    if (\is_array($skus)) {
+        return $skus;
+    }
+
+    $cached = \get_transient('millboard_account_imported_skus');
+
+    if (\is_array($cached)) {
+        $skus = $cached;
+        return $skus;
+    }
+
+    global $wpdb;
+
+    $rows = $wpdb->get_col($wpdb->prepare(
+        "SELECT meta_value FROM {$wpdb->postmeta} WHERE meta_key = %s AND meta_value <> ''",
+        \Theme\WooCommerce\SampleCatalogueImport::META_PORTAL_SKU
+    ));
+
+    $skus = [];
+
+    foreach ((array) $rows as $sku) {
+        $skus[\strtoupper(\trim((string) $sku))] = true;
+    }
+
+    \set_transient('millboard_account_imported_skus', $skus, 12 * HOUR_IN_SECONDS);
+
+    return $skus;
+}
+
+\add_action('save_post_product', fn() => \delete_transient('millboard_account_imported_skus'));
+\add_action('deleted_post', fn() => \delete_transient('millboard_account_imported_skus'));
+
+\add_filter('mb_sof_in_scope', function ($in_scope, $name, $sku) {
+    if ($in_scope) {
+        return $in_scope;
+    }
+
+    return isset(get_imported_skus()[\strtoupper(\trim((string) $sku))]);
+}, 10, 3);
+
+/**
  * The product categories that mark a line as POS / marketing stock.
  *
  * ⚠️ NOT YET POPULATED. The 84 POS lines in the portal export do not exist as
