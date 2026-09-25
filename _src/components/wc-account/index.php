@@ -7,8 +7,6 @@
  * own markup lives in the matching template under woocommerce/myaccount/.
  */
 
-use function Granola\Components\WC_Account\is_team_member;
-
 $user = \wp_get_current_user();
 
 $endpoints = \wc_get_account_menu_items();

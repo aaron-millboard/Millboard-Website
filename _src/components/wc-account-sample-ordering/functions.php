@@ -166,6 +166,111 @@ const CART_FLAG = 'millboard_sample_order';
 \add_filter('mb_sof_max_qty', fn(): int => 10);
 
 /**
+ * The product categories that mark a line as POS / marketing stock.
+ *
+ * ⚠️ NOT YET POPULATED. The 84 POS lines in the portal export do not exist as
+ * WooCommerce products, so nothing carries this category today and the filter
+ * below removes nothing. The import that creates them has to set it, or
+ * installers will see POS the moment those products appear.
+ *
+ * @return string[]
+ */
+function get_pos_category_slugs(): array
+{
+    return (array) \apply_filters('millboard/account/pos_category_slugs', ['marketing-pos']);
+}
+
+const POS_TRANSIENT = 'millboard_account_pos_ids';
+
+/**
+ * Product and variation ids that are POS, as a lookup map.
+ *
+ * @return array<int, true>
+ */
+function get_pos_ids(): array
+{
+    static $ids = null;
+
+    if (\is_array($ids)) {
+        return $ids;
+    }
+
+    $cached = \get_transient(POS_TRANSIENT);
+
+    if (\is_array($cached)) {
+        $ids = $cached;
+        return $ids;
+    }
+
+    $slugs = get_pos_category_slugs();
+    $ids = [];
+
+    if ($slugs) {
+        $posts = \get_posts([
+            'post_type' => 'product',
+            'post_status' => 'publish',
+            'numberposts' => -1,
+            'fields' => 'ids',
+            'tax_query' => [[
+                'taxonomy' => 'product_cat',
+                'field' => 'slug',
+                'terms' => $slugs,
+            ]],
+        ]);
+
+        foreach ((array) $posts as $post_id) {
+            $ids[(int) $post_id] = true;
+
+            // A POS parent's variations are POS too.
+            $product = \wc_get_product($post_id);
+
+            if ($product instanceof \WC_Product_Variable) {
+                foreach ($product->get_children() as $child) {
+                    $ids[(int) $child] = true;
+                }
+            }
+        }
+    }
+
+    \set_transient(POS_TRANSIENT, $ids, 12 * HOUR_IN_SECONDS);
+
+    return $ids;
+}
+
+\add_action('save_post_product', __NAMESPACE__ . '\\flush_pos_ids');
+\add_action('deleted_post', __NAMESPACE__ . '\\flush_pos_ids');
+\add_action('woocommerce_update_product', __NAMESPACE__ . '\\flush_pos_ids');
+
+function flush_pos_ids(): void
+{
+    \delete_transient(POS_TRANSIENT);
+}
+
+/**
+ * Hide POS lines from anyone who may not order them.
+ *
+ * Installers have no point of sale to stock, so POS is distributors and staff
+ * only. This runs on the way out of the catalogue, after its shared cache, so
+ * one viewer's permissions can never be cached and served to another.
+ */
+\add_filter('mb_sof_catalogue', function (array $items): array {
+    if (\Granola\Components\WC_Account\can_order_pos()) {
+        return $items;
+    }
+
+    $pos = get_pos_ids();
+
+    if (!$pos) {
+        return $items;
+    }
+
+    return \array_values(\array_filter(
+        $items,
+        static fn(array $item): bool => !isset($pos[(int) ($item['id'] ?? 0)])
+    ));
+});
+
+/**
  * Stop the widget fetching Archivo and Hanken Grotesk from Google.
  *
  * Its stylesheet is registered with `mb-sof-fonts` as a dependency, so simply

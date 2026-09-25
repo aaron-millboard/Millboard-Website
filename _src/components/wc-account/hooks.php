@@ -46,11 +46,11 @@ namespace Granola\Components\WC_Account;
  * One gate, not two.
  *
  * The widget has its own `mb_sof_user_can_order` filter deciding who sees its
- * tab and may submit. Pointing it at the same team test this component uses
+ * tab and may submit. Pointing it at the same capability this component uses
  * means access is decided in one place, and their handover's first blocking
  * question is answered.
  */
-\add_filter('mb_sof_user_can_order', fn(): bool => is_team_member());
+\add_filter('mb_sof_user_can_order', fn(): bool => can_order_samples());
 
 /**
  * The navigation, in the design's order.
@@ -68,16 +68,22 @@ namespace Granola\Components\WC_Account;
 
     $sample = get_sample_endpoint();
 
-    if (is_team_member()) {
+    // Each panel behind its own capability, so a distributor and an installer
+    // can differ from each other and from staff.
+    if (can_view_brand_assets()) {
         $items[ENDPOINT_BRAND_ASSETS] = \__('Brand assets', 'granola');
+    } else {
+        unset($items[ENDPOINT_BRAND_ASSETS]);
+    }
 
+    if (can_order_samples()) {
         // The widget adds its own item under this same key, labelled from
         // MB_SOF_LABEL ("Sample Ordering"). Setting it here rather than only
         // when absent means one item either way, with the design's sentence
         // case rather than the widget's title case.
         $items[$sample] = \__('Sample ordering', 'granola');
     } else {
-        // Not team: make sure the widget's own item cannot survive.
+        // Not permitted: make sure the widget's own item cannot survive.
         unset($items[$sample]);
     }
 
@@ -114,12 +120,12 @@ namespace Granola\Components\WC_Account;
 /**
  * Render the custom panels.
  *
- * Both re-check the team test. The menu filter already hides them, but an
+ * Both re-check the capability. The menu filter already hides them, but an
  * endpoint is a URL and a URL can be typed, so the gate has to live on the
  * thing being protected rather than on the link to it.
  */
 \add_action('woocommerce_account_' . ENDPOINT_BRAND_ASSETS . '_endpoint', function (): void {
-    echo is_team_member()
+    echo can_view_brand_assets()
         ? \Granola\Component::get('wc-account-brand-assets')
         : render_no_access();
 });
@@ -143,7 +149,7 @@ namespace Granola\Components\WC_Account;
     \remove_all_actions($hook);
 
     \add_action($hook, function (): void {
-        echo is_team_member()
+        echo can_order_samples()
             ? \Granola\Component::get('wc-account-sample-ordering')
             : render_no_access();
     });

@@ -517,7 +517,10 @@ function mb_sof_get_catalogue( $force = false ) {
 	if ( ! $force ) {
 		$cached = get_transient( $key );
 		if ( is_array( $cached ) ) {
-			return $cached;
+			// MILLBOARD EDIT — the per-viewer filter has to run on the cache
+			// hit as well, or POS lines would be hidden only on the one
+			// request that happened to rebuild the cache.
+			return mb_sof_filter_catalogue( $cached );
 		}
 	}
 
@@ -594,7 +597,22 @@ function mb_sof_get_catalogue( $force = false ) {
 
 	set_transient( $key, $items, 12 * HOUR_IN_SECONDS );
 
-	return $items;
+	return mb_sof_filter_catalogue( $items );
+}
+
+/**
+ * MILLBOARD ADDITION — a per-viewer filter over the shared catalogue.
+ *
+ * The transient above is one cache for the whole site, so it must not hold a
+ * view that is specific to whoever warmed it. Anything that differs per user
+ * — POS lines, which a distributor may order and an installer may not —
+ * is applied here, on the way out, after the cache.
+ *
+ * @param array[] $items Catalogue rows.
+ * @return array[]
+ */
+function mb_sof_filter_catalogue( $items ) {
+	return (array) apply_filters( 'mb_sof_catalogue', $items );
 }
 
 /**

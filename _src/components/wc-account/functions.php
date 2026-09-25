@@ -19,17 +19,41 @@ const ENDPOINT_BRAND_ASSETS = 'brand-assets';
 const ENDPOINT_SAMPLE_ORDERING = 'sample-ordering';
 
 /**
- * Is the current user a member of the Millboard team?
+ * May this user reach the Canto brand library?
  *
- * The design badges Brand assets as "Millboard team", and Sample ordering sends
- * samples out with pricing bypassed, so both are staff surfaces rather than
- * customer ones. Two tests, because neither alone is enough: a rep signing in
- * with their work address is team even on a plain customer account, and an
- * editor or shop manager is team whatever address they used.
- *
- * Filterable, so the rule changes in one place if the definition ever moves.
+ * Capability, not role name and not email domain. The previous test was "has
+ * a millboard.com address, or can edit_posts", which let 22 people in and had
+ * no way to describe a distributor or an installer -- both of whom need these
+ * tools and are not staff. See Theme\Accounts\Roles for the map.
  */
-function is_team_member(?int $user_id = null): bool
+function can_view_brand_assets(?int $user_id = null): bool
+{
+    return user_can_mb(\Theme\Accounts\Roles::CAP_BRAND_ASSETS, $user_id);
+}
+
+/**
+ * May this user send samples?
+ */
+function can_order_samples(?int $user_id = null): bool
+{
+    return user_can_mb(\Theme\Accounts\Roles::CAP_ORDER_SAMPLES, $user_id);
+}
+
+/**
+ * May this user order POS and marketing stock?
+ *
+ * Distributors and staff only. An installer has no point of sale to stock,
+ * and POS comes out of a distributor's marketing budget.
+ */
+function can_order_pos(?int $user_id = null): bool
+{
+    return user_can_mb(\Theme\Accounts\Roles::CAP_ORDER_POS, $user_id);
+}
+
+/**
+ * One capability check, so every panel asks the question the same way.
+ */
+function user_can_mb(string $capability, ?int $user_id = null): bool
 {
     $user_id = $user_id ?: \get_current_user_id();
 
@@ -37,15 +61,24 @@ function is_team_member(?int $user_id = null): bool
         return false;
     }
 
-    $user = \get_userdata($user_id);
-    $is_team = false;
+    return (bool) \apply_filters(
+        'millboard/account/user_can',
+        \user_can($user_id, $capability),
+        $capability,
+        $user_id
+    );
+}
 
-    if ($user instanceof \WP_User) {
-        $domain = \strtolower((string) \substr((string) \strrchr($user->user_email, '@'), 1));
-        $is_team = 'millboard.com' === $domain || \user_can($user, 'edit_posts');
-    }
-
-    return (bool) \apply_filters('millboard/account/is_team_member', $is_team, $user_id);
+/**
+ * Is this user Millboard staff rather than a partner?
+ *
+ * Wording only: the "Millboard team" badge should not sit on a distributor's
+ * screen when they are not Millboard. Access is decided by the capabilities
+ * above, never by this.
+ */
+function is_staff(?int $user_id = null): bool
+{
+    return \Theme\Accounts\Roles::is_staff($user_id);
 }
 
 /**

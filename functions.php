@@ -110,6 +110,14 @@ if (file_exists($autoloader = __DIR__ . '/vendor/autoload.php')) {
 \Theme\WooCommerce\ScriptOptimisation::init();
 
 // ----------------------------------------------------
+// Partner account types.
+// ----------------------------------------------------
+// Distributor and installer roles, and the capabilities that decide who
+// reaches Brand assets, Sample ordering and the POS lines inside it.
+// ----------------------------------------------------
+\Theme\Accounts\Roles::init();
+
+// ----------------------------------------------------
 // Internal sample ordering (IT team's mb-sof package).
 // ----------------------------------------------------
 // Hand-maintained by IT and kept verbatim apart from one asset-path edit,
