@@ -176,7 +176,7 @@ function get_board_price_value(int $product_id): ?float
             continue;
         }
 
-        if (strtolower((string) $variation->get_attribute('pa_sample-size')) !== 'full') {
+        if (sample_size_of($variation) !== 'full') {
             continue;
         }
 
@@ -215,14 +215,44 @@ function has_sample(int $product_id): bool
             continue;
         }
 
-        $size = strtolower((string) $variation->get_attribute('pa_sample-size'));
+        $size = sample_size_of($variation);
 
-        if ($size === 'small' || $size === 'large') {
+        if ($size !== '' && $size !== 'full') {
             return true;
         }
     }
 
     return false;
+}
+
+/**
+ * The sample size of a variation, lowercased, from either attribute shape.
+ *
+ * en-gb registered sample size as a global attribute, so variations carry
+ * `attribute_pa_sample-size` with slug values (full, large, small). fr-fr
+ * registered it as a per-product attribute instead, so its variations carry
+ * `attribute_sample-size` with label values (Full, STD, XL) on 132 of its 135
+ * variations. Reading only the first shape found nothing on fr-fr, so every
+ * price was blank and nothing was offered as a sample.
+ *
+ * The size NAMES also differ by locale, which is why the sample test is now
+ * "has a size that is not the full board" rather than a list of small and
+ * large: STD and XL are the French equivalents.
+ *
+ * @param \WC_Product $variation The variation.
+ * @return string Lowercased size, or an empty string.
+ */
+function sample_size_of($variation): string
+{
+    foreach (['pa_sample-size', 'sample-size'] as $attribute) {
+        $value = strtolower(trim((string) $variation->get_attribute($attribute)));
+
+        if ($value !== '') {
+            return $value;
+        }
+    }
+
+    return '';
 }
 
 /**
