@@ -110,39 +110,138 @@ function resolve_term(array $args): ?\WP_Term
  */
 function get_product_ids(\WP_Term $term): array
 {
-    $tax_query = [
-        [
-            'taxonomy' => 'product_cat',
-            'field' => 'term_id',
-            'terms' => $term->term_id,
-            'include_children' => true,
-        ],
-    ];
-
     $excluded = get_excluded_term_ids($term);
 
-    if (!empty($excluded)) {
-        $tax_query[] = [
+    $query = static function (array $tax_query): array {
+        $q = new \WP_Query([
+            'post_type' => 'product',
+            'post_status' => 'publish',
+            'posts_per_page' => 500,
+            'fields' => 'ids',
+            'orderby' => 'title',
+            'order' => 'ASC',
+            'no_found_rows' => true,
+            'tax_query' => $tax_query,
+        ]);
+
+        return $q->posts;
+    };
+
+    $in_category = [
+        'taxonomy' => 'product_cat',
+        'field' => 'term_id',
+        'terms' => $term->term_id,
+        'include_children' => true,
+    ];
+
+    if (empty($excluded)) {
+        return $query([$in_category]);
+    }
+
+    $ids = $query([
+        $in_category,
+        [
             'taxonomy' => 'product_cat',
             'field' => 'term_id',
             'terms' => $excluded,
             'operator' => 'NOT IN',
             'include_children' => true,
-        ];
-    }
-
-    $query = new \WP_Query([
-        'post_type' => 'product',
-        'post_status' => 'publish',
-        'posts_per_page' => 500,
-        'fields' => 'ids',
-        'orderby' => 'title',
-        'order' => 'ASC',
-        'no_found_rows' => true,
-        'tax_query' => $tax_query,
+        ],
     ]);
 
-    return $query->posts;
+    // A product can sit in an excluded branch AND in a range that is kept, and
+    // dropping it then takes a product off the page that plainly belongs on it.
+    // On de-de ten of the twelve Envello Décor profiles are tagged into
+    // Cladding Accessories as well as Décor, which took the whole Décor range
+    // off the cladding page: 23 products where the same page shows 33
+    // everywhere else.
+    //
+    // Retagging them is not the fix. Yoast's primary category builds the
+    // product URL, and it is Cladding Accessories on nine of the ten, so
+    // removing the tag moves nine live German product URLs.
+    //
+    // So the exclusion is narrowed instead: a product is dropped only when it
+    // belongs to NO kept branch of this category. Measured across all six
+    // locales, this changes nothing anywhere except those ten on de-de.
+    $kept = get_kept_child_ids($term, $excluded);
+
+    if (!empty($kept)) {
+        $rescued = $query([
+            'relation' => 'AND',
+            [
+                'taxonomy' => 'product_cat',
+                'field' => 'term_id',
+                'terms' => $excluded,
+                'include_children' => true,
+            ],
+            [
+                'taxonomy' => 'product_cat',
+                'field' => 'term_id',
+                'terms' => $kept,
+                'include_children' => true,
+            ],
+        ]);
+
+        if (!empty($rescued)) {
+            $ids = array_values(array_unique(array_merge($ids, $rescued)));
+
+            // The merge broke the title order the two queries each had.
+            $titles = [];
+
+            foreach ($ids as $id) {
+                $titles[$id] = \get_the_title($id);
+            }
+
+            uasort($titles, static fn($a, $b) => strcasecmp((string) $a, (string) $b));
+
+            $ids = array_keys($titles);
+        }
+    }
+
+    return $ids;
+}
+
+/**
+ * The children of this category that are NOT excluded, and are not sitting
+ * under something excluded.
+ *
+ * @param \WP_Term $term The category being shown.
+ * @param array<int> $excluded The excluded child term IDs.
+ * @return array<int> Term IDs that count as this category's own ranges.
+ */
+function get_kept_child_ids(\WP_Term $term, array $excluded): array
+{
+    $children = \get_terms([
+        'taxonomy' => 'product_cat',
+        'child_of' => $term->term_id,
+        'hide_empty' => false,
+        'fields' => 'ids',
+    ]);
+
+    if (\is_wp_error($children) || empty($children)) {
+        return [];
+    }
+
+    $under_excluded = [];
+
+    foreach ($excluded as $excluded_id) {
+        $descendants = \get_terms([
+            'taxonomy' => 'product_cat',
+            'child_of' => (int) $excluded_id,
+            'hide_empty' => false,
+            'fields' => 'ids',
+        ]);
+
+        if (!\is_wp_error($descendants) && !empty($descendants)) {
+            $under_excluded = array_merge($under_excluded, array_map('intval', $descendants));
+        }
+    }
+
+    return array_values(array_diff(
+        array_map('intval', $children),
+        array_map('intval', $excluded),
+        $under_excluded
+    ));
 }
 
 /**
