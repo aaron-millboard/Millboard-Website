@@ -56,7 +56,18 @@ if (Client::is_configured()) {
 
     <div class="mb-account-panel__head">
         <h2 class="mb-account-panel__title"><?php esc_html_e('Brand assets', 'granola'); ?></h2>
-        <span class="mb-account-panel__badge"><?php esc_html_e('Millboard team', 'granola'); ?></span>
+        <?php
+        // The badge says who the panel is for. On a distributor's or
+        // installer's screen "Millboard team" is simply wrong, so staff see
+        // that and partners see the neutral wording.
+        ?>
+        <span class="mb-account-panel__badge">
+            <?php
+            echo \Granola\Components\WC_Account\is_staff()
+                ? esc_html__('Millboard team', 'granola')
+                : esc_html__('Trade account', 'granola');
+            ?>
+        </span>
     </div>
 
     <p class="mb-account-panel__intro">
