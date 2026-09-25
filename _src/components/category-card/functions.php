@@ -133,6 +133,11 @@ function get_spec_line(int $product_id): string
  */
 function get_board_price(int $product_id): string
 {
+    // Only en-gb and fr-fr may show a monetary figure. See RegionalPricing.
+    if (!\Theme\WooCommerce\RegionalPricing::shows_pricing()) {
+        return '';
+    }
+
     $value = get_board_price_value($product_id);
 
     if ($value === null || !\function_exists('wc_price')) {

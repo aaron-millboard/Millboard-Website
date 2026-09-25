@@ -480,6 +480,11 @@ function get_lowest_price_in_term(\WP_Term $term): string
         return '';
     }
 
+    // Only en-gb and fr-fr may show a monetary figure. See RegionalPricing.
+    if (!\Theme\WooCommerce\RegionalPricing::shows_pricing()) {
+        return '';
+    }
+
     $term_taxonomy_ids = get_term_taxonomy_ids($term);
 
     if (empty($term_taxonomy_ids)) {

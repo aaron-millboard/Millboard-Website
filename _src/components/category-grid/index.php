@@ -39,8 +39,11 @@ $grid_strings = [
                     </label>
                     <select class="category-grid__sort-select" id="<?= \esc_attr($args['uid']); ?>-sort" data-grid-sort>
                         <option value="default"><?= \esc_html__('Name A to Z', 'granola'); ?></option>
-                        <option value="price-asc"><?= \esc_html__('Price, low to high', 'granola'); ?></option>
-                        <option value="price-desc"><?= \esc_html__('Price, high to low', 'granola'); ?></option>
+                        <?php // Sorting by a price the locale may not show would be meaningless. ?>
+                        <?php if (\Theme\WooCommerce\RegionalPricing::shows_pricing()) { ?>
+                            <option value="price-asc"><?= \esc_html__('Price, low to high', 'granola'); ?></option>
+                            <option value="price-desc"><?= \esc_html__('Price, high to low', 'granola'); ?></option>
+                        <?php } ?>
                     </select>
                 </div>
             <?php } ?>
