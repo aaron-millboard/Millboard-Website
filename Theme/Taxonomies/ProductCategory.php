@@ -191,7 +191,25 @@ class ProductCategory
         $at = -1;
 
         foreach ($links as $index => $link) {
-            $term = $link['term'] ?? null;
+            if (!is_array($link)) {
+                continue;
+            }
+
+            // Current Yoast hands this filter crumbs shaped
+            // {url, text, term_id, taxonomy}. The older WPSEO_Breadcrumbs shape
+            // carried a WP_Term under 'term'. Both are accepted, because
+            // checking only for the object made this filter a no-op.
+            $term = null;
+
+            if (isset($link['term']) && $link['term'] instanceof \WP_Term) {
+                $term = $link['term'];
+            } elseif (!empty($link['term_id']) && ($link['taxonomy'] ?? '') === self::SLUG) {
+                $found = \get_term((int) $link['term_id'], self::SLUG);
+
+                if (!empty($found) && !\is_wp_error($found)) {
+                    $term = $found;
+                }
+            }
 
             if ($term instanceof \WP_Term && $term->taxonomy === self::SLUG) {
                 $deepest = $term;
@@ -230,10 +248,12 @@ class ProductCategory
             return $links;
         }
 
+        // Emitted in the same shape as the crumb it follows.
         \array_splice($links, $at + 1, 0, [[
             'url' => $url,
             'text' => $range->name,
-            'term' => $range,
+            'term_id' => (int) $range->term_id,
+            'taxonomy' => self::SLUG,
         ]]);
 
         return $links;
