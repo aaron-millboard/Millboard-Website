@@ -57,6 +57,7 @@ if (file_exists($autoloader = __DIR__ . '/vendor/autoload.php')) {
 // Structured data (extends Yoast's graph).
 // ----------------------------------------------------
 \Theme\Meta\Schema::init();
+\Theme\Meta\ProductSchema::init();
 
 // ----------------------------------------------------
 // Custom Shortcodes.
