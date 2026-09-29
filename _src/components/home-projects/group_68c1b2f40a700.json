@@ -79,12 +79,12 @@
             "append": ""
         },
         {
-            "key": "field_68c1b2f40a705",
-            "label": "Projects",
-            "name": "projects",
+            "key": "field_68c1b2f40a720",
+            "label": "Case studies",
+            "name": "case_studies",
             "aria-label": "",
-            "type": "repeater",
-            "instructions": "Cards scroll sideways. Four or five reads best.",
+            "type": "relationship",
+            "instructions": "Pick the case studies to show. Each card takes its photograph, title, location, boards and link from the case study itself, so there is nothing to type and nothing to keep in step. Cards scroll sideways; four or five reads best.",
             "required": 0,
             "conditional_logic": 0,
             "wrapper": {
@@ -92,114 +92,25 @@
                 "class": "",
                 "id": ""
             },
-            "layout": "block",
+            "post_type": [
+                "case-study"
+            ],
+            "post_status": [
+                "publish"
+            ],
+            "taxonomy": [],
+            "filters": [
+                "search",
+                "taxonomy"
+            ],
+            "return_format": "id",
             "min": 0,
-            "max": 0,
-            "collapsed": "field_68c1b2f40a708",
-            "button_label": "Add project",
-            "sub_fields": [
-                {
-                    "key": "field_68c1b2f40a706",
-                    "label": "Image",
-                    "name": "image",
-                    "aria-label": "",
-                    "type": "image",
-                    "instructions": "Cropped to a 3:4 portrait.",
-                    "required": 0,
-                    "conditional_logic": 0,
-                    "wrapper": {
-                        "width": "",
-                        "class": "",
-                        "id": ""
-                    },
-                    "return_format": "array",
-                    "library": "all",
-                    "preview_size": "medium",
-                    "min_width": "",
-                    "min_height": "",
-                    "min_size": "",
-                    "max_width": "",
-                    "max_height": "",
-                    "max_size": "",
-                    "mime_types": ""
-                },
-                {
-                    "key": "field_68c1b2f40a707",
-                    "label": "Location",
-                    "name": "location",
-                    "aria-label": "",
-                    "type": "text",
-                    "instructions": "",
-                    "required": 0,
-                    "conditional_logic": 0,
-                    "wrapper": {
-                        "width": "",
-                        "class": "",
-                        "id": ""
-                    },
-                    "default_value": "",
-                    "maxlength": "",
-                    "placeholder": "",
-                    "prepend": "",
-                    "append": ""
-                },
-                {
-                    "key": "field_68c1b2f40a708",
-                    "label": "Title",
-                    "name": "title",
-                    "aria-label": "",
-                    "type": "text",
-                    "instructions": "",
-                    "required": 0,
-                    "conditional_logic": 0,
-                    "wrapper": {
-                        "width": "",
-                        "class": "",
-                        "id": ""
-                    },
-                    "default_value": "",
-                    "maxlength": "",
-                    "placeholder": "",
-                    "prepend": "",
-                    "append": ""
-                },
-                {
-                    "key": "field_68c1b2f40a709",
-                    "label": "Boards used",
-                    "name": "product",
-                    "aria-label": "",
-                    "type": "text",
-                    "instructions": "",
-                    "required": 0,
-                    "conditional_logic": 0,
-                    "wrapper": {
-                        "width": "",
-                        "class": "",
-                        "id": ""
-                    },
-                    "default_value": "",
-                    "maxlength": "",
-                    "placeholder": "",
-                    "prepend": "",
-                    "append": ""
-                },
-                {
-                    "key": "field_68c1b2f40a710",
-                    "label": "Link",
-                    "name": "link",
-                    "aria-label": "",
-                    "type": "link",
-                    "instructions": "",
-                    "required": 0,
-                    "conditional_logic": 0,
-                    "wrapper": {
-                        "width": "",
-                        "class": "",
-                        "id": ""
-                    },
-                    "return_format": "array"
-                }
-            ]
+            "max": 8,
+            "elements": [
+                "featured_image"
+            ],
+            "bidirectional": 0,
+            "bidirectional_target": []
         }
     ],
     "location": [
@@ -222,5 +133,5 @@
     "show_in_rest": 0,
     "display_title": "",
     "granola_save_location": 0,
-    "modified": 1789041600
+    "modified": 1790640000
 }
