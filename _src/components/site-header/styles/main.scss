@@ -800,12 +800,42 @@ body {
             letter-spacing: var(--mbh-tracking-sub);
             text-transform: uppercase;
             color: var(--color--foreground);
-            border-bottom: 1px solid transparent;
             padding-bottom: #{px-to-rem(2)};
-            transition: border-color var(--mbh-dur-ui) var(--mbh-ease);
 
-            &:hover {
-                border-bottom-color: var(--color--olivegreen);
+            // The accent underline wipes in from the left rather than simply
+            // being there. A border cannot do this -- there is nothing to
+            // animate between "no line" and "line" -- so it is a hairline of
+            // its own that is always drawn and scaled to nothing across.
+            //
+            // The origin swaps on hover, which is what makes it read as one
+            // stroke rather than a thing that grows and then ungrows: it opens
+            // from the left, and on the way out it keeps travelling right and
+            // closes behind itself.
+            //
+            // -1px so it lands exactly where the border it replaces did, just
+            // under the padding box rather than just inside it.
+            position: relative;
+
+            @include mq('site-header') {
+                &::after {
+                    position: absolute;
+                    right: 0;
+                    bottom: #{px-to-rem(-1)};
+                    left: 0;
+                    height: 1px;
+                    background-color: var(--color--olivegreen);
+                    transform: scaleX(0);
+                    transform-origin: right center;
+                    transition: transform var(--mbh-dur-ui) var(--mbh-ease);
+                    content: '';
+                }
+            }
+
+            @include mq('site-header') {
+                &:hover::after {
+                    transform: scaleX(1);
+                    transform-origin: left center;
+                }
             }
         }
 
@@ -816,9 +846,17 @@ body {
         // against it matched nothing and Residential rendered unmarked on the
         // page it points at. `is-active` stays for the `permanently_active`
         // ACF flag the top menu supports.
-        .menu-item--current > .menu-item__wrap > a,
-        .menu-item.is-active > .menu-item__wrap > a {
-            border-bottom-color: var(--color--foreground);
+        @include mq('site-header') {
+            .menu-item--current > .menu-item__wrap > a::after,
+            .menu-item.is-active > .menu-item__wrap > a::after {
+                background-color: var(--color--foreground);
+                transform: scaleX(1);
+            }
+
+            .menu-item--current > .menu-item__wrap > a:hover::after,
+            .menu-item.is-active > .menu-item__wrap > a:hover::after {
+                background-color: var(--color--olivegreen);
+            }
         }
     }
 
@@ -972,14 +1010,47 @@ body {
             letter-spacing: 0.15em;
             text-transform: uppercase;
             color: var(--color--foreground);
-            border-bottom: 1px solid transparent;
             padding-bottom: #{px-to-rem(4)};
-            transition: border-color var(--mbh-dur-ui) var(--mbh-ease);
+
+            // The accent underline wipes in from the left rather than simply
+            // being there. A border cannot do this -- there is nothing to
+            // animate between "no line" and "line" -- so it is a hairline of
+            // its own that is always drawn and scaled to nothing across.
+            //
+            // The origin swaps on hover, which is what makes it read as one
+            // stroke rather than a thing that grows and then ungrows: it opens
+            // from the left, and on the way out it keeps travelling right and
+            // closes behind itself.
+            //
+            // -1px so it lands exactly where the border it replaces did, just
+            // under the padding box rather than just inside it.
+            position: relative;
+
+            @include mq('site-header') {
+                &::after {
+                    position: absolute;
+                    right: 0;
+                    bottom: #{px-to-rem(-1)};
+                    left: 0;
+                    height: 1px;
+                    background-color: var(--color--olivegreen);
+                    transform: scaleX(0);
+                    transform-origin: right center;
+                    transition: transform var(--mbh-dur-ui) var(--mbh-ease);
+                    content: '';
+                }
+            }
         }
 
-        .menu-item--depth-0:hover > .menu-item__wrap > a,
-        .menu-item--depth-0 > .menu-item__wrap > a:focus-visible {
-            border-bottom-color: var(--color--olivegreen);
+        // Off the whole item, not the link: the panel opens on the item, so the
+        // underline and the dropdown arrive together rather than the line
+        // dropping away the moment the pointer crosses into the panel.
+        @include mq('site-header') {
+            .menu-item--depth-0:hover > .menu-item__wrap > a::after,
+            .menu-item--depth-0 > .menu-item__wrap > a:focus-visible::after {
+                transform: scaleX(1);
+                transform-origin: left center;
+            }
         }
 
         // ---- Drawer rows -----------------------------------------------------
