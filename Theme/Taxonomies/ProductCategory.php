@@ -14,6 +14,125 @@ class ProductCategory
     {
         \add_filter('granola/templates/taxonomies', [__CLASS__, 'filter_granola_templates_taxonomies']);
         \add_filter('wpseo_breadcrumb_links', [__CLASS__, 'filter_breadcrumb_add_range'], 20);
+
+        \add_action('init', [__CLASS__, 'register_indexed_sitemap']);
+        \add_filter('wpseo_sitemap_index_links', [__CLASS__, 'filter_sitemap_index_links']);
+    }
+
+    /**
+     * The shop category terms that are explicitly set to index.
+     *
+     * Yoast drops a whole taxonomy from the sitemap when its default is
+     * noindex, and `noindex-tax-product_cat` is true here on purpose: the
+     * taxonomy holds 40-odd thin terms (widths, touch-up-coating, fixings) that
+     * must stay out of the index. Only the built category pages carry an
+     * explicit per-term `wpseo_noindex = 'index'` override.
+     *
+     * So the list is built FROM those overrides. That makes it fail-closed: a
+     * term can only appear here by having been deliberately set to index, and if
+     * this code ever stops running the result is no sitemap, which is exactly
+     * where the site is today, rather than 40 thin pages being exposed.
+     *
+     * @return array<\WP_Term> The terms, in name order.
+     */
+    protected static function indexed_terms(): array
+    {
+        $meta = \get_option('wpseo_taxonomy_meta', []);
+
+        if (!is_array($meta) || empty($meta[self::SLUG]) || !is_array($meta[self::SLUG])) {
+            return [];
+        }
+
+        $terms = [];
+
+        foreach ($meta[self::SLUG] as $term_id => $fields) {
+            if (!is_array($fields) || ($fields['wpseo_noindex'] ?? '') !== 'index') {
+                continue;
+            }
+
+            $term = \get_term((int) $term_id, self::SLUG);
+
+            if (empty($term) || \is_wp_error($term)) {
+                continue;
+            }
+
+            $terms[] = $term;
+        }
+
+        \usort($terms, static fn($a, $b) => \strcasecmp($a->name, $b->name));
+
+        return $terms;
+    }
+
+    /**
+     * Register the extra sitemap with Yoast.
+     */
+    public static function register_indexed_sitemap(): void
+    {
+        global $wpseo_sitemaps;
+
+        if (empty($wpseo_sitemaps) || !\is_object($wpseo_sitemaps)
+            || !\method_exists($wpseo_sitemaps, 'register_sitemap')) {
+            return;
+        }
+
+        $wpseo_sitemaps->register_sitemap('indexed-product-category', [__CLASS__, 'render_indexed_sitemap']);
+    }
+
+    /**
+     * Add the extra sitemap to the sitemap index.
+     *
+     * @param array $links The index entries.
+     * @return array The filtered entries.
+     */
+    public static function filter_sitemap_index_links(array $links): array
+    {
+        if (empty(self::indexed_terms())) {
+            return $links;
+        }
+
+        $links[] = [
+            'loc' => \home_url('/indexed-product-category-sitemap.xml'),
+            'lastmod' => \get_lastpostmodified('gmt'),
+        ];
+
+        return $links;
+    }
+
+    /**
+     * Render the extra sitemap.
+     */
+    public static function render_indexed_sitemap(): void
+    {
+        global $wpseo_sitemaps;
+
+        if (empty($wpseo_sitemaps) || !\is_object($wpseo_sitemaps)) {
+            return;
+        }
+
+        $xml = '';
+
+        foreach (self::indexed_terms() as $term) {
+            $url = \get_term_link($term);
+
+            if (\is_wp_error($url)) {
+                continue;
+            }
+
+            $xml .= "\t<url>\n"
+                . "\t\t<loc>" . \esc_url($url) . "</loc>\n"
+                . "\t\t<changefreq>weekly</changefreq>\n"
+                . "\t\t<priority>0.8</priority>\n"
+                . "\t</url>\n";
+        }
+
+        if ($xml === '') {
+            return;
+        }
+
+        $wpseo_sitemaps->set_sitemap(
+            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n" . $xml . '</urlset>'
+        );
     }
 
     /**
