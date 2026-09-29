@@ -151,7 +151,27 @@ class SampleShipping
             return false;
         }
 
-        return self::get_zero_cost_cart_total(\WC()->cart) === 0.0;
+        return self::is_free_sample_basket(\WC()->cart);
+    }
+
+    /**
+     * Whether every item in the basket is a free sample, decided from the items themselves.
+     *
+     * The cart total cannot be trusted here: WC_Cart::calculate_totals() resets it to 0 before
+     * shipping rates are calculated, so a total-based check let paid baskets (a pallet of boards
+     * to Northern Ireland, order 19947's accessories) take the free fallback rate.
+     */
+    private static function is_free_sample_basket(\WC_Cart $cart): bool
+    {
+        foreach ($cart->get_cart() as $cart_item) {
+            $product = $cart_item['data'] ?? null;
+
+            if (!$product instanceof \WC_Product || Utils::is_free_sample($product) !== true) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private static function get_zero_cost_cart_total(\WC_Cart $cart): float
