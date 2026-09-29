@@ -85,7 +85,8 @@
                         "recycle": "Recycled",
                         "board": "Wood free",
                         "medal": "Quality assurance",
-                        "clock": "Long lifespan"
+                        "clock": "Long lifespan",
+                        "lastane": "Lastane surface"
                     },
                     "default_value": "factory",
                     "allow_null": 0,
@@ -158,5 +159,5 @@
     "show_in_rest": 0,
     "display_title": "",
     "granola_save_location": 0,
-    "modified": 1789041600
+    "modified": 1790812800
 }

@@ -23,6 +23,7 @@ function icons(): array
         'board'   => 'Wood-Free-Icon.svg',
         'medal'   => 'Quality-Assurance-Icon.svg',
         'clock'   => 'Long-Lifespan-Icon.svg',
+        'lastane' => 'Lastane-Icon.svg',
     ];
 }
 
