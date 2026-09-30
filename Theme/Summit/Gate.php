@@ -428,10 +428,36 @@ class Gate
             return new \WP_REST_Response(['ok' => true, 'reason' => 'ok', 'message' => ''], 200);
         }
 
-        // A UK guest has not picked a day yet at this point, so the day cap
-        // cannot be judged. Skip it here and let submit decide; reporting "full"
-        // against a day they have not chosen would be wrong.
-        $result = self::evaluate($email, $audience, Audiences::DAY_4TH);
+        // A UK guest has not picked a day yet at this point, so judge them
+        // against whichever of their days still has room rather than one
+        // chosen here.
+        //
+        // This line used to pass DAY_4TH regardless, which contradicted the
+        // comment above it. On 30 Sep 2026 the 4th filled while the 5th still
+        // had 48 seats, and every UK visitor was told "The 4th November is now
+        // fully booked" as they left the email field. The form disables its own
+        // submit button on a failed check, and picking the other date does not
+        // re-enable it, so people who wanted the 5th could not register at all.
+        $result = null;
+
+        if (Audiences::chooses_day($audience)) {
+            foreach (Audiences::UK_CHOOSABLE_DAYS as $day) {
+                $result = self::evaluate($email, $audience, $day);
+
+                // Anything that is not a capacity refusal applies whichever day
+                // they end up picking, so there is nothing to learn from trying
+                // the next one.
+                if ($result['ok'] || $result['reason'] !== 'day_full') {
+                    break;
+                }
+            }
+        }
+
+        // Audiences with fixed days, and the belt-and-braces case of the list
+        // of choosable days being empty.
+        if ($result === null) {
+            $result = self::evaluate($email, $audience);
+        }
 
         // Never leak which audience an address belongs to. A mismatch is
         // reported as the generic wrong-link message and nothing more.
