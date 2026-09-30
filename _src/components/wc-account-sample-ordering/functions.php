@@ -152,18 +152,78 @@ const CART_FLAG = 'millboard_sample_order';
 }, 99);
 
 /**
- * The fallback ceiling, for a SKU the limits file does not name.
+ * The two limit tiers, and who gets which.
  *
- * Real limits are per SKU and come from `sample-ordering/data/sample-limits.json`
- * (see mb_sof_limit_for_sku). This only catches anything added to WooCommerce
- * that the portal export did not list. 10 is the conservative choice: the
- * portal's own values run 1, 3, 5, 10, 22 and 30, so an unknown line gets a
- * middling cap rather than the most generous one.
+ * Dan Hernandez signed off the per-SKU maximums on 30 Sep 2026 with an
+ * explicit scope: "these limits are set for external requests from
+ * distributors / external customers via the partner portal only, and not for
+ * requests from our internal teams. A separate, different maximum will need to
+ * be set for internal requests."
  *
- * ⚠️ The limits themselves are being audited. Replacing that JSON file is how
- * the reviewed numbers land; nothing here needs to change for it.
+ * So one number per SKU is not enough. `sample-limits.json` carries both:
+ *
+ *   limits    Dan's approved EXTERNAL numbers. The default, deliberately —
+ *             if the override below never runs, a partner still gets the
+ *             tighter figure rather than the looser one.
+ *   internal  HOLDING values, carried over unchanged from the portal export
+ *             so nothing changes for Millboard staff today. Dan has not set
+ *             the internal maximums yet.
+ *
+ * Staff are identified by role, not by email domain, so this agrees with the
+ * capability gate on the rest of the account area.
+ *
+ * @return array<string, int> Upper-case SKU => max quantity
  */
-\add_filter('mb_sof_max_qty', fn(): int => 10);
+function get_internal_limits(): array
+{
+    static $limits = null;
+
+    if (\is_array($limits)) {
+        return $limits;
+    }
+
+    $limits = [];
+    $file = \get_theme_file_path('sample-ordering/data/sample-limits.json');
+
+    if (\is_readable($file)) {
+        $json = \json_decode((string) \file_get_contents($file), true);
+
+        if (isset($json['internal']) && \is_array($json['internal'])) {
+            foreach ($json['internal'] as $sku => $max) {
+                $limits[\strtoupper(\trim((string) $sku))] = (int) $max;
+            }
+        }
+    }
+
+    return $limits;
+}
+
+/**
+ * Raise the ceiling for Millboard staff.
+ *
+ * Runs on the widget's own filter, so the package stays as IT shipped it.
+ */
+\add_filter('mb_sof_sku_limits', function (array $limits): array {
+    if (!\Theme\Accounts\Roles::is_staff()) {
+        return $limits;
+    }
+
+    $internal = get_internal_limits();
+
+    // Merge rather than replace: a SKU the internal block does not name keeps
+    // its external figure instead of silently falling back to the numeric
+    // ceiling below.
+    return $internal ? \array_merge($limits, $internal) : $limits;
+});
+
+/**
+ * The fallback ceiling, for a SKU neither tier names.
+ *
+ * Only reachable for something added to WooCommerce that the portal export did
+ * not list. 5 for a partner is the most common approved figure in Dan's sheet
+ * (204 of 373 lines); 10 for staff preserves the previous behaviour.
+ */
+\add_filter('mb_sof_max_qty', static fn(): int => \Theme\Accounts\Roles::is_staff() ? 10 : 5);
 
 /**
  * Let the imported catalogue into the sample tool.
