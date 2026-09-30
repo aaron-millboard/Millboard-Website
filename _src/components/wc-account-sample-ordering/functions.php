@@ -390,6 +390,38 @@ function flush_pos_ids(): void
 });
 
 /**
+ * Recompute every line's ceiling for THIS viewer.
+ *
+ * The package writes `max_qty` into each row BEFORE `set_transient`, and that
+ * transient is one shared 12-hour cache for the whole site. Harmless while
+ * every audience shared a limit. Not harmless now: whoever warmed the cache
+ * would fix the ceiling for everyone after them, so one member of staff
+ * opening the tool would hand every distributor and installer the internal
+ * figure of 30 for the next 12 hours instead of Dan's approved 5.
+ *
+ * So the cached value is treated as a default and replaced here, on
+ * `mb_sof_catalogue`, which the package applies on BOTH the cache-hit and the
+ * cache-miss path. It is the same filtered catalogue that
+ * mb_sof_catalogue_by_id() hands the basket, so this is also the number the
+ * posted quantities are validated against, not only the number shown.
+ */
+\add_filter('mb_sof_catalogue', function (array $items): array {
+    if (!\function_exists('mb_sof_limit_for_sku')) {
+        return $items;
+    }
+
+    foreach ($items as &$item) {
+        if (isset($item['sku'])) {
+            $item['max_qty'] = \mb_sof_limit_for_sku((string) $item['sku']);
+        }
+    }
+
+    unset($item);
+
+    return $items;
+});
+
+/**
  * Stop the widget fetching Archivo and Hanken Grotesk from Google.
  *
  * Its stylesheet is registered with `mb-sof-fonts` as a dependency, so simply
