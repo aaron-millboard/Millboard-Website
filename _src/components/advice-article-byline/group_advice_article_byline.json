@@ -1,0 +1,66 @@
+{
+    "key": "group_advice_article_byline",
+    "title": "Block - Advice Article Byline",
+    "fields": [
+        {
+            "key": "field_advice_article_byline_reviewer",
+            "label": "Reviewed by",
+            "name": "reviewer",
+            "aria-label": "",
+            "type": "user",
+            "instructions": "Optional. A named person who checked the article. Left empty, no review line is shown.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "role": "",
+            "return_format": "id",
+            "multiple": 0,
+            "allow_null": 1,
+            "bidirectional": 0,
+            "bidirectional_target": []
+        },
+        {
+            "key": "field_advice_article_byline_review_date",
+            "label": "Review date",
+            "name": "review_date",
+            "aria-label": "",
+            "type": "date_picker",
+            "instructions": "The day the review was done. Only shown with a reviewer.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "display_format": "j F Y",
+            "return_format": "Y-m-d",
+            "first_day": 1
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "block",
+                "operator": "==",
+                "value": "acf/advice-article-byline"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "",
+    "show_in_rest": 0,
+    "display_title": "",
+    "granola_save_location": 0,
+    "modified": 1790899200
+}

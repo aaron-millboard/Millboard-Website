@@ -1,0 +1,47 @@
+{
+    "key": "group_advice_author",
+    "title": "Advice Author",
+    "fields": [
+        {
+            "key": "field_advice_author_advice_job_title",
+            "label": "Job title",
+            "name": "advice_job_title",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "Shown under your name on advice articles you write, e.g. Technical Product Manager.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "placeholder": "",
+            "prepend": "",
+            "append": ""
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "user_role",
+                "operator": "==",
+                "value": "all"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "",
+    "show_in_rest": 0,
+    "display_title": "",
+    "granola_save_location": 0,
+    "modified": 1790899200
+}

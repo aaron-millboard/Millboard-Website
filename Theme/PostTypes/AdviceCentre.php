@@ -15,7 +15,8 @@ class AdviceCentre
     {
         \add_action('init', [__CLASS__, 'register_post_type']);
         \add_action('init', [__CLASS__, 'add_permalink_rewrite_rule']);
-        // \add_action('acf/init', [__CLASS__, 'add_settings_page']);
+        // Holds the company facts the advice author panel shows under every author.
+        \add_action('acf/init', [__CLASS__, 'add_settings_page']);
         \add_filter('granola/templates/post-types', [__CLASS__, 'filter_granola_templates_post_types']);
         \add_filter('post_type_link', [__CLASS__, 'filter_post_type_link'], 10, 2);
         // Ahead of core's redirect_canonical (10), which would first send

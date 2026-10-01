@@ -17,7 +17,8 @@ namespace Granola\Components\AdviceSchema;
  * that the CollectionPage names as its main entity, and the authors as Person
  * nodes under the same @id Yoast gives them on their articles, so the hub and
  * the articles describe one person rather than two. On a category: its guides,
- * in the order the grid shows them.
+ * in the order the grid shows them. On an article: the author's job title and
+ * the reviewer named on the byline.
  *
  * Deliberately left out of the design's list: FAQPage (the hub and the
  * categories have no FAQ, and marking up questions that are not on the page is
@@ -138,6 +139,83 @@ function filter_schema_graph($graph, $context)
 
     if ($template) {
         return category_graph($graph, $context, $template);
+    }
+
+    $post = \is_singular(\Theme\Utils\Advice::POST_TYPE) ? \get_queried_object() : null;
+
+    if ($post instanceof \WP_Post && \has_block('acf/advice-schema', $post)) {
+        return article_graph($graph, $context, $post);
+    }
+
+    return $graph;
+}
+
+/**
+ * On an article: who wrote it and who checked it.
+ *
+ * Yoast already prints the Article, its author as a Person, the dates and the
+ * breadcrumb, so nothing is printed twice. The author's node gains the job
+ * title from their profile, and a reviewer named on the byline is added as a
+ * Person the page names as reviewedBy, with the review date as lastReviewed.
+ * Both are WebPage properties in schema.org, so they go on the page's node.
+ *
+ * Left out of the design's list: FAQPage (the FAQ accordion prints its own),
+ * HowTo (Google stopped showing it in 2023), and speakable (news publishers
+ * only, and still in beta).
+ *
+ * @param array $graph
+ * @param \Yoast\WP\SEO\Context\Meta_Tags_Context $context
+ */
+function article_graph(array $graph, $context, \WP_Post $post): array
+{
+    $ids = function_exists('YoastSEO') ? \YoastSEO()->helpers->schema->id : null;
+
+    if (!$ids) {
+        return $graph;
+    }
+
+    $page_id = (string) $context->main_schema_id;
+    $organization = ['@id' => $context->site_url . \Yoast\WP\SEO\Config\Schema_IDs::ORGANIZATION_HASH];
+    $author = \Theme\Utils\Advice::person((int) $post->post_author);
+    $author_id = $author ? $ids->get_user_schema_id($author['id'], $context) : '';
+
+    $byline = block_fields($post, 'acf/advice-article-byline')[0] ?? [];
+    $reviewer = \Theme\Utils\Advice::person((int) ($byline['reviewer'] ?? 0));
+    $reviewer = $reviewer && (!$author || $reviewer['id'] !== $author['id']) ? $reviewer : null;
+    $reviewer_id = $reviewer ? $ids->get_user_schema_id($reviewer['id'], $context) : '';
+    $reviewed = !empty($byline['review_date']) ? strtotime((string) $byline['review_date']) : false;
+    $printed = [];
+
+    foreach ($graph as &$piece) {
+        if (!is_array($piece)) {
+            continue;
+        }
+
+        $printed[] = $piece['@id'] ?? '';
+
+        if ($author_id && ($piece['@id'] ?? '') === $author_id && $author['role'] && empty($piece['jobTitle'])) {
+            $piece['jobTitle'] = $author['role'];
+            $piece['worksFor'] = $piece['worksFor'] ?? $organization;
+        }
+
+        if ($reviewer_id && ($piece['@id'] ?? '') === $page_id) {
+            $piece['reviewedBy'] = ['@id' => $reviewer_id];
+
+            if ($reviewed) {
+                $piece['lastReviewed'] = \wp_date('Y-m-d', $reviewed);
+            }
+        }
+    }
+    unset($piece);
+
+    if ($reviewer_id && !in_array($reviewer_id, $printed, true)) {
+        $graph[] = array_filter([
+            '@type' => 'Person',
+            '@id' => $reviewer_id,
+            'name' => $reviewer['name'],
+            'jobTitle' => $reviewer['role'] ?: null,
+            'worksFor' => $organization,
+        ]);
     }
 
     return $graph;
