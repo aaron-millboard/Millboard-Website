@@ -165,6 +165,91 @@ const CART_FLAG = 'millboard_sample_order';
 }, 10, 3);
 
 /**
+ * Record what the tool put on an order, so the ordering can be watched.
+ *
+ * Aaron's ask, 2 Oct 2026: with no cost and no budget behind these, the only
+ * guard left is being able to see who is ordering what. Dan's per-SKU caps
+ * stand, but a cap does not stop someone placing the same capped order every
+ * day.
+ *
+ * Why this is not read back off the existing line-item label: that label is
+ * translated, so its value differs per locale and it is a display string, not
+ * a key. Counting on it would quietly undercount the German and French stores.
+ * These keys are stable and underscore-prefixed, so WooCommerce hides them
+ * from the order screen.
+ *
+ * The role and company are copied onto the order rather than looked up later,
+ * so a report of what happened in June still reads correctly after somebody
+ * changes role or leaves.
+ *
+ * Works on HPOS and legacy storage alike, because it goes through the order
+ * object rather than post meta.
+ */
+\add_action('woocommerce_checkout_create_order', function ($order, $data = null): void {
+    if (!$order instanceof \WC_Order || !\WC()->cart) {
+        return;
+    }
+
+    $lines = 0;
+    $units = 0;
+
+    foreach (\WC()->cart->get_cart() as $item) {
+        if (empty($item[CART_FLAG])) {
+            continue;
+        }
+
+        $lines++;
+        $units += (int) ($item['quantity'] ?? 0);
+    }
+
+    if (!$lines) {
+        return;
+    }
+
+    $order->update_meta_data('_millboard_sample_order', 'yes');
+    $order->update_meta_data('_millboard_sample_lines', (string) $lines);
+    $order->update_meta_data('_millboard_sample_units', (string) $units);
+
+    $user_id = (int) $order->get_customer_id();
+
+    if ($user_id) {
+        $user = \get_userdata($user_id);
+
+        if ($user instanceof \WP_User) {
+            // First role only: these accounts carry exactly one.
+            $order->update_meta_data('_millboard_sample_role', (string) (\reset($user->roles) ?: ''));
+            $order->update_meta_data(
+                '_millboard_sample_staff',
+                \Theme\Accounts\Roles::is_staff($user_id) ? 'yes' : 'no'
+            );
+
+            $company = (string) \get_user_meta($user_id, 'millboard_company', true);
+
+            if ('' === $company) {
+                $company = (string) $order->get_billing_company();
+            }
+
+            if ('' !== $company) {
+                $order->update_meta_data('_millboard_sample_company', $company);
+            }
+        }
+    }
+}, 10, 2);
+
+/**
+ * A stable key on the line itself, beside the human label above.
+ *
+ * The label is what fulfilment reads; this is what a report reads. Keeping
+ * both means per-SKU analysis does not depend on a translated string, and the
+ * order screen is unchanged because an underscore-prefixed key is hidden.
+ */
+\add_action('woocommerce_checkout_create_order_line_item', function ($item, $key, $values): void {
+    if (!empty($values[CART_FLAG]) && \is_object($item) && \method_exists($item, 'add_meta_data')) {
+        $item->add_meta_data('_millboard_sample_order', 'yes', true);
+    }
+}, 11, 3);
+
+/**
  * The three-free-sample cap does not apply to the team.
  *
  * `MAX_SAMPLES = 3` in the product-samples component is a commercial rule for
