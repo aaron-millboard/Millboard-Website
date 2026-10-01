@@ -1,7 +1,7 @@
 {
  "_comment": "SKU to category, replacing the widget's name-pattern classifier. `order` is the accordion order, taken from the audit's own 'Proposed categories' tab.",
  "_source": "Millboard_sample_ordering_audit_DH_updated.xlsx column G, APPROVED CATEGORY, completed by Dan Hernandez 1 Oct 2026 for all 373 portal SKUs.",
- "_local_comment": "SKUs that exist in WooCommerce but were NOT in the portal export, so Dan never saw them. PROVISIONAL, assigned here from the product name and NOT signed off. Send them to him and move them into `approved` once he confirms.",
+ "_local_comment": "SKUs that exist in WooCommerce but were NOT in the portal export, so Dan never saw them. AMN305Y was confirmed as a decking sample by Aaron on 2 Oct 2026 and matched to its colour siblings; it is a gap in the export, not a new line. Anything added here later starts PROVISIONAL until someone confirms it.",
  "order": [
   "Decking board samples",
   "Cladding board samples",
