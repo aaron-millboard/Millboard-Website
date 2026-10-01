@@ -82,6 +82,12 @@
 		var setData = state[ 1 ];
 
 		useEffect( function () {
+			// A fetch that resolves after this unmounts must not set state. On a
+			// fast server the response lands while the Analytics shell is still
+			// mounting, and a stray update there is what produced
+			// "Failed to execute 'removeChild' on 'Node'" from react-dom.
+			var live = true;
+
 			if ( ! wp.apiFetch || ! settings.rest ) {
 				setData( { loading: false, rows: [], totals: null, error: __( 'The report endpoint is unavailable.', 'granola' ) } );
 				return;
@@ -89,6 +95,7 @@
 
 			wp.apiFetch( { path: settings.rest } )
 				.then( function ( res ) {
+					if ( ! live ) { return; }
 					setData( {
 						loading: false,
 						rows: res && res.rows ? res.rows : [],
@@ -97,6 +104,7 @@
 					} );
 				} )
 				.catch( function ( err ) {
+					if ( ! live ) { return; }
 					setData( {
 						loading: false,
 						rows: [],
@@ -104,28 +112,30 @@
 						error: ( err && err.message ) || __( 'The report could not be loaded.', 'granola' ),
 					} );
 				} );
+
+			return function () { live = false; };
 		}, [] );
 
-		var summary = null;
+		// The shape of what is returned never changes, only the numbers in it.
+		// Previously the summary was null until the fetch resolved, so the first
+		// child of the fragment flipped from null to an element while the table
+		// re-rendered beside it, which React has to reconcile mid-mount.
+		var totals = data.totals || { orders: 0, lines: 0, units: 0 };
 
-		if ( data.totals && SummaryList && SummaryNumber ) {
-			summary = el(
+		return el(
+			'div',
+			{ className: 'mb-sof-report' },
+			el(
 				SummaryList,
 				null,
 				function () {
 					return [
-						el( SummaryNumber, { key: 'orders', value: data.totals.orders, label: __( 'Orders', 'granola' ) } ),
-						el( SummaryNumber, { key: 'lines', value: data.totals.lines, label: __( 'Lines', 'granola' ) } ),
-						el( SummaryNumber, { key: 'units', value: data.totals.units, label: __( 'Items', 'granola' ) } ),
+						el( SummaryNumber, { key: 'orders', value: totals.orders, label: __( 'Orders', 'granola' ) } ),
+						el( SummaryNumber, { key: 'lines', value: totals.lines, label: __( 'Lines', 'granola' ) } ),
+						el( SummaryNumber, { key: 'units', value: totals.units, label: __( 'Items', 'granola' ) } ),
 					];
 				}
-			);
-		}
-
-		return el(
-			wp.element.Fragment,
-			null,
-			summary,
+			),
 			el( TableCard, {
 				title: __( 'Sample ordering, last 90 days', 'granola' ),
 				headers: HEADERS,
@@ -133,8 +143,6 @@
 				rowsPerPage: 25,
 				totalRows: data.rows.length,
 				isLoading: data.loading,
-				// Heaviest first, which is the reason this page exists.
-				summary: null,
 				emptyMessage: data.error
 					? data.error
 					: __( 'No sample orders have been placed yet.', 'granola' ),
