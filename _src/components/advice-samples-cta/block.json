@@ -19,7 +19,8 @@
         "renderCallback": "\\Granola\\Component::acf_render_callback",
         "postTypes": [
             "page",
-            "granola-template"
+            "granola-template",
+            "advice-centre"
         ]
     },
     "supports": {

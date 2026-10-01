@@ -1,16 +1,15 @@
 {
     "$schema": "https://raw.githubusercontent.com/AdvancedCustomFields/schemas/main/json/block.json",
     "apiVersion": 3,
-    "name": "acf/advice-schema",
-    "title": "Advice Schema",
-    "description": "No visual output. Adds the hub blocks to the structured data Yoast prints.",
+    "name": "acf/advice-featured-guide",
+    "title": "Advice Featured Guide",
+    "description": "One guide shown first on a category page, photograph above, copy below.",
     "category": "granola-blocks",
-    "icon": "editor-code",
+    "icon": "star-filled",
     "keywords": [
         "advice",
-        "schema",
-        "json-ld",
-        "structured data"
+        "featured",
+        "guide"
     ],
     "acf": {
         "mode": "edit",
@@ -20,8 +19,7 @@
         "renderCallback": "\\Granola\\Component::acf_render_callback",
         "postTypes": [
             "page",
-            "granola-template",
-            "advice-centre"
+            "granola-template"
         ]
     },
     "supports": {
@@ -32,7 +30,7 @@
             "text": false
         },
         "mode": false,
-        "multiple": false
+        "multiple": true
     },
     "attributes": {
         "align": {

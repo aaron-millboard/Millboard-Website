@@ -8,6 +8,6 @@
 ?>
 <div <?= \Granola\Helpers::build_attributes($args['attributes']); ?>>
     <p class="advice-schema__notice">
-        <?= esc_html__('Advice schema: adds the stages, categories and authors on this template to the page\'s structured data. Nothing shows on the page.', 'granola'); ?>
+        <?= esc_html__('Advice schema: adds what the blocks on this page list (stages, categories, guides, authors) to its structured data. Nothing shows on the page.', 'granola'); ?>
     </p>
 </div>

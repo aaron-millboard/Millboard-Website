@@ -1,0 +1,45 @@
+{
+    "key": "group_advice_author_panel",
+    "title": "Block - Advice Author Panel",
+    "fields": [
+        {
+            "key": "field_advice_author_panel_notice",
+            "label": "About this block",
+            "name": "",
+            "aria-label": "",
+            "type": "message",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "message": "Shows the article's author from their user profile: profile image, name, job title and biographical info. The company facts come from Advice Articles > Advice Articles Settings.",
+            "new_lines": "wpautop",
+            "esc_html": 0
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "block",
+                "operator": "==",
+                "value": "acf/advice-author-panel"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "",
+    "show_in_rest": 0,
+    "display_title": "",
+    "granola_save_location": 0,
+    "modified": 1790899200
+}

@@ -137,19 +137,334 @@ class Advice
      */
     public static function read_minutes(int $post_id): int
     {
-        $content = (string) \get_post_field('post_content', $post_id);
-        $text = \wp_strip_all_tags(\strip_shortcodes(\excerpt_remove_blocks($content) ?: $content));
+        return max(1, (int) ceil(self::word_count($post_id) / 200));
+    }
 
-        // excerpt_remove_blocks() drops the ACF blocks wholesale, which is
-        // where the FAQ answers live, so fall back to stripping the delimiters
-        // when it leaves next to nothing.
-        if (str_word_count($text) < 100) {
-            $text = \wp_strip_all_tags(preg_replace('/<!--.*?-->/s', ' ', $content));
+    /**
+     * Words in an article's text, as a reader meets them.
+     *
+     * Read off the parsed blocks rather than the rendered ones: rendering ran
+     * every block filter on the site and took 20ms an article, too slow for a
+     * category grid of fifty. The HTML of the core blocks is counted, and the
+     * text fields of the ACF blocks, which is where the FAQ answers in the
+     * accordion live. Field keys and numbers in that data are settings, not
+     * words, and are passed over.
+     */
+    public static function word_count(int $post_id): int
+    {
+        static $counted = [];
+
+        if (isset($counted[$post_id])) {
+            return $counted[$post_id];
         }
 
-        $words = count(preg_split('/\s+/u', trim($text), -1, PREG_SPLIT_NO_EMPTY));
+        $text = [];
 
-        return max(1, (int) ceil($words / 200));
+        $walk = function (array $blocks) use (&$walk, &$text) {
+            foreach ($blocks as $block) {
+                if (empty($block['blockName'])) {
+                    $text[] = (string) $block['innerHTML'];
+                    continue;
+                }
+
+                if (strpos($block['blockName'], 'acf/') === 0) {
+                    foreach ((array) ($block['attrs']['data'] ?? []) as $key => $value) {
+                        if (is_string($value) && strpos((string) $key, '_') !== 0 && strpos($value, 'field_') !== 0 && !is_numeric($value)) {
+                            $text[] = $value;
+                        }
+                    }
+                } else {
+                    $text[] = implode(' ', array_filter((array) $block['innerContent'], 'is_string'));
+                }
+
+                if (!empty($block['innerBlocks'])) {
+                    $walk($block['innerBlocks']);
+                }
+            }
+        };
+
+        $walk(\parse_blocks((string) \get_post_field('post_content', $post_id)));
+
+        $plain = \wp_strip_all_tags(implode(' ', $text));
+
+        return $counted[$post_id] = count(preg_split('/\s+/u', trim($plain), -1, PREG_SPLIT_NO_EMPTY));
+    }
+
+    /**
+     * "8 min read", translated.
+     */
+    public static function read_label(int $post_id): string
+    {
+        $minutes = self::read_minutes($post_id);
+
+        return sprintf(
+            // translators: %d: reading time in minutes.
+            \_n('%d min read', '%d min read', $minutes, 'granola'),
+            $minutes
+        );
+    }
+
+    /**
+     * The advice category being viewed, or null.
+     *
+     * A category template is edited as a page, and the editor's preview has
+     * no category to read, so a block in preview can ask for a stand-in: the
+     * category with the most guides, so the preview shows real cards rather
+     * than an empty box.
+     */
+    public static function current_term(bool $or_sample = false): ?\WP_Term
+    {
+        $term = \get_queried_object();
+
+        if ($term instanceof \WP_Term && $term->taxonomy === self::TAXONOMY) {
+            return $term;
+        }
+
+        if (!$or_sample) {
+            return null;
+        }
+
+        static $sample = false;
+
+        if ($sample === false) {
+            $sample = null;
+            $most = 0;
+            $terms = \get_terms(['taxonomy' => self::TAXONOMY, 'parent' => 0, 'hide_empty' => false]);
+
+            foreach (\is_wp_error($terms) ? [] : $terms as $candidate) {
+                $count = self::guide_count([$candidate->term_id]);
+
+                if ($count > $most) {
+                    $most = $count;
+                    $sample = $candidate;
+                }
+            }
+        }
+
+        return $sample;
+    }
+
+    /**
+     * Every category below this one, at any depth, in name order.
+     *
+     * @return \WP_Term[]
+     */
+    public static function descendants(\WP_Term $term): array
+    {
+        static $found = [];
+
+        if (!isset($found[$term->term_id])) {
+            $terms = \get_terms([
+                'taxonomy' => self::TAXONOMY,
+                'child_of' => $term->term_id,
+                'hide_empty' => false,
+                'orderby' => 'name',
+            ]);
+
+            $found[$term->term_id] = \is_wp_error($terms) ? [] : array_values($terms);
+        }
+
+        return $found[$term->term_id];
+    }
+
+    /**
+     * What to call each category below this one, keyed by term id.
+     *
+     * Its name, less any words every one of them starts with. All eleven
+     * under Product Information Comparisons begin "Composite", so as chips and
+     * card labels they read "Decking Cost Factors", "Cladding Styles &
+     * Aesthetics", which is how the design names them, and the word that says
+     * nothing about which is which goes.
+     *
+     * @return array<int, string>
+     */
+    public static function topic_labels(\WP_Term $term): array
+    {
+        $names = [];
+
+        foreach (self::descendants($term) as $child) {
+            $names[$child->term_id] = preg_split('/\s+/u', trim(self::term_name($child)));
+        }
+
+        if (count($names) < 2) {
+            return array_map(function ($words) {
+                return implode(' ', $words);
+            }, $names);
+        }
+
+        // Shared leading words, never all of anyone's name.
+        $shared = 0;
+        $shortest = min(array_map('count', $names)) - 1;
+
+        while ($shared < $shortest) {
+            $word = reset($names)[$shared];
+
+            foreach ($names as $words) {
+                if (mb_strtolower($words[$shared]) !== mb_strtolower($word)) {
+                    break 2;
+                }
+            }
+
+            $shared++;
+        }
+
+        return array_map(function ($words) use ($shared) {
+            $label = implode(' ', array_slice($words, $shared));
+
+            // A name in sentence case ("Composite decking cost factors")
+            // would otherwise start in lower case. The chips are set in
+            // capitals either way, but a screen reader reads the text.
+            return mb_strtoupper(mb_substr($label, 0, 1)) . mb_substr($label, 1);
+        }, $names);
+    }
+
+    /**
+     * The guide a category puts first: the one picked on the category (Advice
+     * Articles > Advice Categories), while it is published, else its newest.
+     *
+     * Not picked and fewer than three guides, none: the panel would only
+     * repeat a card that sits straight below it.
+     */
+    public static function featured_guide_id(\WP_Term $term): int
+    {
+        if (function_exists('get_field')) {
+            $picked = (int) \get_field('advice_featured_guide', $term);
+
+            if ($picked > 0 && \get_post_status($picked) === 'publish') {
+                return $picked;
+            }
+        }
+
+        $posts = self::post_ids([$term->term_id]);
+
+        return count($posts) >= 3 ? $posts[0] : 0;
+    }
+
+    /**
+     * An article's one-line summary: its excerpt, else its own meta
+     * description, which every guide carries and which is written as exactly
+     * that.
+     *
+     * The meta description is read from the post rather than through Yoast's
+     * presenter, which builds a whole indexable per call; a category grid asks
+     * for fifty. Any %%variables%% in it are still filled the way Yoast fills
+     * them. The post type's template description is not a summary of anything
+     * and is not used.
+     */
+    public static function standfirst_of(int $post_id): string
+    {
+        if (\has_excerpt($post_id)) {
+            return \wp_strip_all_tags(\get_the_excerpt($post_id));
+        }
+
+        $description = (string) \get_post_meta($post_id, '_yoast_wpseo_metadesc', true);
+
+        if ($description !== '' && strpos($description, '%%') !== false && function_exists('wpseo_replace_vars')) {
+            $description = (string) \wpseo_replace_vars($description, \get_post($post_id));
+        }
+
+        return trim(\wp_strip_all_tags(html_entity_decode($description, ENT_QUOTES | ENT_HTML5, 'UTF-8')));
+    }
+
+    /**
+     * The category to name an article by, inside a parent category.
+     *
+     * Its primary category when that sits under the parent, else the first of
+     * its categories that does, else the parent itself: an article filed
+     * against the parent directly is named by the parent.
+     */
+    public static function topic_of(int $post_id, \WP_Term $within): \WP_Term
+    {
+        $below = [];
+
+        foreach (self::descendants($within) as $child) {
+            $below[$child->term_id] = $child;
+        }
+
+        $primary = Taxonomies::get_primary_term($post_id, self::TAXONOMY);
+
+        if ($primary && isset($below[$primary->term_id])) {
+            return $below[$primary->term_id];
+        }
+
+        foreach ((array) \get_the_terms($post_id, self::TAXONOMY) as $term) {
+            if ($term instanceof \WP_Term && isset($below[$term->term_id])) {
+                return $below[$term->term_id];
+            }
+        }
+
+        return $within;
+    }
+
+    /**
+     * Every category below this one an article sits in, directly or through a
+     * category further down. The topic chips filter on these.
+     *
+     * @return int[]
+     */
+    public static function topic_ids_of(int $post_id, \WP_Term $within): array
+    {
+        $below = array_map(function ($child) {
+            return $child->term_id;
+        }, self::descendants($within));
+
+        $ids = [];
+
+        foreach ((array) \get_the_terms($post_id, self::TAXONOMY) as $term) {
+            if (!$term instanceof \WP_Term) {
+                continue;
+            }
+
+            $ids[] = $term->term_id;
+
+            foreach (\get_ancestors($term->term_id, self::TAXONOMY, 'taxonomy') as $ancestor) {
+                $ids[] = (int) $ancestor;
+            }
+        }
+
+        return array_values(array_intersect($below, array_unique($ids)));
+    }
+
+    /**
+     * A person as the article blocks show them, read from their user profile:
+     * the display name, the job title (Advice Author fields), the profile
+     * image (User Profile fields) and the biographical info.
+     *
+     * @return array{id: int, name: string, role: string, bio: string, image: int, initials: string}|null
+     */
+    public static function person(int $user_id): ?array
+    {
+        $user = $user_id > 0 ? \get_userdata($user_id) : false;
+
+        if (!$user instanceof \WP_User || trim($user->display_name) === '') {
+            return null;
+        }
+
+        $role = function_exists('get_field') ? trim((string) \get_field('advice_job_title', 'user_' . $user->ID)) : '';
+        $image = function_exists('get_field') ? \get_field('user_image', 'user_' . $user->ID) : null;
+        $words = preg_split('/\s+/u', trim($user->display_name));
+        $initials = mb_strtoupper(mb_substr($words[0], 0, 1) . (count($words) > 1 ? mb_substr(end($words), 0, 1) : ''));
+
+        return [
+            'id' => $user->ID,
+            'name' => $user->display_name,
+            'role' => $role,
+            'bio' => trim((string) \get_the_author_meta('description', $user->ID)),
+            'image' => (int) (is_array($image) ? ($image['attachment_id'] ?? 0) : $image),
+            'initials' => $initials,
+        ];
+    }
+
+    /**
+     * "Updated Aug 2026", from the post's modified date, in the site's locale.
+     */
+    public static function updated_label(int $post_id): string
+    {
+        return sprintf(
+            // translators: %s: month and year an article was last updated.
+            \__('Updated %s', 'granola'),
+            \wp_date('M Y', (int) \get_post_modified_time('U', true, $post_id))
+        );
     }
 
     /**

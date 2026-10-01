@@ -1,16 +1,15 @@
 {
     "$schema": "https://raw.githubusercontent.com/AdvancedCustomFields/schemas/main/json/block.json",
     "apiVersion": 3,
-    "name": "acf/advice-schema",
-    "title": "Advice Schema",
-    "description": "No visual output. Adds the hub blocks to the structured data Yoast prints.",
+    "name": "acf/advice-category-hero",
+    "title": "Advice Category Hero",
+    "description": "The advice category opener: breadcrumbs, H1, intro, live guide and topic counts, then a full-width photograph.",
     "category": "granola-blocks",
-    "icon": "editor-code",
+    "icon": "cover-image",
     "keywords": [
         "advice",
-        "schema",
-        "json-ld",
-        "structured data"
+        "category",
+        "hero"
     ],
     "acf": {
         "mode": "edit",
@@ -20,8 +19,7 @@
         "renderCallback": "\\Granola\\Component::acf_render_callback",
         "postTypes": [
             "page",
-            "granola-template",
-            "advice-centre"
+            "granola-template"
         ]
     },
     "supports": {
