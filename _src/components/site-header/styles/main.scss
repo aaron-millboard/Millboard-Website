@@ -76,13 +76,13 @@ body {
         // is only correct at --nav 0 and 1; in between it is a straight line
         // drawn across a curve, and anything positioning against it drifts.
         --site-header--height: calc(
-            (var(--site-header--strip, #{px-to-rem(36)}) + #{px-to-rem(96)})
-            - var(--nav, 0) * (var(--site-header--strip, #{px-to-rem(36)}) + #{px-to-rem(30)})
+            (var(--site-header--strip, #{px-to-rem(28)}) + #{px-to-rem(104)})
+            - var(--nav, 0) * (var(--site-header--strip, #{px-to-rem(28)}) + #{px-to-rem(38)})
         );
 
         // The strip plus the main row at their full size -- the header as it
         // stands at the top of the page, before any of it collapses.
-        --site-header--reserved: calc(var(--site-header--strip, #{px-to-rem(36)}) + #{px-to-rem(96)});
+        --site-header--reserved: calc(var(--site-header--strip, #{px-to-rem(28)}) + #{px-to-rem(104)});
     }
 }
 
@@ -355,7 +355,7 @@ body {
             // --site-header--strip on load and on resize, so this still sizes to
             // its own content when the links wrap, which is what the max-height
             // was for in the first place.
-            max-height: calc(var(--site-header--strip, #{px-to-rem(36)}) * (1 - var(--nav, 0)));
+            max-height: calc(var(--site-header--strip, #{px-to-rem(28)}) * (1 - var(--nav, 0)));
             opacity: clamp(0, calc(1 - var(--nav, 0) * 1.6), 1);
 
             // Deliberately unclipped at rest. The collapse needs a clip, but a
@@ -408,10 +408,14 @@ body {
             // row of 11px caps, which read as heavy against the nav beneath it.
             // The eight pixels go to the main row rather than off the header,
             // so the resting height stays 132 and nothing below it moves.
-            min-height: #{px-to-rem(36)};
+            min-height: #{px-to-rem(28)};
+            // 4, not 6. The Trustpilot widget is 20px tall and sets the floor:
+            // at 6 the strip could not go below 32 however small the min-height
+            // was, so the padding has to come down with it.
+            //
             // The same gutter as the main row, so the first utility link sits
             // directly above the first nav link.
-            padding-block: #{px-to-rem(6)};
+            padding-block: #{px-to-rem(4)};
             padding-inline: var(--site-header--gutter);
         }
 
@@ -1221,7 +1225,7 @@ body {
     @include mq('site-header') {
         #{$this}__logo,
         #{$this}__end {
-            min-height: calc(#{px-to-rem(96)} - var(--nav, 0) * #{px-to-rem(30)});
+            min-height: calc(#{px-to-rem(104)} - var(--nav, 0) * #{px-to-rem(38)});
         }
 
         // The row's cap and gutters are the padding on __inner itself; nothing
