@@ -213,7 +213,8 @@ function mb_sof_render() {
 		'window.MB_SOF_DATA = ' . wp_json_encode(
 			array(
 				'catalogue' => $catalogue,
-				'categories' => mb_sof_category_order(),
+				// MILLBOARD EDIT - only the accordions this viewer has lines in.
+				'categories' => mb_sof_visible_categories( $catalogue ),
 				'maxQty'    => mb_sof_max_qty(),
 				'cartUrl'   => wc_get_cart_url(),
 			)
