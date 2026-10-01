@@ -111,26 +111,162 @@ class Admin
         } elseif ($action === 'remove') {
             $result = InviteList::remove((string) ($_POST['email'] ?? ''));
         } elseif ($action === 'override') {
-            $key = \sanitize_text_field((string) ($_POST['company_key'] ?? ''));
-            $cap = (int) ($_POST['cap'] ?? 0);
-
-            if ($key === '') {
-                $result = ['ok' => false, 'message' => 'No company given.'];
-            } else {
-                InviteList::set_cap_override($key, $cap);
-                $result = [
-                    'ok' => true,
-                    'message' => $cap > 0
-                        ? sprintf('%s can now bring %d people.', $key, $cap)
-                        : sprintf('%s is back on the standard cap of %d.', $key, InviteList::cap_per_company()),
-                ];
-            }
+            $result = self::set_company_cap(
+                \sanitize_text_field((string) ($_POST['company_key'] ?? '')),
+                (int) ($_POST['cap'] ?? 0)
+            );
         } else {
             $result = ['ok' => false, 'message' => 'Unknown action.'];
         }
 
         self::notify($result);
         self::back(self::PAGE_INVITES);
+    }
+
+    /**
+     * Sets, or clears, one company's seat cap from whatever was typed.
+     *
+     * Public and free of superglobals so it can be exercised directly. The
+     * handler above only reads the request and hands over.
+     *
+     * Whatever is typed goes through the same normaliser the gate reads the cap
+     * with, so "Holland Architects" lands on "holland architects" instead of
+     * becoming its own entry.
+     *
+     * Until 1 Oct 2026 the raw input was stored. Anything that was not already
+     * an exact key, a company name with capitals in it or an email address, was
+     * saved as a separate row that matched nothing and did nothing. Eleven had
+     * built up, and two companies spent days unable to register people whose
+     * caps had supposedly been raised, because the screen reported success
+     * every time.
+     *
+     * @return array{ok:bool,message:string}
+     */
+    public static function set_company_cap(string $typed, int $cap): array
+    {
+        $typed = trim($typed);
+
+        if ($typed === '') {
+            return ['ok' => false, 'message' => 'No company given.'];
+        }
+
+        $key = InviteList::company_key($typed);
+        $overrides = InviteList::cap_overrides();
+        $known = self::known_companies();
+
+        // Clearing an exception is always allowed, by the exact stored text as
+        // well as the normalised key, because the dead entries can only be
+        // addressed by what they were literally saved as.
+        if ($cap === 0 && (isset($overrides[$typed]) || isset($overrides[$key]))) {
+            $remove = isset($overrides[$typed]) ? $typed : $key;
+            InviteList::set_cap_override($remove, 0);
+
+            return [
+                'ok' => true,
+                'message' => sprintf('Exception for "%s" removed. The standard cap of %d applies.',
+                    $remove, InviteList::cap_per_company()),
+            ];
+        }
+
+        if (!isset($known[$key])) {
+            $near = self::nearest_companies($key, $known);
+
+            return [
+                'ok' => false,
+                'message' => sprintf(
+                    '"%s" gives the key "%s", which matches no company on the invite list or in '
+                    . 'the registrations, so nothing has been changed. %s',
+                    $typed,
+                    $key,
+                    $near
+                        ? 'Did you mean ' . implode(', or ', $near) . '?'
+                        : 'Use the company name exactly as it appears in the table below.'
+                ),
+            ];
+        }
+
+        InviteList::set_cap_override($key, $cap);
+
+        return [
+            'ok' => true,
+            'message' => $cap > 0
+                ? sprintf('%s can now bring %d people. Saved against the key "%s".',
+                    $known[$key], $cap, $key)
+                : sprintf('%s is back on the standard cap of %d.',
+                    $known[$key], InviteList::cap_per_company()),
+        ];
+    }
+
+    /**
+     * Every company key that really exists, mapped to a readable name.
+     *
+     * Read from the invite list and from what people have registered under,
+     * because a cap can legitimately apply to either: a company can be invited
+     * before anyone registers, and someone can register under a company that
+     * was added by hand rather than imported.
+     *
+     * @return array<string,string> company key => company name
+     */
+    private static function known_companies(): array
+    {
+        $known = [];
+
+        foreach (InviteList::all() as $row) {
+            if (!empty($row['company_key'])) {
+                $known[(string) $row['company_key']] = (string) ($row['company'] ?? '');
+            }
+        }
+
+        foreach (Registrations::list_rows() as $row) {
+            if (!empty($row['company_key'])) {
+                $known[(string) $row['company_key']] = (string) ($row['company'] ?? '');
+            }
+        }
+
+        ksort($known);
+
+        return $known;
+    }
+
+    /**
+     * Companies whose key looks like what was typed, to offer back as a
+     * suggestion rather than just refusing.
+     *
+     * @param  array<string,string> $known
+     * @return array<int,string>
+     */
+    private static function nearest_companies(string $key, array $known, int $limit = 4): array
+    {
+        if ($key === '') {
+            return [];
+        }
+
+        $scores = [];
+
+        foreach ($known as $candidate => $name) {
+            $percent = 0.0;
+            similar_text($key, $candidate, $percent);
+
+            // Also catch the case where one is wholly inside the other, which
+            // is what an email address normalises to: "ta hollandarchitects"
+            // against "holland architects".
+            $contains = strpos(str_replace(' ', '', $candidate), str_replace(' ', '', $key)) !== false
+                || strpos(str_replace(' ', '', $key), str_replace(' ', '', $candidate)) !== false;
+
+            if ($percent >= 50 || $contains) {
+                $scores[$candidate] = $contains ? max($percent, 90) : $percent;
+            }
+        }
+
+        arsort($scores);
+
+        $out = [];
+
+        foreach (array_slice($scores, 0, $limit, true) as $candidate => $percent) {
+            $out[] = sprintf('%s ("%s")', $known[$candidate], $candidate);
+        }
+
+        return $out;
     }
 
     public static function handle_registration(): void
@@ -382,24 +518,55 @@ class Admin
 
             <h2>Give one company extra places</h2>
             <p>
-                For a company that genuinely needs more than <?= (int) $cap; ?>. Copy its company key
-                from the table below. Set 0 to put them back on the standard cap.
+                For a company that genuinely needs more than <?= (int) $cap; ?>. Type the company
+                name as it appears in the table below, in any capitalisation. Set 0 to put them back
+                on the standard cap.
+            </p>
+            <p class="description">
+                Not an email address. The cap belongs to the company, not the person, so
+                <code>someone@acme.co.uk</code> matches nothing. If what you type does not match a
+                company this screen will say so rather than appear to save it.
             </p>
             <form method="post" action="<?= \esc_url(\admin_url('admin-post.php')); ?>">
                 <?php \wp_nonce_field('mb_summit_invite'); ?>
                 <input type="hidden" name="action" value="mb_summit_invite">
                 <input type="hidden" name="mb_action" value="override">
-                <input name="company_key" type="text" class="regular-text" placeholder="company key, e.g. hythe landscapes" required>
+                <input name="company_key" type="text" class="regular-text" placeholder="company name, e.g. Hythe Landscapes" required>
                 <input name="cap" type="number" min="0" max="20" value="3" style="width:5em">
                 <?php \submit_button('Set', 'secondary', 'submit', false); ?>
             </form>
 
-            <?php if ($overrides) { ?>
-                <p><strong>Current exceptions:</strong>
-                <?php foreach ($overrides as $key => $n) { ?>
-                    <code><?= \esc_html($key); ?></code> = <?= (int) $n; ?>&nbsp;&nbsp;
+            <?php
+            if ($overrides) {
+                // Show which exceptions actually bind. One that matches no
+                // company is doing nothing at all, and used to be invisible.
+                $known_companies = self::known_companies();
+                $dead_overrides = 0;
+                ?>
+                <p><strong>Current exceptions:</strong></p>
+                <ul style="margin-left:1.5em;list-style:disc">
+                    <?php foreach ($overrides as $key => $n) {
+                        $binds = isset($known_companies[$key]);
+                        if (!$binds) {
+                            $dead_overrides++;
+                        } ?>
+                        <li>
+                            <code><?= \esc_html($key); ?></code> = <?= (int) $n; ?>
+                            <?php if ($binds) { ?>
+                                &mdash; <?= \esc_html($known_companies[$key]); ?>
+                            <?php } else { ?>
+                                &mdash; <strong style="color:#b32d2e">matches no company, so it is
+                                doing nothing</strong>
+                            <?php } ?>
+                        </li>
+                    <?php } ?>
+                </ul>
+                <?php if ($dead_overrides > 0) { ?>
+                    <p class="description">
+                        <?= (int) $dead_overrides; ?> of these match no company. To clear one, put
+                        its text above exactly as shown and set the number to 0.
+                    </p>
                 <?php } ?>
-                </p>
             <?php } ?>
 
             <h2>Who is invited (<?= (int) count($list); ?> people)</h2>
