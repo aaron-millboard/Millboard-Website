@@ -19,7 +19,15 @@
 
     position: relative;
     z-index: 3;
-    background-color: var(--color--springwood);
+    // Mist, not Spring Wood.
+    //
+    // The page separates its sections by alternating these two, and this was
+    // the one place that broke: the rail and the plan section beneath it were
+    // both Spring Wood, so 144px of padding on each met as 288px of flat cream
+    // with nothing to say one had ended. Mist restores the alternation the rest
+    // of the page already has, rather than adding a rule the design does not
+    // use anywhere else.
+    background-color: var(--color--mist);
     // Vertical only. The rail needs to reach the edges.
     padding: var(--mbh-section-y) 0;
 
