@@ -18,6 +18,57 @@ class AdviceCentre
         // \add_action('acf/init', [__CLASS__, 'add_settings_page']);
         \add_filter('granola/templates/post-types', [__CLASS__, 'filter_granola_templates_post_types']);
         \add_filter('post_type_link', [__CLASS__, 'filter_post_type_link'], 10, 2);
+        // Ahead of core's redirect_canonical (10), which would first send
+        // ?paged=2 to /page/2/ and make this a second hop.
+        \add_action('template_redirect', [__CLASS__, 'redirect_paged_hub'], 9);
+        \add_filter('wpseo_adjacent_rel_url', [__CLASS__, 'filter_hub_adjacent_rel_url']);
+    }
+
+    /**
+     * Whether this request is the hub, drawn from a template page that does not
+     * paginate. See \Theme\Utils\Advice::template_is_static() for why that
+     * matters.
+     *
+     * Not a category view. The `/advice-centre/advice-category/<term>/` rule
+     * below sets this post type on a term query, which makes WordPress call it
+     * the post type archive too, and its page 2 was being sent to the hub. The
+     * category class deals with those, and sends them to their own category.
+     */
+    protected static function hub_does_not_paginate(): bool
+    {
+        if (!\is_post_type_archive(self::SLUG) || \is_tax() || \is_search()) {
+            return false;
+        }
+
+        return \Theme\Utils\Advice::template_is_static(
+            \Granola\WordPress\TemplatePage::get_template_page(\get_post_type_object(self::SLUG))
+        );
+    }
+
+    /**
+     * Send a page number on the hub back to the hub itself, permanently.
+     */
+    public static function redirect_paged_hub(): void
+    {
+        if (!\is_paged() || !self::hub_does_not_paginate()) {
+            return;
+        }
+
+        \wp_safe_redirect(\Theme\Utils\Advice::unpaged_url((string) \get_post_type_archive_link(self::SLUG)), 301);
+        exit;
+    }
+
+    /**
+     * No rel="next" or rel="prev" on the hub when it does not paginate.
+     *
+     * They would point Google at the page URLs that now redirect back here.
+     *
+     * @param string $url The adjacent page URL Yoast is about to print.
+     * @return string
+     */
+    public static function filter_hub_adjacent_rel_url($url)
+    {
+        return self::hub_does_not_paginate() ? '' : $url;
     }
 
     /**

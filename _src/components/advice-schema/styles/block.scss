@@ -1,0 +1,18 @@
+// =============================================================================
+// Advice Schema -- editor only
+// =============================================================================
+// The block draws nothing on the page, so in the editor it is a dashed strip
+// that says what it does.
+// =============================================================================
+
+.editor-styles-wrapper {
+    .advice-schema {
+        padding: 12px 16px;
+        border: 1px dashed rgba(47, 41, 46, 0.35);
+
+        &__notice {
+            margin: 0;
+            font-size: 13px;
+        }
+    }
+}
