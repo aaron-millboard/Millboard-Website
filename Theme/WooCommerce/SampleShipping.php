@@ -10,6 +10,8 @@ class SampleShipping
         'petit',
         'piccolo',
         'pequeno',
+        // fr-fr Basalte brossé uses "STD" (enchantillon-std) for its small sample.
+        'std',
     ];
 
     public static function init(): void
@@ -199,13 +201,19 @@ class SampleShipping
             $rate->set_label(__('Sample shipping', 'granola'));
 
             // The configured sample shipping value is the final amount to charge.
-            $rate->set_cost($shipping_cost);
+            // Where prices include tax (VAT markets such as fr-fr), split the VAT out of
+            // that amount so the order records it; elsewhere (en-us) charge it untaxed.
+            $taxes = \wc_prices_include_tax()
+                ? \WC_Tax::calc_inclusive_tax($shipping_cost, \WC_Tax::get_shipping_tax_rates())
+                : [];
 
-            if (method_exists($rate, 'set_tax_status')) {
+            $rate->set_cost($shipping_cost - array_sum($taxes));
+
+            if (empty($taxes) && method_exists($rate, 'set_tax_status')) {
                 $rate->set_tax_status('none');
             }
 
-            $rate->set_taxes([]);
+            $rate->set_taxes($taxes);
 
             $rates[$rate_id] = $rate;
         }
