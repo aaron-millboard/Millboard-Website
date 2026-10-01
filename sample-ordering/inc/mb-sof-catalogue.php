@@ -59,6 +59,44 @@ function mb_sof_category_order() {
 }
 
 /**
+ * MILLBOARD ADDITION - the accordions THIS viewer should actually see.
+ *
+ * mb_sof_category_order() is the whole structure and has to stay complete:
+ * the catalogue build uses it to decide which categories are valid, so
+ * narrowing it there would drop lines rather than hide headings.
+ *
+ * What one person sees is narrower than the structure. A partner cannot order
+ * POS, so Name plates and Branded merchandise hold nothing for them, and a
+ * category whose lines are all retired holds nothing for anyone. Rendering
+ * those produces empty accordions.
+ *
+ * Takes the catalogue the caller already has, so this costs no extra query
+ * and cannot recurse into the build. Order is preserved; only empties go.
+ *
+ * @param array[] $catalogue This viewer's own catalogue rows.
+ * @return string[]
+ */
+function mb_sof_visible_categories( $catalogue ) {
+	$present = array();
+
+	foreach ( (array) $catalogue as $item ) {
+		if ( isset( $item['category'] ) ) {
+			$present[ (string) $item['category'] ] = true;
+		}
+	}
+
+	$out = array();
+
+	foreach ( mb_sof_category_order() as $category ) {
+		if ( isset( $present[ $category ] ) ) {
+			$out[] = $category;
+		}
+	}
+
+	return $out;
+}
+
+/**
  * SKUs that belong in the catalogue but are not named "Sample", so the name
  * pre-filter would miss them. From build.md section 3.
  *
