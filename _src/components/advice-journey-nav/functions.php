@@ -26,6 +26,10 @@ function filter_args(array $args): ?array
 
     $args['stages'] = build_stages((array) $args['stages']);
 
+    if (!$args['stages']) {
+        return null;
+    }
+
     // -------------------------------------------------------------------------
     // Return the filtered args.
     // -------------------------------------------------------------------------
