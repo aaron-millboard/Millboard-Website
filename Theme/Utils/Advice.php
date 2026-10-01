@@ -321,6 +321,9 @@ class Advice
     /**
      * The guide a category puts first: the one picked on the category (Advice
      * Articles > Advice Categories), while it is published, else its newest.
+     *
+     * Not picked and fewer than three guides, none: the panel would only
+     * repeat a card that sits straight below it.
      */
     public static function featured_guide_id(\WP_Term $term): int
     {
@@ -332,7 +335,9 @@ class Advice
             }
         }
 
-        return self::post_ids([$term->term_id])[0] ?? 0;
+        $posts = self::post_ids([$term->term_id]);
+
+        return count($posts) >= 3 ? $posts[0] : 0;
     }
 
     /**

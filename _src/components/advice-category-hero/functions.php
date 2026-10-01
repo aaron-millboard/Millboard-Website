@@ -27,6 +27,11 @@ function filter_args(array $args): ?array
     // -------------------------------------------------------------------------
     $term = Advice::current_term(!empty($args['is_preview']));
 
+    // Placed on a page that is not a category, there is nothing to open.
+    if (!$term && empty($args['is_preview'])) {
+        return null;
+    }
+
     $args['eyebrow'] = $args['eyebrow'] ?: \__('Category', 'granola');
     $args['heading'] = $args['heading'] ?: ($term ? Advice::term_name($term) : \__('Category name', 'granola'));
 

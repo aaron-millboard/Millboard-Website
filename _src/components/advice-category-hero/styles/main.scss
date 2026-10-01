@@ -59,11 +59,15 @@
         color: var(--color--foreground);
     }
 
+    // The design's 16ch is narrower than "COMPARISONS" at this tracking
+    // (9.4em), so the word was split across two lines. 10em holds the longest
+    // word in any category name, and the floor is 32px, not 40, so that
+    // "MAINTENANCE" still fits a phone's width whole.
     &__heading {
-        max-width: 16ch;
+        max-width: 10em;
         margin: #{px-to-rem(24)} 0 0;
         font-weight: 300;
-        font-size: clamp(#{px-to-rem(40)}, 5vw, #{px-to-rem(64)});
+        font-size: clamp(#{px-to-rem(32)}, calc(3.6vw + #{px-to-rem(18)}), #{px-to-rem(64)});
         line-height: 1.05;
         letter-spacing: var(--mbh-tracking-heading);
         text-transform: uppercase;
