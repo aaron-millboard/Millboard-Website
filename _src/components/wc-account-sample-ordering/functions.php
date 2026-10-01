@@ -324,19 +324,31 @@ function get_retired_skus(): array
 }
 
 /**
- * Drop a retired line however else it would have qualified.
+ * Drop a retired line however it got in.
  *
- * Priority 20, so it runs after the scope widening above and overrides it: a
- * retired SKU is out whether it was admitted by its name, by its category or
- * by the import marker.
+ * NOT on `mb_sof_in_scope`, which was the first attempt and silently covered
+ * only 3 of the 24: that function returns true early for any name containing
+ * "sample" and never reaches its own filter, so most of Dan's retirements are
+ * admitted before a filter can see them.
+ *
+ * `mb_sof_catalogue` sees every row whatever admitted it, and the package
+ * applies it on both the cache-hit and cache-miss paths. It is also the
+ * catalogue mb_sof_catalogue_by_id() hands the basket, so a retired SKU cannot
+ * be ordered by posting it either.
  */
-\add_filter('mb_sof_in_scope', function ($in_scope, $name, $sku) {
-    if (isset(get_retired_skus()[\strtoupper(\trim((string) $sku))])) {
-        return false;
+\add_filter('mb_sof_catalogue', function (array $items): array {
+    $retired = get_retired_skus();
+
+    if (!$retired) {
+        return $items;
     }
 
-    return $in_scope;
-}, 20, 3);
+    return \array_values(\array_filter(
+        $items,
+        static fn(array $item): bool => !isset($retired[\strtoupper(\trim((string) ($item['sku'] ?? '')))])
+    ));
+});
+
 
 /**
  * The product categories that mark a line as POS / marketing stock.
