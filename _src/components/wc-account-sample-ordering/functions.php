@@ -285,6 +285,60 @@ function get_imported_skus(): array
 }, 10, 3);
 
 /**
+ * Lines Dan has retired, which must not be orderable at all.
+ *
+ * Column K of the audit, 1 Oct 2026: 23 marketing/POS lines and one presenter
+ * pack. His reason was "not knowing our position on the stands for next year",
+ * which is display racks and sample panels, so expect this list to be revisited
+ * rather than treated as permanent.
+ *
+ * Held as code rather than unpublishing the products, for two reasons: it
+ * travels with the deploy instead of needing the same manual step repeating in
+ * every environment, and it leaves the products intact so putting a line back
+ * is a one-word change rather than a re-import.
+ *
+ * @return array<string, true> Upper-case SKU => true
+ */
+function get_retired_skus(): array
+{
+    static $skus = null;
+
+    if (\is_array($skus)) {
+        return $skus;
+    }
+
+    $skus = [];
+    $file = \get_theme_file_path('sample-ordering/data/sample-limits.json');
+
+    if (\is_readable($file)) {
+        $json = \json_decode((string) \file_get_contents($file), true);
+
+        if (isset($json['retired']) && \is_array($json['retired'])) {
+            foreach ($json['retired'] as $sku) {
+                $skus[\strtoupper(\trim((string) $sku))] = true;
+            }
+        }
+    }
+
+    return $skus;
+}
+
+/**
+ * Drop a retired line however else it would have qualified.
+ *
+ * Priority 20, so it runs after the scope widening above and overrides it: a
+ * retired SKU is out whether it was admitted by its name, by its category or
+ * by the import marker.
+ */
+\add_filter('mb_sof_in_scope', function ($in_scope, $name, $sku) {
+    if (isset(get_retired_skus()[\strtoupper(\trim((string) $sku))])) {
+        return false;
+    }
+
+    return $in_scope;
+}, 20, 3);
+
+/**
  * The product categories that mark a line as POS / marketing stock.
  *
  * ⚠️ NOT YET POPULATED. The 84 POS lines in the portal export do not exist as
