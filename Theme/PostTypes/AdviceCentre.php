@@ -19,6 +19,79 @@ class AdviceCentre
         // \add_action('acf/init', [__CLASS__, 'add_settings_page']);
         \add_filter('granola/templates/post-types', [__CLASS__, 'filter_granola_templates_post_types']);
         \add_filter('post_type_link', [__CLASS__, 'filter_post_type_link'], 10, 2);
+        \add_action('template_redirect', [__CLASS__, 'redirect_paged_hub']);
+        \add_filter('wpseo_adjacent_rel_url', [__CLASS__, 'filter_hub_adjacent_rel_url']);
+    }
+
+    /**
+     * Whether this request is the hub drawn from a template page that does not
+     * paginate.
+     *
+     * The hub is this post type's archive. When it has a template page, the
+     * theme renders that page's blocks instead of the post loop (index.php), but
+     * WordPress still splits the main query into pages. So /advice-centre/page/2/
+     * and /page/3/ answered 200 with an exact copy of the hub, each canonical to
+     * itself and indexable, and Yoast's rel="next" on the hub led Google to them.
+     *
+     * A template that does list the posts with its own pagination, through a
+     * loop block reading the page number, is left alone, so adding one later
+     * brings the page URLs back to life rather than redirecting them away.
+     */
+    protected static function hub_does_not_paginate(): bool
+    {
+        if (!\is_post_type_archive(self::SLUG) || \is_search()) {
+            return false;
+        }
+
+        $template = \Granola\WordPress\TemplatePage::get_template_page(\get_post_type_object(self::SLUG));
+
+        if (!\Granola\WordPress\TemplatePage::is_valid_template_page($template)) {
+            return false;
+        }
+
+        foreach (['acf/template-loop', 'acf/gallery-loop'] as $loop) {
+            if (\has_block($loop, $template)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Send a page number on the hub back to the hub itself, permanently.
+     *
+     * Any other query string survives (a campaign's UTM tags, say); only the
+     * page number goes, or ?paged=2 would redirect to itself forever.
+     */
+    public static function redirect_paged_hub(): void
+    {
+        if (!\is_paged() || !self::hub_does_not_paginate()) {
+            return;
+        }
+
+        $target = (string) \get_post_type_archive_link(self::SLUG);
+        $query = isset($_SERVER['QUERY_STRING']) ? (string) $_SERVER['QUERY_STRING'] : '';
+
+        if ($query !== '') {
+            $target = \remove_query_arg('paged', $target . '?' . $query);
+        }
+
+        \wp_safe_redirect($target, 301);
+        exit;
+    }
+
+    /**
+     * No rel="next" or rel="prev" on the hub when it does not paginate.
+     *
+     * They would point Google at the page URLs that now redirect back here.
+     *
+     * @param string $url The adjacent page URL Yoast is about to print.
+     * @return string
+     */
+    public static function filter_hub_adjacent_rel_url($url)
+    {
+        return self::hub_does_not_paginate() ? '' : $url;
     }
 
     /**
