@@ -15,7 +15,7 @@
     isolation: isolate;
     display: flex;
     align-items: flex-end;
-    min-height: clamp(#{px-to-rem(420)}, 42vw, #{px-to-rem(600)});
+    min-height: clamp(#{px-to-rem(360)}, 42vw, #{px-to-rem(560)});
     background-color: var(--color--wenge);
     color: var(--color--springwood);
 

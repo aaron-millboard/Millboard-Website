@@ -37,6 +37,8 @@ function filter_args(array $args): ?array
         'classes' => ['advice-samples-cta__image'],
     ] : null;
 
+    \Theme\Utils\Advice::mark_image_shown((int) ($args['image']['attachment_id'] ?? 0));
+
     // -------------------------------------------------------------------------
     // Links. An empty link field is an array with no URL.
     // -------------------------------------------------------------------------
