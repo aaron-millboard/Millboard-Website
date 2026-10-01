@@ -1,0 +1,160 @@
+{
+    "key": "group_advice_featured_longread",
+    "title": "Block - Advice Featured Longread",
+    "fields": [
+        {
+            "key": "field_advice_featured_longread_post",
+            "label": "Article",
+            "name": "post",
+            "aria-label": "",
+            "type": "post_object",
+            "instructions": "The pinned article. Its title, excerpt, featured image and reading time are used unless overridden below.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "post_type": [
+                "advice-centre"
+            ],
+            "post_status": [
+                "publish"
+            ],
+            "taxonomy": "",
+            "return_format": "id",
+            "multiple": 0,
+            "allow_null": 1,
+            "bidirectional": 0,
+            "ui": 1,
+            "bidirectional_target": []
+        },
+        {
+            "key": "field_advice_featured_longread_eyebrow",
+            "label": "Eyebrow",
+            "name": "eyebrow",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "e.g. Editor's pick.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "placeholder": "",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_advice_featured_longread_heading",
+            "label": "Heading override",
+            "name": "heading",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "Left empty, the article title is used.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "placeholder": "",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_advice_featured_longread_standfirst",
+            "label": "Standfirst override",
+            "name": "standfirst",
+            "aria-label": "",
+            "type": "textarea",
+            "instructions": "Left empty, the article's excerpt is used. Hidden on phones.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "rows": 3,
+            "placeholder": "",
+            "new_lines": ""
+        },
+        {
+            "key": "field_advice_featured_longread_image",
+            "label": "Image override",
+            "name": "image",
+            "aria-label": "",
+            "type": "image",
+            "instructions": "Left empty, the article's featured image is used.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "return_format": "array",
+            "library": "all",
+            "min_width": "",
+            "min_height": "",
+            "min_size": "",
+            "max_width": "",
+            "max_height": "",
+            "max_size": "",
+            "mime_types": "",
+            "preview_size": "medium"
+        },
+        {
+            "key": "field_advice_featured_longread_button_label",
+            "label": "Button label",
+            "name": "button_label",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "e.g. Read the guide. The reading time is added after it.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "placeholder": "",
+            "prepend": "",
+            "append": ""
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "block",
+                "operator": "==",
+                "value": "acf/advice-featured-longread"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "",
+    "show_in_rest": 0,
+    "display_title": "",
+    "granola_save_location": 0,
+    "modified": 1790812800
+}
