@@ -112,6 +112,9 @@ if (file_exists($autoloader = __DIR__ . '/vendor/autoload.php')) {
 // Keeps the imported sample/POS ordering lines out of Google. They are
 // hidden from the catalogue, which does not stop them being indexed.
 \Theme\WooCommerce\SampleCatalogueImport::init();
+// 'Sample ordering' inside WooCommerce Analytics: who is ordering how
+// much, now that nothing is costed or budgeted.
+\Theme\WooCommerce\SampleOrderReport::init();
 
 // ----------------------------------------------------
 // Partner account types.
