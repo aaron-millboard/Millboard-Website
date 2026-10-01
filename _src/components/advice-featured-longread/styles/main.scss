@@ -91,6 +91,10 @@
         }
     }
 
+    &__time {
+        white-space: nowrap;
+    }
+
     &__media {
         position: relative;
         flex: 1 1 #{px-to-rem(380)};

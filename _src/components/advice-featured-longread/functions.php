@@ -69,11 +69,13 @@ function filter_args(array $args): ?array
 
     $minutes = Advice::read_minutes($post_id);
 
-    $args['button'] = sprintf(
-        // translators: 1: button label, e.g. "Read the guide". 2: reading time in minutes.
-        \_x('%1$s · %2$s', 'Advice featured longread button', 'granola'),
-        $args['button_label'] ?: \__('Read the guide', 'granola'),
-        sprintf(\_n('%d min', '%d min', $minutes, 'granola'), $minutes)
+    // Label and reading time apart, so the template can keep "· 8 min" on one
+    // line: on a phone the button otherwise broke between the 8 and the min.
+    $args['button'] = $args['button_label'] ?: \__('Read the guide', 'granola');
+    $args['read_time'] = sprintf(
+        // translators: %d: reading time in minutes.
+        \_n('%d min', '%d min', $minutes, 'granola'),
+        $minutes
     );
 
     // -------------------------------------------------------------------------

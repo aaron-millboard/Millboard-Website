@@ -113,7 +113,15 @@ function filter_schema_graph($graph, $context)
 
     // Stages.
     foreach (block_fields($template, 'acf/advice-journey-nav') as $index => $fields) {
-        $stages = \Granola\Components\AdviceJourneyNav\build_stages((array) ($fields['stages'] ?? []));
+        // Only the stages that lead somewhere. Google reads an ItemList on a
+        // summary page as a list of pages and wants a URL on every item, so
+        // a stage that is not yet a link would be reported as a broken item.
+        $stages = array_values(array_filter(
+            \Granola\Components\AdviceJourneyNav\build_stages((array) ($fields['stages'] ?? [])),
+            function ($stage) {
+                return !empty($stage['link']['url']);
+            }
+        ));
 
         if (!$stages) {
             continue;
@@ -131,7 +139,7 @@ function filter_schema_graph($graph, $context)
                     'position' => $position + 1,
                     'name' => $stage['title'],
                     'description' => $stage['description'] ?: null,
-                    'url' => $stage['link']['url'] ?? null,
+                    'url' => $stage['link']['url'],
                 ]);
             }, $stages, array_keys($stages)),
         ];

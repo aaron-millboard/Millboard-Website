@@ -109,7 +109,7 @@
     }
 
     &__title {
-        flex: 1 1 #{px-to-rem(200)};
+        flex: 1 1 auto;
         margin: 0;
         font-weight: 300;
         font-size: var(--mbh-fs-h2);
@@ -123,6 +123,14 @@
         flex: 0 0 auto;
         font-size: #{px-to-rem(15)};
         color: #6e6a6c;
+
+        // On a phone the count shares the title's line only when the title is
+        // short, so one row had it beside the title and the next beneath it.
+        // It goes beneath on every row instead, between title and description.
+        @media (max-width: 599px) {
+            flex-basis: 100%;
+            order: 1;
+        }
     }
 
     &__description {
@@ -130,7 +138,7 @@
         // broken into lines, and on a row with no count that cap fits beside
         // the title, so the description climbed up onto the title's line.
         flex: 1 1 100%;
-        order: 1;
+        order: 2;
         margin: 0;
         font-weight: 300;
         font-size: var(--mbh-fs-body);
