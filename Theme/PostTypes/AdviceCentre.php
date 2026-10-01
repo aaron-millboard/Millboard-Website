@@ -119,13 +119,17 @@ class AdviceCentre
             'taxonomies' => [
                 'advice_category',
             ],
+            // A new article starts on the article template. The body goes in
+            // advice-prose; the hero, byline and author panel fill themselves
+            // from the article and its author; the samples band stays hidden
+            // until its links are set.
             'template' => [
-                [
-                    'core/paragraph',
-                    [
-                        'placeholder' => 'Add content...',
-                    ]
-                ],
+                ['acf/advice-article-hero'],
+                ['acf/advice-article-byline'],
+                ['acf/advice-prose'],
+                ['acf/advice-author-panel'],
+                ['acf/advice-samples-cta'],
+                ['acf/advice-schema'],
             ],
 
             // Extended post type configuration.
