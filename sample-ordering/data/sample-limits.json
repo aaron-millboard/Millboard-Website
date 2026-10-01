@@ -320,6 +320,7 @@
   "AMN305H": 5,
   "AMN305L": 5,
   "AMN305R": 5,
+  "AMN305Y": 5,
   "AMUF105A": 3,
   "AMUF105B": 3,
   "AMUF105C": 3,
@@ -695,6 +696,7 @@
   "AMN305H": 15,
   "AMN305L": 15,
   "AMN305R": 15,
+  "AMN305Y": 15,
   "AMUF105A": 9,
   "AMUF105B": 9,
   "AMUF105C": 9,
@@ -778,5 +780,6 @@
   "AMDR5",
   "AMDR9",
   "APP3E"
- ]
+ ],
+ "_inferred": "AMN305Y (Enhanced Grain 126mm Ebony Grey, 300mm sample) is NOT from Dan's sheet: it exists in WooCommerce but was absent from the portal export. Its five colour siblings AMN305H/B/R/C/G are all 5 external and 15 internal, so it is matched to them. Aaron confirmed it is a decking sample and approved the alignment, 2 Oct 2026. Without this it fell through to the numeric fallback and staff got 10 where the colours beside it give 15."
 }
