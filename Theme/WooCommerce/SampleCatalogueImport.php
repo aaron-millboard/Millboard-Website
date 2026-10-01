@@ -134,16 +134,27 @@ class SampleCatalogueImport
 
         /*
          * Price. Samples are free. POS carries a real cost that comes out of
-         * a distributor's marketing budget — and the export has no price
-         * field, so POS is left at zero until the audit supplies one. A cost
-         * already set by hand is never overwritten.
+         * a distributor's marketing budget, and the export has no price field,
+         * so POS sits at zero until someone supplies one. A cost already set
+         * by hand is never overwritten.
          */
         if (!$is_pos) {
             $product->set_regular_price('0');
             $product->set_price('0');
         } elseif ('' === (string) $product->get_regular_price()) {
-            $product->set_regular_price('');
-            $product->set_price('');
+            /*
+             * POS with no agreed cost yet. ZERO, not empty: WooCommerce
+             * refuses to add a product with no price to a basket at all, so
+             * an empty price is not "free", it is unorderable. All 84 were
+             * created empty and every one was rejected with "Sorry, this
+             * product cannot be purchased".
+             *
+             * A cost set by hand is never overwritten, so loading Micaela's
+             * figures is a price update and nothing else. The cart no longer
+             * zeroes POS lines, so those figures will be charged.
+             */
+            $product->set_regular_price('0');
+            $product->set_price('0');
         }
 
         $cats = [$terms[self::CAT_ROOT] ?? 0];

@@ -92,26 +92,54 @@ const CART_FLAG = 'millboard_sample_order';
 }, 10, 1);
 
 /**
- * Staff pay nothing, whatever the sample costs in the shop.
+ * Samples go out free. POS does not.
  *
- * The small (100mm) samples are already £0. The large (300mm) ones carry a
- * real price, and Aaron's call is that both go out free when a rep sends them,
- * so the price is zeroed on the flagged lines only. The same variation bought
- * from the shop is untouched.
+ * The 100mm samples are already £0 and the 300mm ones carry a real shop price,
+ * and Aaron's call is that both go out free when a rep sends them, so the price
+ * is zeroed on the tool's own lines. The same variation bought from the shop is
+ * untouched.
+ *
+ * POS is the exception. Those lines come out of a distributor's marketing
+ * budget, so whatever WooCommerce holds for them has to survive to the basket.
+ * Zeroing every line the tool added, which is what this did first, would mean
+ * the costs could be loaded and every order would still total nothing, with the
+ * obvious conclusion being that the prices had not saved.
+ *
+ * They are all £0 today because nobody has supplied the costs yet (Dan to Amy
+ * to Micaela, outstanding), so this changes no total now. It means the costs
+ * land as a price update and nothing else.
  */
 \add_action('woocommerce_before_calculate_totals', function ($cart): void {
     if (!$cart instanceof \WC_Cart) {
         return;
     }
 
+    $pos = get_pos_ids();
+
     foreach ($cart->get_cart() as $item) {
         if (empty($item[CART_FLAG]) || empty($item['data']) || !$item['data'] instanceof \WC_Product) {
             continue;
         }
 
+        // A POS line keeps its price. Checked against all three ids a cart
+        // item can carry, because get_pos_ids() holds parents and variations
+        // and a variable line is identified by its child.
+        $ids = [
+            (int) $item['data']->get_id(),
+            (int) ($item['product_id'] ?? 0),
+            (int) ($item['variation_id'] ?? 0),
+        ];
+
+        foreach ($ids as $id) {
+            if ($id && isset($pos[$id])) {
+                continue 2;
+            }
+        }
+
         $item['data']->set_price(0);
     }
 }, 20);
+
 
 /**
  * Say so on the order, so fulfilment and the office can tell these apart.
