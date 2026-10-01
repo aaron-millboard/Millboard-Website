@@ -48,6 +48,13 @@ function filter_args(array $args): ?array
         }
     }
 
+    // A samples band with no way to order samples says nothing, so until its
+    // link is set (a new article starts with the band empty) it is not drawn.
+    // The editor still shows it, so it can be filled in.
+    if (!$args['primary_link'] && empty($args['is_preview'])) {
+        return null;
+    }
+
     // -------------------------------------------------------------------------
     // Return the filtered args.
     // -------------------------------------------------------------------------
