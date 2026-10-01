@@ -1,0 +1,42 @@
+{
+    "$schema": "https://raw.githubusercontent.com/AdvancedCustomFields/schemas/main/json/block.json",
+    "apiVersion": 3,
+    "name": "acf/advice-authors",
+    "title": "Advice Authors",
+    "description": "The named authors behind the guides, with portraits and live guide counts.",
+    "category": "granola-blocks",
+    "icon": "groups",
+    "keywords": [
+        "advice",
+        "authors",
+        "eeat",
+        "people"
+    ],
+    "acf": {
+        "mode": "edit",
+        "blockVersion": 3,
+        "autoInlineEditing": false,
+        "hideFieldsInSidebar": true,
+        "renderCallback": "\\Granola\\Component::acf_render_callback",
+        "postTypes": [
+            "page",
+            "granola-template"
+        ]
+    },
+    "supports": {
+        "align": false,
+        "anchor": true,
+        "color": {
+            "background": false,
+            "text": false
+        },
+        "mode": false,
+        "multiple": true
+    },
+    "attributes": {
+        "align": {
+            "type": "string",
+            "default": "full"
+        }
+    }
+}

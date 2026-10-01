@@ -1,0 +1,139 @@
+// =============================================================================
+// Advice Journey Navigation
+// =============================================================================
+// Four rows between hairlines, the first rule full Charcoal Black and the rest
+// the light hairline, as in the design. Number, title and count share a
+// baseline; the description drops to its own line beneath them.
+// =============================================================================
+
+.advice-journey-nav {
+    --block--margin-top: 0;
+    --block--margin-bottom: 0;
+
+    padding: clamp(#{px-to-rem(48)}, 7vw, #{px-to-rem(96)}) var(--mbh-section-x);
+
+    &__inner {
+        max-width: var(--mbh-container);
+        margin: 0 auto;
+    }
+
+    // -------------------------------------------------------------------------
+    // Header.
+    // -------------------------------------------------------------------------
+    &__header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: #{px-to-rem(16)};
+        margin-bottom: clamp(#{px-to-rem(32)}, 5vw, #{px-to-rem(64)});
+    }
+
+    &__heading {
+        max-width: 20ch;
+        margin: 0;
+        font-weight: 300;
+        font-size: var(--mbh-fs-h2);
+        line-height: 1.15;
+        letter-spacing: var(--mbh-tracking-heading);
+        text-transform: uppercase;
+        text-wrap: balance;
+        color: var(--color--foreground);
+    }
+
+    &__intro {
+        margin: 0;
+        font-weight: 300;
+        font-size: var(--mbh-fs-body);
+        line-height: 1.6;
+        // Muted, but held to AA: #6e6a6c is 4.87:1 on Spring Wood.
+        color: #6e6a6c;
+    }
+
+    // -------------------------------------------------------------------------
+    // Rows.
+    // -------------------------------------------------------------------------
+    &__stages {
+        @include list-reset-hard;
+        @include list-reset-hard--li;
+
+        border-bottom: 1px solid var(--mbh-rule);
+    }
+
+    &__stage {
+        border-top: 1px solid var(--mbh-rule);
+
+        &:first-child {
+            border-top-color: var(--color--foreground);
+        }
+    }
+
+    &__row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: #{px-to-rem(12)} clamp(#{px-to-rem(16)}, 3.4vw, #{px-to-rem(48)});
+        padding: clamp(#{px-to-rem(24)}, 2.6vw, #{px-to-rem(32)}) clamp(#{px-to-rem(4)}, 1.6vw, #{px-to-rem(24)});
+        color: var(--color--foreground);
+        transition: background-color var(--mbh-dur-ui) var(--mbh-ease);
+
+        --link--text-decoration: none;
+        --link--text-decoration--hover: none;
+        --link--color: var(--color--foreground);
+        --link--color--hover: var(--color--foreground);
+
+        @at-root a#{&} {
+            &:hover,
+            &:focus-visible {
+                background-color: var(--color--mist);
+
+                // The muted grey drops to 3.85:1 on Mist, so the count takes
+                // the full foreground while the row is lit.
+                .advice-journey-nav__count {
+                    color: var(--color--foreground);
+                }
+            }
+
+            &:focus-visible {
+                outline: 2px solid var(--color--foreground);
+                outline-offset: -2px;
+            }
+        }
+    }
+
+    &__number {
+        flex: 0 0 auto;
+        font-weight: 700;
+        font-size: #{px-to-rem(15)};
+        letter-spacing: var(--mbh-tracking-sub);
+    }
+
+    &__title {
+        flex: 1 1 #{px-to-rem(200)};
+        margin: 0;
+        font-weight: 300;
+        font-size: var(--mbh-fs-h2);
+        line-height: 1.15;
+        letter-spacing: var(--mbh-tracking-heading);
+        text-transform: uppercase;
+        color: inherit;
+    }
+
+    &__count {
+        flex: 0 0 auto;
+        font-size: #{px-to-rem(15)};
+        color: #6e6a6c;
+    }
+
+    &__description {
+        flex: 1 1 100%;
+        order: 1;
+        max-width: 72ch;
+        margin: 0;
+        font-weight: 300;
+        font-size: var(--mbh-fs-body);
+        line-height: 1.7;
+        text-wrap: pretty;
+        color: inherit;
+    }
+}

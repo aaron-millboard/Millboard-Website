@@ -1,0 +1,42 @@
+{
+    "$schema": "https://raw.githubusercontent.com/AdvancedCustomFields/schemas/main/json/block.json",
+    "apiVersion": 3,
+    "name": "acf/advice-hub-hero",
+    "title": "Advice Hub Hero",
+    "description": "The advice centre hub opener: photograph, H1, standfirst, an advice-only search and quick links.",
+    "category": "granola-blocks",
+    "icon": "search",
+    "keywords": [
+        "advice",
+        "hero",
+        "search",
+        "hub"
+    ],
+    "acf": {
+        "mode": "edit",
+        "blockVersion": 3,
+        "autoInlineEditing": false,
+        "hideFieldsInSidebar": true,
+        "renderCallback": "\\Granola\\Component::acf_render_callback",
+        "postTypes": [
+            "page",
+            "granola-template"
+        ]
+    },
+    "supports": {
+        "align": false,
+        "anchor": true,
+        "color": {
+            "background": false,
+            "text": false
+        },
+        "mode": false,
+        "multiple": true
+    },
+    "attributes": {
+        "align": {
+            "type": "string",
+            "default": "full"
+        }
+    }
+}

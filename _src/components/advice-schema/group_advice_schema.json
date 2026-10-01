@@ -1,0 +1,45 @@
+{
+    "key": "group_advice_schema",
+    "title": "Block - Advice Schema",
+    "fields": [
+        {
+            "key": "field_advice_schema_notice",
+            "label": "About this block",
+            "name": "",
+            "aria-label": "",
+            "type": "message",
+            "instructions": "",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "message": "This block renders nothing on the page. While it is on the template, the stages, categories and authors set in the blocks on this template are added to the structured data Yoast already prints for the page.",
+            "new_lines": "wpautop",
+            "esc_html": 0
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "block",
+                "operator": "==",
+                "value": "acf/advice-schema"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "",
+    "show_in_rest": 0,
+    "display_title": "",
+    "granola_save_location": 0,
+    "modified": 1790812800
+}
