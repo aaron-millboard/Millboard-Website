@@ -95,6 +95,25 @@ class SampleOrderReport
             [__CLASS__, 'script_dependencies']
         );
 
+        /*
+         * IN THE FOOTER, AND THIS IS NOT COSMETIC.
+         *
+         * The component helper enqueues in the HEAD by default. Declaring
+         * wc-components as a dependency then drags WooCommerce's whole admin
+         * script chain, wc-settings included, into the head with it, ahead of
+         * where WooCommerce attaches the settings data. The app then boots
+         * with window.wcSettings undefined and dies on "Cannot read
+         * properties of undefined (reading 'admin')", which took out EVERY
+         * Analytics screen, not only this one.
+         *
+         * WooCommerce prints its own admin scripts in the footer. Anything
+         * joining that graph has to do the same.
+         */
+        \add_filter(
+            'granola/partial/wc-account-sample-ordering/enqueue_script_in_footer',
+            '__return_true'
+        );
+
         \Granola\Component::enqueue_script_by_filename('wc-account-sample-ordering', 'analytics');
 
         \wp_localize_script('wc-account-sample-ordering-scripts', 'MB_SOF_REPORT', [
