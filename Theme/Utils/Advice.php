@@ -3,7 +3,7 @@
 namespace Theme\Utils;
 
 /**
- * Shared look-ups for the advice centre's hub blocks.
+ * Shared look-ups for the advice centre's hub blocks and archives.
  *
  * Several blocks print a guide count, and the design file draws them as typed
  * numbers ("14 guides"). A typed count is a claim that goes stale the day an
@@ -150,6 +150,49 @@ class Advice
         $words = count(preg_split('/\s+/u', trim($text), -1, PREG_SPLIT_NO_EMPTY));
 
         return max(1, (int) ceil($words / 200));
+    }
+
+    /**
+     * Whether a template page stands in for an archive without paginating it.
+     *
+     * When an archive has a template page, the theme renders that page's
+     * blocks instead of the post loop (index.php), but WordPress still splits
+     * the main query into pages. So every /page/N/ the query reaches answered
+     * 200 with an exact copy of page one, self-canonical and indexable, and
+     * Yoast's rel="next" led Google from one copy to the next.
+     *
+     * A template that does list the posts with its own pagination, through a
+     * loop block that reads the page number, paginates for real and is not
+     * static, so adding one later brings the page URLs back to life.
+     *
+     * @param mixed $template The template page, as TemplatePage returns it.
+     */
+    public static function template_is_static($template): bool
+    {
+        if (!\Granola\WordPress\TemplatePage::is_valid_template_page($template)) {
+            return false;
+        }
+
+        foreach (['acf/template-loop', 'acf/gallery-loop'] as $loop) {
+            if (\has_block($loop, $template)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * A URL carrying the current request's query string, less the page number.
+     *
+     * Any other argument survives (a campaign's UTM tags, say); the page
+     * number goes, or ?paged=2 would redirect to itself forever.
+     */
+    public static function unpaged_url(string $base): string
+    {
+        $query = isset($_SERVER['QUERY_STRING']) ? (string) $_SERVER['QUERY_STRING'] : '';
+
+        return $query === '' ? $base : \remove_query_arg('paged', $base . '?' . $query);
     }
 
     /**
