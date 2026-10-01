@@ -104,8 +104,10 @@ function filter_schema_graph($graph, $context)
         return $graph;
     }
 
-    $page_id = $context->main_schema_id ?? '';
-    $base = $context->canonical ?? \get_post_type_archive_link(\Theme\Utils\Advice::POST_TYPE);
+    // Read straight off the context: its properties are generated on first
+    // read, so they are fetched rather than tested.
+    $page_id = (string) $context->main_schema_id;
+    $base = (string) $context->canonical ?: (string) \get_post_type_archive_link(\Theme\Utils\Advice::POST_TYPE);
     $lists = [];
     $people = [];
 
