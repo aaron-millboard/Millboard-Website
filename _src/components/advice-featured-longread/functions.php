@@ -98,8 +98,13 @@ function standfirst_of(int $post_id): string
     if (function_exists('YoastSEO')) {
         $meta = \YoastSEO()->meta->for_post($post_id);
 
-        if ($meta && !empty($meta->description)) {
-            return \wp_strip_all_tags(html_entity_decode($meta->description, ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+        // Read into a variable before testing it. `description` is a magic
+        // property, and empty() on one asks __isset first, which says no, so
+        // `empty($meta->description)` is true even when it holds a sentence.
+        $description = $meta ? (string) $meta->description : '';
+
+        if ($description !== '') {
+            return \wp_strip_all_tags(html_entity_decode($description, ENT_QUOTES | ENT_HTML5, 'UTF-8'));
         }
     }
 
