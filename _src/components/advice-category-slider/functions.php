@@ -25,6 +25,12 @@ function filter_args(array $args): ?array
 
     $args['cards'] = build_cards((array) $args['slides']);
 
+    // Every chosen category is empty: no rail, rather than a heading over
+    // nothing.
+    if (!$args['cards']) {
+        return null;
+    }
+
     // -------------------------------------------------------------------------
     // Summary beside the heading: the guides across every card, each counted
     // once. Two cards for a parent and its own child would otherwise count the

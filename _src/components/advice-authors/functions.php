@@ -26,6 +26,12 @@ function filter_args(array $args): ?array
 
     $args['people'] = build_people((array) $args['authors']);
 
+    // A heading over an empty row says the section is broken. With nobody to
+    // show (say, a user since deleted), the block steps out of the page.
+    if (!$args['people']) {
+        return null;
+    }
+
     // -------------------------------------------------------------------------
     // Return the filtered args.
     // -------------------------------------------------------------------------
