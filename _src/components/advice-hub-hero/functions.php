@@ -48,6 +48,8 @@ function filter_args(array $args): ?array
                 'data-no-lazy' => '1',
             ],
         ];
+
+        \Theme\Utils\Advice::mark_image_shown((int) $args['image']['attachment_id']);
     }
 
     // -------------------------------------------------------------------------

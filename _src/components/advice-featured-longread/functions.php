@@ -47,8 +47,8 @@ function filter_args(array $args): ?array
         $args['heading'] = html_entity_decode(\get_the_title($post_id), ENT_QUOTES | ENT_HTML5, 'UTF-8');
     }
 
-    if (empty($args['standfirst']) && \has_excerpt($post_id)) {
-        $args['standfirst'] = \wp_strip_all_tags(\get_the_excerpt($post_id));
+    if (empty($args['standfirst'])) {
+        $args['standfirst'] = standfirst_of($post_id);
     }
 
     $attachment_id = !empty($args['image']['attachment_id'])
@@ -65,6 +65,8 @@ function filter_args(array $args): ?array
         'classes' => ['advice-featured-longread__image'],
     ] : null;
 
+    Advice::mark_image_shown($attachment_id);
+
     $minutes = Advice::read_minutes($post_id);
 
     $args['button'] = sprintf(
@@ -78,4 +80,28 @@ function filter_args(array $args): ?array
     // Return the filtered args.
     // -------------------------------------------------------------------------
     return $args;
+}
+
+/**
+ * The article's own one-line summary.
+ *
+ * Its excerpt when it has one. Most guides do not, but every one carries a
+ * meta description, which is written as exactly this: a sentence saying what
+ * the guide covers. Read through Yoast so any %%variables%% in it are filled.
+ */
+function standfirst_of(int $post_id): string
+{
+    if (\has_excerpt($post_id)) {
+        return \wp_strip_all_tags(\get_the_excerpt($post_id));
+    }
+
+    if (function_exists('YoastSEO')) {
+        $meta = \YoastSEO()->meta->for_post($post_id);
+
+        if ($meta && !empty($meta->description)) {
+            return \wp_strip_all_tags(html_entity_decode($meta->description, ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+        }
+    }
+
+    return '';
 }

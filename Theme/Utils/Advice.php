@@ -25,6 +25,18 @@ class Advice
     protected static array $post_ids = [];
 
     /**
+     * Attachments already drawn by a hub block on this request.
+     *
+     * The category cards fall back to a guide's featured image, and the newest
+     * guide is usually also the one in the hero or the featured panel, so the
+     * same photograph turned up three times down the page. Blocks note what
+     * they have shown here, and the cards pass over anything already on it.
+     *
+     * @var array<int, true>
+     */
+    protected static array $images_shown = [];
+
+    /**
      * The published articles filed under any of these categories, their
      * sub-categories included.
      *
@@ -82,6 +94,26 @@ class Advice
     public static function guide_count(array $term_ids): int
     {
         return count(self::post_ids($term_ids));
+    }
+
+    /**
+     * Note an image as drawn on the page.
+     */
+    public static function mark_image_shown(int $attachment_id): void
+    {
+        if ($attachment_id > 0) {
+            self::$images_shown[$attachment_id] = true;
+        }
+    }
+
+    /**
+     * The images drawn on the page so far.
+     *
+     * @return int[]
+     */
+    public static function images_shown(): array
+    {
+        return array_keys(self::$images_shown);
     }
 
     /**

@@ -23,12 +23,16 @@ function filter_args(array $args): ?array
         'wp-block',
     ], $args['classes']);
 
-    $args['cards'] = build_cards((array) $args['slides']);
+    $args['cards'] = build_cards((array) $args['slides'], Advice::images_shown());
 
     // Every chosen category is empty: no rail, rather than a heading over
     // nothing.
     if (!$args['cards']) {
         return null;
+    }
+
+    foreach ($args['cards'] as $card) {
+        Advice::mark_image_shown((int) ($card['image']['attachment_id'] ?? 0));
     }
 
     // -------------------------------------------------------------------------
@@ -53,11 +57,18 @@ function filter_args(array $args): ?array
  * One card per chosen category, everything read off the category unless the
  * row overrides it.
  *
- * Shared with the schema block, which lists the same categories.
+ * Shared with the schema block, which lists the same categories. The schema
+ * runs in the head before anything is drawn, so it passes nothing to avoid and
+ * marks nothing as shown; only the rendered rail does either.
+ *
+ * @param array $rows  The block's repeater rows.
+ * @param int[] $avoid Images already on the page, passed over when a card
+ *                     falls back to a guide's featured image.
  */
-function build_cards(array $rows): array
+function build_cards(array $rows, array $avoid = []): array
 {
     $cards = [];
+    $avoid = array_fill_keys(array_map('intval', $avoid), true);
 
     foreach ($rows as $row) {
         $term = !empty($row['term']) ? \get_term((int) $row['term'], Advice::TAXONOMY) : null;
@@ -86,18 +97,35 @@ function build_cards(array $rows): array
             $description = trim(\wp_strip_all_tags(\term_description($term)));
         }
 
-        // Image: the row's own, else the newest guide's featured image, so a
-        // card is never a blank box while someone finds a photograph.
+        // Image: the row's own, else the newest guide's featured image that is
+        // not already on the page, so a card is never a blank box while
+        // someone finds a photograph. A category whose every image is taken
+        // repeats its newest rather than going blank.
         $attachment_id = !empty($row['image']['attachment_id']) ? (int) $row['image']['attachment_id'] : 0;
 
         if (!$attachment_id) {
-            foreach ($posts as $post_id) {
-                $attachment_id = (int) \get_post_thumbnail_id($post_id);
+            $newest = 0;
 
-                if ($attachment_id) {
+            foreach ($posts as $post_id) {
+                $thumbnail = (int) \get_post_thumbnail_id($post_id);
+
+                if (!$thumbnail) {
+                    continue;
+                }
+
+                $newest = $newest ?: $thumbnail;
+
+                if (!isset($avoid[$thumbnail])) {
+                    $attachment_id = $thumbnail;
                     break;
                 }
             }
+
+            $attachment_id = $attachment_id ?: $newest;
+        }
+
+        if ($attachment_id) {
+            $avoid[$attachment_id] = true;
         }
 
         $cards[] = [

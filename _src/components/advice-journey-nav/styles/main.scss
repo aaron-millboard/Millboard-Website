@@ -126,9 +126,11 @@
     }
 
     &__description {
+        // No max-width: a capped item is measured at its cap when the row is
+        // broken into lines, and on a row with no count that cap fits beside
+        // the title, so the description climbed up onto the title's line.
         flex: 1 1 100%;
         order: 1;
-        max-width: 72ch;
         margin: 0;
         font-weight: 300;
         font-size: var(--mbh-fs-body);
