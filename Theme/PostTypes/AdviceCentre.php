@@ -19,7 +19,9 @@ class AdviceCentre
         // \add_action('acf/init', [__CLASS__, 'add_settings_page']);
         \add_filter('granola/templates/post-types', [__CLASS__, 'filter_granola_templates_post_types']);
         \add_filter('post_type_link', [__CLASS__, 'filter_post_type_link'], 10, 2);
-        \add_action('template_redirect', [__CLASS__, 'redirect_paged_hub']);
+        // Ahead of core's redirect_canonical (10), which would first send
+        // ?paged=2 to /page/2/ and make this a second hop.
+        \add_action('template_redirect', [__CLASS__, 'redirect_paged_hub'], 9);
         \add_filter('wpseo_adjacent_rel_url', [__CLASS__, 'filter_hub_adjacent_rel_url']);
     }
 
