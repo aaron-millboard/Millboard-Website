@@ -1,16 +1,16 @@
 {
     "$schema": "https://raw.githubusercontent.com/AdvancedCustomFields/schemas/main/json/block.json",
     "apiVersion": 3,
-    "name": "acf/advice-schema",
-    "title": "Advice Schema",
-    "description": "No visual output. Adds the hub blocks to the structured data Yoast prints.",
+    "name": "acf/advice-author-panel",
+    "title": "Advice Author Panel",
+    "description": "About the author: profile image, name, job title, bio and company facts.",
     "category": "granola-blocks",
-    "icon": "editor-code",
+    "icon": "id",
     "keywords": [
         "advice",
-        "schema",
-        "json-ld",
-        "structured data"
+        "author",
+        "eeat",
+        "bio"
     ],
     "acf": {
         "mode": "edit",
@@ -19,8 +19,6 @@
         "hideFieldsInSidebar": true,
         "renderCallback": "\\Granola\\Component::acf_render_callback",
         "postTypes": [
-            "page",
-            "granola-template",
             "advice-centre"
         ]
     },

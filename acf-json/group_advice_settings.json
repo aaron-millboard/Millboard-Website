@@ -1,0 +1,93 @@
+{
+    "key": "group_advice_settings",
+    "title": "Advice Articles Settings",
+    "fields": [
+        {
+            "key": "field_advice_settings_advice_company_facts",
+            "label": "Company facts",
+            "name": "advice_company_facts",
+            "aria-label": "",
+            "type": "repeater",
+            "instructions": "Shown under every author on advice articles. Only facts that are true and checked, e.g. Made in the UK.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "layout": "table",
+            "pagination": 0,
+            "min": 0,
+            "max": 4,
+            "collapsed": "",
+            "button_label": "Add fact",
+            "rows_per_page": 20,
+            "sub_fields": [
+                {
+                    "key": "field_advice_settings_advice_company_facts_value",
+                    "label": "Value",
+                    "name": "value",
+                    "aria-label": "",
+                    "type": "text",
+                    "instructions": "Large, e.g. UK",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "",
+                        "class": "",
+                        "id": ""
+                    },
+                    "default_value": "",
+                    "maxlength": "",
+                    "placeholder": "",
+                    "prepend": "",
+                    "append": "",
+                    "parent_repeater": "field_advice_settings_advice_company_facts"
+                },
+                {
+                    "key": "field_advice_settings_advice_company_facts_label",
+                    "label": "Label",
+                    "name": "label",
+                    "aria-label": "",
+                    "type": "text",
+                    "instructions": "Small caps, e.g. Hand-moulded, made here",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "",
+                        "class": "",
+                        "id": ""
+                    },
+                    "default_value": "",
+                    "maxlength": "",
+                    "placeholder": "",
+                    "prepend": "",
+                    "append": "",
+                    "parent_repeater": "field_advice_settings_advice_company_facts"
+                }
+            ]
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "options_page",
+                "operator": "==",
+                "value": "acf-options-advice-articles-settings"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "",
+    "show_in_rest": 0,
+    "display_title": "",
+    "granola_save_location": 0,
+    "modified": 1790899200
+}

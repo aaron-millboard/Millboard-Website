@@ -426,6 +426,36 @@ class Advice
     }
 
     /**
+     * A person as the article blocks show them, read from their user profile:
+     * the display name, the job title (Advice Author fields), the profile
+     * image (User Profile fields) and the biographical info.
+     *
+     * @return array{id: int, name: string, role: string, bio: string, image: int, initials: string}|null
+     */
+    public static function person(int $user_id): ?array
+    {
+        $user = $user_id > 0 ? \get_userdata($user_id) : false;
+
+        if (!$user instanceof \WP_User || trim($user->display_name) === '') {
+            return null;
+        }
+
+        $role = function_exists('get_field') ? trim((string) \get_field('advice_job_title', 'user_' . $user->ID)) : '';
+        $image = function_exists('get_field') ? \get_field('user_image', 'user_' . $user->ID) : null;
+        $words = preg_split('/\s+/u', trim($user->display_name));
+        $initials = mb_strtoupper(mb_substr($words[0], 0, 1) . (count($words) > 1 ? mb_substr(end($words), 0, 1) : ''));
+
+        return [
+            'id' => $user->ID,
+            'name' => $user->display_name,
+            'role' => $role,
+            'bio' => trim((string) \get_the_author_meta('description', $user->ID)),
+            'image' => (int) (is_array($image) ? ($image['attachment_id'] ?? 0) : $image),
+            'initials' => $initials,
+        ];
+    }
+
+    /**
      * "Updated Aug 2026", from the post's modified date, in the site's locale.
      */
     public static function updated_label(int $post_id): string

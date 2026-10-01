@@ -1,0 +1,152 @@
+{
+    "key": "group_advice_article_hero",
+    "title": "Block - Advice Article Hero",
+    "fields": [
+        {
+            "key": "field_advice_article_hero_image",
+            "label": "Image override",
+            "name": "image",
+            "aria-label": "",
+            "type": "image",
+            "instructions": "Left empty, the article's featured image is used.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "return_format": "array",
+            "library": "all",
+            "min_width": "",
+            "min_height": "",
+            "min_size": "",
+            "max_width": "",
+            "max_height": "",
+            "max_size": "",
+            "mime_types": "",
+            "preview_size": "medium"
+        },
+        {
+            "key": "field_advice_article_hero_image_alt",
+            "label": "Image alt text",
+            "name": "image_alt",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "Left empty, the photograph is treated as decorative.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "placeholder": "",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_advice_article_hero_eyebrow",
+            "label": "Eyebrow override",
+            "name": "eyebrow",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "Left empty: Guide, plus Decking or Cladding from the category.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "placeholder": "",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_advice_article_hero_heading",
+            "label": "Heading override",
+            "name": "heading",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "Left empty, the article title is the H1.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "placeholder": "",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_advice_article_hero_standfirst",
+            "label": "Standfirst override",
+            "name": "standfirst",
+            "aria-label": "",
+            "type": "textarea",
+            "instructions": "Left empty, the article's excerpt is used, else its meta description.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "rows": 3,
+            "placeholder": "",
+            "new_lines": ""
+        },
+        {
+            "key": "field_advice_article_hero_caption",
+            "label": "Photo caption",
+            "name": "caption",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "Optional. The boards in the photograph, e.g. Board & Batten+, Limed Oak.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "placeholder": "",
+            "prepend": "",
+            "append": ""
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "block",
+                "operator": "==",
+                "value": "acf/advice-article-hero"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "",
+    "show_in_rest": 0,
+    "display_title": "",
+    "granola_save_location": 0,
+    "modified": 1790899200
+}
