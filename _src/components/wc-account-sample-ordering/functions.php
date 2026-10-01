@@ -285,6 +285,97 @@ function get_imported_skus(): array
 }, 10, 3);
 
 /**
+ * The approved category structure, replacing the widget's name classifier.
+ *
+ * The package decides a line's accordion by pattern-matching its NAME against
+ * its own 22-entry list, which is what the HubSpot source allowed. Dan
+ * Hernandez audited the whole catalogue instead and assigned a category to each
+ * of the 373 SKUs, so this is a decision per SKU, not a guess from a string.
+ *
+ * Held as data rather than code: re-running the audit means replacing one JSON
+ * file.
+ *
+ * @return array{order: string[], map: array<string, string>}
+ */
+function get_approved_categories(): array
+{
+    static $data = null;
+
+    if (\is_array($data)) {
+        return $data;
+    }
+
+    $data = ['order' => [], 'map' => []];
+    $file = \get_theme_file_path('sample-ordering/data/approved-categories.json');
+
+    if (\is_readable($file)) {
+        $json = \json_decode((string) \file_get_contents($file), true);
+
+        if (isset($json['order']) && \is_array($json['order'])) {
+            $data['order'] = \array_values(\array_map('strval', $json['order']));
+        }
+
+        // `local` holds SKUs that exist in WooCommerce but were not in the
+        // portal export, so Dan never saw them. Provisional, and second so a
+        // signed-off assignment always wins.
+        foreach (['local', 'approved'] as $block) {
+            if (isset($json[$block]) && \is_array($json[$block])) {
+                foreach ($json[$block] as $sku => $cat) {
+                    $data['map'][\strtoupper(\trim((string) $sku))] = (string) $cat;
+                }
+            }
+        }
+    }
+
+    return $data;
+}
+
+/**
+ * Replace the accordion order with the approved one.
+ */
+\add_filter('mb_sof_category_order', function (array $order): array {
+    $approved = get_approved_categories()['order'];
+
+    return $approved ?: $order;
+});
+
+/**
+ * Place each line in its approved category.
+ *
+ * A SKU the audit does not name keeps whatever the classifier made of it, and
+ * the package then drops it because that answer is not in the approved order.
+ * That would lose a real orderable line silently, so an unknown SKU is bridged
+ * into the nearest approved category instead. It is a safety net, not a
+ * classifier: anything landing here should be sent to Dan and moved into the
+ * `local` block of the JSON with his answer.
+ */
+\add_filter('mb_sof_category', function ($classified, $sku, $name) {
+    $data = get_approved_categories();
+
+    if (!$data['order']) {
+        return $classified;
+    }
+
+    $key = \strtoupper(\trim((string) $sku));
+
+    if (isset($data['map'][$key])) {
+        return $data['map'][$key];
+    }
+
+    // Already an approved name (nothing else sets one today, but do not
+    // clobber it if something ever does).
+    if (\in_array($classified, $data['order'], true)) {
+        return $classified;
+    }
+
+    $haystack = \strtolower((string) $name);
+    $cladding = (false !== \strpos($haystack, 'cladding')) || (false !== \strpos($haystack, 'envello'));
+    $bridge = $cladding ? 'Cladding board samples' : 'Decking board samples';
+
+    return \in_array($bridge, $data['order'], true) ? $bridge : $classified;
+}, 10, 3);
+
+/**
  * Lines Dan has retired, which must not be orderable at all.
  *
  * Column K of the audit, 1 Oct 2026: 23 marketing/POS lines and one presenter

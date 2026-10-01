@@ -26,29 +26,35 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @return string[]
  */
 function mb_sof_category_order() {
-	return array(
-		'Brochures',
-		'Sample Packs',
-		'Full Ranges',
-		'Standard Board Single 100mm Samples',
-		'Bullnosed Board Single 100mm Samples',
-		'Fascia Board Single 100mm Samples',
-		'Standard Board Single 300mm Samples',
-		'Bullnosed Board Single 300mm Samples',
-		'Cladding Board Single 100mm Samples',
-		'Cladding Board Single 300mm Samples',
-		'Cladding Board Accessories 100mm Samples',
-		'Accessories',
-		'Bullnosed Step Edge (Flexible) 100mm Samples',
-		'Square Step Edge (Flexible) 100mm Samples',
-		'Cladding Sample Packs',
-		'126mm Board Single 100mm Samples',
-		'126mm Board Single 300mm Samples',
-		'Misc. POS',
-		'Cladding Envello Décor',
-		'Modello Decking 300mm Samples',
-		'Modello Decking 100mm Samples',
-		'Sample Panels',
+	// MILLBOARD EDIT - filterable, so the approved category structure can
+	// replace this list without editing it. See the
+	// wc-account-sample-ordering component.
+	return (array) apply_filters(
+		'mb_sof_category_order',
+		array(
+			'Brochures',
+			'Sample Packs',
+			'Full Ranges',
+			'Standard Board Single 100mm Samples',
+			'Bullnosed Board Single 100mm Samples',
+			'Fascia Board Single 100mm Samples',
+			'Standard Board Single 300mm Samples',
+			'Bullnosed Board Single 300mm Samples',
+			'Cladding Board Single 100mm Samples',
+			'Cladding Board Single 300mm Samples',
+			'Cladding Board Accessories 100mm Samples',
+			'Accessories',
+			'Bullnosed Step Edge (Flexible) 100mm Samples',
+			'Square Step Edge (Flexible) 100mm Samples',
+			'Cladding Sample Packs',
+			'126mm Board Single 100mm Samples',
+			'126mm Board Single 300mm Samples',
+			'Misc. POS',
+			'Cladding Envello Décor',
+			'Modello Decking 300mm Samples',
+			'Modello Decking 100mm Samples',
+			'Sample Panels',
+		)
 	);
 }
 
@@ -273,6 +279,22 @@ function mb_sof_classify( $name, $size_override = null ) {
 	}
 
 	return null;
+}
+
+/**
+ * MILLBOARD ADDITION - the category for one line, overridable by SKU.
+ *
+ * The classifier reads a product NAME, which is all the HubSpot source had.
+ * The audited structure is a decision per SKU, so this gives a filter the SKU
+ * as well and keeps the classifier as the fallback.
+ *
+ * @param string      $sku        Product SKU.
+ * @param string      $name       Product name.
+ * @param string|null $classified What mb_sof_classify() made of the name.
+ * @return string|null
+ */
+function mb_sof_category_for( $sku, $name, $classified ) {
+	return apply_filters( 'mb_sof_category', $classified, $sku, $name );
 }
 
 /**
@@ -542,7 +564,12 @@ function mb_sof_get_catalogue( $force = false ) {
 	 * passed to the classifier rather than parsed back out of a string.
 	 */
 	foreach ( mb_sof_fetch_sample_variations() as $row ) {
-		$category = mb_sof_classify( $row['name'], $row['sample_size'] );
+		// MILLBOARD EDIT - SKU-aware, see mb_sof_category_for().
+		$category = mb_sof_category_for(
+			$row['sku'],
+			$row['name'],
+			mb_sof_classify( $row['name'], $row['sample_size'] )
+		);
 
 		if ( null === $category || ! isset( $valid[ $category ] ) ) {
 			continue;
@@ -569,7 +596,9 @@ function mb_sof_get_catalogue( $force = false ) {
 			continue;
 		}
 
-		$category = mb_sof_classify( $name );
+		// MILLBOARD EDIT - SKU-aware, see mb_sof_category_for().
+		$category = mb_sof_category_for( $sku, $name, mb_sof_classify( $name ) );
+
 		if ( null === $category || ! isset( $valid[ $category ] ) ) {
 			continue;
 		}
