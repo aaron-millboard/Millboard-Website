@@ -24,6 +24,7 @@
 
             <a class="advice-featured-longread__button" href="<?= esc_url($args['url']); ?>">
                 <?= esc_html($args['button']); ?>
+                <span class="advice-featured-longread__time">· <?= esc_html($args['read_time']); ?></span>
             </a>
         </div>
 
