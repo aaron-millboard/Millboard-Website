@@ -2,12 +2,18 @@
 // Advice Article Hero
 // =============================================================================
 // The photograph full bleed, the copy pinned to its foot under a Charcoal
-// Black scrim. Built like the hub hero after its contrast fix: the design's
-// single bottom-up gradient is joined by a second that darkens the copy column
-// from the left and fades out across, so the right of the picture stays clear
-// while the small text holds AA over a pale wall. The eyebrow stays Apple
-// green, as the design draws it on dark grounds, at 19px bold so it counts as
-// large text.
+// Black scrim. The eyebrow stays Apple green, as the design draws it on dark
+// grounds, at 19px bold so it counts as large text.
+//
+// The scrim is three layers, because every article brings its own photograph
+// and the brightest of them reach a luminance of 0.77 behind the text. On top
+// of the design's bottom-up gradient: one darkening the copy column from the
+// left (as on the hub hero), and a fade from the top edge, where the
+// breadcrumbs and the caption sit. On a phone the copy runs the full width of
+// the picture, so an even 20% veil is added there too. Measured 1 Oct 2026 by
+// sampling the eight brightest hero photographs behind every line of copy at
+// 1440, 1024 and 375px: all clear AA. A much paler photograph would need
+// checking again.
 // =============================================================================
 
 .advice-article-hero {
@@ -29,6 +35,12 @@
         z-index: -1;
         background:
             linear-gradient(
+                to bottom,
+                #{rgba(#2f292e, 0.72)} 0%,
+                #{rgba(#2f292e, 0.34)} 32%,
+                #{rgba(#2f292e, 0)} 52%
+            ),
+            linear-gradient(
                 to right,
                 #{rgba(#2f292e, 0.6)} 0%,
                 #{rgba(#2f292e, 0.45)} 50%,
@@ -41,6 +53,29 @@
                 #{rgba(#2f292e, 0.16)} 100%
             );
         pointer-events: none;
+
+        @include mq($until: medium) {
+            background:
+                linear-gradient(
+                    to bottom,
+                    #{rgba(#2f292e, 0.72)} 0%,
+                    #{rgba(#2f292e, 0.34)} 32%,
+                    #{rgba(#2f292e, 0)} 52%
+                ),
+                linear-gradient(
+                    to right,
+                    #{rgba(#2f292e, 0.6)} 0%,
+                    #{rgba(#2f292e, 0.45)} 50%,
+                    #{rgba(#2f292e, 0)} 85%
+                ),
+                linear-gradient(#{rgba(#2f292e, 0.2)}, #{rgba(#2f292e, 0.2)}),
+                linear-gradient(
+                    to top,
+                    #{rgba(#2f292e, 0.86)} 0%,
+                    #{rgba(#2f292e, 0.4)} 50%,
+                    #{rgba(#2f292e, 0.16)} 100%
+                );
+        }
     }
 
     &__image {
@@ -84,7 +119,11 @@
     // Breadcrumbs. The shared component, recoloured for a dark ground, less
     // its last crumb (the article's own title, which the H1 repeats).
     // -------------------------------------------------------------------------
+    // The trail runs through the article's category now, which can make it
+    // long; held to 34em it wraps inside the darkened copy column instead of
+    // running out over the brightest part of the picture.
     &__breadcrumbs {
+        max-width: 34em;
         margin-bottom: #{px-to-rem(48)};
 
         .breadcrumbs {
@@ -93,7 +132,7 @@
             line-height: 1.55;
             letter-spacing: var(--mbh-tracking-sub);
             text-transform: uppercase;
-            color: #{rgba(#f8f4f0, 0.9)};
+            color: var(--color--springwood);
 
             a {
                 color: inherit;
@@ -108,7 +147,7 @@
         }
 
         .breadcrumbs__yoast-separator {
-            color: #{rgba(#f8f4f0, 0.72)};
+            color: #{rgba(#f8f4f0, 0.9)};
 
             // The separator before the hidden last crumb.
             &:nth-last-child(2) {
