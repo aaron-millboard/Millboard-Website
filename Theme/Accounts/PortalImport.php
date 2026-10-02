@@ -153,7 +153,7 @@ class PortalImport
             'user_pass' => \wp_generate_password(40, true, true),
             'first_name' => (string) ($r['firstName'] ?? ''),
             'last_name' => (string) ($r['lastName'] ?? ''),
-            'display_name' => \trim(($r['firstName'] ?? '') . ' ' . ($r['lastName'] ?? '')) ?: $email,
+            'display_name' => self::display_name($r, $login),
             'role' => $role,
         ]);
 
@@ -164,6 +164,28 @@ class PortalImport
         self::write_meta($id, $r);
 
         return $id;
+    }
+
+    /**
+     * The name the site shows for the account: their name, else their
+     * company, else their login (WordPress's own default for a user with no
+     * name).
+     *
+     * Never the email address. The export has no name at all for some people
+     * (64 of the 1,245 records on 2 Oct 2026), and a display name is printed
+     * wherever the site names the person, the account greeting included.
+     */
+    private static function display_name(array $r, string $login): string
+    {
+        $name = \trim(($r['firstName'] ?? '') . ' ' . ($r['lastName'] ?? ''));
+
+        if ('' !== $name) {
+            return $name;
+        }
+
+        $company = \trim((string) ($r['field_companyName'] ?? ''));
+
+        return '' !== $company ? $company : $login;
     }
 
     private static function write_meta(int $user_id, array $r): void
