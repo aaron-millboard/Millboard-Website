@@ -150,6 +150,11 @@
 
     &__text {
         display: grid;
+        // One column that cannot grow past the cell. Left `auto`, the track
+        // sized itself to the longest unbreakable word, so a long German title
+        // ("Terrassenkonfigurator") widened the title and its description
+        // past the row, and on a phone the whole page scrolled sideways.
+        grid-template-columns: minmax(0, 1fr);
         gap: #{px-to-rem(10)};
     }
 
@@ -190,6 +195,11 @@
             // Stacked, the action sits under the text in the second column so
             // it lines up with the title rather than the numeral.
             grid-column: 2;
+            // And here it may wrap. A phone's column can be narrower than a
+            // translated label (the French one for ordering samples is), and
+            // held on one line it ran off the screen. A label that fits still
+            // sits on one line.
+            white-space: normal;
         }
     }
 
