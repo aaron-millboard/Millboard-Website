@@ -24,6 +24,55 @@ class AdviceCentre
         // ?paged=2 to /page/2/ and make this a second hop.
         \add_action('template_redirect', [__CLASS__, 'redirect_paged_hub'], 9);
         \add_filter('wpseo_adjacent_rel_url', [__CLASS__, 'filter_hub_adjacent_rel_url']);
+        \add_action('wp_enqueue_scripts', [__CLASS__, 'enqueue_block_styles'], 20);
+    }
+
+    /**
+     * Load the advice blocks' own stylesheets in the head of the pages that use
+     * them.
+     *
+     * Their styles are separate sheets (styles/block.scss), not part of the
+     * theme bundle, because Perfmatters' Remove Unused CSS on en-GB keeps ONE
+     * trimmed copy of the CSS per kind of page, cut down to what the first page
+     * it saw happened to contain. Every article shares one copy and every
+     * taxonomy archive (the shop's categories included) shares another, so a
+     * table, a quote, a reviewer line or the filter's hidden state could be
+     * stripped from all of them. As their own sheets, listed in Perfmatters'
+     * excluded stylesheets, they load whole.
+     *
+     * Granola enqueues a block's sheet when the block renders, which is after
+     * the head is printed, so the link would land at the foot of the page and
+     * the content could paint unstyled first. Enqueued here instead, from the
+     * blocks the page is about to render.
+     */
+    public static function enqueue_block_styles(): void
+    {
+        $content = '';
+        $object = \get_queried_object();
+
+        if (\is_singular(self::SLUG) && $object instanceof \WP_Post) {
+            $content = (string) $object->post_content;
+        } elseif ($object instanceof \WP_Term && $object->taxonomy === self::TAXONOMY) {
+            $template = \Granola\WordPress\TemplatePage::get_template_page($object);
+            $content = $template instanceof \WP_Post ? (string) $template->post_content : '';
+        } elseif (\is_post_type_archive(self::SLUG)) {
+            $template = \Granola\WordPress\TemplatePage::get_template_page(\get_post_type_object(self::SLUG));
+            $content = $template instanceof \WP_Post ? (string) $template->post_content : '';
+        }
+
+        if ($content === '' || !preg_match_all('/<!-- wp:acf\/(advice-[a-z-]+)/', $content, $matches)) {
+            return;
+        }
+
+        foreach (array_unique($matches[1]) as $name) {
+            // The schema block draws nothing on the page; its sheet is for the
+            // editor only.
+            if ($name === 'advice-schema') {
+                continue;
+            }
+
+            \Granola\Component::enqueue_style_by_filename($name);
+        }
     }
 
     /**
