@@ -1,7 +1,7 @@
 // =============================================================================
 // Home Hero
 // =============================================================================
-// A 300svh section holding a sticky 100svh stage. One scroll variable does all
+// A 200svh section holding a sticky 100svh stage. One scroll variable does all
 // of it: `--p` runs 0 to 1 across the section and `--op` is its inverse, both
 // written by HomeHero.js. At rest the film sits in a frame inset below the
 // header and inside the side margins; as the page moves the frame opens to full
@@ -40,7 +40,11 @@
 
     position: relative;
     z-index: 1;
-    height: 300svh;
+    // 200, not 300. The runway HomeHero.js animates across is this height minus
+    // one viewport, so at 300 the film stayed pinned for two full screens of
+    // scrolling before the page moved past it, which read as the page being
+    // stuck. At 200 the same sequence plays out over one screen.
+    height: 200svh;
     // Pulled up under the header by the space the header reserves.
     //
     // --site-header--reserved, which does not move. The header now holds its
