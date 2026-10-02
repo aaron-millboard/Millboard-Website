@@ -1,8 +1,18 @@
 // =============================================================================
 // Advice Samples CTA
 // =============================================================================
-// Full bleed. The scrim is heaviest at the foot, where the copy sits, so the
-// photograph stays clear at the top.
+// Full bleed, the photograph under a Charcoal Black scrim.
+//
+// The design's one bottom-up gradient was too light where the copy actually
+// sits: the copy fills the band, so the eyebrow and heading start about a
+// fifth of the way down, where it was only 17% dark. Over the cladding
+// photograph that left the eyebrow at 2.2:1, the heading 2.0:1 and the body
+// 3.2:1. So the band uses the article hero's three layers (a fade from the top
+// edge, the copy column darkened from the left, the design's gradient from the
+// foot) plus an even 20% veil on phones, where the copy runs the full width,
+// and the body is solid Spring Wood. Measured 2 Oct 2026 on the hub, a
+// category and both article photographs at 1440, 1024 and 375px: every line
+// clears AA.
 // =============================================================================
 
 .advice-samples-cta {
@@ -30,13 +40,49 @@
         position: absolute;
         inset: 0;
         z-index: -1;
-        background: linear-gradient(
-            to top,
-            #{rgba(#2f292e, 0.82)} 0%,
-            #{rgba(#2f292e, 0.26)} 60%,
-            #{rgba(#2f292e, 0.1)} 100%
-        );
+        background:
+            linear-gradient(
+                to bottom,
+                #{rgba(#2f292e, 0.72)} 0%,
+                #{rgba(#2f292e, 0.34)} 32%,
+                #{rgba(#2f292e, 0)} 52%
+            ),
+            linear-gradient(
+                to right,
+                #{rgba(#2f292e, 0.6)} 0%,
+                #{rgba(#2f292e, 0.45)} 50%,
+                #{rgba(#2f292e, 0)} 85%
+            ),
+            linear-gradient(
+                to top,
+                #{rgba(#2f292e, 0.86)} 0%,
+                #{rgba(#2f292e, 0.4)} 50%,
+                #{rgba(#2f292e, 0.16)} 100%
+            );
         pointer-events: none;
+
+        @include mq($until: medium) {
+            background:
+                linear-gradient(
+                    to bottom,
+                    #{rgba(#2f292e, 0.72)} 0%,
+                    #{rgba(#2f292e, 0.34)} 32%,
+                    #{rgba(#2f292e, 0)} 52%
+                ),
+                linear-gradient(
+                    to right,
+                    #{rgba(#2f292e, 0.6)} 0%,
+                    #{rgba(#2f292e, 0.45)} 50%,
+                    #{rgba(#2f292e, 0)} 85%
+                ),
+                linear-gradient(#{rgba(#2f292e, 0.2)}, #{rgba(#2f292e, 0.2)}),
+                linear-gradient(
+                    to top,
+                    #{rgba(#2f292e, 0.86)} 0%,
+                    #{rgba(#2f292e, 0.4)} 50%,
+                    #{rgba(#2f292e, 0.16)} 100%
+                );
+        }
     }
 
     &__image {
@@ -95,7 +141,7 @@
         font-weight: 300;
         font-size: clamp(#{px-to-rem(16)}, 1.3vw, #{px-to-rem(18)});
         line-height: 1.7;
-        color: #{rgba(#f8f4f0, 0.86)};
+        color: var(--color--springwood);
     }
 
     &__actions {
