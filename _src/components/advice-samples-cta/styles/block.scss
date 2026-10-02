@@ -17,6 +17,14 @@
     background-color: var(--color--wenge);
     color: var(--color--springwood);
 
+    // When it ends the page, sit flush on the footer. The theme already pulls
+    // the footer up to a full-width last block that has a background colour
+    // (_blocks.scss), but this band's background is a photograph, so it has no
+    // has-background class and the 82px gap above the footer stayed.
+    .blocks > &:last-child {
+        --block--margin-bottom: calc(var(--blocks--margin-bottom) * -1);
+    }
+
     &::after {
         content: '';
         position: absolute;
