@@ -89,7 +89,13 @@ function filter_args(array $args): ?array
     if (!empty($args['strapline'])) {
         $index = 0;
 
-        foreach (preg_split('/\s+/u', trim($args['strapline']), -1, PREG_SPLIT_NO_EMPTY) as $ordinal => $word) {
+        // Split on ordinary whitespace only. `\s` under the u flag also matches
+        // a no-break space (U+00A0), so one typed into the field was treated as a
+        // word break and thrown away. A no-break space is how French keeps a
+        // one-letter word with the next; without it the fr-fr strapline left its
+        // A-grave stranded at the end of the first line. Kept inside its word it
+        // renders as a character, and the two words wrap as one.
+        foreach (preg_split('/[ \t\r\n]+/u', trim($args['strapline']), -1, PREG_SPLIT_NO_EMPTY) as $ordinal => $word) {
             $characters = preg_split('//u', $word, -1, PREG_SPLIT_NO_EMPTY);
 
             $args['words'][] = array_map(function ($character) use (&$index, $ordinal) {
