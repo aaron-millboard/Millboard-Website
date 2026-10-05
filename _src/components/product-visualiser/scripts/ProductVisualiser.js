@@ -1,7 +1,8 @@
-const FOCUSABLE = 'button, [href], iframe, [tabindex]:not([tabindex="-1"])';
-
 // Matches the drawer transition in styles/main.scss.
 const TRANSITION_MS = 350;
+
+// How long to wait for the embed before offering our own close button.
+const STALL_MS = 8000;
 
 /**
  * Right-hand drawer that hosts the visualiser embed for the current product.
@@ -26,6 +27,8 @@ export default class ProductVisualiser {
         this.loaded = false;
         this.trigger = null;
         this.closeTimer = null;
+        this.stallTimer = null;
+        this.fallbackClose = root.querySelector('.product-visualiser__close');
         this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
         document.querySelectorAll('[data-visualiser-open]').forEach((el) => {
@@ -37,6 +40,7 @@ export default class ProductVisualiser {
 
         root.querySelectorAll('[data-visualiser-close]').forEach((el) => el.addEventListener('click', () => this.close()));
         this.drawer.addEventListener('keydown', (e) => this.onKeydown(e));
+        document.addEventListener('focusin', (e) => this.keepFocusInside(e));
         window.addEventListener('message', (e) => this.onMessage(e));
     }
 
@@ -60,10 +64,16 @@ export default class ProductVisualiser {
         if (!this.loaded) {
             const frame = document.createElement('iframe');
             frame.className = 'product-visualiser__frame';
-            frame.title = this.root.querySelector('.product-visualiser__title').textContent.trim();
+            frame.title = this.drawer.getAttribute('aria-label');
             frame.src = this.src();
             frame.allow = 'camera';
-            frame.addEventListener('load', () => this.body.classList.add('product-visualiser__body--loaded'));
+            frame.addEventListener('load', () => {
+                clearTimeout(this.stallTimer);
+                this.body.classList.add('product-visualiser__body--loaded');
+            });
+            this.stallTimer = setTimeout(() => {
+                this.fallbackClose.hidden = false;
+            }, STALL_MS);
             this.body.appendChild(frame);
             this.loaded = true;
         }
@@ -75,7 +85,7 @@ export default class ProductVisualiser {
         void this.drawer.offsetWidth;
         this.root.classList.add('product-visualiser--active');
         document.documentElement.classList.add('product-visualiser--open');
-        this.drawer.querySelector('.product-visualiser__close').focus({ preventScroll: true });
+        this.drawer.focus({ preventScroll: true });
 
         this.push({ event: 'visualiser_open', visualiser_sku: this.sku });
     }
@@ -110,21 +120,15 @@ export default class ProductVisualiser {
             this.close();
             return;
         }
+    }
 
-        if (e.key !== 'Tab') return;
-
-        const items = Array.from(this.drawer.querySelectorAll(FOCUSABLE));
-        if (!items.length) return;
-
-        const first = items[0];
-        const last = items[items.length - 1];
-
-        if (e.shiftKey && document.activeElement === first) {
-            e.preventDefault();
-            last.focus();
-        } else if (!e.shiftKey && document.activeElement === last) {
-            e.preventDefault();
-            first.focus();
+    /**
+     * Keeps keyboard focus in the drawer while it is open. The embed is a
+     * separate page, so its own tab order cannot be trapped from here.
+     */
+    keepFocusInside(e) {
+        if (this.isOpen() && !this.drawer.contains(e.target)) {
+            this.drawer.focus({ preventScroll: true });
         }
     }
 

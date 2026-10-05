@@ -127,23 +127,12 @@
         transform: translateX(0);
     }
 
-    &__header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: var(--space--s);
-        padding: var(--space--xs) var(--space--xs) var(--space--xs) var(--space--m);
-        border-bottom: 1px solid rgba(47, 41, 46, 0.18);
-    }
-
-    &__title {
-        font-size: 0.875rem;
-        font-weight: 700;
-        letter-spacing: 0.16em;
-        text-transform: uppercase;
-    }
-
+    // Only shown if the embed has not loaded, since the embed brings its own.
     &__close {
+        position: absolute;
+        top: var(--space--xs);
+        right: var(--space--xs);
+        z-index: 1;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -162,6 +151,10 @@
         svg {
             width: 1.25rem;
             height: 1.25rem;
+        }
+
+        &[hidden] {
+            display: none;
         }
     }
 
