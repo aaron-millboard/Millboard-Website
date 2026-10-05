@@ -99,7 +99,32 @@
                     <?php foreach ($args['figures'] as $figure) { ?>
                         <li class="home-story__figure mbh-reveal" style="--mbh-reveal-delay: <?= (int) $figure['delay']; ?>ms">
                             <figure class="home-story__figure-inner">
-                                <?= \Granola\Component::get('image', $figure['image']); ?>
+                                <?php if (!empty($figure['video_src'])) { ?>
+                                    <?php
+                                    // preload="none" keeps this to a poster until
+                                    // someone presses play, the same bargain the
+                                    // film above makes with its empty iframe src.
+                                    // The skip-lazy pair stops Perfmatters moving
+                                    // src to data-src, which leaves a video that
+                                    // never loads.
+                                    ?>
+                                    <video
+                                        class="home-story__figure-video skip-lazy"
+                                        data-no-lazy="1"
+                                        src="<?= esc_url($figure['video_src']); ?>"
+                                        <?php if (!empty($figure['poster_src'])) { ?>
+                                            poster="<?= esc_url($figure['poster_src']); ?>"
+                                        <?php } ?>
+                                        preload="none"
+                                        controls
+                                        playsinline
+                                        <?php if (!empty($figure['caption'])) { ?>
+                                            aria-label="<?= esc_attr($figure['caption']); ?>"
+                                        <?php } ?>
+                                    ></video>
+                                <?php } else { ?>
+                                    <?= \Granola\Component::get('image', $figure['image']); ?>
+                                <?php } ?>
 
                                 <?php if (!empty($figure['caption'])) { ?>
                                     <figcaption class="home-story__caption"><?= esc_html($figure['caption']); ?></figcaption>

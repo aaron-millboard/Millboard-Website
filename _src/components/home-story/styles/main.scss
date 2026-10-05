@@ -214,7 +214,9 @@
         margin: 0;
     }
 
-    &__figure-image {
+    // A figure is a still or a short film; both sit in the same box.
+    &__figure-image,
+    &__figure-video {
         display: block;
         width: 100%;
         aspect-ratio: 16 / 9;
