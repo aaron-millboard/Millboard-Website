@@ -154,10 +154,24 @@ class Admin
         $overrides = InviteList::cap_overrides();
         $known = self::known_companies();
 
-        // Clearing an exception is always allowed, by the exact stored text as
-        // well as the normalised key, because the dead entries can only be
-        // addressed by what they were literally saved as.
-        if ($cap === 0 && (isset($overrides[$typed]) || isset($overrides[$key]))) {
+        $near = self::nearest_companies($key, $known);
+
+        // Zero means clear the exception, which is allowed by the exact stored
+        // text as well as the normalised key, because a row saved before this
+        // screen normalised anything can only be addressed by what it literally
+        // says. Handled before the email check for that reason.
+        if ($cap === 0) {
+            if (!isset($overrides[$typed]) && !isset($overrides[$key])) {
+                return [
+                    'ok' => false,
+                    'message' => sprintf(
+                        'There is no exception for "%s" to clear, so nothing has changed. '
+                        . 'Copy the text from the list below exactly as it appears there.',
+                        $typed
+                    ),
+                ];
+            }
+
             $remove = isset($overrides[$typed]) ? $typed : $key;
             InviteList::set_cap_override($remove, 0);
 
@@ -168,32 +182,46 @@ class Admin
             ];
         }
 
-        if (!isset($known[$key])) {
-            $near = self::nearest_companies($key, $known);
-
+        // An address is never a company name, and it is the specific mistake
+        // that filled this list with rows matching nothing. It stays refused.
+        if (strpos($typed, '@') !== false) {
             return [
                 'ok' => false,
                 'message' => sprintf(
-                    '"%s" gives the key "%s", which matches no company on the invite list or in '
-                    . 'the registrations, so nothing has been changed. %s',
+                    '"%s" is an email address. The cap belongs to the company, not to one person, '
+                    . 'so put the company name here instead.%s',
                     $typed,
-                    $key,
-                    $near
-                        ? 'Did you mean ' . implode(', or ', $near) . '?'
-                        : 'Use the company name exactly as it appears in the table below.'
+                    $near ? ' Did you mean ' . implode(', or ', $near) . '?' : ''
                 ),
             ];
         }
 
         InviteList::set_cap_override($key, $cap);
 
+        // A company the system has not seen is allowed, because that is the
+        // normal case for a late addition: France has added seven companies
+        // since the invite list was built and none of them is on it, so
+        // refusing meant a cap could not be raised until someone had already
+        // been turned away. Saying so plainly, plus the unmatched label in the
+        // list below, keeps the mistake visible without blocking the work.
+        if (!isset($known[$key])) {
+            return [
+                'ok' => true,
+                'message' => sprintf(
+                    'Saved %d places against "%s". No company of that name is on the invite list '
+                    . 'or has anyone registered yet, so it is shown below as unmatched and will '
+                    . 'start applying as soon as someone registers under that name.%s',
+                    $cap,
+                    $key,
+                    $near ? ' If you meant one of these instead: ' . implode(', or ', $near) . '.' : ''
+                ),
+            ];
+        }
+
         return [
             'ok' => true,
-            'message' => $cap > 0
-                ? sprintf('%s can now bring %d people. Saved against the key "%s".',
-                    $known[$key], $cap, $key)
-                : sprintf('%s is back on the standard cap of %d.',
-                    $known[$key], InviteList::cap_per_company()),
+            'message' => sprintf('%s can now bring %d people. Saved against the key "%s".',
+                $known[$key], $cap, $key),
         ];
     }
 
@@ -524,8 +552,9 @@ class Admin
             </p>
             <p class="description">
                 Not an email address. The cap belongs to the company, not the person, so
-                <code>someone@acme.co.uk</code> matches nothing. If what you type does not match a
-                company this screen will say so rather than appear to save it.
+                <code>someone@acme.co.uk</code> is refused. A company nobody has registered under
+                yet is fine, for a late addition that is not on the invite list, and it is listed
+                below as unmatched until somebody uses it.
             </p>
             <form method="post" action="<?= \esc_url(\admin_url('admin-post.php')); ?>">
                 <?php \wp_nonce_field('mb_summit_invite'); ?>
