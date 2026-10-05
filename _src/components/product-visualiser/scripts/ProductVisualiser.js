@@ -1,10 +1,17 @@
 const FOCUSABLE = 'button, [href], iframe, [tabindex]:not([tabindex="-1"])';
 
+// Matches the drawer transition in styles/main.scss.
+const TRANSITION_MS = 350;
+
 /**
  * Right-hand drawer that hosts the visualiser embed for the current product.
  *
  * The entry points live elsewhere in the buy box and are found by the
  * data-visualiser-open attribute. The embed is keyed by the product's SKU.
+ *
+ * The embed talks back to this page with postMessage: {source:
+ * 'millboard-visualiser', version: 1, type: ...}. Types used here are ready,
+ * unavailable, funnel, navigate and close.
  */
 export default class ProductVisualiser {
     constructor(root) {
@@ -18,6 +25,8 @@ export default class ProductVisualiser {
         this.sku = root.dataset.sku;
         this.loaded = false;
         this.trigger = null;
+        this.closeTimer = null;
+        this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
         document.querySelectorAll('[data-visualiser-open]').forEach((el) => {
             el.addEventListener('click', (e) => {
@@ -38,8 +47,13 @@ export default class ProductVisualiser {
         return url.toString();
     }
 
+    isOpen() {
+        return this.root.classList.contains('product-visualiser--active');
+    }
+
     open(trigger) {
         this.trigger = trigger;
+        clearTimeout(this.closeTimer);
 
         // Created once, so reopening the drawer keeps a photo the visitor has
         // already uploaded.
@@ -49,28 +63,44 @@ export default class ProductVisualiser {
             frame.title = this.root.querySelector('.product-visualiser__title').textContent.trim();
             frame.src = this.src();
             frame.allow = 'camera';
+            frame.addEventListener('load', () => this.body.classList.add('product-visualiser__body--loaded'));
             this.body.appendChild(frame);
             this.loaded = true;
         }
 
+        // Unhide first, then add the class on the next frame, so the browser
+        // has a starting position to slide in from.
         this.overlay.hidden = false;
         this.drawer.hidden = false;
-        document.body.classList.add('product-visualiser--open');
-        if (this.tab) this.tab.hidden = true;
-        this.drawer.querySelector('.product-visualiser__close').focus();
+        void this.drawer.offsetWidth;
+        this.root.classList.add('product-visualiser--active');
+        document.documentElement.classList.add('product-visualiser--open');
+        this.drawer.querySelector('.product-visualiser__close').focus({ preventScroll: true });
 
-        window.dataLayer = window.dataLayer || [];
-        window.dataLayer.push({ event: 'visualiser_open', visualiser_sku: this.sku });
+        this.push({ event: 'visualiser_open', visualiser_sku: this.sku });
     }
 
     close() {
-        this.overlay.hidden = true;
-        this.drawer.hidden = true;
-        document.body.classList.remove('product-visualiser--open');
-        if (this.tab) this.tab.hidden = false;
+        if (!this.isOpen()) return;
+
+        this.root.classList.remove('product-visualiser--active');
+        document.documentElement.classList.remove('product-visualiser--open');
+
+        // Hide once the slide-out has finished. With reduced motion there is no
+        // slide, so hide straight away.
+        const hide = () => {
+            this.overlay.hidden = true;
+            this.drawer.hidden = true;
+        };
+
+        if (this.reducedMotion.matches) {
+            hide();
+        } else {
+            this.closeTimer = setTimeout(hide, TRANSITION_MS);
+        }
 
         if (this.trigger && this.trigger.isConnected && this.trigger.offsetParent !== null) {
-            this.trigger.focus();
+            this.trigger.focus({ preventScroll: true });
         }
     }
 
@@ -98,13 +128,71 @@ export default class ProductVisualiser {
         }
     }
 
+    push(data) {
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push(data);
+    }
+
     /**
-     * Key presses inside the iframe never reach this page, so the embed has to
-     * ask to be closed. Only messages from the embed's own origin count.
+     * Key presses inside the iframe never reach this page, so the embed asks for
+     * things by message. Only the embed's own origin and message format count.
      */
     onMessage(e) {
-        if (e.origin !== this.origin || this.drawer.hidden) return;
+        const data = e.data;
 
-        if (e.data && e.data.type === 'close') this.close();
+        if (e.origin !== this.origin || !data || data.source !== 'millboard-visualiser' || data.version !== 1) return;
+
+        switch (data.type) {
+            case 'close':
+                this.close();
+                break;
+
+            case 'unavailable':
+                this.markUnavailable();
+                break;
+
+            case 'funnel':
+                this.push({ event: 'visualiser_funnel', visualiser_step: data.event, visualiser_sku: this.sku });
+                break;
+
+            case 'navigate':
+                this.navigate(data.url);
+                break;
+        }
+    }
+
+    /**
+     * The embed says it cannot run here (for example, not offered in the
+     * visitor's country). Close the drawer, take the entry points away and let
+     * the samples stand on their own.
+     */
+    markUnavailable() {
+        this.close();
+
+        document.querySelectorAll('[data-visualiser-open]').forEach((el) => {
+            el.hidden = true;
+        });
+        this.root.classList.add('product-visualiser--unavailable');
+
+        const group = document.querySelector('.product__try');
+        if (!group) return;
+
+        const intro = group.querySelector('.product__try-intro');
+        if (intro && intro.dataset.fallback) intro.textContent = intro.dataset.fallback;
+
+        if (!group.querySelector('.product-samples__button')) group.hidden = true;
+    }
+
+    /**
+     * Only follows links on this site, because the message could carry any URL.
+     */
+    navigate(url) {
+        try {
+            const target = new URL(url, window.location.href);
+
+            if (target.origin === window.location.origin) window.location.assign(target.href);
+        } catch (err) {
+            // Not a usable URL, so stay put.
+        }
     }
 }
