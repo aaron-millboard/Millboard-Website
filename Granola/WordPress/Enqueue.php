@@ -10,7 +10,7 @@ class Enqueue
         \add_action('wp_enqueue_scripts', [__CLASS__, 'enqueue_comment_assets']);
         \add_action('admin_enqueue_scripts', [__CLASS__, 'enqueue_admin_assets']);
         // Late, so it runs after the payment plugins have enqueued.
-        \add_action('admin_enqueue_scripts', [__CLASS__, 'dequeue_stripe_in_block_editor'], 100);
+        \add_action('admin_enqueue_scripts', [__CLASS__, 'drop_stripe_from_block_editor_deps'], 100);
         \add_action('enqueue_block_editor_assets', [__CLASS__, 'enqueue_editor_assets']);
 
         // WP global styles need to be dequeued in both head and footer.
@@ -34,23 +34,33 @@ class Enqueue
     }
 
     /**
-     * Keep Stripe out of the block editor.
+     * Keep Stripe.js out of the block editor.
      *
-     * WooCommerce Stripe hooks admin_enqueue_scripts with no screen check, so
-     * its express-checkout settings bundle loads on post.php as well as on its
-     * own settings pages. That bundle pulls in js.stripe.com, and Stripe.js
-     * injects two hidden iframes on js.stripe.com into whatever page it lands
-     * on.
+     * WooCommerce queues wc-cart-block and wc-checkout-block on every block
+     * editor screen so those blocks stay insertable. Both declare
+     * wc-stripe-blocks-integration as a dependency, and that declares `stripe`,
+     * which is js.stripe.com:
      *
+     *     wc-cart-block ──┐
+     *                     ├─ wc-stripe-blocks-integration ─ stripe
+     *     wc-checkout-block ┘
+     *
+     * Stripe.js injects two hidden iframes on its own origin wherever it loads.
      * Core walks every frame in the document when it wires up the editor, and
-     * reading a property off a cross-origin window throws. The editor then dies
-     * with "SecurityError: Blocked a frame ... from accessing a cross-origin
-     * frame", which looks like a WordPress fault and is not one.
+     * reading a property off a cross-origin window throws a SecurityError that
+     * takes the editor down.
      *
-     * Only the block editor screen is touched. Stripe's own settings screens,
-     * and the checkout, keep everything they had.
+     * The dependency EDGE is cut rather than the handles. Dequeuing is useless
+     * here because neither Stripe handle is ever queued, only depended on, and
+     * deregistering `stripe` would cascade: the integration loses a dependency,
+     * so WP drops it, so the cart and checkout blocks lose a dependency and are
+     * dropped too. Removing the edge leaves both blocks fully editable and only
+     * costs Stripe's payment-method preview inside the editor.
+     *
+     * The front end is untouched: admin_enqueue_scripts never fires there, and
+     * the -frontend handles carry their own copy of the dependency.
      */
-    public static function dequeue_stripe_in_block_editor(): void
+    public static function drop_stripe_from_block_editor_deps(): void
     {
         if (!\function_exists('get_current_screen')) {
             return;
@@ -62,17 +72,23 @@ class Enqueue
             return;
         }
 
-        // Four of WooCommerce Stripe's admin controllers hook
-        // admin_enqueue_scripts with no screen check, and at least two of their
-        // bundles pull in Stripe.js. Naming them one by one means missing the
-        // next one the plugin adds, so the rule is applied instead: no Stripe
-        // admin bundle belongs on a block editor screen.
         $scripts = \wp_scripts();
+        $integration = 'wc-stripe-blocks-integration';
 
-        foreach ($scripts->queue as $handle) {
-            if ($handle === 'stripe' || \preg_match('/^(wc-stripe-|woocommerce_stripe_)/', $handle)) {
-                \wp_dequeue_script($handle);
+        foreach (['wc-cart-block', 'wc-checkout-block'] as $handle) {
+            if (!isset($scripts->registered[$handle])) {
+                continue;
             }
+
+            $deps = $scripts->registered[$handle]->deps ?? [];
+
+            if (!\in_array($integration, $deps, true)) {
+                continue;
+            }
+
+            $scripts->registered[$handle]->deps = \array_values(
+                \array_diff($deps, [$integration])
+            );
         }
     }
 
