@@ -70,6 +70,21 @@ function filter_args(array $args): ?array
         $figure['image']['classes'] = ['home-story__figure-image'];
         $figure['delay'] = 160 + ($index * 140);
 
+        // A hosted URL wins over an uploaded file, same rule as the hero film:
+        // one URL serves all six locales, where an attachment id does not. The
+        // image stays either way and becomes the poster frame.
+        $figure['video_src'] = null;
+
+        if (!empty($figure['video_url'])) {
+            $figure['video_src'] = $figure['video_url'];
+        } elseif (!empty($figure['video']['url'])) {
+            $figure['video_src'] = $figure['video']['url'];
+        }
+
+        $figure['poster_src'] = $figure['video_src']
+            ? (string) wp_get_attachment_image_url($figure['image']['id'] ?? 0, 'large')
+            : '';
+
         return $figure;
     }, $args['figures'], array_keys($args['figures']));
 

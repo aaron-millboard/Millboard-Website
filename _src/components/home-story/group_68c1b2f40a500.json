@@ -186,6 +186,45 @@
                     "mime_types": ""
                 },
                 {
+                    "key": "field_68c1b2f40a511",
+                    "label": "Video URL",
+                    "name": "video_url",
+                    "aria-label": "",
+                    "type": "url",
+                    "instructions": "Optional. A hosted MP4. Takes precedence over an uploaded file, and one URL serves every locale, so the file is uploaded once rather than per site.",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "",
+                        "class": "",
+                        "id": ""
+                    },
+                    "default_value": "",
+                    "allow_in_bindings": 0,
+                    "placeholder": ""
+                },
+                {
+                    "key": "field_68c1b2f40a512",
+                    "label": "Video file",
+                    "name": "video",
+                    "aria-label": "",
+                    "type": "file",
+                    "instructions": "Fallback only, used when no video URL is set. The image above stays as the poster frame either way.",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "",
+                        "class": "",
+                        "id": ""
+                    },
+                    "return_format": "array",
+                    "library": "all",
+                    "min_size": "",
+                    "max_size": "",
+                    "mime_types": "mp4,webm",
+                    "allow_in_bindings": 0
+                },
+                {
                     "key": "field_68c1b2f40a510",
                     "label": "Caption",
                     "name": "caption",
