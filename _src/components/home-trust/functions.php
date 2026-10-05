@@ -43,6 +43,25 @@ function filter_args(array $args): ?array
     }, $args['badges']);
 
     // -------------------------------------------------------------------------
+    // The widget, in the editor.
+    //
+    // Trustpilot's bootstrap replaces the widget div with a cross-origin
+    // iframe. On the front end that is fine. Inside the editor canvas it is
+    // not: core walks every frame in the document when it wires up rich text,
+    // and reading a property off a cross-origin window throws a SecurityError
+    // that takes the whole editor down with it.
+    //
+    // The editor gets a line of text instead. The front end is untouched, so
+    // the live rating is still Trustpilot's own widget saying what is true
+    // today.
+    // -------------------------------------------------------------------------
+    if (!empty($args['is_preview']) && !empty($args['embed'])) {
+        $args['embed'] = '<p class="home-trust__widget-note">'
+            . \esc_html__('Trustpilot rating, live on the published page.', 'granola')
+            . '</p>';
+    }
+
+    // -------------------------------------------------------------------------
     // Link.
     // -------------------------------------------------------------------------
     if (!empty($args['link'])) {
