@@ -68,7 +68,7 @@ $has_samples = str_contains($samples, 'product-samples__button');
         <?php if ($has_visualiser || $has_samples) { ?>
             <div class="product__content-section product__try" id="visualiser">
                 <h2 class="product__try-heading"><?= esc_html__('Try before you buy', 'granola'); ?></h2>
-                <p class="product__try-intro">
+                <p class="product__try-intro" data-fallback="<?= esc_attr__('Order a sample to see and feel the board at home.', 'granola'); ?>">
                     <?= esc_html($has_visualiser
                         ? __('See the colour at home before you order.', 'granola')
                         : __('Order a sample to see and feel the board at home.', 'granola')); ?>
