@@ -81,8 +81,11 @@ function filter_args(array $args): ?array
             $figure['video_src'] = $figure['video']['url'];
         }
 
+        // The image arg carries `attachment_id`, which is the house convention
+        // the image component itself reads. `id` is not a key it has, so the
+        // lookup returned false and the video rendered with no poster at all.
         $figure['poster_src'] = $figure['video_src']
-            ? (string) wp_get_attachment_image_url($figure['image']['id'] ?? 0, 'large')
+            ? (string) wp_get_attachment_image_url((int) ($figure['image']['attachment_id'] ?? 0), 'large')
             : '';
 
         return $figure;
