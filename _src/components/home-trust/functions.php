@@ -55,6 +55,12 @@ function filter_args(array $args): ?array
     // the live rating is still Trustpilot's own widget saying what is true
     // today.
     // -------------------------------------------------------------------------
+    // Trustpilot's own markup carries the locale of whoever copied it, and
+    // every site had en-GB baked in. The header derives it; so does this now.
+    if (!empty($args['embed'])) {
+        $args['embed'] = \Theme\Utils\Trustpilot::localise_embed((string) $args['embed']);
+    }
+
     if (!empty($args['is_preview']) && !empty($args['embed'])) {
         $args['embed'] = '<p class="home-trust__widget-note">'
             . \esc_html__('Trustpilot rating, live on the published page.', 'granola')
