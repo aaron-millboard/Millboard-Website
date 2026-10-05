@@ -9,6 +9,8 @@ class Enqueue
         \add_action('wp_enqueue_scripts', [__CLASS__, 'enqueue_main_assets']);
         \add_action('wp_enqueue_scripts', [__CLASS__, 'enqueue_comment_assets']);
         \add_action('admin_enqueue_scripts', [__CLASS__, 'enqueue_admin_assets']);
+        // Late, so it runs after the payment plugins have enqueued.
+        \add_action('admin_enqueue_scripts', [__CLASS__, 'dequeue_stripe_in_block_editor'], 100);
         \add_action('enqueue_block_editor_assets', [__CLASS__, 'enqueue_editor_assets']);
 
         // WP global styles need to be dequeued in both head and footer.
@@ -29,6 +31,41 @@ class Enqueue
 
         \add_filter('granola/scripts/dependencies', [__CLASS__, 'add_jquery_dependency']);
         \add_filter('granola/scripts/localization', [__CLASS__, 'add_ajax_localization']);
+    }
+
+    /**
+     * Keep Stripe out of the block editor.
+     *
+     * WooCommerce Stripe hooks admin_enqueue_scripts with no screen check, so
+     * its express-checkout settings bundle loads on post.php as well as on its
+     * own settings pages. That bundle pulls in js.stripe.com, and Stripe.js
+     * injects two hidden iframes on js.stripe.com into whatever page it lands
+     * on.
+     *
+     * Core walks every frame in the document when it wires up the editor, and
+     * reading a property off a cross-origin window throws. The editor then dies
+     * with "SecurityError: Blocked a frame ... from accessing a cross-origin
+     * frame", which looks like a WordPress fault and is not one.
+     *
+     * Only the block editor screen is touched. Stripe's own settings screens,
+     * and the checkout, keep everything they had.
+     */
+    public static function dequeue_stripe_in_block_editor(): void
+    {
+        if (!\function_exists('get_current_screen')) {
+            return;
+        }
+
+        $screen = \get_current_screen();
+
+        if (!$screen || !\method_exists($screen, 'is_block_editor') || !$screen->is_block_editor()) {
+            return;
+        }
+
+        // The settings bundle is what loads Stripe.js; the handle is dequeued
+        // too in case another code path registers it directly.
+        \wp_dequeue_script('wc-stripe-express-checkout-settings');
+        \wp_dequeue_script('stripe');
     }
 
     /**
