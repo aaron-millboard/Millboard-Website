@@ -62,10 +62,18 @@ class Enqueue
             return;
         }
 
-        // The settings bundle is what loads Stripe.js; the handle is dequeued
-        // too in case another code path registers it directly.
-        \wp_dequeue_script('wc-stripe-express-checkout-settings');
-        \wp_dequeue_script('stripe');
+        // Four of WooCommerce Stripe's admin controllers hook
+        // admin_enqueue_scripts with no screen check, and at least two of their
+        // bundles pull in Stripe.js. Naming them one by one means missing the
+        // next one the plugin adds, so the rule is applied instead: no Stripe
+        // admin bundle belongs on a block editor screen.
+        $scripts = \wp_scripts();
+
+        foreach ($scripts->queue as $handle) {
+            if ($handle === 'stripe' || \preg_match('/^(wc-stripe-|woocommerce_stripe_)/', $handle)) {
+                \wp_dequeue_script($handle);
+            }
+        }
     }
 
     /**
