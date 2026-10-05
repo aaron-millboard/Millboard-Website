@@ -62,15 +62,7 @@
                 // widget furniture. It is the widget's display language, not a
                 // filter on which reviews are counted -- the business unit is
                 // the same one everywhere, which is where the reviews live.
-                $tp_locales = [
-                    'en_GB' => 'en-GB',
-                    'en_US' => 'en-US',
-                    'en_IE' => 'en-IE',
-                    'en_AU' => 'en-AU',
-                    'de_DE' => 'de-DE',
-                    'fr_FR' => 'fr-FR',
-                ];
-                $tp_locale = $tp_locales[\get_locale()] ?? 'en-GB';
+                $tp_locale = \Theme\Utils\Trustpilot::locale();
                 ?>
                 <div
                     class="site-header__trustpilot trustpilot-widget"
