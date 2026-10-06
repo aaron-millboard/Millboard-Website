@@ -115,6 +115,8 @@ if (file_exists($autoloader = __DIR__ . '/vendor/autoload.php')) {
 // 'Sample ordering' inside WooCommerce Analytics: who is ordering how
 // much, now that nothing is costed or budgeted.
 \Theme\WooCommerce\SampleOrderReport::init();
+// Finish a sample order inside My Account rather than the shop basket.
+\Theme\WooCommerce\SampleOrderCheckout::init();
 
 // ----------------------------------------------------
 // Partner account types.

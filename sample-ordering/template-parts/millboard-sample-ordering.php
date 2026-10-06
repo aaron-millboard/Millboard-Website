@@ -131,7 +131,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 					</div>
 				</div>
 				<button type="submit" class="btn-primary" id="btn-submit" disabled>
-					<?php esc_html_e( 'Add to basket', 'millboard' ); ?>
+					<?php esc_html_e( 'Continue to delivery details', 'millboard' ); ?>
 				</button>
 			</div>
 

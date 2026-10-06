@@ -200,3 +200,112 @@
         }
     }
 }
+
+// =============================================================================
+// Sample ordering, step two
+// =============================================================================
+// Delivery details. Every row is WooCommerce's own `.form-row` markup, so the
+// boxed field, the label and the required marker arrive from wc-checkout's
+// `.woocommerce .form-row` rules, which are in the global bundle and therefore
+// already on this page.
+//
+// What is left here is only what checkout keeps in its own block.css and so
+// cannot reach My Account: the two-column grid and the section rule. The values
+// are lifted from wc-checkout/styles/block.scss rather than chosen, so the two
+// forms stay the same form.
+// =============================================================================
+
+.mb-sof-details {
+    &__form {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space--l);
+    }
+
+    &__section {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space--s);
+        padding-bottom: var(--space--s);
+        border-bottom: 1px solid var(--color--brand-1);
+    }
+
+    &__section-header {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space--3xs);
+
+        h3 {
+            @include typestyle-h6;
+            @include typestyle-large;
+            margin: 0;
+        }
+
+        p {
+            margin: 0;
+        }
+    }
+
+    &__fields {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        column-gap: var(--space--s);
+        row-gap: var(--space--m);
+    }
+
+    // Checkout re-points these for `input` only, because its own selects are
+    // select2 and it styles the rendered span instead. The selects here are
+    // plain, and a select is the same field as the text box beside it, so it
+    // reads from the same values.
+    .form-row {
+        select,
+        textarea {
+            --input--color: var(--color--foreground);
+            --input--placeholder-color: var(--color--brand-1);
+            --input--background-color: var(--color--brand-2);
+            --input--border-color: var(--color--foreground);
+            --input--border-color--focus: var(--color--foreground);
+            --input--border-width: 1px;
+
+            max-width: 100%;
+        }
+    }
+
+    // The checkbox group is one field, so its caption sits where a label would.
+    &__group-label {
+        @include typestyle-small;
+        display: block;
+    }
+
+    &__checks {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space--2xs) var(--space--m);
+        padding-top: var(--space--3xs);
+
+        .checkbox {
+            display: flex;
+            align-items: center;
+            gap: var(--space--3xs);
+            margin: 0;
+        }
+    }
+
+    &__note {
+        @include typestyle-small;
+        display: block;
+        margin-top: var(--space--3xs);
+    }
+
+    &__actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--space--s);
+    }
+
+    &__count {
+        @include typestyle-small;
+        margin-left: auto;
+    }
+}
