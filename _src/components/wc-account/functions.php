@@ -19,6 +19,43 @@ const ENDPOINT_BRAND_ASSETS = 'brand-assets';
 const ENDPOINT_SAMPLE_ORDERING = 'sample-ordering';
 
 /**
+ * Sites the sample tool runs on, by site path.
+ *
+ * Aaron, 6 Oct 2026: "this entire sample ordering tab is only for the UK site."
+ * Until now that was true only by accident -- the portal users were imported to
+ * en-gb and nowhere else -- and nothing in the code said so. The capability is
+ * granted per site on multisite, so a distributor on en-gb genuinely has no
+ * role on en-us, but an administrator has capabilities everywhere: browsing
+ * /en-us/my-account/ showed the tab, with a catalogue built from THAT site's
+ * products.
+ *
+ * `/en-gb/commercial/` is deliberately absent. It is a separate site with its
+ * own path, so matching the full path rather than a prefix keeps the commercial
+ * clone out without a second condition.
+ */
+const SAMPLE_ORDERING_SITES = ['/en-gb/'];
+
+/**
+ * Is the current site one the sample tool runs on?
+ *
+ * Filterable so adding a market is a setting rather than a deploy -- the
+ * portal is "UK only for now", and the obvious next step is Ireland.
+ */
+function is_sample_ordering_site(): bool
+{
+    // A single-site install has nothing to gate against, and the tests and any
+    // local non-multisite copy should not be silently empty.
+    if (!\is_multisite()) {
+        return true;
+    }
+
+    $site = \get_blog_details(\get_current_blog_id());
+    $path = $site ? \trailingslashit((string) $site->path) : '/';
+
+    return \in_array($path, \apply_filters('millboard_sample_ordering_sites', SAMPLE_ORDERING_SITES), true);
+}
+
+/**
  * May this user reach the Canto brand library?
  *
  * Capability, not role name and not email domain. The previous test was "has
@@ -33,10 +70,16 @@ function can_view_brand_assets(?int $user_id = null): bool
 
 /**
  * May this user send samples?
+ *
+ * Site first, then capability. hooks.php points the widget's own
+ * `mb_sof_user_can_order` filter at this function and the panel is rendered
+ * behind it, so SampleOrderCheckout's gate and the widget's submit handler
+ * both inherit the restriction: one place decides, which is what the component
+ * already promised by calling itself "one gate, not two".
  */
 function can_order_samples(?int $user_id = null): bool
 {
-    return user_can_mb(\Theme\Accounts\Roles::CAP_ORDER_SAMPLES, $user_id);
+    return is_sample_ordering_site() && user_can_mb(\Theme\Accounts\Roles::CAP_ORDER_SAMPLES, $user_id);
 }
 
 /**
