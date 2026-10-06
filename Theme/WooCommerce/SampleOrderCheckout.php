@@ -353,7 +353,6 @@ class SampleOrderCheckout
             'fields' => [
                 self::META['follow_up'] => ['label' => \__('Sample: follow-up required', 'granola')],
                 self::META['on_behalf_of'] => ['label' => \__('Sample: ordered on behalf of', 'granola')],
-                self::META['project_type'] => ['label' => \__('Sample: project type', 'granola')],
                 self::META['sales_comments'] => ['label' => \__('Sample: sales comments', 'granola')],
                 self::META_PLACED_BY => ['label' => \__('Sample: placed by (name)', 'granola')],
                 self::META_PLACED_BY_EMAIL => ['label' => \__('Sample: placed by (email)', 'granola')],
