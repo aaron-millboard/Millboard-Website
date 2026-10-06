@@ -193,18 +193,6 @@ $mb_select = static function ( string $key, array $options, bool $required = fal
 				$mb_row( 'project-size', __( 'Project size', 'millboard' ), 'first', $mb_select( 'project-size', $mb_size ) );
 				$mb_row( 'project-start-time', __( 'When will they start the project?', 'millboard' ), 'last', $mb_select( 'project-start-time', $mb_start ) );
 				?>
-
-				<p class="form-row form-row-wide" id="project_type_field">
-					<span class="mb-sof-details__group-label"><?php esc_html_e( 'Project type', 'millboard' ); ?></span>
-					<span class="woocommerce-input-wrapper mb-sof-details__checks">
-						<?php foreach ( array( 'Decking Project', 'Cladding Project', 'Other Project' ) as $mb_type ) : ?>
-							<label class="checkbox">
-								<input type="checkbox" class="input-checkbox" name="project_type[]" value="<?php echo esc_attr( $mb_type ); ?>">
-								<?php echo esc_html( $mb_type ); ?>
-							</label>
-						<?php endforeach; ?>
-					</span>
-				</p>
 			</div>
 		</div>
 

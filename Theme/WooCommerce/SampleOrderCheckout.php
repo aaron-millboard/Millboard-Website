@@ -44,7 +44,6 @@ class SampleOrderCheckout
     public const META = [
         'follow_up' => '_millboard_sample_follow_up',
         'on_behalf_of' => '_millboard_sample_on_behalf_of',
-        'project_type' => '_millboard_sample_project_type',
         'sales_comments' => '_millboard_sample_sales_comments',
     ];
 

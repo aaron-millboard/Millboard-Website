@@ -271,26 +271,6 @@
         }
     }
 
-    // The checkbox group is one field, so its caption sits where a label would.
-    &__group-label {
-        @include typestyle-small;
-        display: block;
-    }
-
-    &__checks {
-        display: flex;
-        flex-wrap: wrap;
-        gap: var(--space--2xs) var(--space--m);
-        padding-top: var(--space--3xs);
-
-        .checkbox {
-            display: flex;
-            align-items: center;
-            gap: var(--space--3xs);
-            margin: 0;
-        }
-    }
-
     &__note {
         @include typestyle-small;
         display: block;
