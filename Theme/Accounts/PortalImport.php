@@ -38,6 +38,39 @@ class PortalImport
         'usAdmin' => Roles::ROLE_STAFF,
     ];
 
+    /**
+     * Domains that must not be in the portal at all.
+     *
+     * The Craft portal typed agency and contractor people as `employee`, so
+     * TYPE_MAP alone makes them Millboard staff with the internal 3x limits and
+     * POS ordering. Decided by Aaron 6 Oct 2026 after the staging import had to
+     * be corrected by hand; encoded here so the production run does not repeat
+     * it.
+     */
+    public const SKIP_DOMAINS = [
+        'eyekiller.com',
+        'prosperohub.com',
+        'altair-media.com',
+        'wearebernadette.co',
+    ];
+
+    /**
+     * Domains that are Millboard whatever the portal says.
+     *
+     * The US and export teams were typed `usDealers` / `export`, which made
+     * them partners on the external limits. The address is the reliable signal,
+     * not the portal's user type.
+     *
+     * elmdenegroup.co.uk is the holding company. freemanclarke.co.uk is one
+     * person Aaron confirmed is staff.
+     */
+    public const STAFF_DOMAINS = [
+        'millboard.com',
+        'millboard.co.uk',
+        'elmdenegroup.co.uk',
+        'freemanclarke.co.uk',
+    ];
+
     /** Meta keys written on every imported account. */
     public const META_SOURCE = 'millboard_portal_id';
     public const META_TYPE = 'millboard_portal_type';
@@ -84,7 +117,32 @@ class PortalImport
                 continue;
             }
 
+            $domain = \strtolower(\substr(\strrchr($email, '@'), 1));
+
+            if (\in_array($domain, self::SKIP_DOMAINS, true)) {
+                $report['skipped']['agency domain: ' . $domain] = ($report['skipped']['agency domain: ' . $domain] ?? 0) + 1;
+                continue;
+            }
+
+            /*
+             * The address wins over the portal's user type, BOTH WAYS.
+             *
+             * Into staff: the US and export teams were typed `usDealers` /
+             * `export`, which put them on the partner limits.
+             *
+             * Out of staff: the portal typed merchants and architects
+             * `employee`, which would give them the internal 3x limits and POS
+             * ordering. Only a Millboard address makes someone staff; anyone
+             * else the portal called an employee is a distributor.
+             */
+            $is_millboard = \in_array($domain, self::STAFF_DOMAINS, true);
             $role = self::TYPE_MAP[$type] ?? null;
+
+            if ($is_millboard) {
+                $role = Roles::ROLE_STAFF;
+            } elseif (Roles::ROLE_STAFF === $role) {
+                $role = Roles::ROLE_DISTRIBUTOR;
+            }
 
             if (null === $role) {
                 $report['skipped']['unmapped type: ' . $type] = ($report['skipped']['unmapped type: ' . $type] ?? 0) + 1;
