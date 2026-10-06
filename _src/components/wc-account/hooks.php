@@ -149,9 +149,23 @@ namespace Granola\Components\WC_Account;
     \remove_all_actions($hook);
 
     \add_action($hook, function (): void {
-        echo can_order_samples()
-            ? \Granola\Component::get('wc-account-sample-ordering')
-            : render_no_access();
+        if (!can_order_samples()) {
+            echo render_no_access();
+
+            return;
+        }
+
+        // Step two of the order lives here rather than fighting the hook: this
+        // closure is the only thing rendering the tab, because of the
+        // remove_all_actions() above, so branching is simpler and more durable
+        // than another component trying to unhook a closure it has no handle on.
+        if (\Theme\WooCommerce\SampleOrderCheckout::wants_details()) {
+            \Theme\WooCommerce\SampleOrderCheckout::render_details();
+
+            return;
+        }
+
+        echo \Granola\Component::get('wc-account-sample-ordering');
     });
 });
 
