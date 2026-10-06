@@ -178,6 +178,25 @@ $mb_select = static function ( string $key, array $options, bool $required = fal
 					);
 				}
 				?>
+
+				<?php
+				// Marketing opt-OUT, not opt-in: ticking it means do not market.
+				// The wording is Legal's and is read live from the shop
+				// checkout, so the two cannot drift into saying different
+				// things about the same consent. The name is the checkout's
+				// misnomer, kept because it is the key HubSpot is mapped to.
+				$mb_consent = Checkout::checkout_label( Checkout::MARKETING_OPT_OUT );
+				?>
+				<?php if ( '' !== $mb_consent ) : ?>
+					<p class="form-row form-row-wide" id="<?php echo esc_attr( Checkout::MARKETING_OPT_OUT ); ?>_field">
+						<span class="woocommerce-input-wrapper">
+							<label class="checkbox">
+								<input type="checkbox" class="input-checkbox" name="<?php echo esc_attr( Checkout::MARKETING_OPT_OUT ); ?>" id="<?php echo esc_attr( Checkout::MARKETING_OPT_OUT ); ?>" value="1">
+								<?php echo wp_kses_post( $mb_consent ); ?>
+							</label>
+						</span>
+					</p>
+				<?php endif; ?>
 			</div>
 		</div>
 
