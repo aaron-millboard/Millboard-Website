@@ -60,6 +60,7 @@ class SampleOrderCheckout
         \add_action('init', [__CLASS__, 'take_over_submit'], 20);
         \add_action('template_redirect', [__CLASS__, 'maybe_place'], 5);
         \add_filter('woocommerce_email_recipient_customer_processing_order', [__CLASS__, 'mail_customer_and_rep'], 10, 2);
+        \add_filter('woocommerce_email_headers', [__CLASS__, 'reply_to_the_rep'], 10, 3);
 
         /*
          * Turn the Addressy/Loqate lookup on for this one screen.
@@ -309,6 +310,54 @@ class SampleOrderCheckout
         if ($email && \is_email($email)) {
             $order->set_billing_email($email);
         }
+    }
+
+    /**
+     * Keep the admin notification's Reply-To deliverable.
+     *
+     * WooCommerce sets Reply-To on new_order, cancelled_order and failed_order
+     * to the BILLING address, which on a sample order is now the customer. The
+     * mail transport rejects the WHOLE message when that address will not
+     * resolve, so one typo in a rep-entered email silently stops fulfilment
+     * being told an order exists.
+     *
+     * Not theoretical: staging order UK-28624, 6 Oct 2026, logged
+     * `Invalid "Reply-To" e-mail address` and the ops "New order" email never
+     * left. Before the billing address became the customer's it was always a
+     * millboard.com address, so this could not happen — it arrived with that
+     * change and belongs to it.
+     *
+     * Replying to the rep is the right behaviour anyway: they placed the order
+     * and they hold the customer relationship.
+     *
+     * @param mixed $header
+     * @param mixed $email_id
+     * @param mixed $order
+     * @return mixed
+     */
+    public static function reply_to_the_rep($header, $email_id = '', $order = null)
+    {
+        if (!$order instanceof \WC_Order) {
+            return $header;
+        }
+
+        if ('yes' !== (string) $order->get_meta(SampleOrderReport::META_FLAG)) {
+            return $header;
+        }
+
+        $rep = (string) $order->get_meta(self::META_PLACED_BY_EMAIL);
+
+        if (!$rep || !\is_email($rep)) {
+            return $header;
+        }
+
+        $name = \trim((string) $order->get_meta(self::META_PLACED_BY));
+
+        // Drop WooCommerce's own line rather than appending a second one: two
+        // Reply-To headers is undefined behaviour, and some transports reject it.
+        $header = \preg_replace('/^Reply-to:.*\r?\n?/mi', '', (string) $header);
+
+        return $header . 'Reply-to: ' . ('' !== $name ? $name . ' <' . $rep . '>' : $rep) . "\r\n";
     }
 
     /**
