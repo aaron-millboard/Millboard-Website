@@ -120,6 +120,8 @@ if (file_exists($autoloader = __DIR__ . '/vendor/autoload.php')) {
 // A working unsubscribe link in the order confirmation. Compliance's condition
 // for letting a rep enter a customer's details on their behalf.
 \Theme\WooCommerce\EmailUnsubscribe::init();
+// Show the terms of sale that actually apply: consumer or business, by persona.
+\Theme\WooCommerce\EmailTerms::init();
 
 // ----------------------------------------------------
 // Partner account types.
