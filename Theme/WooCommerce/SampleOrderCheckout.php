@@ -54,6 +54,27 @@ class SampleOrderCheckout
     public const META_PLACED_BY = '_millboard_sample_placed_by';
     public const META_PLACED_BY_EMAIL = '_millboard_sample_placed_by_email';
 
+    /**
+     * The follow-up answer in HubSpot's own vocabulary.
+     *
+     * `no_follow_up` is an enumeration of exactly "Checked" and "Not Checked",
+     * and it means the OPPOSITE of what the form asks, so "Yes" and "No" are
+     * both an invalid value AND the wrong way round. Translating here rather
+     * than leaving it to whoever wires the mapping means the feed can point
+     * straight at this key and be right.
+     */
+    public const META_NO_FOLLOW_UP = '_millboard_sample_no_follow_up';
+
+    /**
+     * Marketing opt-OUT, under the key the shop checkout already writes.
+     *
+     * Ticked means "do not market to me". Named opt-IN by the Checkout Field
+     * Editor, which is a misnomer this follows rather than fixes, because the
+     * key is what the HubSpot feeds are mapped against and 7,085 existing
+     * orders use it.
+     */
+    public const MARKETING_OPT_OUT = 'marketing-opt-in';
+
     public static function init(): void
     {
         \add_action('init', [__CLASS__, 'take_over_submit'], 20);
@@ -431,6 +452,22 @@ class SampleOrderCheckout
         $order->update_meta_data(SampleOrderReport::META_LINES, (string) \count($lines));
         $order->update_meta_data(SampleOrderReport::META_UNITS, (string) \array_sum($lines));
 
+        // The form asks whether a follow-up IS wanted; HubSpot's property
+        // records whether one is NOT. See META_NO_FOLLOW_UP.
+        $follow_up = (string) ($p['follow_up'] ?? '');
+
+        if ('' !== $follow_up) {
+            $order->update_meta_data(self::META_NO_FOLLOW_UP, self::no_follow_up_value($follow_up));
+        }
+
+        // Only written when ticked, because that is exactly what the shop
+        // checkout does: there is no '0' row anywhere in the 7,085 orders
+        // carrying this key, so an absent row is the "no objection" state and
+        // writing one would not mean what the existing data means.
+        if ('1' === (string) ($p[self::MARKETING_OPT_OUT] ?? '')) {
+            $order->update_meta_data(self::MARKETING_OPT_OUT, '1');
+        }
+
         $user = \wp_get_current_user();
 
         if ($user instanceof \WP_User && $user->ID) {
@@ -466,6 +503,7 @@ class SampleOrderCheckout
             self::REUSED,
             [
                 'customer_first_name', 'customer_last_name', 'customer_email', 'billing_company',
+                self::MARKETING_OPT_OUT,
                 'billing_address_1', 'billing_address_2', 'billing_city',
                 'billing_state', 'billing_postcode', 'billing_country',
             ]
@@ -556,6 +594,48 @@ class SampleOrderCheckout
         }
 
         return [];
+    }
+
+    /**
+     * Translate the form's answer into HubSpot's `no_follow_up` value.
+     *
+     * The form asks "does this customer require a follow-up?" and the property
+     * records the opposite, so the two are inverted as well as using different
+     * words. Its only valid values are the literal strings "Checked" and
+     * "Not Checked"; anything else is rejected.
+     *
+     * Deliberately public and deliberately total: the safe answer for an
+     * unrecognised input is "Not Checked", because that leaves the follow-up
+     * happening. Getting this backwards would silently suppress follow-up for
+     * the customers who asked for one, which is the failure worth engineering
+     * against.
+     */
+    public static function no_follow_up_value(string $follow_up): string
+    {
+        return 'No' === $follow_up ? 'Checked' : 'Not Checked';
+    }
+
+    /**
+     * The label a checkout field carries, read live.
+     *
+     * The marketing opt-out wording is Legal's, maintained in Checkout Field
+     * Editor. Reading it rather than copying it means a change there reaches
+     * this form too, instead of the two drifting into saying different things
+     * about the same consent.
+     */
+    public static function checkout_label(string $key): string
+    {
+        if (!\function_exists('WC') || !\WC()->checkout()) {
+            return '';
+        }
+
+        foreach (\WC()->checkout()->get_checkout_fields() as $set) {
+            if (isset($set[$key]['label'])) {
+                return (string) $set[$key]['label'];
+            }
+        }
+
+        return '';
     }
 
     /**
