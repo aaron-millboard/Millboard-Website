@@ -61,6 +61,7 @@ class SampleOrderCheckout
         \add_action('template_redirect', [__CLASS__, 'maybe_place'], 5);
         \add_filter('woocommerce_email_recipient_customer_processing_order', [__CLASS__, 'mail_customer_and_rep'], 10, 2);
         \add_filter('woocommerce_email_headers', [__CLASS__, 'reply_to_the_rep'], 10, 3);
+        \add_filter('vx_mapping_standard_fields', [__CLASS__, 'offer_sample_fields_to_crm']);
 
         /*
          * Turn the Addressy/Loqate lookup on for this one screen.
@@ -310,6 +311,59 @@ class SampleOrderCheckout
         if ($email && \is_email($email)) {
             $order->set_billing_email($email);
         }
+    }
+
+    /**
+     * Put the sample-order fields in CRM Perks' mapping dropdown.
+     *
+     * WHY THIS IS NEEDED AT ALL. CRM Perks discovers mappable order meta with
+     *
+     *     $last_id = $this->get_last_order_id();   // SELECT ID FROM wp_posts
+     *     $order_meta = get_post_meta($last_id);   //   WHERE post_type LIKE 'shop_order'
+     *
+     * so the whole list is whatever keys happen to sit on the most recent order
+     * in the POSTS table. HPOS is enabled with data sync off, so that table
+     * holds no shop_order rows at all: the query returns nothing and the
+     * dynamic half of the list is empty. No amount of reopening or re-saving
+     * the feed brings these keys back, because the plugin is looking somewhere
+     * WooCommerce no longer writes.
+     *
+     * The send path is unaffected — it resolves values with
+     * `$order->get_meta()`, which is HPOS aware — so this is purely about what
+     * the mapping screen is willing to show.
+     *
+     * Writing the mapping straight into `vxc_hubspot_meta['map']` would also
+     * send correctly, but `crm_select()` renders options only from this list,
+     * so a stored value missing from it renders as an empty select and the next
+     * person to press Update silently wipes the mapping. Declaring the fields
+     * here instead means the UI can draw the row, which is what makes the
+     * mapping survive.
+     *
+     * @param mixed $fields
+     * @return mixed
+     */
+    public static function offer_sample_fields_to_crm($fields)
+    {
+        if (!\is_array($fields)) {
+            return $fields;
+        }
+
+        $fields['millboard_sample'] = [
+            'title' => \__('Millboard sample order', 'granola'),
+            'fields' => [
+                self::META['follow_up'] => ['label' => \__('Sample: follow-up required', 'granola')],
+                self::META['on_behalf_of'] => ['label' => \__('Sample: ordered on behalf of', 'granola')],
+                self::META['project_type'] => ['label' => \__('Sample: project type', 'granola')],
+                self::META['sales_comments'] => ['label' => \__('Sample: sales comments', 'granola')],
+                self::META_PLACED_BY => ['label' => \__('Sample: placed by (name)', 'granola')],
+                self::META_PLACED_BY_EMAIL => ['label' => \__('Sample: placed by (email)', 'granola')],
+                SampleOrderReport::META_COMPANY => ['label' => \__('Sample: ordering company', 'granola')],
+                SampleOrderReport::META_LINES => ['label' => \__('Sample: product lines', 'granola')],
+                SampleOrderReport::META_UNITS => ['label' => \__('Sample: items ordered', 'granola')],
+            ],
+        ];
+
+        return $fields;
     }
 
     /**
