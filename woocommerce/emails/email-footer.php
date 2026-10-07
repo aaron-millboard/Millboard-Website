@@ -33,7 +33,20 @@ if ( ! $mb_email instanceof WC_Email && class_exists( 'Theme\WooCommerce\EmailUn
 
 // Contact line first; the legal links and the unsubscribe come from the filter.
 $mb_phone = apply_filters( 'millboard_email_footer_phone', '+44 (0) 24 7643 9943' );
-$mb_inbox = apply_filters( 'millboard_email_footer_email', get_option( 'woocommerce_email_from_address' ) );
+/*
+ * enquiries@, not the WooCommerce from-address.
+ *
+ * The from-address is order.fulfilment.gb@millboard.com, a fulfilment inbox.
+ * Using it here sent every customer to the wrong team, and on a password reset
+ * or the portal launch it is nonsense: there is no order for fulfilment to
+ * look up. The design handoff specified enquiries@ throughout and that is what
+ * this should always have been.
+ */
+$mb_inbox = apply_filters( 'millboard_email_footer_email', 'enquiries@millboard.com' );
+
+// Whether this email is about an order at all, which decides how the contact
+// line is worded below.
+$mb_has_order = $mb_email instanceof WC_Email && ( $mb_email->object ?? null ) instanceof WC_Order;
 
 ?>
 						</td>
@@ -48,7 +61,18 @@ $mb_inbox = apply_filters( 'millboard_email_footer_email', get_option( 'woocomme
 												<?php
 												printf(
 													/* translators: %1$s: telephone link, %2$s: email link. */
-													esc_html__( 'Questions about your order? Call %1$s or email %2$s.', 'granola' ),
+													/*
+													 * "Questions about your order?" only where there IS an
+													 * order. An account email — new account, password reset,
+													 * the portal launch — has none, and asking about an order
+													 * the recipient never placed is the same fault as showing
+													 * them a contract of sale.
+													 */
+													$mb_has_order
+														/* translators: %1$s: telephone link, %2$s: email link. */
+														? esc_html__( 'Questions about your order? Call %1$s or email %2$s.', 'granola' )
+														/* translators: %1$s: telephone link, %2$s: email link. */
+														: esc_html__( 'Any questions? Call %1$s or email %2$s.', 'granola' ),
 													'<a href="tel:' . esc_attr( preg_replace( '/[^0-9+]/', '', $mb_phone ) ) . '">' . esc_html( $mb_phone ) . '</a>',
 													'<a href="mailto:' . esc_attr( $mb_inbox ) . '">' . esc_html( $mb_inbox ) . '</a>'
 												);
