@@ -1,15 +1,10 @@
 <?php
 
 /**
- * Edit account form
+ * Account details.
  *
- * This template can be overridden by copying it to yourtheme/woocommerce/myaccount/form-edit-account.php.
- *
- * HOWEVER, on occasion WooCommerce will need to update template files and you
- * (the theme developer) will need to copy the new files to your theme to
- * maintain compatibility. We try to do this as little as possible, but it does
- * happen. When this occurs the version of the template file will be bumped and
- * the readme will list any important changes.
+ * Overridden from WooCommerce to match the 2026 account design: three ruled
+ * sections (details, password, keeping in touch) of underline fields.
  *
  * @see https://woocommerce.com/document/template-structure/
  * @package WooCommerce\Templates
@@ -18,78 +13,138 @@
 
 defined('ABSPATH') || exit;
 
+use function Granola\Components\WC_Account\is_marketing_opted_in;
+
 /**
  * Hook - woocommerce_before_edit_account_form.
  *
  * @since 2.6.0
  */
 do_action('woocommerce_before_edit_account_form');
+
+$updated = get_user_meta($user->ID, 'last_update', true);
+
 ?>
 
+<h2 class="mb-account-panel__title"><?php esc_html_e('Account details', 'granola'); ?></h2>
 
-<form class="account__form woocommerce-EditAccountForm edit-account" action="" method="post" <?php do_action('woocommerce_edit_account_form_tag'); ?> >
+<p class="mb-account-panel__intro">
+    <?php esc_html_e('The details we hold for you, and how your name appears on reviews and in your account.', 'granola'); ?>
+</p>
+
+<form class="woocommerce-EditAccountForm edit-account" action="" method="post" <?php do_action('woocommerce_edit_account_form_tag'); ?>>
 
     <?php do_action('woocommerce_edit_account_form_start'); ?>
 
-    <p class="woocommerce-form-row woocommerce-form-row--first form-row form-row-first">
-        <label for="account_first_name"><?php esc_html_e('First name', 'woocommerce'); ?>&nbsp;<span class="required" aria-hidden="true">*</span></label>
-        <input type="text" class="woocommerce-Input woocommerce-Input--text input-text" name="account_first_name" id="account_first_name" autocomplete="given-name" value="<?php echo esc_attr($user->first_name); ?>" aria-required="true" />
-    </p>
-    <p class="woocommerce-form-row woocommerce-form-row--last form-row form-row-last">
-        <label for="account_last_name"><?php esc_html_e('Last name', 'woocommerce'); ?>&nbsp;<span class="required" aria-hidden="true">*</span></label>
-        <input type="text" class="woocommerce-Input woocommerce-Input--text input-text" name="account_last_name" id="account_last_name" autocomplete="family-name" value="<?php echo esc_attr($user->last_name); ?>" aria-required="true" />
-    </p>
+    <h3 class="mb-account-section mb-account-section--accent"><?php esc_html_e('Your details', 'granola'); ?></h3>
 
-    <p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
-        <label for="account_display_name"><?php esc_html_e('Display name', 'woocommerce'); ?>&nbsp;<span class="required" aria-hidden="true">*</span></label>
-        <input type="text" class="woocommerce-Input woocommerce-Input--text input-text" name="account_display_name" id="account_display_name" aria-describedby="account_display_name_description" value="<?php echo esc_attr($user->display_name); ?>" aria-required="true" /> <span id="account_display_name_description"><em><?php esc_html_e('This will be how your name will be displayed in the account section and in reviews', 'woocommerce'); ?></em></span>
-    </p>
+    <div class="mb-account-fields">
+        <p class="mb-account-field woocommerce-form-row form-row">
+            <label for="account_first_name">
+                <?php esc_html_e('First name', 'woocommerce'); ?>
+                <span class="required" aria-hidden="true">*</span>
+            </label>
+            <input type="text" name="account_first_name" id="account_first_name" autocomplete="given-name" value="<?php echo esc_attr($user->first_name); ?>" aria-required="true" />
+        </p>
 
-    <p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
-        <label for="account_email"><?php esc_html_e('Email address', 'woocommerce'); ?>&nbsp;<span class="required" aria-hidden="true">*</span></label>
-        <input type="email" class="woocommerce-Input woocommerce-Input--email input-text" name="account_email" id="account_email" autocomplete="email" value="<?php echo esc_attr($user->user_email); ?>" aria-required="true" />
-    </p>
+        <p class="mb-account-field woocommerce-form-row form-row">
+            <label for="account_last_name">
+                <?php esc_html_e('Last name', 'woocommerce'); ?>
+                <span class="required" aria-hidden="true">*</span>
+            </label>
+            <input type="text" name="account_last_name" id="account_last_name" autocomplete="family-name" value="<?php echo esc_attr($user->last_name); ?>" aria-required="true" />
+        </p>
 
-    <?php
+        <p class="mb-account-field woocommerce-form-row form-row">
+            <label for="account_display_name">
+                <?php esc_html_e('Display name', 'woocommerce'); ?>
+                <span class="required" aria-hidden="true">*</span>
+            </label>
+            <input type="text" name="account_display_name" id="account_display_name" aria-describedby="account_display_name_description" value="<?php echo esc_attr($user->display_name); ?>" aria-required="true" />
+            <span class="mb-account-field__note" id="account_display_name_description">
+                <?php esc_html_e('How your name appears in your account and on reviews.', 'granola'); ?>
+            </span>
+        </p>
+
+        <p class="mb-account-field woocommerce-form-row form-row">
+            <label for="account_email">
+                <?php esc_html_e('Email address', 'woocommerce'); ?>
+                <span class="required" aria-hidden="true">*</span>
+            </label>
+            <input type="email" name="account_email" id="account_email" autocomplete="email" value="<?php echo esc_attr($user->user_email); ?>" aria-required="true" />
+        </p>
+
+        <?php
         /**
          * Hook where additional fields should be rendered.
          *
          * @since 8.7.0
          */
         do_action('woocommerce_edit_account_form_fields');
-    ?>
+        ?>
+    </div>
 
-    <h2><?php esc_html_e('Password change', 'woocommerce'); ?></h2>
+    <h3 class="mb-account-section mb-account-section--accent mb-account-section--spaced"><?php esc_html_e('Password', 'granola'); ?></h3>
 
-    <p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
-        <label for="password_current"><?php esc_html_e('Current password (leave blank to leave unchanged)', 'woocommerce'); ?></label>
-        <input type="password" class="woocommerce-Input woocommerce-Input--password input-text" name="password_current" id="password_current" autocomplete="off" />
-    </p>
-    <p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
-        <label for="password_1"><?php esc_html_e('New password (leave blank to leave unchanged)', 'woocommerce'); ?></label>
-        <input type="password" class="woocommerce-Input woocommerce-Input--password input-text" name="password_1" id="password_1" autocomplete="off" />
-    </p>
-    <p class="woocommerce-form-row woocommerce-form-row--wide form-row form-row-wide">
-        <label for="password_2"><?php esc_html_e('Confirm new password', 'woocommerce'); ?></label>
-        <input type="password" class="woocommerce-Input woocommerce-Input--password input-text" name="password_2" id="password_2" autocomplete="off" />
-    </p>
+    <div class="mb-account-fields">
+        <p class="mb-account-field woocommerce-form-row form-row">
+            <label for="password_current"><?php esc_html_e('Current password', 'granola'); ?></label>
+            <input type="password" name="password_current" id="password_current" autocomplete="off" placeholder="<?php esc_attr_e('Leave blank to keep it', 'granola'); ?>" />
+        </p>
+
+        <p class="mb-account-field woocommerce-form-row form-row">
+            <label for="password_1"><?php esc_html_e('New password', 'granola'); ?></label>
+            <input type="password" name="password_1" id="password_1" autocomplete="new-password" placeholder="<?php esc_attr_e('Leave blank to keep it', 'granola'); ?>" />
+        </p>
+
+        <p class="mb-account-field woocommerce-form-row form-row">
+            <label for="password_2"><?php esc_html_e('Confirm new password', 'granola'); ?></label>
+            <input type="password" name="password_2" id="password_2" autocomplete="new-password" />
+        </p>
+    </div>
+
+    <h3 class="mb-account-section mb-account-section--accent mb-account-section--spaced"><?php esc_html_e('Keeping in touch', 'granola'); ?></h3>
+
+    <label class="mb-account-check" for="millboard_marketing_opt_in">
+        <input
+            type="checkbox"
+            name="millboard_marketing_opt_in"
+            id="millboard_marketing_opt_in"
+            value="1"
+            <?php checked(is_marketing_opted_in($user->ID)); ?>
+        />
+        <span><?php esc_html_e('Send me occasional inspiration, new shades and project stories. No more than once a month.', 'granola'); ?></span>
+    </label>
 
     <?php
-        /**
-         * My Account edit account form.
-         *
-         * @since 2.6.0
-         */
-        do_action('woocommerce_edit_account_form');
+    /**
+     * My Account edit account form.
+     *
+     * @since 2.6.0
+     */
+    do_action('woocommerce_edit_account_form');
     ?>
 
-    <div class="woocommerce__actions">
+    <div class="mb-account-actions mb-account-actions--ruled">
         <?php wp_nonce_field('save_account_details', 'save-account-details-nonce'); ?>
-        <button type="submit" class="woocommerce-Button button<?php echo esc_attr(wc_wp_theme_get_element_class_name('button') ? ' ' . wc_wp_theme_get_element_class_name('button') : ''); ?>" name="save_account_details" value="<?php esc_attr_e('Save changes', 'woocommerce'); ?>"><?php esc_html_e('Save changes', 'woocommerce'); ?></button>
+
+        <button type="submit" class="mb-account-btn" name="save_account_details" value="<?php esc_attr_e('Save changes', 'woocommerce'); ?>">
+            <?php esc_html_e('Save changes', 'woocommerce'); ?>
+        </button>
+
+        <?php if ($updated) : ?>
+            <span class="mb-account-actions__note">
+                <?php
+                /* translators: %s: the date the account was last updated. */
+                printf(esc_html__('Last updated %s', 'granola'), esc_html(date_i18n('j F Y', (int) $updated)));
+                ?>
+            </span>
+        <?php endif; ?>
+
         <input type="hidden" name="action" value="save_account_details" />
-</div>
+    </div>
 
     <?php do_action('woocommerce_edit_account_form_end'); ?>
 </form>
 
-<?php do_action('woocommerce_after_edit_account_form'); ?>
+<?php do_action('woocommerce_after_edit_account_form');
