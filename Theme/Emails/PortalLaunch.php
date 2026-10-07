@@ -152,6 +152,54 @@ class PortalLaunch extends \WC_Email
     }
 
     /**
+     * Replies go to Marketing, not to order fulfilment.
+     *
+     * The site sends every transactional email as
+     * order.fulfilment.gb@millboard.com, and Post SMTP is set to
+     * prevent_sender_email_override, so that From address cannot be changed
+     * from here at all. Reply-To is a different header and is not overridden,
+     * which makes it the one thing that can be put right today.
+     *
+     * It matters because this email is not about an order. Somebody who reads
+     * "your account is ready" and hits reply is asking about their account,
+     * and that question landing in the fulfilment inbox helps nobody. Aaron,
+     * 7 Oct 2026, asked for marketing@millboard.com.
+     *
+     * Done by overriding WooCommerce's own per-email getters rather than by
+     * setting woocommerce_email_reply_to_address, which is a GLOBAL option:
+     * switching that on would redirect replies for every customer order email
+     * on the shop as well, which is the opposite of what is wanted. These
+     * three methods exist from WooCommerce 10.4; production is on 11.1.2.
+     */
+    public function get_reply_to_enabled()
+    {
+        return true;
+    }
+
+    /**
+     * @param string $reply_to_email
+     * @return string
+     */
+    public function get_reply_to_address($reply_to_email = '')
+    {
+        $address = (string) \apply_filters('millboard_portal_launch_reply_to', 'marketing@millboard.com');
+
+        // A malformed Reply-To is not cosmetic: PHPMailer rejects the message
+        // outright with Invalid "Reply-To", which is how the ops new-order
+        // email broke on 6 Oct. Fall back rather than fail to send.
+        return \is_email($address) ? $address : parent::get_reply_to_address($reply_to_email);
+    }
+
+    /**
+     * @param string $reply_to_name
+     * @return string
+     */
+    public function get_reply_to_name($reply_to_name = '')
+    {
+        return (string) \apply_filters('millboard_portal_launch_reply_to_name', 'Millboard Marketing');
+    }
+
+    /**
      * Send to one user. Returns true only when WordPress accepted the message.
      */
     public function send_to(\WP_User $user, string $reset_key): bool
