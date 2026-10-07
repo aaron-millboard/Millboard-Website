@@ -42,7 +42,7 @@ function filter_args(array $args): ?array
                         'granola'
                     ),
                     \number_format_i18n($display_count),
-                    $search_term
+                    \esc_html($search_term)
                 ),
                 'classes' => [
                     'post-summaries__heading',

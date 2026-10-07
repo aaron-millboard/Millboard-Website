@@ -92,7 +92,7 @@ function filter_args(array $args): ?array
                         'granola'
                     ),
                     \number_format_i18n($object->found_posts),
-                    $object->query['s']
+                    \esc_html($object->query['s'])
                 );
             }
 
