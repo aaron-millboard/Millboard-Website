@@ -20,7 +20,16 @@
 
 defined( 'ABSPATH' ) || exit;
 
+/*
+ * WC_Emails::email_footer() passes NOTHING to this template, so `$email` is
+ * always null here, in core as much as in this override. The email is captured
+ * from the woocommerce_email_footer action instead.
+ */
 $mb_email = $email ?? null;
+
+if ( ! $mb_email instanceof WC_Email && class_exists( 'Theme\WooCommerce\EmailUnsubscribe' ) ) {
+	$mb_email = Theme\WooCommerce\EmailUnsubscribe::current_email();
+}
 
 // Contact line first; the legal links and the unsubscribe come from the filter.
 $mb_phone = apply_filters( 'millboard_email_footer_phone', '+44 (0) 24 7643 9943' );
