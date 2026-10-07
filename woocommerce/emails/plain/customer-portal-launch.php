@@ -11,6 +11,7 @@ $mb_user    = $user instanceof WP_User ? $user : null;
 $mb_name    = $mb_user ? trim( $mb_user->first_name ) : '';
 $mb_company = $mb_user ? (string) get_user_meta( $mb_user->ID, 'millboard_company', true ) : '';
 $mb_link    = $mb_user ? Theme\Emails\PortalLaunch::reset_url( $mb_user, $reset_key ) : '';
+$mb_staff   = Theme\Emails\PortalLaunch::is_staff( $mb_user );
 
 echo "= " . esc_html( wp_strip_all_tags( $email_heading ) ) . " =\n\n";
 
@@ -22,6 +23,11 @@ if ( $mb_name ) {
 }
 
 echo esc_html__( 'We’ve set up an account for you on the new Millboard partner portal. To sign in for the first time, choose a password using the link below.', 'granola' ) . "\n\n";
+
+if ( $mb_staff ) {
+	echo esc_html__( 'Sample ordering is open now. Once you have set your password you will find it in My Account.', 'granola' ) . "\n\n";
+	echo esc_html__( 'The brand assets side of the portal is still being built. Please keep using the existing portal for artwork and imagery for now, and we will let you know when it moves across.', 'granola' ) . "\n\n";
+}
 
 if ( $mb_user ) {
 	echo esc_html__( 'Username:', 'granola' ) . ' ' . esc_html( $mb_user->user_login ) . "\n";

@@ -63,6 +63,27 @@ class PortalLaunch extends \WC_Email
     }
 
     /**
+     * Is this an internal Millboard account?
+     *
+     * Phase one of the launch goes to staff alone, and what staff are being
+     * told is narrower than the email's original promise: sample ordering is
+     * open in My Account, the Canto asset library is not, and installers and
+     * distributors keep using the old portal meanwhile. Saying "the new
+     * partner portal is ready" to someone who then finds no assets in it is
+     * the same category of fault as the reset email claiming they asked for
+     * something. So the body says which half is ready. Aaron, 7 Oct 2026.
+     *
+     * Role, not email domain. PortalImport already settled who is staff, by
+     * address, and reaching a different answer here would eventually disagree
+     * with the limits and the POS catalogue, which both read the role.
+     */
+    public static function is_staff(?\WP_User $user): bool
+    {
+        return $user instanceof \WP_User
+            && \in_array(\Theme\Accounts\Roles::ROLE_STAFF, (array) $user->roles, true);
+    }
+
+    /**
      * Send to one user. Returns true only when WordPress accepted the message.
      */
     public function send_to(\WP_User $user, string $reset_key): bool
