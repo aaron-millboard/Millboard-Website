@@ -176,6 +176,16 @@
 
     &__item {
         flex: 0 0 var(--home-projects--card);
+
+        // A flex item defaults to min-width: auto, so it cannot shrink below
+        // its content and the card widens to the photograph's intrinsic size
+        // instead of honouring the basis above. On en-gb that never showed,
+        // because Perfmatters lazy-loading swaps the src for a tiny inline SVG
+        // placeholder and the intrinsic width is nothing to speak of. On the
+        // locales where Perfmatters is not running the real 2400px image
+        // loads, and those cards came out ~600px wide and ~290px taller than
+        // their neighbours, which dropped their captions well below the row.
+        min-width: 0;
     }
 
     &__card {
