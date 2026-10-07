@@ -71,6 +71,27 @@ class PortalImport
         'freemanclarke.co.uk',
     ];
 
+    /**
+     * Who the first import actually brings across.
+     *
+     * Aaron, 7 Oct 2026: "we will only want to import and tell all the internal
+     * millboard staff not installers and distributors yet, as the portal side
+     * is not finished with the canto parts, we want installers and distributors
+     * to continue using that old portal for now."
+     *
+     * So the production run is STAFF ONLY. The 1,100-odd partners stay on the
+     * Craft portal until the asset library lands, and importing them early
+     * would create accounts nobody is allowed to tell them about -- accounts
+     * that then sit there unannounced, and that a later careless `--live` could
+     * mail. Not importing them is the control; everything downstream of it is
+     * belt and braces.
+     *
+     * Pass null to run the whole export once the asset side is ready.
+     *
+     * @var string[]
+     */
+    public const PHASE_ONE_ROLES = [Roles::ROLE_STAFF];
+
     /** Meta keys written on every imported account. */
     public const META_SOURCE = 'millboard_portal_id';
     public const META_TYPE = 'millboard_portal_type';
@@ -84,12 +105,15 @@ class PortalImport
     /**
      * @param array<int,array<string,mixed>> $records Decoded portal export.
      * @param bool $commit False (the default) changes nothing at all.
+     * @param string[]|null $only_roles Roles to import. Defaults to staff only,
+     *                                  see PHASE_ONE_ROLES. Null imports all.
      * @return array<string,mixed> A report.
      */
-    public static function run(array $records, bool $commit = false): array
+    public static function run(array $records, bool $commit = false, ?array $only_roles = self::PHASE_ONE_ROLES): array
     {
         $report = [
             'mode' => $commit ? 'COMMIT' : 'DRY RUN',
+            'audience' => null === $only_roles ? 'everyone' : \implode(', ', $only_roles),
             'total' => \count($records),
             'created' => 0,
             'updated' => 0,
@@ -146,6 +170,13 @@ class PortalImport
 
             if (null === $role) {
                 $report['skipped']['unmapped type: ' . $type] = ($report['skipped']['unmapped type: ' . $type] ?? 0) + 1;
+                continue;
+            }
+
+            // Held back for a later phase. See PHASE_ONE_ROLES.
+            if (null !== $only_roles && !\in_array($role, $only_roles, true)) {
+                $key = 'held for a later phase: ' . $role;
+                $report['skipped'][$key] = ($report['skipped'][$key] ?? 0) + 1;
                 continue;
             }
 

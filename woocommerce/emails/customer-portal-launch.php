@@ -18,6 +18,7 @@ $mb_user    = $user instanceof WP_User ? $user : null;
 $mb_name    = $mb_user ? trim( $mb_user->first_name ) : '';
 $mb_company = $mb_user ? (string) get_user_meta( $mb_user->ID, 'millboard_company', true ) : '';
 $mb_link    = $mb_user ? Theme\Emails\PortalLaunch::reset_url( $mb_user, $reset_key ) : '';
+$mb_staff   = Theme\Emails\PortalLaunch::is_staff( $mb_user );
 
 ?>
 <p class="mb-eyebrow"><?php esc_html_e( 'Partner portal', 'granola' ); ?></p>
@@ -35,6 +36,11 @@ $mb_link    = $mb_user ? Theme\Emails\PortalLaunch::reset_url( $mb_user, $reset_
 </p>
 
 <p><?php esc_html_e( 'We’ve set up an account for you on the new Millboard partner portal. To sign in for the first time, choose a password using the button below.', 'granola' ); ?></p>
+
+<?php if ( $mb_staff ) : ?>
+	<p><?php esc_html_e( 'Sample ordering is open now. Once you’ve set your password you’ll find it in My Account.', 'granola' ); ?></p>
+	<p><?php esc_html_e( 'The brand assets side of the portal is still being built. Please keep using the existing portal for artwork and imagery for now, and we’ll let you know when it moves across.', 'granola' ); ?></p>
+<?php endif; ?>
 
 <table class="mb-detail" role="presentation" cellspacing="0" cellpadding="0" border="0">
 	<?php if ( $mb_user ) : ?>

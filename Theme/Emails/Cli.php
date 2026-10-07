@@ -18,6 +18,14 @@ namespace Theme\Emails;
  * cost of getting this wrong is 1,235 people receiving an email twice, or
  * receiving one that should not have gone at all.
  *
+ * STAFF ONLY IS ALSO THE DEFAULT. Aaron, 7 Oct 2026: installers and
+ * distributors stay on the old Craft portal until the Canto asset library is
+ * finished, so phase one tells internal Millboard people and nobody else.
+ * `--audience` exists to widen that, never to narrow it, and the safe value is
+ * the one you get by typing nothing. Theme\Accounts\PortalImport gates the
+ * import the same way and is the real control: a partner who was never
+ * imported cannot be mailed by a slip here.
+ *
  * USE --sleep ON THE REAL RUN. 1,235 messages pushed through the mail provider
  * in one unbroken loop is how a sending account gets rate limited or throttled,
  * and a run that stalls halfway leaves the cohort part-mailed.
@@ -31,6 +39,25 @@ namespace Theme\Emails;
  */
 class Cli
 {
+    /**
+     * `--audience` values, in the words someone would actually type.
+     *
+     * Phase one is `staff`. `all` is the eventual partner send and has to be
+     * asked for by name.
+     *
+     * @var array<string,string[]|null>
+     */
+    private const AUDIENCES = [
+        'staff' => [\Theme\Accounts\Roles::ROLE_STAFF],
+        'partners' => [
+            \Theme\Accounts\Roles::ROLE_DISTRIBUTOR,
+            \Theme\Accounts\Roles::ROLE_INSTALLER,
+            \Theme\Accounts\Roles::ROLE_ARCHITECT,
+            \Theme\Accounts\Roles::ROLE_ASSET_VIEWER,
+        ],
+        'all' => null,
+    ];
+
     public static function init(): void
     {
         if (!\defined('WP_CLI') || !\WP_CLI) {
@@ -57,7 +84,21 @@ class Cli
         \WP_CLI::log(\sprintf('  already sent            %d', $counts['sent']));
         \WP_CLI::log(\sprintf('  disabled, will skip     %d', $counts['disabled']));
         \WP_CLI::log(\sprintf('  no email address        %d', $counts['no_email']));
-        \WP_CLI::log(\sprintf('  WOULD SEND              %d', $counts['pending']));
+        \WP_CLI::log('');
+
+        foreach (self::AUDIENCES as $name => $roles) {
+            \WP_CLI::log(\sprintf(
+                '  --audience=%-9s %s %d',
+                $name,
+                'staff' === $name ? 'WOULD SEND ' : 'would send ',
+                \count(self::recipients('', false, $roles))
+            ));
+        }
+
+        \WP_CLI::log('');
+        \WP_CLI::log('  Phase one is staff. Installers and distributors stay on the old');
+        \WP_CLI::log('  portal until the asset library is ready, so --audience=staff is');
+        \WP_CLI::log('  the default and the other two have to be asked for by name.');
         \WP_CLI::log('');
         \WP_CLI::log(\sprintf('  email enabled           %s', self::email() && self::email()->is_enabled() ? 'yes' : 'NO -- nothing will send'));
         \WP_CLI::log(\sprintf('  site                    %s', \network_site_url()));
@@ -78,6 +119,18 @@ class Cli
      * [--only=<ids>]
      * : Comma-separated user ids, for sending to yourself before the real run.
      *
+     * [--audience=<who>]
+     * : Which group to send to. Defaults to staff, because installers and
+     *   distributors stay on the old portal until the asset library is
+     *   finished. One of staff, partners, all.
+     * ---
+     * default: staff
+     * options:
+     *   - staff
+     *   - partners
+     *   - all
+     * ---
+     *
      * [--force]
      * : Include people already sent to. Think hard before using this.
      *
@@ -92,6 +145,7 @@ class Cli
      *     wp millboard portal-launch send --only=10 --live
      *     wp millboard portal-launch send --limit=25 --live
      *     wp millboard portal-launch send --live --sleep=0.5
+     *     wp millboard portal-launch send --audience=all --live --sleep=0.5
      *
      * @param array<int,string> $args
      * @param array<string,mixed> $assoc
@@ -103,6 +157,11 @@ class Cli
         $limit = (int) \WP_CLI\Utils\get_flag_value($assoc, 'limit', 0);
         $only = (string) \WP_CLI\Utils\get_flag_value($assoc, 'only', '');
         $sleep = (float) \WP_CLI\Utils\get_flag_value($assoc, 'sleep', 0);
+        $audience = (string) \WP_CLI\Utils\get_flag_value($assoc, 'audience', 'staff');
+
+        if (!\array_key_exists($audience, self::AUDIENCES)) {
+            \WP_CLI::error(\sprintf('Unknown --audience=%s. One of: %s.', $audience, \implode(', ', \array_keys(self::AUDIENCES))));
+        }
 
         $email = self::email();
 
@@ -114,7 +173,7 @@ class Cli
             \WP_CLI::error('The portal launch email is disabled in WooCommerce settings, so nothing would send.');
         }
 
-        $users = self::recipients($only, $force);
+        $users = self::recipients($only, $force, self::AUDIENCES[$audience]);
 
         if ($limit > 0) {
             $users = \array_slice($users, 0, $limit);
@@ -127,6 +186,7 @@ class Cli
         }
 
         if (!$live) {
+            \WP_CLI::log(\sprintf('Audience: %s.', $audience));
             \WP_CLI::log(\sprintf('DRY RUN. %d would be sent. Nothing has been sent and nothing recorded.', \count($users)));
             \WP_CLI::log('Add --live to send for real.');
 
@@ -141,7 +201,7 @@ class Cli
             return;
         }
 
-        \WP_CLI::log(\sprintf('Sending to %d people from %s', \count($users), \network_site_url()));
+        \WP_CLI::log(\sprintf('Sending to %d people (audience: %s) from %s', \count($users), $audience, \network_site_url()));
 
         if ($sleep > 0) {
             \WP_CLI::log(\sprintf(
@@ -208,9 +268,10 @@ class Cli
     }
 
     /**
+     * @param string[]|null $roles Null means every imported account.
      * @return \WP_User[]
      */
-    private static function recipients(string $only, bool $force): array
+    private static function recipients(string $only, bool $force, ?array $roles = null): array
     {
         if ('' !== $only) {
             $ids = \array_filter(\array_map('absint', \explode(',', $only)));
@@ -245,11 +306,17 @@ class Cli
             ];
         }
 
-        $users = \get_users([
+        $query = [
             'meta_query' => $meta,
             'number' => -1,
             'orderby' => 'ID',
-        ]);
+        ];
+
+        if (null !== $roles) {
+            $query['role__in'] = $roles;
+        }
+
+        $users = \get_users($query);
 
         return \array_values(\array_filter($users, static fn(\WP_User $u): bool => (bool) \is_email($u->user_email)));
     }
@@ -280,8 +347,6 @@ class Cli
             'fields' => 'ID',
         ]));
 
-        $pending = self::recipients('', false);
-
         $no_email = \count(\get_users([
             'meta_query' => [
                 ['key' => \Theme\Accounts\PortalImport::META_IMPORTED, 'compare' => 'EXISTS'],
@@ -299,7 +364,6 @@ class Cli
             'sent' => $sent,
             'disabled' => $disabled,
             'no_email' => $no_email,
-            'pending' => \count($pending),
         ];
     }
 }
