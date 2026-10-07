@@ -17,6 +17,17 @@ namespace Theme\Emails;
  * DRY RUN IS THE DEFAULT. `--live` is required to send anything, because the
  * cost of getting this wrong is 1,235 people receiving an email twice, or
  * receiving one that should not have gone at all.
+ *
+ * USE --sleep ON THE REAL RUN. 1,235 messages pushed through the mail provider
+ * in one unbroken loop is how a sending account gets rate limited or throttled,
+ * and a run that stalls halfway leaves the cohort part-mailed.
+ *
+ * ⚠ In `## OPTIONS`, a wrapped description continues with INDENTATION, never
+ * with another `: `. WP-CLI parses that block as the command synopsis and reads
+ * a second colon-prefixed line as another parameter, which it then rejects:
+ * --sleep first shipped printing "invalid synopsis part: part-mailed" on every
+ * invocation, because the last word of a wrapped line was taken for an option.
+ * Theme\Summit\Cli has it right and was the model.
  */
 class Cli
 {
@@ -71,10 +82,10 @@ class Cli
      * : Include people already sent to. Think hard before using this.
      *
      * [--sleep=<seconds>]
-     * : Pause between sends. 1,235 messages pushed through the mail provider in
-     * : one unbroken loop is how a sending account gets rate limited or
-     * : throttled, and a run that stalls halfway leaves the cohort part-mailed.
-     * : Accepts decimals, so --sleep=0.5 is fine. Default 0.
+     * : Seconds to pause between sends, decimals allowed. Use it on the real
+     *   run: 1,235 messages in one unbroken loop is how a sending account gets
+     *   throttled. --sleep=0.5 puts the whole send at roughly ten minutes.
+     *   Default 0.
      *
      * ## EXAMPLES
      *
