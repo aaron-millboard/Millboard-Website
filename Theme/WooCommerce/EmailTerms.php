@@ -91,12 +91,17 @@ class EmailTerms
             $links[] = '<a href="' . \esc_url($url) . '" style="color:inherit;">' . \esc_html($label) . '</a>';
         }
 
+        /*
+         * Tidy first, then decide. Stripping the contracts can leave a dangling
+         * separator or <br> behind, and an account email adds nothing back, so
+         * the cleanup has to run whether or not there is anything to append.
+         */
+        $text = \rtrim($text);
+        $text = \preg_replace('/(\s*(\|\s*)|(<br\s*\/?>\s*))+$/i', '', $text);
+
         if (!$links) {
             return $text;
         }
-
-        $text = \rtrim($text);
-        $text = \preg_replace('/(\s*(\|\s*)|(<br\s*\/?>\s*))+$/i', '', $text);
 
         return $text . '<br />' . \implode(' | ', $links);
     }
@@ -108,9 +113,27 @@ class EmailTerms
      */
     public static function applicable(?\WC_Order $order): array
     {
-        $persona = $order instanceof \WC_Order
-            ? \trim((string) $order->get_meta('website_persona'))
-            : '';
+        /*
+         * NO ORDER, NO TERMS OF SALE.
+         *
+         * Aaron, 7 Oct 2026, on seeing both contracts in the portal launch
+         * email: "why did it add these on this email, don't they only apply to
+         * ones where someone has purchased, this is just an account email."
+         *
+         * He is right. These are contracts of SALE. On an account email -- new
+         * account, password reset, the portal launch -- nothing has been
+         * bought, so neither contract governs anything and printing both is
+         * noise on the emails that can least afford it.
+         *
+         * This is distinct from an ORDER whose persona is unknown, below, where
+         * a sale genuinely happened and we simply cannot tell which contract
+         * applies. That case still shows both.
+         */
+        if (!$order instanceof \WC_Order) {
+            return [];
+        }
+
+        $persona = \trim((string) $order->get_meta('website_persona'));
 
         if ('' === $persona) {
             return (array) \apply_filters('millboard_email_terms_unknown', ['b2c', 'b2b'], $order);

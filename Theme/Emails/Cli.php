@@ -70,10 +70,17 @@ class Cli
      * [--force]
      * : Include people already sent to. Think hard before using this.
      *
+     * [--sleep=<seconds>]
+     * : Pause between sends. 1,235 messages pushed through the mail provider in
+     * : one unbroken loop is how a sending account gets rate limited or
+     * : throttled, and a run that stalls halfway leaves the cohort part-mailed.
+     * : Accepts decimals, so --sleep=0.5 is fine. Default 0.
+     *
      * ## EXAMPLES
      *
      *     wp millboard portal-launch send --only=10 --live
      *     wp millboard portal-launch send --limit=25 --live
+     *     wp millboard portal-launch send --live --sleep=0.5
      *
      * @param array<int,string> $args
      * @param array<string,mixed> $assoc
@@ -84,6 +91,7 @@ class Cli
         $force = (bool) \WP_CLI\Utils\get_flag_value($assoc, 'force', false);
         $limit = (int) \WP_CLI\Utils\get_flag_value($assoc, 'limit', 0);
         $only = (string) \WP_CLI\Utils\get_flag_value($assoc, 'only', '');
+        $sleep = (float) \WP_CLI\Utils\get_flag_value($assoc, 'sleep', 0);
 
         $email = self::email();
 
@@ -123,6 +131,14 @@ class Cli
         }
 
         \WP_CLI::log(\sprintf('Sending to %d people from %s', \count($users), \network_site_url()));
+
+        if ($sleep > 0) {
+            \WP_CLI::log(\sprintf(
+                'Pausing %ss between sends, so expect this to take roughly %s.',
+                $sleep,
+                \human_time_diff(0, (int) \max(1, \round($sleep * \count($users))))
+            ));
+        }
         $progress = \WP_CLI\Utils\make_progress_bar('Sending', \count($users));
         $sent = 0;
         $failed = 0;
@@ -148,6 +164,12 @@ class Cli
                 $failed++;
                 \delete_user_meta($user->ID, PortalLaunch::META_SENT);
                 \WP_CLI::warning(\sprintf('%s: send failed', $user->user_email));
+            }
+
+            // After the send rather than before, and skipped on the last one,
+            // so a run does not finish with a pointless wait.
+            if ($sleep > 0 && $user !== \end($users)) {
+                \usleep((int) \round($sleep * 1000000));
             }
 
             $progress->tick();
