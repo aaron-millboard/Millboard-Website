@@ -123,6 +123,30 @@ if (file_exists($autoloader = __DIR__ . '/vendor/autoload.php')) {
 // Show the terms of sale that actually apply: consumer or business, by persona.
 \Theme\WooCommerce\EmailTerms::init();
 
+// The partner portal launch email. Registered so it appears in WooCommerce's
+// email settings, but it has NO trigger: the only way to send it is
+// `wp millboard portal-launch send --live`.
+// Instantiated INSIDE the filter, never at theme load: the class extends
+// WC_Email, so touching it before WooCommerce has defined that class fatals the
+// whole site.
+\add_filter('woocommerce_email_classes', static function (array $emails): array {
+    $emails['Theme_Emails_PortalLaunch'] = new \Theme\Emails\PortalLaunch();
+
+    return $emails;
+});
+
+// Same reason: guard on WC_Email already existing, without autoloading, before
+// naming the class. By the time a password reset actually runs, it does.
+\add_filter('password_reset_expiration', static function ($seconds) {
+    if (!\class_exists('WC_Email', false)) {
+        return $seconds;
+    }
+
+    return \Theme\Emails\PortalLaunch::extend_key_expiry($seconds);
+});
+
+\Theme\Emails\Cli::init();
+
 // ----------------------------------------------------
 // Partner account types.
 // ----------------------------------------------------

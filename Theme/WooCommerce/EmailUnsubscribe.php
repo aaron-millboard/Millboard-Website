@@ -172,27 +172,42 @@ class EmailUnsubscribe
             return $text;
         }
 
+        $extra = [];
+
+        /*
+         * The unsubscribe link is keyed on the order, so only an email that
+         * carries one can have it. Account emails -- new account, password
+         * reset, the portal launch -- have no order to identify anybody with,
+         * and are account administration rather than marketing anyway.
+         */
         $order = $email->object ?? null;
 
-        if (!$order instanceof \WC_Order || !$order->get_billing_email()) {
-            return $text;
+        if ($order instanceof \WC_Order && $order->get_billing_email()) {
+            $extra[] = \sprintf(
+                '<a href="%s" style="color:inherit;">%s</a>',
+                \esc_url(self::link($order)),
+                \esc_html__('Unsubscribe from marketing emails', 'granola')
+            );
         }
 
-        $link = \sprintf(
-            '<a href="%s" style="color:inherit;">%s</a>',
-            \esc_url(self::link($order)),
-            \esc_html__('Unsubscribe from marketing emails', 'granola')
-        );
-
-        $privacy = '';
+        /*
+         * The privacy policy is not conditional on an order. It used to sit
+         * after an early return, so every account email went out without it --
+         * including the portal launch, which goes to people who never signed up
+         * and is exactly where it is most warranted.
+         */
         $policy = \get_privacy_policy_url();
 
         if ($policy) {
-            $privacy = ' | <a href="' . \esc_url($policy) . '" style="color:inherit;">'
+            $extra[] = '<a href="' . \esc_url($policy) . '" style="color:inherit;">'
                 . \esc_html__('Privacy policy', 'granola') . '</a>';
         }
 
-        return $text . ' | ' . $link . $privacy;
+        if (!$extra) {
+            return $text;
+        }
+
+        return $text . ' | ' . \implode(' | ', $extra);
     }
 
     public static function link(\WC_Order $order): string
