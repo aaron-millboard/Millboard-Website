@@ -1,0 +1,185 @@
+<?php
+
+namespace Granola\Components\AdviceCategorySlider;
+
+use Theme\Utils\Advice;
+
+function filter_args(array $args): ?array
+{
+    // -------------------------------------------------------------------------
+    // Default arguments.
+    // -------------------------------------------------------------------------
+    $args = array_merge([
+        'heading' => null,
+        'slides' => [],
+        'classes' => [],
+    ], $args);
+
+    // -------------------------------------------------------------------------
+    // Required classes.
+    // -------------------------------------------------------------------------
+    $args['classes'] = array_merge([
+        'advice-category-slider',
+        'wp-block',
+    ], $args['classes']);
+
+    $args['cards'] = build_cards((array) $args['slides'], Advice::images_shown());
+
+    // Every chosen category is empty: no rail, rather than a heading over
+    // nothing.
+    if (!$args['cards']) {
+        return null;
+    }
+
+    foreach ($args['cards'] as $card) {
+        Advice::mark_image_shown((int) ($card['image']['attachment_id'] ?? 0));
+    }
+
+    // -------------------------------------------------------------------------
+    // Summary beside the heading: the guides across every card, each counted
+    // once. Two cards for a parent and its own child would otherwise count the
+    // same guide twice.
+    // -------------------------------------------------------------------------
+    $args['summary'] = '';
+
+    if ($args['cards']) {
+        $total = Advice::guide_count(array_column($args['cards'], 'term_id'));
+        $args['summary'] = Advice::guide_label($total);
+    }
+
+    // -------------------------------------------------------------------------
+    // Return the filtered args.
+    // -------------------------------------------------------------------------
+    return $args;
+}
+
+/**
+ * One card per chosen category, everything read off the category unless the
+ * row overrides it.
+ *
+ * Shared with the schema block, which lists the same categories. The schema
+ * runs in the head before anything is drawn, so it passes nothing to avoid and
+ * marks nothing as shown; only the rendered rail does either.
+ *
+ * @param array $rows  The block's repeater rows.
+ * @param int[] $avoid Images already on the page, passed over when a card
+ *                     falls back to a guide's featured image.
+ */
+function build_cards(array $rows, array $avoid = []): array
+{
+    $cards = [];
+    $avoid = array_fill_keys(array_map('intval', $avoid), true);
+
+    foreach ($rows as $row) {
+        $term = !empty($row['term']) ? \get_term((int) $row['term'], Advice::TAXONOMY) : null;
+
+        if (!$term instanceof \WP_Term) {
+            continue;
+        }
+
+        $posts = Advice::post_ids([$term->term_id]);
+
+        // An empty category is skipped rather than shown as a card that opens
+        // on "no articles found". It appears by itself once a guide is filed.
+        if (!$posts) {
+            continue;
+        }
+
+        $link = \get_term_link($term);
+
+        if (\is_wp_error($link)) {
+            continue;
+        }
+
+        $description = trim((string) ($row['description'] ?? ''));
+
+        if ($description === '') {
+            $description = trim(\wp_strip_all_tags(\term_description($term)));
+        }
+
+        // Image: the row's own, else the newest guide's featured image that is
+        // not already on the page, so a card is never a blank box while
+        // someone finds a photograph. A category whose every image is taken
+        // repeats its newest rather than going blank.
+        $attachment_id = !empty($row['image']['attachment_id']) ? (int) $row['image']['attachment_id'] : 0;
+
+        if (!$attachment_id) {
+            $newest = 0;
+
+            foreach ($posts as $post_id) {
+                $thumbnail = (int) \get_post_thumbnail_id($post_id);
+
+                if (!$thumbnail) {
+                    continue;
+                }
+
+                $newest = $newest ?: $thumbnail;
+
+                if (!isset($avoid[$thumbnail])) {
+                    $attachment_id = $thumbnail;
+                    break;
+                }
+            }
+
+            $attachment_id = $attachment_id ?: $newest;
+        }
+
+        if ($attachment_id) {
+            $avoid[$attachment_id] = true;
+        }
+
+        $cards[] = [
+            'term_id' => $term->term_id,
+            'name' => Advice::term_name($term),
+            'url' => $link,
+            'description' => $description,
+            'topics' => topics_of($term, (string) ($row['topics'] ?? '')),
+            'count' => count($posts),
+            'count_label' => Advice::guide_label(count($posts)),
+            'image' => $attachment_id ? [
+                'attachment_id' => $attachment_id,
+                // Decorative: the card's heading names the category and the
+                // whole card is one link.
+                'alt' => '',
+                'size' => 'large',
+                'sizes' => '(max-width: 600px) 85vw, 440px',
+                'classes' => ['advice-category-slider__image'],
+            ] : null,
+        ];
+    }
+
+    return $cards;
+}
+
+/**
+ * The topic line under a card: typed one per line, or else the category's own
+ * sub-categories that have something in them.
+ */
+function topics_of(\WP_Term $term, string $typed): array
+{
+    $typed = array_values(array_filter(array_map('trim', preg_split('/\r\n|\r|\n/', $typed))));
+
+    if ($typed) {
+        return $typed;
+    }
+
+    $children = \get_terms([
+        'taxonomy' => Advice::TAXONOMY,
+        'parent' => $term->term_id,
+        'hide_empty' => false,
+    ]);
+
+    if (\is_wp_error($children) || !$children) {
+        return [];
+    }
+
+    $names = [];
+
+    foreach ($children as $child) {
+        if (Advice::guide_count([$child->term_id])) {
+            $names[] = Advice::term_name($child);
+        }
+    }
+
+    return $names;
+}

@@ -1,0 +1,40 @@
+{
+    "$schema": "https://raw.githubusercontent.com/AdvancedCustomFields/schemas/main/json/block.json",
+    "apiVersion": 3,
+    "name": "acf/advice-article-hero",
+    "title": "Advice Article Hero",
+    "description": "The article opener: full-bleed photograph, breadcrumbs, category eyebrow, H1, standfirst and caption.",
+    "category": "granola-blocks",
+    "icon": "cover-image",
+    "keywords": [
+        "advice",
+        "article",
+        "hero"
+    ],
+    "acf": {
+        "mode": "edit",
+        "blockVersion": 3,
+        "autoInlineEditing": false,
+        "hideFieldsInSidebar": true,
+        "renderCallback": "\\Granola\\Component::acf_render_callback",
+        "postTypes": [
+            "advice-centre"
+        ]
+    },
+    "supports": {
+        "align": false,
+        "anchor": true,
+        "color": {
+            "background": false,
+            "text": false
+        },
+        "mode": false,
+        "multiple": false
+    },
+    "attributes": {
+        "align": {
+            "type": "string",
+            "default": "full"
+        }
+    }
+}

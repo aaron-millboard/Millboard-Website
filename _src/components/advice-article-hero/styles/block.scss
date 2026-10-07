@@ -1,0 +1,204 @@
+// =============================================================================
+// Advice Article Hero
+// =============================================================================
+// The photograph full bleed, the copy pinned to its foot under a Charcoal
+// Black scrim. The eyebrow stays Apple green, as the design draws it on dark
+// grounds, at 19px bold so it counts as large text.
+//
+// The scrim is three layers, because every article brings its own photograph
+// and the brightest of them reach a luminance of 0.77 behind the text. On top
+// of the design's bottom-up gradient: one darkening the copy column from the
+// left (as on the hub hero), and a fade from the top edge, where the
+// breadcrumbs and the caption sit. On a phone the copy runs the full width of
+// the picture, so an even 20% veil is added there too. Measured 1 Oct 2026 by
+// sampling the eight brightest hero photographs behind every line of copy at
+// 1440, 1024 and 375px: all clear AA. A much paler photograph would need
+// checking again.
+// =============================================================================
+
+.advice-article-hero {
+    --block--margin-top: 0;
+    --block--margin-bottom: 0;
+
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    align-items: flex-end;
+    min-height: clamp(#{px-to-rem(380)}, 58vw, #{px-to-rem(700)});
+    background-color: var(--color--wenge);
+    color: var(--color--springwood);
+
+    &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        background:
+            linear-gradient(
+                to bottom,
+                #{rgba(#2f292e, 0.72)} 0%,
+                #{rgba(#2f292e, 0.34)} 32%,
+                #{rgba(#2f292e, 0)} 52%
+            ),
+            linear-gradient(
+                to right,
+                #{rgba(#2f292e, 0.6)} 0%,
+                #{rgba(#2f292e, 0.45)} 50%,
+                #{rgba(#2f292e, 0)} 85%
+            ),
+            linear-gradient(
+                to top,
+                #{rgba(#2f292e, 0.86)} 0%,
+                #{rgba(#2f292e, 0.4)} 50%,
+                #{rgba(#2f292e, 0.16)} 100%
+            );
+        pointer-events: none;
+
+        @include mq($until: medium) {
+            background:
+                linear-gradient(
+                    to bottom,
+                    #{rgba(#2f292e, 0.72)} 0%,
+                    #{rgba(#2f292e, 0.34)} 32%,
+                    #{rgba(#2f292e, 0)} 52%
+                ),
+                linear-gradient(
+                    to right,
+                    #{rgba(#2f292e, 0.6)} 0%,
+                    #{rgba(#2f292e, 0.45)} 50%,
+                    #{rgba(#2f292e, 0)} 85%
+                ),
+                linear-gradient(#{rgba(#2f292e, 0.2)}, #{rgba(#2f292e, 0.2)}),
+                linear-gradient(
+                    to top,
+                    #{rgba(#2f292e, 0.86)} 0%,
+                    #{rgba(#2f292e, 0.4)} 50%,
+                    #{rgba(#2f292e, 0.16)} 100%
+                );
+        }
+    }
+
+    &__image {
+        position: absolute;
+        inset: 0;
+        z-index: -2;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: 50% 50%;
+    }
+
+    &__caption {
+        position: absolute;
+        top: var(--mbh-section-x);
+        right: var(--mbh-section-x);
+        max-width: 40%;
+        margin: 0;
+        font-weight: 300;
+        font-size: #{px-to-rem(15)};
+        line-height: 1.4;
+        letter-spacing: var(--mbh-tracking-sub);
+        text-align: right;
+        text-transform: uppercase;
+        // Top right is where the scrim is lightest, so the caption carries a
+        // shadow rather than the design's 55% white.
+        text-shadow: 0 1px 3px #{rgba(#2f292e, 0.7)};
+        color: #{rgba(#f8f4f0, 0.9)};
+    }
+
+    &__inner {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        max-width: var(--mbh-container);
+        margin: 0 auto;
+        padding: #{px-to-rem(96)} var(--mbh-section-x) var(--mbh-section-x);
+    }
+
+    // -------------------------------------------------------------------------
+    // Breadcrumbs. The shared component, recoloured for a dark ground, less
+    // its last crumb (the article's own title, which the H1 repeats).
+    // -------------------------------------------------------------------------
+    // The trail runs through the article's category now, which can make it
+    // long; held to 34em it wraps inside the darkened copy column instead of
+    // running out over the brightest part of the picture.
+    &__breadcrumbs {
+        max-width: 34em;
+        margin-bottom: #{px-to-rem(48)};
+
+        .breadcrumbs {
+            text-shadow: 0 1px 3px #{rgba(#2f292e, 0.6)};
+            font-size: #{px-to-rem(15)};
+            line-height: 1.55;
+            letter-spacing: var(--mbh-tracking-sub);
+            text-transform: uppercase;
+            color: var(--color--springwood);
+
+            a {
+                color: inherit;
+
+                --link--color: currentColor;
+                --link--color--hover: var(--color--springwood);
+            }
+
+            .breadcrumb_last {
+                @include visually-hidden;
+            }
+        }
+
+        .breadcrumbs__yoast-separator {
+            color: #{rgba(#f8f4f0, 0.9)};
+
+            // The separator before the hidden last crumb.
+            &:nth-last-child(2) {
+                display: none;
+            }
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Copy.
+    // -------------------------------------------------------------------------
+    &__eyebrow {
+        margin: 0 0 #{px-to-rem(16)};
+        font-size: #{px-to-rem(19)};
+        font-weight: 700;
+        line-height: 1.3;
+        letter-spacing: var(--mbh-tracking-eyebrow);
+        text-transform: uppercase;
+        color: var(--color--apple);
+    }
+
+    // The design's 20ch measure, in em: ch is narrower than a capital at this
+    // tracking, and a long word was split. The floor is 32px, not 40, so the
+    // longest words in the titles fit a phone whole.
+    &__heading {
+        max-width: 12em;
+        margin: 0;
+        font-weight: 300;
+        font-size: clamp(#{px-to-rem(32)}, calc(3.6vw + #{px-to-rem(18)}), #{px-to-rem(64)});
+        line-height: 1.05;
+        letter-spacing: var(--mbh-tracking-heading);
+        text-transform: uppercase;
+        text-wrap: balance;
+        color: var(--color--springwood);
+        -webkit-text-stroke: 0.2px currentColor;
+    }
+
+    &__standfirst {
+        margin: #{px-to-rem(32)} 0 0;
+        font-weight: 300;
+        font-size: #{px-to-rem(18)};
+        line-height: 1.7;
+        text-wrap: pretty;
+        color: var(--color--springwood);
+    }
+
+    @include mq($until: medium) {
+        &__caption {
+            max-width: none;
+            left: var(--mbh-section-x);
+            text-align: left;
+        }
+    }
+}

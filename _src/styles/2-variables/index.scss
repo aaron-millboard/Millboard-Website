@@ -8,6 +8,7 @@
 @import './form-variables';
 @import './blocks-variables';
 @import './global-variables';
+@import './home-variables';
 @import './space-variables';
 @import './type-variables';
 // @import './typescale-variables';
@@ -16,6 +17,7 @@
 
 @mixin output-custom-properties {
     @include global-variables;
+    @include home-variables;
     @include blocks-variables;
     @include width-variables;
     @include space-variables;

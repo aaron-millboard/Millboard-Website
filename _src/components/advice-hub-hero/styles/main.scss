@@ -1,0 +1,261 @@
+// =============================================================================
+// Advice Hub Hero
+// =============================================================================
+// A photograph under a Charcoal Black scrim, the copy pinned to its lower left.
+//
+// The scrim is two layers. The design's single bottom-up gradient left the
+// eyebrow and the "Popular" label at 2.8:1 and 3.9:1 where they crossed the
+// pale wall in the staging photograph, measured by sampling the photograph
+// itself behind each line of text. So a second layer darkens the copy column
+// from the left and fades out by 85% across, which keeps the right of the
+// picture clear, and the small text is held at full strength. Measured 1 Oct
+// 2026 at 1440, 834 and 375px: every line of copy clears AA, the eyebrow as
+// large text (it is 19px bold, as on the home hero). A much paler photograph
+// would need re-measuring.
+// =============================================================================
+
+.advice-hub-hero {
+    --block--margin-top: 0;
+    --block--margin-bottom: 0;
+
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    align-items: flex-end;
+    min-height: clamp(#{px-to-rem(360)}, 42vw, #{px-to-rem(560)});
+    background-color: var(--color--wenge);
+    color: var(--color--springwood);
+
+    &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        background:
+            linear-gradient(
+                to right,
+                #{rgba(#2f292e, 0.6)} 0%,
+                #{rgba(#2f292e, 0.45)} 50%,
+                #{rgba(#2f292e, 0)} 85%
+            ),
+            linear-gradient(
+                to top,
+                #{rgba(#2f292e, 0.86)} 0%,
+                #{rgba(#2f292e, 0.45)} 46%,
+                #{rgba(#2f292e, 0.2)} 100%
+            );
+        pointer-events: none;
+    }
+
+    &__image {
+        position: absolute;
+        inset: 0;
+        z-index: -2;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: 50% 58%;
+    }
+
+    &__inner {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        max-width: var(--mbh-container);
+        margin: 0 auto;
+        padding: clamp(#{px-to-rem(48)}, 6vw, #{px-to-rem(64)}) var(--mbh-section-x) clamp(#{px-to-rem(32)}, 5vw, #{px-to-rem(64)});
+    }
+
+    // -------------------------------------------------------------------------
+    // Breadcrumbs. The shared component, recoloured for a dark ground.
+    // -------------------------------------------------------------------------
+    &__breadcrumbs {
+        margin-bottom: clamp(#{px-to-rem(24)}, 3vw, #{px-to-rem(32)});
+
+        .breadcrumbs {
+            // The trail sits highest on the photograph, where the scrim is
+            // lightest, so a soft shadow keeps it off a pale sky.
+            text-shadow: 0 1px 3px #{rgba(#2f292e, 0.6)};
+            font-size: #{px-to-rem(13)};
+            letter-spacing: var(--mbh-tracking-sub);
+            text-transform: uppercase;
+            color: #{rgba(#f8f4f0, 0.9)};
+
+            a {
+                color: inherit;
+
+                --link--color: currentColor;
+                --link--color--hover: var(--color--springwood);
+            }
+
+            .breadcrumb_last {
+                font-weight: 300;
+                text-decoration: none;
+                color: var(--color--springwood);
+            }
+        }
+
+        .breadcrumbs__yoast-separator {
+            color: #{rgba(#f8f4f0, 0.72)};
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Copy.
+    // -------------------------------------------------------------------------
+    &__eyebrow {
+        margin: 0 0 #{px-to-rem(16)};
+        // 19px bold is large text under WCAG (14pt bold), so it needs 3:1
+        // rather than 4.5:1. Apple green at 13px could not reach 4.5:1 over
+        // the pale wall without blacking out the photograph; the home hero's
+        // eyebrow was resolved the same way.
+        font-size: #{px-to-rem(19)};
+        font-weight: 700;
+        letter-spacing: var(--mbh-tracking-eyebrow);
+        text-transform: uppercase;
+        color: var(--color--apple);
+    }
+
+    &__heading {
+        max-width: 18ch;
+        margin: 0;
+        font-weight: 300;
+        font-size: clamp(#{px-to-rem(36)}, 5vw, #{px-to-rem(64)});
+        line-height: 1.05;
+        letter-spacing: var(--mbh-tracking-heading);
+        text-transform: uppercase;
+        text-wrap: balance;
+        color: var(--color--springwood);
+    }
+
+    &__standfirst {
+        max-width: var(--mbh-measure);
+        margin: clamp(#{px-to-rem(20)}, 2.4vw, #{px-to-rem(32)}) 0 0;
+        font-weight: 300;
+        font-size: clamp(#{px-to-rem(16)}, 1.3vw, #{px-to-rem(18)});
+        line-height: 1.7;
+        text-wrap: pretty;
+        color: var(--color--springwood);
+    }
+
+    // -------------------------------------------------------------------------
+    // Search.
+    // -------------------------------------------------------------------------
+    &__search {
+        display: flex;
+        flex-wrap: wrap;
+        gap: #{px-to-rem(12)};
+        max-width: #{px-to-rem(720)};
+        margin-top: clamp(#{px-to-rem(32)}, 4vw, #{px-to-rem(48)});
+    }
+
+    &__search-label {
+        @include visually-hidden;
+    }
+
+    &__search-input {
+        flex: 1 1 #{px-to-rem(280)};
+        min-width: 0;
+        margin: 0;
+        padding: #{px-to-rem(16)} #{px-to-rem(24)};
+        font: inherit;
+        font-weight: 300;
+        font-size: #{px-to-rem(16)};
+        color: var(--color--springwood);
+        background: #{rgba(#2f292e, 0.4)};
+        // 0.7, not the shared 0.25 hairline. The border is what says "this is
+        // a field", so it has to reach 3:1 against the scrim (WCAG 1.4.11);
+        // the hairline measured 1.5-2.2:1.
+        border: 1px solid #{rgba(#f8f4f0, 0.7)};
+        border-radius: 0;
+        appearance: none;
+        transition: border-color var(--mbh-dur-ui) var(--mbh-ease);
+
+        &::placeholder {
+            // 0.8 rather than the design's 0.55. Over a white sky with the
+            // scrim at 0.6, 0.55 measures 3.0:1 and 0.8 measures 4.5:1, and
+            // the hint is the only label most people will read.
+            color: #{rgba(#f8f4f0, 0.8)};
+            opacity: 1;
+        }
+
+        &:focus,
+        &:focus-visible {
+            border-color: var(--color--apple);
+            outline: 2px solid var(--color--apple);
+            outline-offset: 2px;
+        }
+    }
+
+    &__search-submit {
+        flex: 0 0 auto;
+        margin: 0;
+        padding: #{px-to-rem(16)} #{px-to-rem(32)};
+        font: inherit;
+        font-weight: 700;
+        font-size: #{px-to-rem(14)};
+        letter-spacing: var(--mbh-tracking-sub);
+        text-transform: uppercase;
+        color: var(--color--black);
+        background: var(--color--springwood);
+        border: 0;
+        border-radius: 0;
+        cursor: pointer;
+        transition: opacity var(--mbh-dur-ui) var(--mbh-ease);
+
+        &:hover {
+            opacity: 0.92;
+        }
+
+        &:focus-visible {
+            outline: 2px solid var(--color--apple);
+            outline-offset: 2px;
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Quick links.
+    // -------------------------------------------------------------------------
+    &__quick {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: #{px-to-rem(8)} #{px-to-rem(24)};
+        margin-top: #{px-to-rem(24)};
+    }
+
+    &__quick-label {
+        margin: 0;
+        font-size: #{px-to-rem(13)};
+        font-weight: 700;
+        letter-spacing: var(--mbh-tracking-sub);
+        text-transform: uppercase;
+        color: #{rgba(#f8f4f0, 0.9)};
+    }
+
+    &__quick-list {
+        @include list-reset-hard;
+        @include list-reset-hard--li;
+
+        display: flex;
+        flex-wrap: wrap;
+        gap: #{px-to-rem(8)} #{px-to-rem(24)};
+    }
+
+    &__quick-link {
+        font-weight: 300;
+        font-size: #{px-to-rem(16)};
+        color: var(--color--springwood);
+        border-bottom: 1px solid #{rgba(#f8f4f0, 0.35)};
+        transition: border-color var(--mbh-dur-ui) var(--mbh-ease), color var(--mbh-dur-ui) var(--mbh-ease);
+
+        --link--text-decoration: none;
+        --link--text-decoration--hover: none;
+
+        &:hover,
+        &:focus-visible {
+            color: var(--color--springwood);
+            border-bottom-color: var(--color--apple);
+        }
+    }
+}

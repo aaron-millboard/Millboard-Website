@@ -1,0 +1,93 @@
+{
+    "key": "group_advice_article_grid",
+    "title": "Block - Advice Article Grid",
+    "fields": [
+        {
+            "key": "field_advice_article_grid_sort",
+            "label": "Order",
+            "name": "sort",
+            "aria-label": "",
+            "type": "select",
+            "instructions": "How the guides are ordered.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "choices": {
+                "recent": "Most recently updated first",
+                "title": "A to Z"
+            },
+            "default_value": "recent",
+            "return_format": "value",
+            "multiple": 0,
+            "allow_null": 0,
+            "ui": 0,
+            "ajax": 0,
+            "placeholder": ""
+        },
+        {
+            "key": "field_advice_article_grid_empty_heading",
+            "label": "Empty heading",
+            "name": "empty_heading",
+            "aria-label": "",
+            "type": "text",
+            "instructions": "Shown when a category has no published guides yet. Left empty: Nothing published here yet.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "placeholder": "",
+            "prepend": "",
+            "append": ""
+        },
+        {
+            "key": "field_advice_article_grid_empty_body",
+            "label": "Empty text",
+            "name": "empty_body",
+            "aria-label": "",
+            "type": "textarea",
+            "instructions": "Left empty: a line pointing back to the Advice Centre.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "maxlength": "",
+            "rows": 3,
+            "placeholder": "",
+            "new_lines": ""
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "block",
+                "operator": "==",
+                "value": "acf/advice-article-grid"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "",
+    "show_in_rest": 0,
+    "display_title": "",
+    "granola_save_location": 0,
+    "modified": 1790899200
+}

@@ -16,9 +16,110 @@ class AdviceCentre
         \add_action('init', [__CLASS__, 'register_post_type']);
         \add_action('init', [__CLASS__, 'add_permalink_rewrite_rule']);
         \add_action('pre_get_posts', [__CLASS__, 'filter_archive_posts_per_page']);
-        // \add_action('acf/init', [__CLASS__, 'add_settings_page']);
+        // Holds the company facts the advice author panel shows under every author.
+        \add_action('acf/init', [__CLASS__, 'add_settings_page']);
         \add_filter('granola/templates/post-types', [__CLASS__, 'filter_granola_templates_post_types']);
         \add_filter('post_type_link', [__CLASS__, 'filter_post_type_link'], 10, 2);
+        // Ahead of core's redirect_canonical (10), which would first send
+        // ?paged=2 to /page/2/ and make this a second hop.
+        \add_action('template_redirect', [__CLASS__, 'redirect_paged_hub'], 9);
+        \add_filter('wpseo_adjacent_rel_url', [__CLASS__, 'filter_hub_adjacent_rel_url']);
+        \add_action('wp_enqueue_scripts', [__CLASS__, 'enqueue_block_styles'], 20);
+    }
+
+    /**
+     * Load the advice blocks' own stylesheets in the head of the pages that use
+     * them.
+     *
+     * Their styles are separate sheets (styles/block.scss), not part of the
+     * theme bundle, because Perfmatters' Remove Unused CSS on en-GB keeps ONE
+     * trimmed copy of the CSS per kind of page, cut down to what the first page
+     * it saw happened to contain. Every article shares one copy and every
+     * taxonomy archive (the shop's categories included) shares another, so a
+     * table, a quote, a reviewer line or the filter's hidden state could be
+     * stripped from all of them. As their own sheets, listed in Perfmatters'
+     * excluded stylesheets, they load whole.
+     *
+     * Granola enqueues a block's sheet when the block renders, which is after
+     * the head is printed, so the link would land at the foot of the page and
+     * the content could paint unstyled first. Enqueued here instead, from the
+     * blocks the page is about to render.
+     */
+    public static function enqueue_block_styles(): void
+    {
+        $content = '';
+        $object = \get_queried_object();
+
+        if (\is_singular(self::SLUG) && $object instanceof \WP_Post) {
+            $content = (string) $object->post_content;
+        } elseif ($object instanceof \WP_Term && $object->taxonomy === self::TAXONOMY) {
+            $template = \Granola\WordPress\TemplatePage::get_template_page($object);
+            $content = $template instanceof \WP_Post ? (string) $template->post_content : '';
+        } elseif (\is_post_type_archive(self::SLUG)) {
+            $template = \Granola\WordPress\TemplatePage::get_template_page(\get_post_type_object(self::SLUG));
+            $content = $template instanceof \WP_Post ? (string) $template->post_content : '';
+        }
+
+        if ($content === '' || !preg_match_all('/<!-- wp:acf\/(advice-[a-z-]+)/', $content, $matches)) {
+            return;
+        }
+
+        foreach (array_unique($matches[1]) as $name) {
+            // The schema block draws nothing on the page; its sheet is for the
+            // editor only.
+            if ($name === 'advice-schema') {
+                continue;
+            }
+
+            \Granola\Component::enqueue_style_by_filename($name);
+        }
+    }
+
+    /**
+     * Whether this request is the hub, drawn from a template page that does not
+     * paginate. See \Theme\Utils\Advice::template_is_static() for why that
+     * matters.
+     *
+     * Not a category view. The `/advice-centre/advice-category/<term>/` rule
+     * below sets this post type on a term query, which makes WordPress call it
+     * the post type archive too, and its page 2 was being sent to the hub. The
+     * category class deals with those, and sends them to their own category.
+     */
+    protected static function hub_does_not_paginate(): bool
+    {
+        if (!\is_post_type_archive(self::SLUG) || \is_tax() || \is_search()) {
+            return false;
+        }
+
+        return \Theme\Utils\Advice::template_is_static(
+            \Granola\WordPress\TemplatePage::get_template_page(\get_post_type_object(self::SLUG))
+        );
+    }
+
+    /**
+     * Send a page number on the hub back to the hub itself, permanently.
+     */
+    public static function redirect_paged_hub(): void
+    {
+        if (!\is_paged() || !self::hub_does_not_paginate()) {
+            return;
+        }
+
+        \wp_safe_redirect(\Theme\Utils\Advice::unpaged_url((string) \get_post_type_archive_link(self::SLUG)), 301);
+        exit;
+    }
+
+    /**
+     * No rel="next" or rel="prev" on the hub when it does not paginate.
+     *
+     * They would point Google at the page URLs that now redirect back here.
+     *
+     * @param string $url The adjacent page URL Yoast is about to print.
+     * @return string
+     */
+    public static function filter_hub_adjacent_rel_url($url)
+    {
+        return self::hub_does_not_paginate() ? '' : $url;
     }
 
     /**
@@ -63,13 +164,17 @@ class AdviceCentre
             'taxonomies' => [
                 'advice_category',
             ],
+            // A new article starts on the article template. The body goes in
+            // advice-prose; the hero, byline and author panel fill themselves
+            // from the article and its author; the samples band stays hidden
+            // until its links are set.
             'template' => [
-                [
-                    'core/paragraph',
-                    [
-                        'placeholder' => 'Add content...',
-                    ]
-                ],
+                ['acf/advice-article-hero'],
+                ['acf/advice-article-byline'],
+                ['acf/advice-prose'],
+                ['acf/advice-author-panel'],
+                ['acf/advice-samples-cta'],
+                ['acf/advice-schema'],
             ],
 
             // Extended post type configuration.

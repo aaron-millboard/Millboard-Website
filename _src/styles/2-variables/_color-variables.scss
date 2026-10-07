@@ -67,6 +67,14 @@ $colors: (
                 '--link--color--hover': 'white',
             ),
         ),
+        'apple': (
+            'color': #a0cd4f,
+            'foreground': 'black',
+            'properties': (
+                '--link--color': var(--color--black),
+                '--link--color--hover': var(--color--black),
+            ),
+        ),
         'red': (
             'color': #a50d09,
             'foreground': 'white',

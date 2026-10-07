@@ -1,0 +1,244 @@
+// =============================================================================
+// Advice Category Slider
+// =============================================================================
+// The header and the track share a left edge with the rest of the page. The
+// track runs on past the right edge of the container, so on a wide screen it
+// starts at the container's left and ends at the viewport's right.
+// =============================================================================
+
+.advice-category-slider {
+    --block--margin-top: 0;
+    --block--margin-bottom: 0;
+    --advice-rail--gutter: calc(max(0px, (100% - var(--mbh-container)) / 2) + var(--mbh-section-x));
+    --advice-rail--gap: clamp(#{px-to-rem(20)}, 2.4vw, #{px-to-rem(32)});
+
+    padding: clamp(#{px-to-rem(48)}, 7vw, #{px-to-rem(96)}) 0;
+
+    // -------------------------------------------------------------------------
+    // Header.
+    // -------------------------------------------------------------------------
+    &__header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: #{px-to-rem(16)};
+        max-width: var(--mbh-container);
+        margin: 0 auto clamp(#{px-to-rem(32)}, 5vw, #{px-to-rem(64)});
+        padding: 0 var(--mbh-section-x);
+    }
+
+    &__heading {
+        margin: 0;
+        font-weight: 300;
+        font-size: var(--mbh-fs-h2);
+        line-height: 1.15;
+        letter-spacing: var(--mbh-tracking-heading);
+        text-transform: uppercase;
+        color: var(--color--foreground);
+    }
+
+    &__controls {
+        display: flex;
+        align-items: center;
+        gap: #{px-to-rem(24)};
+    }
+
+    &__summary {
+        margin: 0;
+        font-size: #{px-to-rem(15)};
+        color: #6e6a6c;
+    }
+
+    &__buttons {
+        display: flex;
+        gap: #{px-to-rem(8)};
+
+        &[hidden] {
+            display: none;
+        }
+    }
+
+    &__button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: #{px-to-rem(48)};
+        height: #{px-to-rem(48)};
+        padding: 0;
+        color: var(--color--foreground);
+        background: transparent;
+        border: 1px solid var(--mbh-rule-strong);
+        border-radius: 0;
+        cursor: pointer;
+        transition: border-color var(--mbh-dur-ui) var(--mbh-ease), opacity var(--mbh-dur-ui) var(--mbh-ease);
+
+        svg {
+            // The theme sets every svg to 100% wide.
+            width: #{px-to-rem(20)};
+            height: #{px-to-rem(20)};
+        }
+
+        &:hover:not(:disabled) {
+            border-color: var(--color--olivegreen);
+        }
+
+        &:focus-visible {
+            outline: 2px solid var(--color--foreground);
+            outline-offset: 2px;
+        }
+
+        &:disabled {
+            cursor: default;
+            opacity: 0.35;
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Track.
+    // -------------------------------------------------------------------------
+    &__track {
+        @include list-reset-hard;
+        @include list-reset-hard--li;
+
+        display: flex;
+        gap: var(--advice-rail--gap);
+        padding: 0 var(--mbh-section-x) 0 var(--advice-rail--gutter);
+        overflow-x: auto;
+        overflow-y: hidden;
+        overscroll-behavior-x: contain;
+        scroll-snap-type: x mandatory;
+        scroll-padding-inline-start: var(--advice-rail--gutter);
+        scrollbar-width: none;
+
+        &::-webkit-scrollbar {
+            display: none;
+        }
+    }
+
+    &__item {
+        flex: 0 0 clamp(#{px-to-rem(272)}, 32vw, #{px-to-rem(440)});
+        scroll-snap-align: start;
+    }
+
+    &__card {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        padding-top: #{px-to-rem(24)};
+        color: var(--color--foreground);
+        border-top: 1px solid var(--color--foreground);
+
+        --link--text-decoration: none;
+        --link--text-decoration--hover: none;
+        --link--color: var(--color--foreground);
+        --link--color--hover: var(--color--foreground);
+
+        &:hover,
+        &:focus-visible {
+            .advice-category-slider__image {
+                transform: scale(1.03);
+            }
+
+            .advice-category-slider__more {
+                border-bottom-color: var(--color--olivegreen);
+            }
+        }
+
+        &:focus-visible {
+            outline: 2px solid var(--color--foreground);
+            outline-offset: 4px;
+        }
+    }
+
+    &__frame {
+        display: block;
+        aspect-ratio: 4 / 3;
+        overflow: hidden;
+        background-color: var(--color--wenge);
+    }
+
+    &__image {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform var(--mbh-dur-ui-slow) var(--mbh-ease);
+    }
+
+    &__name {
+        margin: #{px-to-rem(24)} 0 #{px-to-rem(12)};
+        font-weight: 300;
+        font-size: #{px-to-rem(22)};
+        line-height: 1.2;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: inherit;
+    }
+
+    &__description {
+        margin: 0 0 #{px-to-rem(24)};
+        font-weight: 300;
+        font-size: #{px-to-rem(16)};
+        line-height: 1.7;
+        text-wrap: pretty;
+        color: inherit;
+    }
+
+    &__topics {
+        display: flex;
+        flex-wrap: wrap;
+        gap: #{px-to-rem(8)} #{px-to-rem(16)};
+        margin-bottom: #{px-to-rem(24)};
+        padding-top: #{px-to-rem(16)};
+        border-top: 1px solid var(--mbh-rule);
+    }
+
+    &__topic {
+        font-size: #{px-to-rem(15)};
+        color: #6e6a6c;
+    }
+
+    &__more {
+        align-self: flex-start;
+        margin-top: auto;
+        padding-bottom: #{px-to-rem(4)};
+        font-weight: 700;
+        font-size: #{px-to-rem(14)};
+        letter-spacing: var(--mbh-tracking-sub);
+        text-transform: uppercase;
+        border-bottom: 1px solid transparent;
+        transition: border-color var(--mbh-dur-ui) var(--mbh-ease);
+    }
+
+    // -------------------------------------------------------------------------
+    // Progress.
+    // -------------------------------------------------------------------------
+    &__progress {
+        position: relative;
+        height: 2px;
+        max-width: var(--mbh-container);
+        margin: clamp(#{px-to-rem(32)}, 4vw, #{px-to-rem(48)}) auto 0;
+        // Inset to the gutter rather than padded, so the bar's 100% is the
+        // visible length of the rule.
+        width: calc(100% - (2 * var(--mbh-section-x)));
+        overflow: hidden;
+        background-color: var(--mbh-rule);
+
+        &[hidden] {
+            display: none;
+        }
+    }
+
+    &__progress-bar {
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 100%;
+        background-color: var(--color--foreground);
+        transition: transform var(--mbh-dur-ui) var(--mbh-ease), width var(--mbh-dur-ui) var(--mbh-ease);
+
+        @media (prefers-reduced-motion: reduce) {
+            transition: none;
+        }
+    }
+}
