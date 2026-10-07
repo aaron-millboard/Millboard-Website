@@ -33,7 +33,16 @@ if ( ! $mb_email instanceof WC_Email && class_exists( 'Theme\WooCommerce\EmailUn
 
 // Contact line first; the legal links and the unsubscribe come from the filter.
 $mb_phone = apply_filters( 'millboard_email_footer_phone', '+44 (0) 24 7643 9943' );
-$mb_inbox = apply_filters( 'millboard_email_footer_email', get_option( 'woocommerce_email_from_address' ) );
+/*
+ * enquiries@, not the WooCommerce from-address.
+ *
+ * The from-address is order.fulfilment.gb@millboard.com, a fulfilment inbox.
+ * Using it here sent every customer to the wrong team, and on a password reset
+ * or the portal launch it is nonsense: there is no order for fulfilment to
+ * look up. The design handoff specified enquiries@ throughout and that is what
+ * this should always have been.
+ */
+$mb_inbox = apply_filters( 'millboard_email_footer_email', 'enquiries@millboard.com' );
 
 // Whether this email is about an order at all, which decides how the contact
 // line is worded below.
