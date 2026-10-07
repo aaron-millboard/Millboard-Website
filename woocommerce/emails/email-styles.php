@@ -60,6 +60,13 @@ table.td thead th { padding: 0 0 10px 0; text-align: left; font-weight: 700; fon
 table.td tbody td { padding: 16px 0; vertical-align: top; font-weight: 300; font-size: 15px; line-height: 22px; color: #151716; border-bottom: 1px solid #dedcd2; }
 table.td .td-qty { width: 56px; text-align: center; }
 table.td .td-price { width: 96px; text-align: right; }
+/* WooCommerce 10.9 renders the totals as a SEPARATE table, not a tfoot, and
+   puts its own alignment classes on the cells. The handoff assumed a tfoot, so
+   without these the totals float mid-width instead of lining up with the price
+   column. Honouring core's classes is less brittle than guessing at selectors. */
+.text-align-left { text-align: left; }
+.text-align-right { text-align: right; }
+.text-align-center { text-align: center; }
 table.td tfoot th { padding: 10px 0; text-align: left; font-weight: 300; font-size: 15px; line-height: 22px; color: #151716; }
 table.td tfoot td { padding: 10px 0; text-align: right; font-weight: 300; font-size: 15px; line-height: 22px; color: #151716; }
 table.td tfoot tr.order-total th, table.td tfoot tr.order-total td { padding-top: 14px; border-top: 1px solid #151716; font-weight: 700; }
