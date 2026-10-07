@@ -44,6 +44,20 @@ $mb_phone = apply_filters( 'millboard_email_footer_phone', '+44 (0) 24 7643 9943
  */
 $mb_inbox = apply_filters( 'millboard_email_footer_email', 'enquiries@millboard.com' );
 
+/*
+ * (0) IS A TRUNK PREFIX AND HAS TO GO BEFORE THE DIGITS ARE COLLAPSED.
+ *
+ * Stripping everything that is not a digit or a plus turns
+ * "+44 (0) 24 7643 9943" into "+4402476439943", which is not a dialable
+ * number: the 0 is what you use INSTEAD of +44 when dialling domestically,
+ * never as well as it. Every transactional email carried that link.
+ *
+ * The number stays correct as text beside it, so the information was never
+ * wrong, only the thing you tap on a phone. Found 7 Oct 2026 by rendering the
+ * launch email on production and reading every href before sending it.
+ */
+$mb_tel = preg_replace( '/[^0-9+]/', '', preg_replace( '/\(\s*0\s*\)/', '', $mb_phone ) );
+
 // Whether this email is about an order at all, which decides how the contact
 // line is worded below.
 $mb_has_order = $mb_email instanceof WC_Email && ( $mb_email->object ?? null ) instanceof WC_Order;
@@ -73,7 +87,7 @@ $mb_has_order = $mb_email instanceof WC_Email && ( $mb_email->object ?? null ) i
 														? esc_html__( 'Questions about your order? Call %1$s or email %2$s.', 'granola' )
 														/* translators: %1$s: telephone link, %2$s: email link. */
 														: esc_html__( 'Any questions? Call %1$s or email %2$s.', 'granola' ),
-													'<a href="tel:' . esc_attr( preg_replace( '/[^0-9+]/', '', $mb_phone ) ) . '">' . esc_html( $mb_phone ) . '</a>',
+													'<a href="tel:' . esc_attr( $mb_tel ) . '">' . esc_html( $mb_phone ) . '</a>',
 													'<a href="mailto:' . esc_attr( $mb_inbox ) . '">' . esc_html( $mb_inbox ) . '</a>'
 												);
 												?>
