@@ -83,6 +83,7 @@ class Cli
         \WP_CLI::log(\sprintf('  imported portal users   %d', $counts['imported']));
         \WP_CLI::log(\sprintf('  already sent            %d', $counts['sent']));
         \WP_CLI::log(\sprintf('  disabled, will skip     %d', $counts['disabled']));
+        \WP_CLI::log(\sprintf('  held, market not open   %d', $counts['held']));
         \WP_CLI::log(\sprintf('  no email address        %d', $counts['no_email']));
         \WP_CLI::log('');
 
@@ -280,7 +281,10 @@ class Cli
             foreach ($ids as $id) {
                 $user = \get_user_by('id', $id);
 
-                if ($user instanceof \WP_User) {
+                // The hold applies here too. --only is a convenience for
+                // sending to yourself, never a way round a market that has
+                // not launched.
+                if ($user instanceof \WP_User && !\get_user_meta($user->ID, PortalLaunch::META_HOLD, true)) {
                     $users[] = $user;
                 }
             }
@@ -295,6 +299,11 @@ class Cli
             ],
             [
                 'key' => 'millboard_portal_disabled',
+                'compare' => 'NOT EXISTS',
+            ],
+            // Held for a market that has not launched. See PortalLaunch::META_HOLD.
+            [
+                'key' => PortalLaunch::META_HOLD,
                 'compare' => 'NOT EXISTS',
             ],
         ];
@@ -340,6 +349,13 @@ class Cli
             'fields' => 'ID',
         ]));
 
+        $held = \count(\get_users([
+            'meta_key' => PortalLaunch::META_HOLD,
+            'meta_compare' => 'EXISTS',
+            'number' => -1,
+            'fields' => 'ID',
+        ]));
+
         $disabled = \count(\get_users([
             'meta_key' => 'millboard_portal_disabled',
             'meta_compare' => 'EXISTS',
@@ -363,6 +379,7 @@ class Cli
             'imported' => $imported,
             'sent' => $sent,
             'disabled' => $disabled,
+            'held' => $held,
             'no_email' => $no_email,
         ];
     }
