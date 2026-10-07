@@ -444,13 +444,119 @@ function get_approved_categories(): array
 }
 
 /**
- * Replace the accordion order with the approved one.
+ * Split the two big accordions by product range.
+ *
+ * Aaron, 7 Oct 2026: "can you group modello in the sample list better please,
+ * at the moment its scattered."
+ *
+ * Modello was never in the wrong accordion. All 34 lines sit in "Decking board
+ * samples" along with 70 others, sorted by name, and Modello's products are
+ * named "Millboard Sample 100mm x 196mm Modello Contour Antique Oak" while the
+ * rest are named "Enhanced Grain 126mm Antique Oak - 100mm sample". Range
+ * first for everything else, prefix first for Modello, so it sorts under M and
+ * splits again where "Sample" and "Sample Piece" diverge.
+ *
+ * Re-sorting would tidy Modello and leave 104 lines in one list, so the fix is
+ * to group by range. Decking 104 and Cladding 64 hold 168 of the 289 lines
+ * between them; every other accordion is 33 or fewer and is left alone.
+ *
+ * KEYED ON THE SKU, NOT THE NAME. The names are inconsistent, which is the
+ * whole problem; the SKU prefix is not. A prefix that is not listed here keeps
+ * its parent category untouched, so a new range appears in the old place
+ * rather than vanishing.
+ *
+ * DAN'S ASSIGNMENT STILL DECIDES THE PARENT. This runs after the approved map
+ * and only refines within it, so a SKU he put in Decking stays in Decking. It
+ * never moves a line between board types, and approved-categories.json is not
+ * touched. See [[millboard-sample-order-limits]] for whose list that is.
+ *
+ * @var array<string, array<string, string>> parent category => SKU prefix => range
+ */
+const RANGE_SUBGROUPS = [
+    'Decking board samples' => [
+        'AMN' => 'Enhanced Grain 126mm',
+        'AME' => 'Enhanced Grain 176mm',
+        'AMW' => 'Weathered Oak',
+        'AML' => 'Lasta-Grip',
+        'AMBB' => 'Bullnosed Board',
+        'AMMC' => 'Modello Contour',
+        'AMML' => 'Modello Linear',
+    ],
+    'Cladding board samples' => [
+        'AMCL' => 'Shadow Line+',
+        'AMCBF' => 'Board & Batten+',
+        'AMDC' => 'Envello Decor Curve',
+        'AMDS' => 'Envello Decor Shutter',
+    ],
+];
+
+/**
+ * The sub-category a SKU belongs to, or '' to leave it where it is.
+ */
+function range_subgroup(string $parent, string $sku): string
+{
+    $map = RANGE_SUBGROUPS[$parent] ?? [];
+
+    if (!$map) {
+        return '';
+    }
+
+    $sku = \strtoupper(\trim($sku));
+    $best = '';
+
+    // Longest prefix wins: AMBB and AMCBF must beat AM and AMC.
+    foreach ($map as $prefix => $range) {
+        if (0 === \strpos($sku, $prefix) && \strlen($prefix) > \strlen($best)) {
+            $best = $prefix;
+        }
+    }
+
+    if ('' === $best) {
+        return '';
+    }
+
+    $type = 0 === \stripos($parent, 'cladding') ? \__('Cladding', 'granola') : \__('Decking', 'granola');
+
+    return $type . ': ' . $map[$best];
+}
+
+/**
+ * Replace the accordion order with the approved one, expanding the two split
+ * categories into their ranges in place so the rest of Dan's order is kept.
  */
 \add_filter('mb_sof_category_order', function (array $order): array {
-    $approved = get_approved_categories()['order'];
+    $approved = get_approved_categories()['order'] ?: $order;
+    $expanded = [];
 
-    return $approved ?: $order;
+    foreach ($approved as $cat) {
+        if (!isset(RANGE_SUBGROUPS[$cat])) {
+            $expanded[] = $cat;
+            continue;
+        }
+
+        // The parent itself stays in the list: anything whose SKU prefix is
+        // unknown still lands there, and an empty accordion is dropped later
+        // by the package's own visible-categories pass.
+        $expanded[] = $cat;
+
+        foreach (RANGE_SUBGROUPS[$cat] as $range) {
+            $type = 0 === \stripos($cat, 'cladding') ? \__('Cladding', 'granola') : \__('Decking', 'granola');
+            $expanded[] = $type . ': ' . $range;
+        }
+    }
+
+    return $expanded;
 });
+
+/**
+ * Refine the approved category into a range sub-group. Priority 20 so it runs
+ * after the approved map at 10 and reads its answer.
+ */
+\add_filter('mb_sof_category', function ($classified, $sku, $name) {
+    $sub = range_subgroup((string) $classified, (string) $sku);
+
+    return '' !== $sub ? $sub : $classified;
+}, 20, 3);
 
 /**
  * Place each line in its approved category.
