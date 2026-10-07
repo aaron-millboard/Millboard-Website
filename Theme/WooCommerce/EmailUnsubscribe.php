@@ -52,6 +52,49 @@ class EmailUnsubscribe
         \add_filter('query_vars', [__CLASS__, 'query_vars']);
         \add_action('template_redirect', [__CLASS__, 'maybe_render'], 1);
         \add_filter('woocommerce_email_footer_text', [__CLASS__, 'append_link'], 10, 2);
+
+        // Before WC_Emails::email_footer() at 10, so the email is known by the
+        // time the footer template runs. See remember_email().
+        \add_action('woocommerce_email_footer', [__CLASS__, 'remember_email'], 1);
+    }
+
+    // --------------------------------------------------- which email is this
+
+    /**
+     * The email currently being rendered.
+     *
+     * WHY THIS EXISTS. `woocommerce_email_footer_text` is documented as taking
+     * the email as a second argument, and WooCommerce's own footer template
+     * passes one, but it is ALWAYS NULL:
+     *
+     *     public function email_footer() {
+     *         wc_get_template( 'emails/email-footer.php' );   // no args
+     *     }
+     *
+     * Nothing is handed to the template, so core's `$email = $email ?? null`
+     * resolves to null and so does ours. A filter relying on that argument
+     * silently does nothing on every real send, which is exactly what happened
+     * here until the emails were rendered rather than unit-tested.
+     *
+     * The `woocommerce_email_footer` ACTION does carry the email, because every
+     * template passes it. Capturing it at priority 1 means it is available by
+     * the time WooCommerce loads the footer template at 10.
+     *
+     * @var \WC_Email|null
+     */
+    private static $current_email = null;
+
+    /**
+     * @param mixed $email
+     */
+    public static function remember_email($email = null): void
+    {
+        self::$current_email = $email instanceof \WC_Email ? $email : null;
+    }
+
+    public static function current_email(): ?\WC_Email
+    {
+        return self::$current_email;
     }
 
     // ------------------------------------------------------------- the route
@@ -98,6 +141,12 @@ class EmailUnsubscribe
      */
     public static function append_link($text, $email = null)
     {
+        // The filter's own argument is null on every real send, so fall back to
+        // the email captured from the footer action. See current_email().
+        if (!$email instanceof \WC_Email) {
+            $email = self::current_email();
+        }
+
         if (!$email instanceof \WC_Email || !$email->is_customer_email()) {
             return $text;
         }

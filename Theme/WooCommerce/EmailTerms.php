@@ -65,6 +65,13 @@ class EmailTerms
             return $text;
         }
 
+        // Same null-argument problem as the unsubscribe link: the filter's
+        // second argument is null on a real send, so use the email captured
+        // from the footer action instead.
+        if (!$email instanceof \WC_Email) {
+            $email = EmailUnsubscribe::current_email();
+        }
+
         $order = $email instanceof \WC_Email ? ($email->object ?? null) : null;
         $text = self::strip_links($text, \array_filter([$b2c, $b2b]));
 
