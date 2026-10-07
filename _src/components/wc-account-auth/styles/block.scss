@@ -1,0 +1,263 @@
+// =============================================================================
+// Sign in / create account
+// =============================================================================
+// A full-bleed split: photograph one side, form the other. This is the only
+// account screen with no masthead above it, because the brand lockup sits in
+// the photograph instead.
+// =============================================================================
+
+.mb-auth {
+    display: flex;
+    flex-wrap: wrap;
+    color: var(--color--foreground);
+    font-weight: 300;
+
+    // The design draws this full height. The site header sits above it and is
+    // sticky but still takes its space in flow, so a plain 100vh would hang
+    // the strapline below the fold by exactly the header's height.
+    //
+    // --site-header--bottom is the measured header height, declared as a real
+    // length in site-header's own stylesheet and replaced with the measured
+    // value by SiteHeader.js. The fallback here never fires while that holds,
+    // and exists only so this rule degrades to something sane rather than to
+    // an invalid calc() if the property is ever removed.
+    min-height: calc(100vh - var(--site-header--bottom, #{px-to-rem(132)}));
+
+    // Once the two halves wrap onto separate lines, they should each take the
+    // height they need. Left at the default `stretch` they split the 100vh
+    // between them, which on a phone buries the form under a 700px slab of
+    // photograph. This has no effect while they sit side by side.
+    align-content: flex-start;
+
+    // ---------------------------------------------------------------
+    // Photograph
+    // ---------------------------------------------------------------
+    &__hero {
+        position: relative;
+        flex: 1 1 #{px-to-rem(440)};
+        min-height: #{px-to-rem(320)};
+        background-color: var(--color--brand-5);
+        overflow: hidden;
+
+        @include mq('medium') {
+            min-height: #{px-to-rem(520)};
+        }
+    }
+
+    &__hero-image {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    &__scrim {
+        position: absolute;
+        inset: 0;
+        background-color: rgba(47, 41, 46, 0.34);
+        pointer-events: none;
+    }
+
+    &__hero-content {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: clamp(#{px-to-rem(32)}, 6vw, #{px-to-rem(80)});
+        min-height: inherit;
+        height: 100%;
+        padding: clamp(#{px-to-rem(28)}, 4vw, #{px-to-rem(56)});
+    }
+
+    &__logo {
+        display: block;
+        width: clamp(#{px-to-rem(140)}, 16vw, #{px-to-rem(196)});
+    }
+
+    // The theme resets every svg to width:100%; this is an <img>, but it still
+    // needs a declared size or it takes the intrinsic one.
+    &__logo-image {
+        display: block;
+        width: 100%;
+        height: auto;
+    }
+
+    &__quote {
+        max-width: #{px-to-rem(420)};
+        margin: 0;
+        color: var(--color--brand-2);
+        font-size: #{px-to-rem(18)};
+        line-height: 1.7;
+        text-wrap: pretty;
+    }
+
+    // ---------------------------------------------------------------
+    // Form column
+    // ---------------------------------------------------------------
+    &__panel {
+        flex: 1 1 #{px-to-rem(480)};
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: clamp(#{px-to-rem(32)}, 5vw, #{px-to-rem(96)}) clamp(#{px-to-rem(24)}, 5vw, #{px-to-rem(80)});
+        background-color: var(--color--brand-2);
+    }
+
+    &__inner {
+        width: 100%;
+        max-width: #{px-to-rem(440)};
+    }
+
+    &__tabs {
+        display: flex;
+        gap: #{px-to-rem(28)};
+        border-bottom: 1px solid var(--mbh-rule, #{rgba(#2f292e, 0.18)});
+        margin-bottom: #{px-to-rem(40)};
+
+        &[hidden] {
+            display: none;
+        }
+    }
+
+    &__tab {
+        appearance: none;
+        background: transparent;
+        border: 0;
+        border-bottom: 2px solid transparent;
+        padding: 0 0 #{px-to-rem(14)};
+        margin-bottom: -1px;
+        font-family: inherit;
+        font-size: #{px-to-rem(13)};
+        font-weight: 700;
+        letter-spacing: var(--mbh-tracking-sub, 0.16em);
+        text-transform: uppercase;
+        color: #6e6a6c;
+        cursor: pointer;
+        transition: color var(--mbh-dur-ui, 240ms) var(--mbh-ease, ease);
+
+        &:hover {
+            color: var(--color--foreground);
+        }
+
+        &.is-current {
+            color: var(--color--foreground);
+            border-bottom-color: var(--color--brand-4);
+        }
+    }
+
+    // Without JavaScript both panels show, so each keeps a rule above it to
+    // separate the two forms. Once tabbed, only one is ever visible and the
+    // rule would be a stray line under the tab strip.
+    &__form-panel + &__form-panel {
+        margin-top: #{px-to-rem(56)};
+        padding-top: #{px-to-rem(48)};
+        border-top: 1px solid var(--mbh-rule, #{rgba(#2f292e, 0.18)});
+    }
+
+    &--tabbed &__form-panel + &__form-panel {
+        margin-top: 0;
+        padding-top: 0;
+        border-top: 0;
+    }
+
+    &__heading {
+        margin: 0 0 #{px-to-rem(16)};
+        font-weight: 300;
+        font-size: #{px-to-rem(32)};
+        line-height: 1.15;
+        letter-spacing: var(--mbh-tracking-heading, 0.2em);
+        text-transform: uppercase;
+    }
+
+    &__intro {
+        margin: 0 0 #{px-to-rem(40)};
+        max-width: 38ch;
+        font-size: #{px-to-rem(16)};
+        line-height: 1.7;
+        color: #6e6a6c;
+    }
+
+    &__field {
+        margin-bottom: #{px-to-rem(28)};
+    }
+
+    &__row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: #{px-to-rem(16)};
+        flex-wrap: wrap;
+        margin: #{px-to-rem(4)} 0 #{px-to-rem(40)};
+    }
+
+    &__remember {
+        display: inline-flex;
+        align-items: center;
+        gap: #{px-to-rem(10)};
+        font-size: #{px-to-rem(14)};
+        cursor: pointer;
+
+        input[type='checkbox'] {
+            width: #{px-to-rem(15)};
+            height: #{px-to-rem(15)};
+            accent-color: var(--color--brand-4);
+        }
+    }
+
+    &__forgot {
+        font-size: #{px-to-rem(14)};
+        color: var(--color--foreground);
+        text-decoration: none;
+        border-bottom: 1px solid var(--mbh-rule, #{rgba(#2f292e, 0.18)});
+
+        &:hover,
+        &:focus-visible {
+            border-bottom-color: var(--color--brand-4);
+        }
+    }
+
+    &__note {
+        margin: 0 0 #{px-to-rem(28)};
+        font-size: #{px-to-rem(14)};
+        line-height: 1.7;
+        color: #6e6a6c;
+    }
+
+    &__submit {
+        width: 100%;
+        margin-top: #{px-to-rem(12)};
+        padding-block: #{px-to-rem(18)};
+    }
+
+    &__rule {
+        border: 0;
+        height: 1px;
+        background-color: var(--mbh-rule, #{rgba(#2f292e, 0.18)});
+        margin: #{px-to-rem(48)} 0 #{px-to-rem(24)};
+    }
+
+    &__trade {
+        margin: 0;
+        font-size: #{px-to-rem(14)};
+        line-height: 1.7;
+        color: #6e6a6c;
+
+        a {
+            color: var(--color--foreground);
+            text-decoration: none;
+            border-bottom: 1px solid var(--mbh-rule, #{rgba(#2f292e, 0.18)});
+
+            &:hover,
+            &:focus-visible {
+                border-bottom-color: var(--color--brand-4);
+            }
+        }
+    }
+
+    // WooCommerce's notices sit above the form rather than in the page's usual
+    // notice slot, which is outside this split layout.
+    .woocommerce-notices-wrapper:not(:empty) {
+        margin-bottom: #{px-to-rem(32)};
+    }
+}

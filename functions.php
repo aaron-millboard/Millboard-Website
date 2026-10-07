@@ -108,6 +108,61 @@ if (file_exists($autoloader = __DIR__ . '/vendor/autoload.php')) {
 \Theme\WooCommerce\Settings::init();
 \Theme\WooCommerce\OrderEssentials::init();
 \Theme\WooCommerce\ScriptOptimisation::init();
+// Keeps the imported sample/POS ordering lines out of Google. They are
+// hidden from the catalogue, which does not stop them being indexed.
+\Theme\WooCommerce\SampleCatalogueImport::init();
+// 'Sample ordering' inside WooCommerce Analytics: who is ordering how
+// much, now that nothing is costed or budgeted.
+\Theme\WooCommerce\SampleOrderReport::init();
+// Finish a sample order inside My Account rather than the shop basket.
+\Theme\WooCommerce\SampleOrderCheckout::init();
+// A working unsubscribe link in the order confirmation. Compliance's condition
+// for letting a rep enter a customer's details on their behalf.
+\Theme\WooCommerce\EmailUnsubscribe::init();
+// Show the terms of sale that actually apply: consumer or business, by persona.
+\Theme\WooCommerce\EmailTerms::init();
+
+// The partner portal launch email. Registered so it appears in WooCommerce's
+// email settings, but it has NO trigger: the only way to send it is
+// `wp millboard portal-launch send --live`.
+// Instantiated INSIDE the filter, never at theme load: the class extends
+// WC_Email, so touching it before WooCommerce has defined that class fatals the
+// whole site.
+\add_filter('woocommerce_email_classes', static function (array $emails): array {
+    $emails['Theme_Emails_PortalLaunch'] = new \Theme\Emails\PortalLaunch();
+
+    return $emails;
+});
+
+// Same reason: guard on WC_Email already existing, without autoloading, before
+// naming the class. By the time a password reset actually runs, it does.
+\add_filter('password_reset_expiration', static function ($seconds) {
+    if (!\class_exists('WC_Email', false)) {
+        return $seconds;
+    }
+
+    return \Theme\Emails\PortalLaunch::extend_key_expiry($seconds);
+});
+
+\Theme\Emails\Cli::init();
+
+// ----------------------------------------------------
+// Partner account types.
+// ----------------------------------------------------
+// Distributor and installer roles, and the capabilities that decide who
+// reaches Brand assets, Sample ordering and the POS lines inside it.
+// ----------------------------------------------------
+\Theme\Accounts\Roles::init();
+
+// ----------------------------------------------------
+// Internal sample ordering (IT team's mb-sof package).
+// ----------------------------------------------------
+// Hand-maintained by IT and kept verbatim apart from one asset-path edit,
+// which is commented in the file. The My Account tab it renders into is the
+// wc-account component's; see that component's hooks.php for how the two
+// halves agree on one endpoint, one menu item and one access gate.
+// ----------------------------------------------------
+require_once __DIR__ . '/sample-ordering/inc/millboard-sample-ordering.php';
 
 // ----------------------------------------------------
 // Other custom functionality.
