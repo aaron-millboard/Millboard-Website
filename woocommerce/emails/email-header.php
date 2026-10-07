@@ -79,9 +79,16 @@ $mb_strip = apply_filters( 'millboard_email_header_strip', get_theme_file_uri( '
 					<tr>
 						<td id="body_content_inner">
 							<?php
-							/**
-							 * Kept because plugins hook it. The heading markup lives in each
-							 * template, so nothing is printed here by default.
+							/*
+							 * NOT do_action( 'woocommerce_email_header' ) here.
+							 *
+							 * WC_Emails::email_header() is what is hooked to that action, and
+							 * it is what loads THIS file. Calling it from inside the template
+							 * re-enters it until PHP runs out of memory and every email
+							 * fatals. The action belongs in each email template, which is
+							 * where it is.
+							 *
+							 * The heading is not printed here either: each template renders
+							 * its own eyebrow and <h1>, so the band is just logo and photo.
 							 */
-							do_action( 'woocommerce_email_header', $email_heading, $mb_email );
 							?>
