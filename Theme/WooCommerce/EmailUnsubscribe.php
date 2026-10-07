@@ -56,6 +56,12 @@ class EmailUnsubscribe
         // Before WC_Emails::email_footer() at 10, so the email is known by the
         // time the footer template runs. See remember_email().
         \add_action('woocommerce_email_footer', [__CLASS__, 'remember_email'], 1);
+
+        // The header template has the same problem: WC_Emails::email_header()
+        // takes only the heading, so `$email` is null there too. Every email
+        // template passes the email as the action's SECOND argument, so it can
+        // be captured the same way.
+        \add_action('woocommerce_email_header', [__CLASS__, 'remember_email_from_header'], 1, 2);
     }
 
     // --------------------------------------------------- which email is this
@@ -90,6 +96,21 @@ class EmailUnsubscribe
     public static function remember_email($email = null): void
     {
         self::$current_email = $email instanceof \WC_Email ? $email : null;
+    }
+
+    /**
+     * The same capture, from the header action, where the email is the SECOND
+     * argument. Only overwrites when one is actually supplied, so a template
+     * that passes nothing cannot blank out what a previous one set.
+     *
+     * @param mixed $heading
+     * @param mixed $email
+     */
+    public static function remember_email_from_header($heading = '', $email = null): void
+    {
+        if ($email instanceof \WC_Email) {
+            self::$current_email = $email;
+        }
     }
 
     public static function current_email(): ?\WC_Email

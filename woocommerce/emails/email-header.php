@@ -21,7 +21,18 @@
 
 defined( 'ABSPATH' ) || exit;
 
-$mb_email    = $email ?? null;
+/*
+ * WC_Emails::email_header() receives only the heading, so `$email` is never
+ * passed to this template and is always null here. Without the fallback the id
+ * below is empty, the new_order test never matches, and the internal
+ * notification gets a lifestyle photograph it is not supposed to have.
+ */
+$mb_email = $email ?? null;
+
+if ( ! $mb_email instanceof WC_Email && class_exists( 'Theme\WooCommerce\EmailUnsubscribe' ) ) {
+	$mb_email = Theme\WooCommerce\EmailUnsubscribe::current_email();
+}
+
 $mb_email_id = $mb_email instanceof WC_Email ? $mb_email->id : '';
 
 /**
