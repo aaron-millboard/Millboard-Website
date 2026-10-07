@@ -30,6 +30,25 @@ class PortalLaunch extends \WC_Email
     /** When this user was sent the launch email. Also what extends their key. */
     public const META_SENT = 'millboard_portal_launch_sent';
 
+    /**
+     * Held back from the launch mailing, whatever else is true of them.
+     *
+     * Phase one launches in the UK alone, and the staff import brought across
+     * everyone on a Millboard domain, which includes the US, France, Germany
+     * and the export team. Mailing them an account for something that has not
+     * launched in their market is worse than not mailing them: they would set
+     * a password, find sample ordering gated to the UK site, and ask why.
+     *
+     * UNCONDITIONAL. Neither --force nor --only reaches a held account,
+     * because --force means "already sent to" and --only is a convenience, and
+     * neither is a reason to mail somebody whose market is not open. Releasing
+     * someone is deliberate: delete the flag, which is what the US, French and
+     * German launches will each do for their own people.
+     *
+     * Aaron, 7 Oct 2026.
+     */
+    public const META_HOLD = 'millboard_portal_launch_hold';
+
     /** Set by the CLI immediately before send(). */
     public ?\WP_User $user = null;
     public string $reset_key = '';
