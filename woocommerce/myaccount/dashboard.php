@@ -14,6 +14,7 @@
 
 defined('ABSPATH') || exit;
 
+use function Granola\Components\WC_Account\can_order_samples;
 use function Granola\Components\WC_Account\get_order_steps;
 use function Granola\Components\WC_Account\get_order_summary;
 use function Granola\Components\WC_Account\get_trackable_order;
@@ -27,11 +28,36 @@ $orders_url = wc_get_endpoint_url('orders', '', wc_get_page_permalink('myaccount
 $addresses_url = wc_get_endpoint_url('edit-address', '', wc_get_page_permalink('myaccount'));
 $details_url = wc_get_endpoint_url('edit-account', '', wc_get_page_permalink('myaccount'));
 
-// Reuse the header's own samples link so the two never drift apart.
-$samples_link = get_field('header_call_to_action_1', 'option');
-$samples_url = is_array($samples_link) && !empty($samples_link['url'])
-    ? $samples_link['url']
-    : wc_get_page_permalink('shop');
+/*
+ * Where "Order samples" goes depends on who is looking.
+ *
+ * Aaron, 7 Oct 2026: "can the Order samples button go to the sample ordering
+ * not the front end of the site, staff are getting confused."
+ *
+ * Anyone who can order samples internally has the Sample ordering panel in
+ * this very menu, so sending them out to the public samples page is a dead
+ * end: they land on the consumer journey, which caps at a handful of samples
+ * and knows nothing about ordering on a customer's behalf. Everyone else has
+ * no such panel, so the public page is right for them.
+ *
+ * The copy changes with it. "Feel the grain before you commit" is written for
+ * a homeowner choosing a deck, not for a rep sending samples to one.
+ */
+$samples_is_internal = function_exists('Granola\Components\WC_Account\can_order_samples') && can_order_samples();
+
+if ($samples_is_internal) {
+    $samples_url = wc_get_endpoint_url(
+        Granola\Components\WC_Account\get_sample_endpoint(),
+        '',
+        wc_get_page_permalink('myaccount')
+    );
+} else {
+    // Reuse the header's own samples link so the two never drift apart.
+    $samples_link = get_field('header_call_to_action_1', 'option');
+    $samples_url = is_array($samples_link) && !empty($samples_link['url'])
+        ? $samples_link['url']
+        : wc_get_page_permalink('shop');
+}
 
 $recent_orders = wc_get_orders([
     'customer_id' => $user_id,
@@ -46,7 +72,9 @@ $tracked = get_trackable_order($user_id);
 $quick_actions = [
     [
         'label' => __('Order samples', 'granola'),
-        'note' => __('Feel the grain before you commit.', 'granola'),
+        'note' => $samples_is_internal
+            ? __('Send samples to a customer.', 'granola')
+            : __('Feel the grain before you commit.', 'granola'),
         'url' => $samples_url,
     ],
     [
