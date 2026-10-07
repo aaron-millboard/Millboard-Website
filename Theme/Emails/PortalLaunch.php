@@ -84,6 +84,55 @@ class PortalLaunch extends \WC_Email
     }
 
     /**
+     * The name to greet this person by, or '' for a bare "Hi,".
+     *
+     * The Craft export is not tidy and the launch email is where that shows:
+     * of the 128 staff, 14 have an all-lower-case first name and 3 have none
+     * at all, so without this they would be greeted "Hi adrien," or "Hi,".
+     * Both read as a mailshot, which is the one thing this email cannot afford
+     * to look like when it is also asking the recipient to click a link about
+     * their password.
+     *
+     * Fixed at render rather than in wp_users on purpose. It needs no data
+     * step, no backup and no rollback, it is identical on staging and
+     * production, and it leaves the imported record as the export gave it.
+     *
+     * ONLY AN ALL-LOWER-CASE NAME IS TOUCHED, so this corrects an import
+     * artefact and never restyles a name somebody chose. "Jean-Pierre" and
+     * "McDonald" pass through as they are.
+     *
+     * THE ADDRESS IS A FALLBACK FOR STAFF ALONE. Millboard addresses are
+     * first.last, so andreea.ionel@ gives "Andreea". Partner addresses are
+     * nothing of the kind -- info@, sales@, hola@ -- and greeting someone "Hi
+     * Info," is worse than not greeting them by name, so for them an empty
+     * first name stays empty.
+     */
+    public static function greeting_name(?\WP_User $user): string
+    {
+        if (!$user instanceof \WP_User) {
+            return '';
+        }
+
+        $name = \trim($user->first_name);
+
+        if ('' === $name && self::is_staff($user)) {
+            $local = \strstr($user->user_email, '@', true);
+            $first = \explode('.', (string) $local)[0];
+
+            // Only a plain word. Not "r", not "a.ionel2", not "info".
+            if (\preg_match('/^[a-z]{2,}$/i', $first) && 'info' !== \strtolower($first)) {
+                $name = $first;
+            }
+        }
+
+        if ($name === \mb_strtolower($name)) {
+            $name = \mb_convert_case($name, MB_CASE_TITLE, 'UTF-8');
+        }
+
+        return (string) \apply_filters('millboard_portal_launch_greeting_name', $name, $user);
+    }
+
+    /**
      * Send to one user. Returns true only when WordPress accepted the message.
      */
     public function send_to(\WP_User $user, string $reset_key): bool

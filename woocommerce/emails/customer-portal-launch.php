@@ -15,7 +15,7 @@ defined( 'ABSPATH' ) || exit;
 do_action( 'woocommerce_email_header', $email_heading, $email );
 
 $mb_user    = $user instanceof WP_User ? $user : null;
-$mb_name    = $mb_user ? trim( $mb_user->first_name ) : '';
+$mb_name    = Theme\Emails\PortalLaunch::greeting_name( $mb_user );
 $mb_company = $mb_user ? (string) get_user_meta( $mb_user->ID, 'millboard_company', true ) : '';
 $mb_link    = $mb_user ? Theme\Emails\PortalLaunch::reset_url( $mb_user, $reset_key ) : '';
 $mb_staff   = Theme\Emails\PortalLaunch::is_staff( $mb_user );
