@@ -101,12 +101,52 @@ function can_order_samples(?int $user_id = null): bool
 /**
  * May this user order POS and marketing stock?
  *
- * Distributors and staff only. An installer has no point of sale to stock,
- * and POS comes out of a distributor's marketing budget.
+ * Distributors and staff hold the capability: an installer has no point of
+ * sale to stock, and POS comes out of a distributor's marketing budget.
+ *
+ * STAFF are narrowed further by the `millboard_pos_orderers` option, a list
+ * of e-mail addresses, because the teaser boards, presenter packs and
+ * literature are real stock that gets picked and shipped and not every member
+ * of the team should be able to send one out.
+ *
+ * An absent or empty option means every member of staff, which is exactly
+ * today's behaviour, so this changes nothing until the list is filled in.
+ * Fail-open is deliberate and is the opposite of the choice made for the
+ * per-SKU limits: an empty limit tier falls back to a TIGHTER number, whereas
+ * an empty allow-list here would lock the whole team out of a working feature
+ * before anyone has supplied the names. Set it without a deploy:
+ *
+ *   wp option update millboard_pos_orderers --format=json
+ *     '["a@millboard.com","b@millboard.com"]' --url=<site>/en-gb/
+ *
+ * Distributors are deliberately untouched: POS comes out of their own
+ * marketing budget, so it is not ours to ration.
  */
 function can_order_pos(?int $user_id = null): bool
 {
-    return user_can_mb(\Theme\Accounts\Roles::CAP_ORDER_POS, $user_id);
+    if (!user_can_mb(\Theme\Accounts\Roles::CAP_ORDER_POS, $user_id)) {
+        return false;
+    }
+
+    $user_id = $user_id ?: \get_current_user_id();
+
+    if (!\Theme\Accounts\Roles::is_staff($user_id)) {
+        return true;
+    }
+
+    $allowed = \array_filter(\array_map(
+        static fn($email): string => \strtolower(\trim((string) $email)),
+        (array) \get_option('millboard_pos_orderers', [])
+    ));
+
+    if (!$allowed) {
+        return true;
+    }
+
+    $user = \get_userdata($user_id);
+
+    return $user instanceof \WP_User
+        && \in_array(\strtolower($user->user_email), $allowed, true);
 }
 
 /**
