@@ -526,17 +526,21 @@ const PIN_SIZES = {
 };
 const [markerWidth, markerHeight, markerAnchorY] = PIN_SIZES[markerFile] || [32, 42, 40];
 
+const markerLabel = String(listingTitle == null ? '' : listingTitle)
+    .replace(/[&<>"']/g, (c) => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
+// The icon container is aria-hidden, so the screen-reader label must sit OUTSIDE it,
+// otherwise the marker's role="button" (added by Leaflet) has no accessible name (WCAG 4.1.2).
 let markerHtml = `
     <span class="leaflet-marker-icon__icon-container" aria-hidden="true">
         <img
             class="leaflet-marker-icon__icon"
             src="${markerIconUrl}"
-            alt="${listingData.postType} marker"
+            alt=""
             width="${markerWidth}"
             height="${markerHeight}"
         />
-        <span class="screen-reader-text">${listingTitle}</span>
     </span>
+    <span class="screen-reader-text">${markerLabel}</span>
 `;
 
             // https://leafletjs.com/reference.html#marker
