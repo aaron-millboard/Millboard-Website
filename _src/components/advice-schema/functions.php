@@ -40,13 +40,27 @@ function filter_args(array $args): ?array
 }
 
 /**
- * The template page behind the advice hub, if it carries this block.
+ * The page behind the advice hub, if it carries this block.
+ *
+ * Normally the template page of the post type archive. On fr-FR and de-DE the
+ * archive URL is redirected to an ordinary page, and that page is the hub
+ * visitors see, so a page holding both the hub hero and this block counts too.
+ * Without that the block did nothing there: no lists, no authors.
  *
  * Not on a category: the category URLs set this post type on a term query,
  * which makes WordPress call them the post type archive too.
  */
 function hub_template(): ?\WP_Post
 {
+    if (\is_page()) {
+        $page = \get_queried_object();
+
+        return $page instanceof \WP_Post && !\is_paged()
+            && \has_block('acf/advice-schema', $page) && \has_block('acf/advice-hub-hero', $page)
+            ? $page
+            : null;
+    }
+
     if (!\is_post_type_archive(\Theme\Utils\Advice::POST_TYPE) || \is_tax() || \is_search() || \is_paged()) {
         return null;
     }
