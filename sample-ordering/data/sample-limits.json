@@ -61,7 +61,7 @@
   "AAE30F": 1,
   "AAE30G": 1,
   "AAE30H": 1,
-  "AGN": 22,
+  "AGN": 3,
   "AGR": 10,
   "AGRB100": 10,
   "AKJ51200": 5,
@@ -437,7 +437,7 @@
   "AAE30F": 3,
   "AAE30G": 3,
   "AAE30H": 3,
-  "AGN": 66,
+  "AGN": 3,
   "AGR": 30,
   "AGRB100": 30,
   "AKJ51200": 15,
@@ -781,5 +781,6 @@
   "AMDR9",
   "APP3E"
  ],
+ "_overrides": "AGN (Architect Guide with Notebook, Literature) is capped at 3 in BOTH tiers, Aaron 8 Oct 2026, so it deliberately breaks the internal = external x 3 rule. It was 22 external / 66 internal. Do NOT re-derive this one from the external figure: a re-derivation would silently put it back to 9.",
  "_inferred": "AMN305Y (Enhanced Grain 126mm Ebony Grey, 300mm sample) is NOT from Dan's sheet: it exists in WooCommerce but was absent from the portal export. Its five colour siblings AMN305H/B/R/C/G are all 5 external and 15 internal, so it is matched to them. Aaron confirmed it is a decking sample and approved the alignment, 2 Oct 2026. Without this it fell through to the numeric fallback and staff got 10 where the colours beside it give 15."
 }
