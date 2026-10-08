@@ -294,8 +294,12 @@
         cursor: none;
 
         &:focus-visible {
+            // Two-tone ring (light outline + dark inner backing) so the focus is
+            // visible over any video frame, light or dark (WCAG 2.4.7 / 1.4.11). A
+            // single light ring disappeared on light frames.
             outline: 2px solid var(--color--springwood);
             outline-offset: -#{px-to-rem(8)};
+            box-shadow: inset 0 0 0 #{px-to-rem(10)} rgba(0, 0, 0, 0.55);
         }
     }
 
