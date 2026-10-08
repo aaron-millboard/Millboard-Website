@@ -24,7 +24,8 @@
     &__badge {
         flex: none;
         padding: 0.2em 0.7em;
-        background-color: var(--color--olivegreen);
+        // Darkened olivegreen so the white label meets 4.5:1 contrast (WCAG 1.4.3); kept on-brand via the token.
+        background-color: color-mix(in srgb, var(--color--olivegreen) 78%, black);
         color: var(--color--white);
         font-size: 0.75em;
         letter-spacing: 0.1em;
