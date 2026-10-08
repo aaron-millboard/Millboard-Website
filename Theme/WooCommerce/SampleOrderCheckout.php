@@ -274,6 +274,7 @@ class SampleOrderCheckout
         }
 
         self::apply_address($order, $posted);
+        self::apply_shipping_line($order);
         self::apply_meta($order, $posted, $lines);
 
         $order->set_created_via('millboard-sample-ordering');
@@ -290,6 +291,29 @@ class SampleOrderCheckout
         );
 
         self::back();
+    }
+
+    /**
+     * A zero-cost "Free shipping" line, the same one a free basket produces.
+     *
+     * This route never touches the cart, so no shipping method is ever chosen
+     * and the order reaches SAP with an empty `shipping_lines` array, while
+     * every other free order on the site carries
+     * `millboard_zero_cost_shipping` / "Free shipping". That absence is what
+     * SAP had nothing to map after the 7 Oct launch.
+     *
+     * Zero, always. We never charge for samples.
+     */
+    private static function apply_shipping_line(\WC_Order $order): void
+    {
+        $item = new \WC_Order_Item_Shipping();
+
+        $item->set_method_id(SampleShipping::ZERO_COST_RATE_ID);
+        $item->set_instance_id(0);
+        $item->set_method_title(\__('Free shipping', 'granola'));
+        $item->set_total(0);
+
+        $order->add_item($item);
     }
 
     /**

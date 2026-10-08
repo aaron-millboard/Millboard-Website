@@ -41,6 +41,20 @@ class SampleCatalogueImport
     public const CAT_ROOT = 'sample-ordering';
 
     /**
+     * Shipping class every imported line carries.
+     *
+     * These are always free, and `Sample` is the class that already means
+     * free here: the UK table rates deliver it at zero, and it is the one
+     * shipping class present on all six locales, so it is a value SAP
+     * already receives from the 90 sample variations.
+     *
+     * NOT created when it is missing. A shipping class drives price, so an
+     * absent one leaves the product unclassified rather than inventing a
+     * term that no shipping rule knows about.
+     */
+    public const SHIPPING_CLASS = 'sample';
+
+    /**
      * @param array<int,array<string,mixed>> $records Rows of {sku,title,section,max,min}
      * @param bool $commit False (the default) changes nothing.
      * @return array<string,mixed>
@@ -165,6 +179,21 @@ class SampleCatalogueImport
 
         $product->set_category_ids(\array_values(\array_filter($cats)));
 
+        /*
+         * Shipping class, only ever filled in, never changed. Assigning one
+         * is a pricing change, so a class somebody set by hand - a teaser
+         * board that really does go on a pallet, say - is left exactly as it
+         * is. Without this the 284 imported lines reach SAP carrying no class
+         * at all, which is what they did at the 7 Oct launch.
+         */
+        if (!$product->get_shipping_class_id()) {
+            $shipping_class_id = self::shipping_class_id();
+
+            if ($shipping_class_id) {
+                $product->set_shipping_class_id($shipping_class_id);
+            }
+        }
+
         $product_id = $product->save();
 
         if (!$product_id) {
@@ -179,6 +208,16 @@ class SampleCatalogueImport
         }
 
         return (int) $product_id;
+    }
+
+    /**
+     * Term id of the shipping class, or 0 when that class does not exist.
+     */
+    public static function shipping_class_id(): int
+    {
+        $term = \get_term_by('slug', self::SHIPPING_CLASS, 'product_shipping_class');
+
+        return $term instanceof \WP_Term ? (int) $term->term_id : 0;
     }
 
     /**

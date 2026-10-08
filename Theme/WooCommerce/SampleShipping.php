@@ -4,6 +4,15 @@ namespace Theme\WooCommerce;
 
 class SampleShipping
 {
+    /**
+     * The zero-cost rate every free basket on this site ends up with.
+     *
+     * Shared, because SampleOrderCheckout puts the same rate on orders that
+     * never see a basket at all, and the two must not drift apart. The label
+     * is deliberately NOT a constant: __() needs a literal to be extracted.
+     */
+    public const ZERO_COST_RATE_ID = 'millboard_zero_cost_shipping';
+
     private const SMALL_SAMPLE_MATCH_TERMS = [
         'small',
         'klein',
@@ -90,7 +99,7 @@ class SampleShipping
             return self::apply_sample_shipping_surcharge($rates);
         }
 
-        $rate_id = 'millboard_zero_cost_shipping';
+        $rate_id = self::ZERO_COST_RATE_ID;
 
         $rates[$rate_id] = new \WC_Shipping_Rate(
             $rate_id,
