@@ -108,6 +108,17 @@ function change_schema_page_type($data)
     return $data;
 }
 
+/**
+ * Question and answer text for the schema: no tags, entities decoded (&amp; &nbsp; &reg;), one space between words.
+ */
+function schema_plain_text($text)
+{
+    $text = html_entity_decode(\wp_strip_all_tags((string) $text), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    $text = str_replace("\xC2\xA0", ' ', $text);
+
+    return trim((string) preg_replace('/\s+/', ' ', $text));
+}
+
 function render_accordion_item_block_schema($graph, $block)
 {
     $not_faq = isset($block['attrs']['data']['faq_content']) && empty($block['attrs']['data']['faq_content']);
@@ -147,11 +158,11 @@ function render_accordion_item_block_schema($graph, $block)
         '@id' => $url . '#' . $id,
         'position' => $position,
         'url' => $url . '#' . $id,
-        'name' => $block['attrs']['data']['title'] ?? '',
+        'name' => schema_plain_text($block['attrs']['data']['title'] ?? ''),
         'answerCount' => 1,
         'acceptedAnswer' => [
             '@type' => 'Answer',
-            'text' => $block['attrs']['data']['content'] ?? '',
+            'text' => schema_plain_text($block['attrs']['data']['content'] ?? ''),
             'inLanguage' => \get_bloginfo('language'),
         ],
         'inLanguage' => \get_bloginfo('language'),
