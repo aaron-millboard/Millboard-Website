@@ -49,6 +49,36 @@ select {
     @include select;
 }
 
+// Visible keyboard-focus ring for form fields (WCAG 2.4.7 Focus Visible). The `input`
+// mixin resets the native focus outline, so restore one using the shared focus tokens
+// for consistency with the rest of the UI. Scoped to :focus-visible so it shows for
+// keyboard users without ringing the field on mouse click.
+[type='text']:focus-visible,
+[type='password']:focus-visible,
+[type='date']:focus-visible,
+[type='datetime']:focus-visible,
+[type='datetime-local']:focus-visible,
+[type='month']:focus-visible,
+[type='week']:focus-visible,
+[type='email']:focus-visible,
+[type='number']:focus-visible,
+[type='search']:focus-visible,
+[type='tel']:focus-visible,
+[type='time']:focus-visible,
+[type='url']:focus-visible,
+[type='color']:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+    // currentColor (the field's own text colour) rather than --focus--color: the shared
+    // focus token is a pale tint for dark sections and would fail 1.4.11 on light form
+    // fields. The text colour always contrasts with the field background, so the ring is
+    // visible on both light and dark forms.
+    // !important: WooCommerce and some form components reset the outline with higher
+    // specificity, removing the keyboard focus indicator. This guarantees it survives.
+    outline: var(--focus--1--width) solid currentColor !important;
+    outline-offset: 2px;
+}
+
 textarea,
 [multiple] {
     height: var(--form--textarea-height);
