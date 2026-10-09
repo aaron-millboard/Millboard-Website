@@ -103,7 +103,6 @@ if (file_exists($autoloader = __DIR__ . '/vendor/autoload.php')) {
 \Theme\WooCommerce\SampleShipping::init();
 \Theme\WooCommerce\ConsentFields::init();
 \Theme\WooCommerce\OrderAttribution::init();
-\Theme\WooCommerce\OrderIdentity::init();
 \Theme\WooCommerce\StripePaymentGuard::init();
 \Theme\WooCommerce\QuoteShare::init();
 \Theme\WooCommerce\Settings::init();
@@ -170,12 +169,6 @@ require_once __DIR__ . '/sample-ordering/inc/millboard-sample-ordering.php';
 // ----------------------------------------------------
 \Theme\Hubspot\WriteGuard::init();
 \Theme\Hubspot\Attribution::init();
-
-// ----------------------------------------------------
-// Analytics guards and server-side conversions.
-// ----------------------------------------------------
-\Theme\Analytics\TagManagerGuard::init();
-\Theme\Analytics\ConversionEmitter::init();
 
 // ----------------------------------------------------
 // Millboard Summit 2026 invite-only registration.

@@ -42,12 +42,11 @@
     }
 
     &__columns {
-        display: flex;
-        gap: 20px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space--m);
 
         @include mq(medium) {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
             gap: var(--space--l);
         }
 

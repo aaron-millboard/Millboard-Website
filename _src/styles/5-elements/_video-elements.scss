@@ -1,8 +1,0 @@
-// A <video> with controls is keyboard focusable, and its native focus ring sits over
-// the video, where contrast is frame-dependent. Give it a two-tone ring (light outline
-// + dark inner backing) so the focus is visible on any frame (WCAG 2.4.7 / 1.4.11).
-video:focus-visible {
-    outline: var(--focus--1--width) solid var(--color--white);
-    outline-offset: -3px;
-    box-shadow: inset 0 0 0 6px rgba(0, 0, 0, 0.6);
-}

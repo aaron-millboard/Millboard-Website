@@ -494,10 +494,11 @@ const markerType = listingData.postType
     .replace(/\s+/g, '-');
 
 // Example:
-// Installer -> installer-marker.png
-// Experience Centre -> experience-centre-marker.png
-// Advanced installers get their own gold "AI" pin, so the map matches the
-// "Approved / Advanced" key the same way the distributor types do.
+// Installer -> installer-marker.svg
+// Experience Centre -> experience_centre-marker.svg
+// Advanced installers get their own pin, so the map matches the "Approved /
+// Advanced" key the same way the distributor types do. The two differ by chevron
+// count, two and three, which is how the accreditation itself distinguishes them.
 const isAdvancedInstaller = el.dataset.mapItemAdvancedInstaller === '1';
 // PHP resolves the pin (including its cache-busting version), so prefer that.
 // The fallback keeps older markup working if the attribute is ever absent.
@@ -512,35 +513,32 @@ const markerIconUrl = el.dataset.mapItemMarkerUrl
 // height. The badge pins are taller than the shields because they carry the
 // wordmark and the chevrons (two for Approved, three for Advanced), and forcing
 // them to the shields' height shrank the lettering below legibility.
-// [width, height, anchorY], all from the artwork README. anchorY is the row the
-// pin's tip actually sits on, which is NOT the image height for the shields: they
-// carry two pixels of shadow below the point, so anchoring at 42 floated them off
-// their own coordinates.
+//
+// [width, height, anchorY]. anchorY is the row the pin's tip actually sits on,
+// which is NOT the image height for the shields: they carry two pixels of shadow
+// below the point, so anchoring at 42 floated them off their own coordinates.
+//
 // The installer heights are the Favicon marks' own proportions. Those files ship
 // exactly as the design team supply them, with the shadow applied in CSS rather
 // than drawn into the artwork, so the anchor is simply the bottom edge, which is
-// the point of the last chevron.
+// the point of the last chevron. Re-derive if the artwork is reissued.
 const PIN_SIZES = {
     'installer': [36, 42, 42],
     'installer-advanced': [36, 49, 49],
 };
 const [markerWidth, markerHeight, markerAnchorY] = PIN_SIZES[markerFile] || [32, 42, 40];
 
-const markerLabel = String(listingTitle == null ? '' : listingTitle)
-    .replace(/[&<>"']/g, (c) => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
-// The icon container is aria-hidden, so the screen-reader label must sit OUTSIDE it,
-// otherwise the marker's role="button" (added by Leaflet) has no accessible name (WCAG 4.1.2).
 let markerHtml = `
     <span class="leaflet-marker-icon__icon-container" aria-hidden="true">
         <img
             class="leaflet-marker-icon__icon"
             src="${markerIconUrl}"
-            alt=""
+            alt="${listingData.postType} marker"
             width="${markerWidth}"
             height="${markerHeight}"
         />
+        <span class="visually-hidden">${listingTitle}</span>
     </span>
-    <span class="screen-reader-text">${markerLabel}</span>
 `;
 
             // https://leafletjs.com/reference.html#marker
