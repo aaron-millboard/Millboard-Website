@@ -173,8 +173,29 @@ export default class ExpandableElement {
     }
 
     onclick(event) {
-        if ([...this.triggerElements].includes(event.target)) {
-            this.lastTrigger = event.target;
+        // Match the trigger the click landed INSIDE, not just the element the
+        // click landed ON.
+        //
+        // An identity check on event.target only worked for triggers with no
+        // child content. The language switcher's button holds a globe, the
+        // label 'UK' and a chevron: the icons are empty spans painted with
+        // ::after, so hit-testing resolves them to the button and the check
+        // passed -- but clicking the label made event.target the label span,
+        // which is not a trigger, so the dropdown did nothing. Half a button
+        // that works is worse than one that plainly does not.
+        //
+        // A <button> already treats a click on its children as a click on
+        // itself; this brings the helper in line with that. It widens what
+        // matches rather than changing what a match does, and every trigger
+        // in the theme is a button whose children are decoration.
+        const trigger = [...this.triggerElements].find(
+            (candidate) => candidate === event.target || candidate.contains(event.target)
+        );
+
+        if (trigger) {
+            // The trigger itself, so focus returns to the button rather than
+            // to a span inside it.
+            this.lastTrigger = trigger;
             this.toggle();
         } else if (
             this.options.collapseOnFocusout === true &&

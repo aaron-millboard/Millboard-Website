@@ -19,7 +19,7 @@ function filter_args(array $args): ?array
         'image' => [],
         'media' => '',
         // Media Object arguments.
-        'size' => '1536', // increase media object image size.
+        'size' => 'ml', // increase media object image size.
         'orientation' => 'horizontal',
     ], $args);
 

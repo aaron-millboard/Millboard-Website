@@ -63,7 +63,7 @@ function filter_args(array $args): ?array
                     'hero-header__cta-image',
                     'hero-header__cta-image--desktop',
                 ];
-                $item['image_desktop']['size'] = 'granola_square_s';
+                $args['image_desktop']['size'] = 'medium_large';
             }
 
             if (!empty($item['image_mobile'])) {
