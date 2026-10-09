@@ -38,8 +38,20 @@ if (form) {
             comp: checked('summit_competition_law_accepted'),
             data: checked('summit_data_consent'),
         };
-        const details = !!(val('firstname') && val('lastname') && val('company') && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val('email')));
-        return { diet, access, needs, done, details };
+        const int = form.dataset.audience === 'INT';
+        const detailKeys = ['firstname', 'lastname', 'company'].concat(int ? ['summit_country', 'summit_mobile'] : []);
+        const details = detailKeys.every((k) => val(k) !== '') && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val('email'));
+        // INT only: either flights are given, or the delegate says they are not booked yet.
+        const notBooked = checked('summit_flights_not_booked');
+        const travel = !int || notBooked || FLIGHT_REQUIRED.every((k) => val(k) !== '');
+        return { diet, access, needs, done, details, int, notBooked, travel };
+    };
+
+    const FLIGHT_REQUIRED = ['summit_arrival_airline', 'summit_arrival_flight', 'summit_arrival_airport', 'summit_arrival_date', 'summit_arrival_time'];
+    const diaryDepts = () => Array.from(form.querySelectorAll('input[name="diary_dept"]:checked')).map((i) => i.value);
+    const diaryNote = (dept) => {
+        const ta = form.querySelector('[data-diary-note="' + dept + '"] textarea');
+        return ta ? ta.value.trim() : '';
     };
 
     const labels = { nda: '01', hs: '02', needs: '03', photo: '04', comp: '05', data: '06' };
@@ -58,10 +70,20 @@ if (form) {
             if (badge) badge.hidden = !s.done[k];
         });
 
+        if (s.int) {
+            const ticked = diaryDepts();
+            form.querySelector('[data-flights]').hidden = s.notBooked;
+            form.querySelector('[data-diary-notes]').hidden = ticked.length === 0;
+            form.querySelectorAll('[data-diary-note]').forEach((el) => {
+                el.hidden = !ticked.includes(el.dataset.diaryNote);
+            });
+            form.querySelector('[data-done="travel"]').hidden = !s.travel;
+        }
+
         $('[data-review-count]').textContent = String(count);
         $('[data-review-bar]').style.width = (count / 6) * 100 + '%';
 
-        const todo = [!s.details && 'your details'].concat(keys.filter((k) => !s.done[k]).map((k) => labels[k])).filter(Boolean);
+        const todo = [!s.details && 'your details', !s.travel && 'your travel'].concat(keys.filter((k) => !s.done[k]).map((k) => labels[k])).filter(Boolean);
         submit.disabled = todo.length > 0;
         hint.textContent = todo.length ? 'Still to complete: ' + todo.join(', ') + '.' : 'Ready to submit.';
         return s;
@@ -103,6 +125,18 @@ if (form) {
             summit_data_consent: 'true',
         };
         if (s.needs) f.summit_health_data_consent = 'true';
+        if (s.int) {
+            f.summit_country = val('summit_country');
+            f.summit_mobile = val('summit_mobile');
+            if (s.notBooked) {
+                f.summit_flights_not_booked = 'true';
+            } else {
+                FLIGHT_REQUIRED.concat(['summit_arrival_from']).forEach((k) => { f[k] = val(k); });
+            }
+            const depts = diaryDepts();
+            f.summit_open_diary_departments = depts.join(';');
+            f.summit_open_diary_topics = depts.filter((d) => diaryNote(d) !== '').map((d) => d + ': ' + diaryNote(d)).join('\n');
+        }
         return Object.keys(f)
             .filter((k) => f[k] !== '')
             .map((k) => ({ objectTypeId: '0-1', name: k, value: f[k] }));

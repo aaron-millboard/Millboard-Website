@@ -21,6 +21,8 @@ function filter_args(array $args): ?array
         'health_safety_url' => '',
         'competition_law_url' => '',
         'privacy_url' => '',
+        'audience' => 'UK',
+        'agenda_url' => '',
     ], $args);
 
     $args['classes'] = array_merge(['summit-review', 'wp-block'], $args['classes']);
@@ -28,6 +30,8 @@ function filter_args(array $args): ?array
     if (empty($args['attributes']['id'])) {
         $args['attributes']['id'] = 'summit-before-you-arrive';
     }
+
+    $args['is_int'] = strtoupper(trim((string) $args['audience'])) === 'INT';
 
     $args['has_form'] = trim((string) $args['hubspot_form_guid']) !== '';
 
