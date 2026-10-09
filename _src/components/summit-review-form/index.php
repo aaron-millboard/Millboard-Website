@@ -101,7 +101,8 @@ $travel_fields = [
     <div class="summit-review__inner">
 
         <?php if (!empty($args['logo_url'])) { ?>
-            <img class="summit-review__logo" src="<?= esc_url($args['logo_url']); ?>" alt="Millboard Summit" width="92" height="94">
+            <img class="summit-review__logo" src="<?= esc_url($args['logo_url']); ?>" alt="Millboard Summit" width="92" height="94"
+                 loading="eager" decoding="async" fetchpriority="high" data-spai-eager="true" data-no-lazy="1">
         <?php } ?>
 
         <div data-review-thanks hidden class="summit-review__thanks" tabindex="-1">
