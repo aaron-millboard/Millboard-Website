@@ -24,11 +24,20 @@ if (empty($args['has_form'])) { ?>
     return;
 }
 
+// French pages swap their copy in through the gettext filter for the length of
+// this render only; UK and INT never touch it.
+$is_fr = !empty($args['is_fr']);
+$translate = null;
+if ($is_fr) {
+    $translate = \Theme\Summit\ReviewStrings::gettext_filter();
+    \add_filter('gettext', $translate, 10, 3);
+}
+
 $doc_link = static function (string $url, string $label): void {
     if ($url === '') {
         return;
     }
-    echo '<a class="summit-review__doc" href="' . esc_url($url) . '" target="_blank" rel="noopener">' . esc_html($label) . '</a>';
+    echo '<a class="summit-review__doc" href="' . esc_url($url) . '" target="_blank" rel="noopener">' . esc_html(__($label, 'granola')) . '</a>';
 };
 
 $check = static function (string $name, string $text): void { ?>
@@ -37,20 +46,20 @@ $check = static function (string $name, string $text): void { ?>
             <input type="checkbox" name="<?= esc_attr($name); ?>" data-required>
             <span class="summit-review__star" aria-hidden="true">*</span>
         </span>
-        <?= esc_html($text); ?>
+        <?= esc_html(__($text, 'granola')); ?>
     </label>
 <?php };
 
 $radio = static function (string $name, string $value, string $text): void { ?>
     <label class="summit-review__choice">
         <input type="radio" name="<?= esc_attr($name); ?>" value="<?= esc_attr($value); ?>">
-        <?= esc_html($text); ?>
+        <?= esc_html(__($text, 'granola')); ?>
     </label>
 <?php };
 
 $step = static function (string $n, string $title, string $key): void { ?>
     <div class="summit-review__step-head">
-        <h2 class="summit-review__step-title"><?= esc_html($title); ?></h2>
+        <h2 class="summit-review__step-title"><?= esc_html(__($title, 'granola')); ?></h2>
         <span class="summit-review__done" data-done="<?= esc_attr($key); ?>" hidden><?= esc_html__('Complete', 'granola'); ?></span>
     </div>
 <?php };
@@ -59,8 +68,11 @@ $yes_text = "Yes, I'd like to let you know about something";
 
 // INT (international distributors) adds travel, Open Diary and two more details.
 $is_int = !empty($args['is_int']);
+$is_travel = $is_int || $is_fr; // INT and FR delegates both give arrival flights
+$audience = $is_fr ? 'FR' : ($is_int ? 'INT' : 'UK');
+$flights_contact = $is_fr ? 'luderic.geminard@millboard.com' : 'sam.cockeram@millboard.com';
 $agenda = (string) ($args['agenda_url'] ?? '');
-$phone = $is_int ? '+44 24 7643 9943' : '024 7643 9943';
+$phone = $is_travel ? '+44 24 7643 9943' : '024 7643 9943';
 $detail_fields = [
     ['firstname', 'First name', 'text', 'given-name', ''],
     ['lastname', 'Last name', 'text', 'family-name', ''],
@@ -69,6 +81,8 @@ $detail_fields = [
 ];
 if ($is_int) {
     $detail_fields[] = ['summit_country', 'Country', 'text', 'country-name', ''];
+}
+if ($is_travel) {
     $detail_fields[] = ['summit_mobile', 'Mobile number', 'tel', 'tel', 'Including country code, e.g. +33'];
 }
 $depts = ['Operations', 'Technical', 'Events', 'Social Media', 'Digital Marketing', 'Website', 'Customer Care'];
@@ -99,7 +113,16 @@ $travel_fields = [
         <form class="summit-review__form" data-review-form
               data-portal="<?= esc_attr($args['hubspot_portal_id']); ?>"
               data-form="<?= esc_attr($args['hubspot_form_guid']); ?>"
-              data-audience="<?= $is_int ? 'INT' : 'UK'; ?>"
+              data-audience="<?= esc_attr($audience); ?>"
+              data-i18n="<?= esc_attr(wp_json_encode([
+                  'sending' => __('Sending…', 'granola'),
+                  'thanks' => __('Thank you, ', 'granola'),
+                  'ready' => __('Ready to submit.', 'granola'),
+                  'todo' => __('Still to complete: ', 'granola'),
+                  'details' => __('your details', 'granola'),
+                  'travel' => __('your travel', 'granola'),
+                  'error' => __('Sorry, we could not send that. Please try again, or email enquiries@millboard.com.', 'granola'),
+              ])); ?>"
               data-endpoint="<?= esc_url(rest_url('millboard/v1/summit/review')); ?>" novalidate>
 
             <header class="summit-review__intro">
@@ -110,7 +133,7 @@ $travel_fields = [
                     <strong><?= esc_html($args['deadline']); ?></strong>
                     <?= esc_html__('so we can have everything ready for you.', 'granola'); ?>
                 </p>
-                <?php if ($is_int) { $doc_link($agenda, 'View the high level agenda (PDF)'); } ?>
+                <?php if ($is_travel) { $doc_link($agenda, 'View the high level agenda (PDF)'); } ?>
             </header>
 
             <div class="summit-review__progress" aria-live="polite">
@@ -129,14 +152,14 @@ $travel_fields = [
                 <div class="summit-review__grid">
                     <?php foreach ($detail_fields as [$name, $label, $type, $auto, $hint]) { ?>
                         <label class="summit-review__field">
-                            <span><?= esc_html($label); ?><strong> *</strong></span>
-                            <input class="summit-review__input" type="<?= esc_attr($type); ?>" name="<?= esc_attr($name); ?>" autocomplete="<?= esc_attr($auto); ?>"<?= $hint !== '' ? ' placeholder="' . esc_attr($hint) . '"' : ''; ?>>
+                            <span><?= esc_html(__($label, 'granola')); ?><strong> *</strong></span>
+                            <input class="summit-review__input" type="<?= esc_attr($type); ?>" name="<?= esc_attr($name); ?>" autocomplete="<?= esc_attr($auto); ?>"<?= $hint !== '' ? ' placeholder="' . esc_attr(__($hint, 'granola')) . '"' : ''; ?>>
                         </label>
                     <?php } ?>
                 </div>
             </section>
 
-            <?php if ($is_int) { ?>
+            <?php if ($is_travel) { ?>
             <section class="summit-review__travel">
                 <div class="summit-review__step-head">
                     <h2 class="summit-review__step-title"><?= esc_html__('Your travel', 'granola'); ?></h2>
@@ -145,23 +168,23 @@ $travel_fields = [
                 <p><?= esc_html__('Your arrival details help us plan around your arrival and contact you if anything changes. Transport during the event is arranged by us.', 'granola'); ?></p>
                 <label class="summit-review__choice">
                     <input type="checkbox" name="summit_flights_not_booked">
-                    <?= esc_html__("I haven't booked my flight yet. I'll send them to sam.cockeram@millboard.com once booked.", 'granola'); ?>
+                    <?= esc_html(sprintf(__("I haven't booked my flight yet. I'll send them to %s once booked.", 'granola'), $flights_contact)); ?>
                 </label>
                 <div class="summit-review__flights" data-flights>
                     <h3 class="summit-review__sub"><?= esc_html__('Arriving in the UK', 'granola'); ?></h3>
                     <div class="summit-review__grid">
                         <?php foreach ($travel_fields as [$name, $label, $type, $hint, $req]) { ?>
                             <label class="summit-review__field">
-                                <span><?= esc_html($label); ?><?= $req ? '<strong> *</strong>' : ''; ?></span>
+                                <span><?= esc_html(__($label, 'granola')); ?><?= $req ? '<strong> *</strong>' : ''; ?></span>
                                 <?php if ($type === 'select') { ?>
                                     <select class="summit-review__input" name="<?= esc_attr($name); ?>">
                                         <option value=""><?= esc_html__('Select', 'granola'); ?></option>
                                         <?php foreach ($airports as $airport) { ?>
-                                            <option value="<?= esc_attr($airport); ?>"><?= esc_html($airport); ?></option>
+                                            <option value="<?= esc_attr($airport); ?>"><?= esc_html(__($airport, 'granola')); ?></option>
                                         <?php } ?>
                                     </select>
                                 <?php } else { ?>
-                                    <input class="summit-review__input" type="<?= esc_attr($type); ?>" name="<?= esc_attr($name); ?>"<?= $hint !== '' ? ' placeholder="' . esc_attr($hint) . '"' : ''; ?>>
+                                    <input class="summit-review__input" type="<?= esc_attr($type); ?>" name="<?= esc_attr($name); ?>"<?= $hint !== '' ? ' placeholder="' . esc_attr(__($hint, 'granola')) . '"' : ''; ?>>
                                 <?php } ?>
                             </label>
                         <?php } ?>
@@ -203,12 +226,12 @@ $travel_fields = [
                         <p><?= esc_html__('Please select all that apply.', 'granola'); ?></p>
                         <div class="summit-review__chips">
                             <?php foreach (['Vegetarian', 'Vegan', 'Gluten free', 'Dairy free', 'Nut allergy', 'Other'] as $chip) { ?>
-                                <button type="button" class="summit-review__chip" data-chip="<?= esc_attr($chip); ?>" aria-pressed="false"><?= esc_html($chip); ?></button>
+                                <button type="button" class="summit-review__chip" data-chip="<?= esc_attr($chip); ?>" aria-pressed="false"><?= esc_html(__($chip, 'granola')); ?></button>
                             <?php } ?>
                         </div>
                         <label class="summit-review__field">
                             <?= esc_html__('Anything else we should know?', 'granola'); ?>
-                            <textarea class="summit-review__input" rows="3" name="summit_dietary_notes" placeholder="For example, severity of an allergy"></textarea>
+                            <textarea class="summit-review__input" rows="3" name="summit_dietary_notes" placeholder="<?= esc_attr__('For example, severity of an allergy', 'granola'); ?>"></textarea>
                         </label>
                     </div>
 
@@ -219,7 +242,7 @@ $travel_fields = [
                     <?php $radio('access', 'yes', $yes_text); ?>
                     <label class="summit-review__field" data-show-when="access=yes" hidden>
                         <?= esc_html__('Please tell us what would help', 'granola'); ?>
-                        <textarea class="summit-review__input" rows="3" name="summit_accessibility_requirements" placeholder="For example, step-free access, seating during the tour or a quiet space"></textarea>
+                        <textarea class="summit-review__input" rows="3" name="summit_accessibility_requirements" placeholder="<?= esc_attr__('For example, step-free access, seating during the tour or a quiet space', 'granola'); ?>"></textarea>
                     </label>
                     <p class="summit-review__small"><?= esc_html__('This information is kept confidential and shared only with the team organising your visit.', 'granola'); ?></p>
 
@@ -306,3 +329,7 @@ $travel_fields = [
         </noscript>
     </div>
 </section>
+<?php
+if ($translate) {
+    \remove_filter('gettext', $translate, 10);
+}

@@ -17,6 +17,11 @@ if (form) {
         return el ? el.value : '';
     };
 
+    // Strings for this page's language, set by the template. English is the fallback.
+    let i18n = {};
+    try { i18n = JSON.parse(form.dataset.i18n || '{}'); } catch (e) { i18n = {}; }
+    const t = (key, fallback) => i18n[key] || fallback;
+
     const submit = $('[data-review-submit]');
     const hint = $('[data-review-hint]');
     const errorBox = $('[data-review-error]');
@@ -39,12 +44,15 @@ if (form) {
             data: checked('summit_data_consent'),
         };
         const int = form.dataset.audience === 'INT';
-        const detailKeys = ['firstname', 'lastname', 'company'].concat(int ? ['summit_country', 'summit_mobile'] : []);
+        const travelOn = int || form.dataset.audience === 'FR'; // INT and FR give arrival flights
+        const detailKeys = ['firstname', 'lastname', 'company']
+            .concat(int ? ['summit_country'] : [])
+            .concat(travelOn ? ['summit_mobile'] : []);
         const details = detailKeys.every((k) => val(k) !== '') && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val('email'));
         // INT only: either flights are given, or the delegate says they are not booked yet.
         const notBooked = checked('summit_flights_not_booked');
-        const travel = !int || notBooked || FLIGHT_REQUIRED.every((k) => val(k) !== '');
-        return { diet, access, needs, done, details, int, notBooked, travel };
+        const travel = !travelOn || notBooked || FLIGHT_REQUIRED.every((k) => val(k) !== '');
+        return { diet, access, needs, done, details, int, travelOn, notBooked, travel };
     };
 
     const FLIGHT_REQUIRED = ['summit_arrival_airline', 'summit_arrival_flight', 'summit_arrival_airport', 'summit_arrival_date', 'summit_arrival_time'];
@@ -70,22 +78,24 @@ if (form) {
             if (badge) badge.hidden = !s.done[k];
         });
 
+        if (s.travelOn) {
+            form.querySelector('[data-flights]').hidden = s.notBooked;
+            form.querySelector('[data-done="travel"]').hidden = !s.travel;
+        }
         if (s.int) {
             const ticked = diaryDepts();
-            form.querySelector('[data-flights]').hidden = s.notBooked;
             form.querySelector('[data-diary-notes]').hidden = ticked.length === 0;
             form.querySelectorAll('[data-diary-note]').forEach((el) => {
                 el.hidden = !ticked.includes(el.dataset.diaryNote);
             });
-            form.querySelector('[data-done="travel"]').hidden = !s.travel;
         }
 
         $('[data-review-count]').textContent = String(count);
         $('[data-review-bar]').style.width = (count / 6) * 100 + '%';
 
-        const todo = [!s.details && 'your details', !s.travel && 'your travel'].concat(keys.filter((k) => !s.done[k]).map((k) => labels[k])).filter(Boolean);
+        const todo = [!s.details && t('details', 'your details'), !s.travel && t('travel', 'your travel')].concat(keys.filter((k) => !s.done[k]).map((k) => labels[k])).filter(Boolean);
         submit.disabled = todo.length > 0;
-        hint.textContent = todo.length ? 'Still to complete: ' + todo.join(', ') + '.' : 'Ready to submit.';
+        hint.textContent = todo.length ? t('todo', 'Still to complete: ') + todo.join(', ') + '.' : t('ready', 'Ready to submit.');
         return s;
     };
 
@@ -125,14 +135,16 @@ if (form) {
             summit_data_consent: 'true',
         };
         if (s.needs) f.summit_health_data_consent = 'true';
-        if (s.int) {
-            f.summit_country = val('summit_country');
+        if (s.travelOn) {
             f.summit_mobile = val('summit_mobile');
             if (s.notBooked) {
                 f.summit_flights_not_booked = 'true';
             } else {
                 FLIGHT_REQUIRED.concat(['summit_arrival_from']).forEach((k) => { f[k] = val(k); });
             }
+        }
+        if (s.int) {
+            f.summit_country = val('summit_country');
             const depts = diaryDepts();
             f.summit_open_diary_departments = depts.join(';');
             f.summit_open_diary_topics = depts.filter((d) => diaryNote(d) !== '').map((d) => d + ': ' + diaryNote(d)).join('\n');
@@ -150,7 +162,7 @@ if (form) {
         errorBox.hidden = true;
         submit.disabled = true;
         const original = submit.textContent;
-        submit.textContent = 'Sending…';
+        submit.textContent = t('sending', 'Sending…');
 
         const payload = fields(s);
         const pageUri = window.location.href;
@@ -177,7 +189,7 @@ if (form) {
             .then((r) => {
                 if (!r.ok) throw new Error('HTTP ' + r.status);
                 const thanks = document.querySelector('[data-review-thanks]');
-                thanks.querySelector('[data-review-thanks-title]').textContent = 'Thank you, ' + val('firstname');
+                thanks.querySelector('[data-review-thanks-title]').textContent = t('thanks', 'Thank you, ') + val('firstname');
                 form.hidden = true;
                 thanks.hidden = false;
                 thanks.focus();
@@ -185,7 +197,7 @@ if (form) {
             })
             .catch(() => {
                 // Nothing is lost: the answers are still on screen.
-                errorBox.textContent = 'Sorry, we could not send that. Please try again, or email enquiries@millboard.com.';
+                errorBox.textContent = t('error', 'Sorry, we could not send that. Please try again, or email enquiries@millboard.com.');
                 errorBox.hidden = false;
                 submit.textContent = original;
                 render();
