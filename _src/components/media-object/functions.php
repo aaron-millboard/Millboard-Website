@@ -66,6 +66,7 @@ function filter_args(array $args): ?array
             ];
         }
         $args['media_type'] = 'image';
+        // $args['classes'][] = 'has-image';
         $args['media']['size'] = get_image_size($args['size']);
         $args['attributes']['data-media'] = 'image';
     } elseif (!empty($args['illustration'])) {
@@ -158,7 +159,6 @@ function get_image_size($size)
         'm' => 'medium',
         'ml' => 'medium_large',
         'l' => 'large',
-        '1536' => '1536x1536',
         'su' => 'super',
         default => 'medium_large',
     };

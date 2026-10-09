@@ -1,0 +1,16 @@
+// =============================================================================
+// Home Newsletter -- editor
+// =============================================================================
+// Gravity Forms renders a placeholder in the canvas rather than a live form,
+// so there is nothing here to style. The reveal is left at rest.
+// =============================================================================
+
+.editor-styles-wrapper {
+    .home-newsletter {
+        &__inner {
+            opacity: 1;
+            transform: none;
+            transition: none;
+        }
+    }
+}

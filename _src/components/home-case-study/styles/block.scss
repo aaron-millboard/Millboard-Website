@@ -1,0 +1,20 @@
+// =============================================================================
+// Home Featured Case Study -- editor
+// =============================================================================
+// 88svh of canvas would be one block filling the whole editor, so the stage is
+// given a workable height here and the reveal is left at rest.
+// =============================================================================
+
+.editor-styles-wrapper {
+    .home-case-study {
+        &__stage {
+            min-height: #{px-to-rem(420)};
+        }
+
+        &__inner {
+            opacity: 1;
+            transform: none;
+            transition: none;
+        }
+    }
+}

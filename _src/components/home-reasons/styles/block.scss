@@ -1,0 +1,17 @@
+// =============================================================================
+// Home Reasons Grid -- editor
+// =============================================================================
+// The reveals have no page scroll to be released by inside the canvas, so the
+// editor gets the resting state: every card placed, visible and still.
+// =============================================================================
+
+.editor-styles-wrapper {
+    .home-reasons {
+        &__header,
+        &__item {
+            opacity: 1;
+            transform: none;
+            transition: none;
+        }
+    }
+}
