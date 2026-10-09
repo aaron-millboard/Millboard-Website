@@ -9,14 +9,7 @@ export default class SiteFooter {
             return;
         }
 
-        // The five link columns only.
-        //
-        // Scoped to __menus rather than the whole footer, because the legal
-        // strip below is also a .menu-list and has no heading to expand it
-        // from: collapsed by this, it would simply be gone on a phone. It also
-        // has no id, so ExpandableElement would bail on it and log an error on
-        // every mobile page load of every page on the site.
-        this.menuEls = this.el.querySelectorAll('.site-footer__menus .menu-list');
+        this.menuEls = this.el.querySelectorAll('.menu-list');
         this.expandableEls = {};
 
         this.init();

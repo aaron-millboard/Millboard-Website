@@ -377,7 +377,7 @@ if ($count === 0) {
                                 ];
 
                                 if (count($essentials_row_kinds) > 1) {
-                                    $essentials_kind_text = __('Cladding and decking', 'granola');
+                                    $essentials_kind_text = __('Decking and cladding', 'granola');
                                 } elseif ($essentials_row_kinds) {
                                     $essentials_kind_text = $essentials_kind_labels[$essentials_row_kinds[0]] ?? '';
                                 } else {

@@ -16,7 +16,7 @@
         "mode": "auto",
         "blockVersion": 3,
         "autoInlineEditing": false,
-        "hideFieldsInSidebar": true,
+        "hideFieldsInSidebar": false,
         "renderCallback": "\\Granola\\Component::acf_render_callback",
         "postTypes": [
             "granola-template",

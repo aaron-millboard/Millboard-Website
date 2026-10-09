@@ -3,26 +3,12 @@
 // ---------------------------------------------------
 // Colors
 // ---------------------------------------------------
-// Gutenberg color palette colors also need to be set in theme.json
-//
-// Values are the Millboard Refreshed Brand Guidelines (2025) palette, adopted
-// site-wide on 10 Sep 2026 with the homepage redesign. Five of the moves are
-// imperceptible corrections of a point or two per channel; three are real:
-//
-//   olivegreen  #799513 -> #78953C  greener olive to the brand's yellower one
-//   black       #151716 -> #2F292E  Charcoal Black 440, the brand's only body
-//                                   and title colour. 12.99:1 on Spring Wood.
-//   charcoal    #575756 -> #47474C  Charcoal 2479, which the guide reserves
-//                                   for the logo -- never body copy
-//
-// Olive is 3.11:1 on Spring Wood: fine for the 2px accent rules and other
-// non-text UI, but it fails AA for small text. The brand guide says the same
-// thing -- accent only, never titles or body -- so do not set copy in it.
+// Gutenberg color palette colors also need to be set in granola/config.php
 
 $colors: (
     'base': (
         'mist': (
-            'color': #dedbd2,
+            'color': #dedcd2,
             'foreground': 'black',
             'properties': (
                 '--link--color': 'black',
@@ -30,7 +16,7 @@ $colors: (
             ),
         ),
         'springwood': (
-            'color': #f8f4f0,
+            'color': #f9f7f1,
             'foreground': 'black',
             'properties': (
                 '--link--color': var(--color--black),
@@ -38,7 +24,7 @@ $colors: (
             ),
         ),
         'charcoal': (
-            'color': #47474c,
+            'color': #575756,
             'foreground': 'white',
             'properties': (
                 '--link--color': var(--color--white),
@@ -46,7 +32,7 @@ $colors: (
             ),
         ),
         'olivegreen': (
-            'color': #78953c,
+            'color': #799513,
             'foreground': 'black',
             'properties': (
                 '--link--color': var(--color--black),
@@ -54,7 +40,7 @@ $colors: (
             ),
         ),
         'wenge': (
-            'color': #625249,
+            'color': #62554d,
             'foreground': 'white',
             'properties': (
                 '--link--color': var(--color--white),
@@ -62,7 +48,7 @@ $colors: (
             ),
         ),
         'sustainabilitygreen': (
-            'color': #34401a,
+            'color': #333c12,
             'foreground': 'white',
             'properties': (
                 '--link--color': 'white',
@@ -70,11 +56,11 @@ $colors: (
             ),
         ),
         'white': (
-            'color': #f8f4f0,
+            'color': #f9f7f1,
             'foreground': 'black',
         ),
         'black': (
-            'color': #2f292e,
+            'color': #151716,
             'foreground': 'white',
             'properties': (
                 '--link--color': 'white',

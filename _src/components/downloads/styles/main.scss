@@ -88,7 +88,7 @@
         @include typestyle-small;
         flex-shrink: 0;
         text-align: right;
-        color: color-mix(in srgb, currentColor 70%, transparent); // 70% keeps the muted look while meeting 4.5:1 contrast (WCAG 1.4.3)
+        color: color-mix(in srgb, currentColor 60%, transparent);
     }
 
     &__file-actions {

@@ -19,10 +19,7 @@
     // ---------------------------------------------------
     // Focus
     // ---------------------------------------------------
-    // currentColor so the focus ring adapts to each element's text colour and stays
-    // visible on light and dark backgrounds. The brand-1 tint was invisible on the
-    // light header and body (1.0-1.3:1, failing WCAG 2.4.7 / 1.4.11).
-    --focus--color: currentColor;
+    --focus--color: var(--color--brand-1);
     --focus--1--offset: 5px;
     --focus--1--width: 3px;
 
