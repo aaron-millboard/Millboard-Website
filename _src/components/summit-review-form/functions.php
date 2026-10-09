@@ -31,7 +31,9 @@ function filter_args(array $args): ?array
         $args['attributes']['id'] = 'summit-before-you-arrive';
     }
 
-    $args['is_int'] = strtoupper(trim((string) $args['audience'])) === 'INT';
+    $audience = strtoupper(trim((string) $args['audience']));
+    $args['is_int'] = $audience === 'INT';
+    $args['is_fr'] = $audience === 'FR';
 
     $args['has_form'] = trim((string) $args['hubspot_form_guid']) !== '';
 
