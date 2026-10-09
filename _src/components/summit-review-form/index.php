@@ -100,6 +100,10 @@ $travel_fields = [
 <section <?= \Granola\Helpers::build_attributes($args['attributes']); ?>>
     <div class="summit-review__inner">
 
+        <?php if (!empty($args['logo_url'])) { ?>
+            <img class="summit-review__logo" src="<?= esc_url($args['logo_url']); ?>" alt="Millboard Summit" width="92" height="94">
+        <?php } ?>
+
         <div data-review-thanks hidden class="summit-review__thanks" tabindex="-1">
             <div class="summit-review__rule"></div>
             <h2 class="summit-review__title" data-review-thanks-title></h2>
