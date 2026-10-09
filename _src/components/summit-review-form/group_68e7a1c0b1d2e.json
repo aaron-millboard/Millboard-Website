@@ -1,0 +1,88 @@
+{
+    "key": "group_68e7a1c0b1d2e",
+    "title": "Block - Summit Pre-Arrival Form",
+    "fields": [
+        {
+            "key": "field_68e7a1c00001",
+            "label": "HubSpot portal ID",
+            "name": "hubspot_portal_id",
+            "type": "text",
+            "instructions": "Millboard's HubSpot portal.",
+            "required": 0,
+            "default_value": "26853518"
+        },
+        {
+            "key": "field_68e7a1c00002",
+            "label": "HubSpot form GUID",
+            "name": "hubspot_form_guid",
+            "type": "text",
+            "instructions": "The form this page submits to (HubSpot > Marketing > Forms, the GUID is in the form's URL). Leave blank and the form does not appear.",
+            "required": 0,
+            "default_value": ""
+        },
+        {
+            "key": "field_68e7a1c00003",
+            "label": "Complete by",
+            "name": "deadline",
+            "type": "text",
+            "instructions": "Shown in the introduction.",
+            "required": 0,
+            "default_value": "17 October 2026"
+        },
+        {
+            "key": "field_68e7a1c00004",
+            "label": "NDA (PDF URL)",
+            "name": "nda_url",
+            "type": "text",
+            "instructions": "Media library URL of the Non-Disclosure Agreement for this audience.",
+            "required": 0,
+            "default_value": ""
+        },
+        {
+            "key": "field_68e7a1c00005",
+            "label": "Health and Safety (PDF URL)",
+            "name": "health_safety_url",
+            "type": "text",
+            "instructions": "Media library URL.",
+            "required": 0,
+            "default_value": ""
+        },
+        {
+            "key": "field_68e7a1c00006",
+            "label": "Competition Law guidelines (PDF URL)",
+            "name": "competition_law_url",
+            "type": "text",
+            "instructions": "Media library URL.",
+            "required": 0,
+            "default_value": ""
+        },
+        {
+            "key": "field_68e7a1c00007",
+            "label": "Privacy policy (PDF URL)",
+            "name": "privacy_url",
+            "type": "text",
+            "instructions": "Media library URL.",
+            "required": 0,
+            "default_value": ""
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "block",
+                "operator": "==",
+                "value": "acf/summit-review-form"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "Wiring and documents for the Summit pre-arrival form. The questions themselves are fixed in the template.",
+    "show_in_rest": 0,
+    "modified": 1791600000
+}
