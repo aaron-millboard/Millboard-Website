@@ -1,0 +1,151 @@
+// Summit pre-arrival form.
+//
+// Collects the delegate's answers and posts them to HubSpot's form submission
+// endpoint. The portal and form GUID come from data attributes on the form, so
+// pointing the page at a different form needs no code change. Field names are
+// HubSpot internal property names and must exist on the target form, because
+// HubSpot drops any submitted field the form does not define.
+
+const form = document.querySelector('[data-review-form]');
+
+if (form) {
+    const $ = (sel) => form.querySelector(sel);
+    const val = (name) => (form.elements[name] ? form.elements[name].value.trim() : '');
+    const checked = (name) => !!(form.elements[name] && form.elements[name].checked);
+    const radio = (name) => {
+        const el = form.querySelector('input[name="' + name + '"]:checked');
+        return el ? el.value : '';
+    };
+
+    const submit = $('[data-review-submit]');
+    const hint = $('[data-review-hint]');
+    const errorBox = $('[data-review-error]');
+    const chips = Array.from(form.querySelectorAll('[data-chip]'));
+    const selectedChips = () => chips.filter((c) => c.getAttribute('aria-pressed') === 'true').map((c) => c.dataset.chip);
+
+    const state = () => {
+        const diet = radio('diet');
+        const access = radio('access');
+        const needs = diet === 'yes' || access === 'yes' ? 'yes' : '';
+        const dietOk = diet === 'no' || (diet === 'yes' && (selectedChips().length > 0 || val('summit_dietary_notes') !== ''));
+        const accessOk = access === 'no' || (access === 'yes' && val('summit_accessibility_requirements') !== '');
+        const consentOk = !needs || checked('summit_health_data_consent');
+        const done = {
+            nda: checked('summit_nda_accepted'),
+            hs: checked('summit_hs_accepted'),
+            needs: dietOk && accessOk && consentOk,
+            photo: radio('summit_photo_consent') !== '',
+            comp: checked('summit_competition_law_accepted'),
+            data: checked('summit_data_consent'),
+        };
+        const details = !!(val('firstname') && val('lastname') && val('company') && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val('email')));
+        return { diet, access, needs, done, details };
+    };
+
+    const labels = { nda: '01', hs: '02', needs: '03', photo: '04', comp: '05', data: '06' };
+
+    const render = () => {
+        const s = state();
+        const keys = Object.keys(s.done);
+        const count = keys.filter((k) => s.done[k]).length;
+
+        const show = { 'diet=yes': s.diet === 'yes', 'access=yes': s.access === 'yes', 'needs=yes': !!s.needs };
+        form.querySelectorAll('[data-show-when]').forEach((el) => {
+            el.hidden = !show[el.dataset.showWhen];
+        });
+        keys.forEach((k) => {
+            const badge = form.querySelector('[data-done="' + k + '"]');
+            if (badge) badge.hidden = !s.done[k];
+        });
+
+        $('[data-review-count]').textContent = String(count);
+        $('[data-review-bar]').style.width = (count / 6) * 100 + '%';
+
+        const todo = [!s.details && 'your details'].concat(keys.filter((k) => !s.done[k]).map((k) => labels[k])).filter(Boolean);
+        submit.disabled = todo.length > 0;
+        hint.textContent = todo.length ? 'Still to complete: ' + todo.join(', ') + '.' : 'Ready to submit.';
+        return s;
+    };
+
+    chips.forEach((chip) => {
+        chip.addEventListener('click', () => {
+            chip.setAttribute('aria-pressed', chip.getAttribute('aria-pressed') === 'true' ? 'false' : 'true');
+            render();
+        });
+    });
+
+    // Choosing "No requirements" clears anything entered under "Yes".
+    form.querySelectorAll('input[name="diet"]').forEach((r) => {
+        r.addEventListener('change', () => {
+            if (r.value === 'no') {
+                chips.forEach((c) => c.setAttribute('aria-pressed', 'false'));
+                form.elements.summit_dietary_notes.value = '';
+            }
+        });
+    });
+
+    form.addEventListener('input', render);
+    form.addEventListener('change', render);
+
+    const fields = (s) => {
+        const f = {
+            firstname: val('firstname'),
+            lastname: val('lastname'),
+            company: val('company'),
+            email: val('email'),
+            summit_nda_accepted: 'true',
+            summit_hs_accepted: 'true',
+            summit_dietary_requirements: s.diet === 'no' ? 'No requirements' : selectedChips().join(';'),
+            summit_dietary_notes: s.diet === 'yes' ? val('summit_dietary_notes') : '',
+            summit_accessibility_requirements: s.access === 'no' ? 'No requirements' : val('summit_accessibility_requirements'),
+            summit_photo_consent: radio('summit_photo_consent'),
+            summit_competition_law_accepted: 'true',
+            summit_data_consent: 'true',
+        };
+        if (s.needs) f.summit_health_data_consent = 'true';
+        return Object.keys(f)
+            .filter((k) => f[k] !== '')
+            .map((k) => ({ objectTypeId: '0-1', name: k, value: f[k] }));
+    };
+
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const s = render();
+        if (submit.disabled) return;
+
+        errorBox.hidden = true;
+        submit.disabled = true;
+        const original = submit.textContent;
+        submit.textContent = 'Sending…';
+
+        const url = 'https://api.hsforms.com/submissions/v3/integration/submit/'
+            + encodeURIComponent(form.dataset.portal) + '/' + encodeURIComponent(form.dataset.form);
+
+        fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                fields: fields(s),
+                context: { pageUri: window.location.href, pageName: document.title },
+            }),
+        })
+            .then((r) => {
+                if (!r.ok) throw new Error('HTTP ' + r.status);
+                const thanks = document.querySelector('[data-review-thanks]');
+                thanks.querySelector('[data-review-thanks-title]').textContent = 'Thank you, ' + val('firstname');
+                form.hidden = true;
+                thanks.hidden = false;
+                thanks.focus();
+                thanks.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            })
+            .catch(() => {
+                // Nothing is lost: the answers are still on screen.
+                errorBox.textContent = 'Sorry, we could not send that. Please try again, or email enquiries@millboard.com.';
+                errorBox.hidden = false;
+                submit.textContent = original;
+                render();
+            });
+    });
+
+    render();
+}

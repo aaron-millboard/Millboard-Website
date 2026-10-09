@@ -1,0 +1,343 @@
+// =============================================================================
+// Summit Pre-Arrival Form
+// Six-step delegate form, from the "Summit Email Options" design. The site
+// header, hero image and footer come from the page, not this block.
+// =============================================================================
+
+.summit-review {
+    --sr--ink: #2f292e;
+    --sr--paper: #f8f4f0;
+    --sr--accent: #78953c;
+    --sr--line: #8e878b;
+    --sr--rule: #dedbd2;
+    --sr--error: #b3261e;
+
+    background: var(--sr--paper);
+    color: var(--sr--ink);
+    font-weight: 300;
+
+    &__inner {
+        max-width: 760px;
+        margin: 0 auto;
+        padding: px-to-rem(72) clamp(20px, 5vw, 40px) px-to-rem(96);
+    }
+
+    &__form,
+    &__thanks {
+        display: flex;
+        flex-direction: column;
+    }
+
+    &__thanks {
+        align-items: center;
+        gap: px-to-rem(24);
+        padding: px-to-rem(48) 0;
+        text-align: center;
+
+        &:focus {
+            outline: none;
+        }
+    }
+
+    &__rule {
+        width: 60px;
+        height: 2px;
+        background: var(--sr--accent);
+    }
+
+    &__intro {
+        display: flex;
+        flex-direction: column;
+        gap: px-to-rem(20);
+        padding-bottom: px-to-rem(48);
+    }
+
+    &__title {
+        margin: 0;
+        font-weight: 300;
+        font-size: clamp(28px, 4vw, 40px);
+        line-height: 1.2;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+    }
+
+    &__lead {
+        margin: 0;
+        max-width: 600px;
+        font-size: px-to-rem(17);
+        line-height: 1.65;
+        text-wrap: pretty;
+
+        strong {
+            font-weight: 700;
+        }
+    }
+
+    &__small {
+        margin: 0;
+        font-size: px-to-rem(14);
+        line-height: 1.55;
+    }
+
+    // Sticky so progress stays in view while scrolling the six steps.
+    &__progress {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
+        gap: px-to-rem(10);
+        padding: px-to-rem(16) 0;
+        background: var(--sr--paper);
+        border-bottom: 1px solid var(--sr--rule);
+    }
+
+    &__progress-text {
+        display: flex;
+        justify-content: space-between;
+        gap: px-to-rem(16);
+        font-size: px-to-rem(12);
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+    }
+
+    &__bar {
+        height: 2px;
+        background: var(--sr--rule);
+    }
+
+    &__bar-fill {
+        width: 0;
+        height: 2px;
+        background: var(--sr--ink);
+        transition: width 360ms cubic-bezier(0.22, 0.61, 0.36, 1);
+    }
+
+    &__details {
+        display: flex;
+        flex-direction: column;
+        gap: px-to-rem(20);
+        padding: px-to-rem(48) 0;
+    }
+
+    &__grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: px-to-rem(16);
+    }
+
+    &__field {
+        display: flex;
+        flex-direction: column;
+        gap: px-to-rem(8);
+        font-size: px-to-rem(13);
+    }
+
+    &__input {
+        padding: px-to-rem(14) px-to-rem(16);
+        border: 1px solid var(--sr--line);
+        border-radius: 2px;
+        background: var(--sr--paper);
+        color: var(--sr--ink);
+        font: inherit;
+        font-size: px-to-rem(15);
+        line-height: 1.5;
+        outline-color: var(--sr--accent);
+    }
+
+    textarea.summit-review__input {
+        resize: vertical;
+    }
+
+    &__step {
+        display: grid;
+        grid-template-columns: 56px minmax(0, 1fr);
+        gap: px-to-rem(8) px-to-rem(16);
+        padding: px-to-rem(40) 0;
+        border-top: 1px solid var(--sr--ink);
+
+        &--last {
+            border-bottom: 1px solid var(--sr--ink);
+        }
+    }
+
+    &__num {
+        font-size: px-to-rem(28);
+        line-height: 32px;
+    }
+
+    &__body {
+        display: flex;
+        flex-direction: column;
+        gap: px-to-rem(16);
+
+        p {
+            margin: 0;
+            font-size: px-to-rem(15);
+            line-height: 1.6;
+            text-wrap: pretty;
+        }
+
+        strong {
+            font-weight: 700;
+        }
+    }
+
+    &__step-head {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: px-to-rem(16);
+    }
+
+    &__step-title,
+    &__sub {
+        margin: 0;
+        font-weight: 700;
+        font-size: px-to-rem(12);
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+    }
+
+    &__step-title {
+        line-height: 32px;
+    }
+
+    &__sub--split {
+        margin-top: px-to-rem(16);
+        padding-top: px-to-rem(24);
+        border-top: 1px solid var(--sr--rule);
+    }
+
+    &__done {
+        padding: 4px 10px;
+        border: 1px solid var(--sr--accent);
+        font-size: px-to-rem(11);
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+    }
+
+    &__doc {
+        align-self: flex-start;
+        font-size: px-to-rem(14);
+        font-weight: 700;
+    }
+
+    a {
+        color: var(--sr--ink);
+        text-decoration: underline;
+        text-decoration-color: var(--sr--ink);
+
+        &:hover {
+            text-decoration-color: var(--sr--accent);
+        }
+    }
+
+    &__choice {
+        display: flex;
+        align-items: flex-start;
+        gap: px-to-rem(12);
+        font-size: px-to-rem(15);
+        line-height: 1.5;
+        cursor: pointer;
+
+        input {
+            flex: none;
+            width: 20px;
+            height: 20px;
+            margin: 1px 0 0;
+            accent-color: var(--sr--ink);
+        }
+    }
+
+    &__box {
+        display: flex;
+        flex: none;
+        align-items: flex-start;
+        gap: 2px;
+    }
+
+    &__star {
+        font-size: px-to-rem(14);
+        font-weight: 700;
+        line-height: 14px;
+    }
+
+    &__more {
+        display: flex;
+        flex-direction: column;
+        gap: px-to-rem(16);
+        padding-left: px-to-rem(32);
+    }
+
+    &__chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: px-to-rem(8);
+    }
+
+    &__chip {
+        flex: none;
+        padding: px-to-rem(10) px-to-rem(16);
+        border: 1px solid var(--sr--line);
+        border-radius: 2px;
+        background: transparent;
+        color: var(--sr--ink);
+        font: inherit;
+        font-size: px-to-rem(14);
+        cursor: pointer;
+        white-space: nowrap;
+        transition: all 240ms cubic-bezier(0.22, 0.61, 0.36, 1);
+
+        &[aria-pressed='true'] {
+            border-color: var(--sr--ink);
+            background: var(--sr--ink);
+            color: var(--sr--paper);
+        }
+    }
+
+    &__consent {
+        padding-top: px-to-rem(16);
+        border-top: 1px solid var(--sr--rule);
+    }
+
+    &__actions {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: px-to-rem(16);
+        padding-top: px-to-rem(40);
+    }
+
+    &__submit {
+        min-width: 160px;
+        height: 48px;
+        padding: 0 px-to-rem(32);
+        border: 1px solid var(--sr--ink);
+        border-radius: 2px;
+        background: var(--sr--ink);
+        color: var(--sr--paper);
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+
+        &:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+    }
+
+    &__error {
+        margin: 0;
+        color: var(--sr--error);
+        font-size: px-to-rem(14);
+    }
+
+    // The hidden attribute must win over the display set above.
+    [hidden] {
+        display: none !important;
+    }
+}
