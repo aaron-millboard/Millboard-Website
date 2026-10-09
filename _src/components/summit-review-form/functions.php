@@ -23,6 +23,7 @@ function filter_args(array $args): ?array
         'privacy_url' => '',
         'audience' => 'UK',
         'agenda_url' => '',
+        'logo_url' => '',
     ], $args);
 
     $args['classes'] = array_merge(['summit-review', 'wp-block'], $args['classes']);
