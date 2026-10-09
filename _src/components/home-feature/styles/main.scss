@@ -1,0 +1,185 @@
+// =============================================================================
+// Home Feature Pair
+// =============================================================================
+// A square image beside a headed block of copy, used twice in sequence and
+// mirrored: decking on Spring Wood with its image left, cladding on Mist with
+// its image right.
+//
+// Three layouts, not two. Below 720px it is a single column. Between 720 and
+// 1099 it is two columns of equal height with the image filling its half, so
+// a tablet does not leave a short image floating beside a tall column of text.
+// From 1100 the columns size to their own content and the image is sticky, so
+// the photograph holds while the copy scrolls past it.
+// =============================================================================
+
+.home-feature {
+    // The pair runs flush against the vision band above and each other; the
+    // theme's block margins would open a gap the design does not have.
+    --block--margin-top: 0;
+    --block--margin-bottom: 0;
+
+    // How far down the viewport the sticky image parks. Above the collapsed
+    // header, and a token so the two sections cannot drift apart.
+    --home-feature--sticky-top: #{px-to-rem(150)};
+
+    position: relative;
+    z-index: 3;
+    background-color: var(--color--springwood);
+    padding: var(--mbh-section-y) var(--mbh-section-x);
+
+    &--mist {
+        background-color: var(--color--mist);
+    }
+
+    &__inner {
+        display: grid;
+        max-width: var(--mbh-container);
+        margin: 0 auto;
+        gap: clamp(#{px-to-rem(40)}, 6vw, #{px-to-rem(96)});
+        // 320px is the point below which a 1:1 image beside a paragraph stops
+        // being readable, so the pair collapses to one column there.
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, #{px-to-rem(320)}), 1fr));
+        align-items: start;
+
+        @include mq('home-compact') {
+            // Equal-height halves on a tablet: the image stretches to the copy.
+            align-items: stretch;
+        }
+
+        @include mq('home-wide') {
+            align-items: start;
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Image.
+    // -------------------------------------------------------------------------
+    &__media {
+        @include mq('home-compact') {
+            height: 100%;
+        }
+
+        @include mq('home-wide') {
+            // Stretched to the full row, and NOT the sticky element.
+            //
+            // Sticky travels inside its containing block, so the thing that
+            // sticks has to be shorter than its parent. With the grid set to
+            // align-items: start this column was sized to its own content,
+            // which made the two exactly equal and gave the image nowhere to
+            // go: it scrolled straight past its own top offset. Stretching
+            // the column to the row gives the image the difference between
+            // the two columns to travel through, which is the effect the
+            // design is after.
+            align-self: stretch;
+            height: auto;
+        }
+    }
+
+    &__image {
+        display: block;
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        object-fit: cover;
+
+        @include mq('home-compact') {
+            // Filling the stretched half, which is taller than square.
+            height: 100%;
+        }
+
+        @include mq('home-wide') {
+            // The image is what sticks, inside the stretched column above.
+            position: sticky;
+            top: var(--home-feature--sticky-top);
+            height: auto;
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Copy.
+    // -------------------------------------------------------------------------
+    &__body {
+        // Drops the copy against the image rather than aligning their top
+        // edges, which is what stops the column reading as a caption.
+        padding-top: clamp(0px, 4vw, #{px-to-rem(48)});
+    }
+
+    &__rule {
+        display: block;
+        width: #{px-to-rem(56)};
+        height: #{px-to-rem(2)};
+        // A mark rather than text, so it keeps the true brand olive: the
+        // contrast floor that --mbh-olive-text exists for applies to type.
+        background-color: var(--color--olivegreen);
+    }
+
+    &__eyebrow {
+        margin: #{px-to-rem(24)} 0 #{px-to-rem(18)};
+        font-size: #{px-to-rem(12)};
+        font-weight: 700;
+        letter-spacing: var(--mbh-tracking-eyebrow);
+        text-transform: uppercase;
+        color: var(--color--foreground);
+    }
+
+    &__heading {
+        margin: 0;
+        font-weight: 300;
+        font-size: var(--mbh-fs-h2);
+        line-height: 1.18;
+        letter-spacing: var(--mbh-tracking-heading);
+        text-transform: uppercase;
+        text-wrap: pretty;
+        color: var(--color--foreground);
+    }
+
+    &__text {
+        p {
+            margin: #{px-to-rem(20)} 0 0;
+            font-weight: 300;
+            font-size: var(--mbh-fs-body);
+            line-height: var(--mbh-lh-body);
+            text-wrap: pretty;
+            max-width: var(--mbh-measure);
+            color: var(--color--foreground);
+
+            &:first-child {
+                margin-top: #{px-to-rem(28)};
+            }
+        }
+    }
+
+    &__link-wrap {
+        margin-top: clamp(#{px-to-rem(32)}, 3.6vw, #{px-to-rem(48)});
+    }
+
+    &__link {
+        min-width: #{px-to-rem(230)};
+        min-height: #{px-to-rem(46)};
+        justify-content: center;
+        border-radius: 0;
+
+        // Every underline in this design is a border, never text-decoration.
+        --link--text-decoration: none;
+        --link--text-decoration--hover: none;
+
+        &--primary {
+            --button--background-color: var(--color--foreground);
+            --button--border-color: var(--color--foreground);
+            --button--color: var(--color--springwood);
+
+            --button--background-color--hover: transparent;
+            --button--border-color--hover: var(--color--foreground);
+            --button--color--hover: var(--color--foreground);
+        }
+
+        &--secondary {
+            --button--background-color: transparent;
+            --button--border-color: var(--color--foreground);
+            --button--color: var(--color--foreground);
+
+            --button--background-color--hover: var(--color--foreground);
+            --button--border-color--hover: var(--color--foreground);
+            --button--color--hover: var(--color--springwood);
+        }
+    }
+}

@@ -1,0 +1,24 @@
+// =============================================================================
+// Home Story -- editor
+// =============================================================================
+// No page scroll to release the reveals, and the film is judged on the front
+// end. The editor gets the resting state with the poster in place.
+// =============================================================================
+
+.editor-styles-wrapper {
+    .home-story {
+        &__body,
+        &__media,
+        &__figure {
+            opacity: 1;
+            clip-path: none;
+            transform: none;
+            transition: none;
+        }
+
+        &__play {
+            // Clicking the film in the editor should select the block.
+            pointer-events: none;
+        }
+    }
+}

@@ -2,17 +2,30 @@
     <div class="hero-header__inner">
         <?php if (!empty($args['image'])) { ?>
             <div class="hero-header__media">
-                <?php if (!empty($args['strapline'])) { ?>
-                    <div class="hero-header__strapline-wrapper-outer">
-                        <div class="hero-header__strapline-wrapper-inner">
-                            <?= \Granola\Component::get('heading', $args['strapline']); ?>
-                        </div>
-                    </div>
+                <?php if (!empty($args['strapline'])) {
+                    $strapline_text = is_array($args['strapline'])
+                        ? ($args['strapline']['content'] ?? '')
+                        : $args['strapline'];
+                    $strapline_mask_id = \wp_unique_id('hero-header-cutout-');
+                ?>
+                    <div class="hero-header__strapline-wrapper">
+                        <h1 class="hero-header__strapline">
+                            <?php // Real heading text for SEO and screen readers; the visible
+                                  // treatment is the SVG cutout below. ?>
+                            <span class="visually-hidden"><?= esc_html($strapline_text); ?></span>
 
-                    <div class="hero-header__strapline-wrapper-outer" aria-hidden="true">
-                        <div class="hero-header__strapline-wrapper-inner">
-                            <?= \Granola\Component::get('heading', $args['strapline']); ?>
-                        </div>
+                            <?php // Crisp "video through text": a cream sheet covering the video
+                                  // with the strapline knocked out via an SVG luminance mask, so
+                                  // the video shows through the letters with clean, anti-aliased
+                                  // edges (no mix-blend-mode fringing). ?>
+                            <svg class="hero-header__strapline-cutout" aria-hidden="true" focusable="false" preserveAspectRatio="xMidYMid meet">
+                                <mask id="<?= esc_attr($strapline_mask_id); ?>">
+                                    <rect class="hero-header__strapline-cutout-sheet" width="100%" height="100%"></rect>
+                                    <text class="hero-header__strapline-cutout-text" x="50%" y="50%" dy="0.35em" text-anchor="middle"><?= esc_html($strapline_text); ?></text>
+                                </mask>
+                                <rect class="hero-header__strapline-cutout-fill" width="100%" height="100%" mask="url(#<?= esc_attr($strapline_mask_id); ?>)"></rect>
+                            </svg>
+                        </h1>
                     </div>
                 <?php } ?>
 

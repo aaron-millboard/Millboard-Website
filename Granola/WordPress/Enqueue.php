@@ -9,6 +9,8 @@ class Enqueue
         \add_action('wp_enqueue_scripts', [__CLASS__, 'enqueue_main_assets']);
         \add_action('wp_enqueue_scripts', [__CLASS__, 'enqueue_comment_assets']);
         \add_action('admin_enqueue_scripts', [__CLASS__, 'enqueue_admin_assets']);
+        // Late, so it runs after the payment plugins have enqueued.
+        \add_action('admin_enqueue_scripts', [__CLASS__, 'drop_stripe_from_block_editor_deps'], 100);
         \add_action('enqueue_block_editor_assets', [__CLASS__, 'enqueue_editor_assets']);
 
         // WP global styles need to be dequeued in both head and footer.
@@ -29,6 +31,65 @@ class Enqueue
 
         \add_filter('granola/scripts/dependencies', [__CLASS__, 'add_jquery_dependency']);
         \add_filter('granola/scripts/localization', [__CLASS__, 'add_ajax_localization']);
+    }
+
+    /**
+     * Keep Stripe.js out of the block editor.
+     *
+     * WooCommerce queues wc-cart-block and wc-checkout-block on every block
+     * editor screen so those blocks stay insertable. Both declare
+     * wc-stripe-blocks-integration as a dependency, and that declares `stripe`,
+     * which is js.stripe.com:
+     *
+     *     wc-cart-block ──┐
+     *                     ├─ wc-stripe-blocks-integration ─ stripe
+     *     wc-checkout-block ┘
+     *
+     * Stripe.js injects two hidden iframes on its own origin wherever it loads.
+     * Core walks every frame in the document when it wires up the editor, and
+     * reading a property off a cross-origin window throws a SecurityError that
+     * takes the editor down.
+     *
+     * The dependency EDGE is cut rather than the handles. Dequeuing is useless
+     * here because neither Stripe handle is ever queued, only depended on, and
+     * deregistering `stripe` would cascade: the integration loses a dependency,
+     * so WP drops it, so the cart and checkout blocks lose a dependency and are
+     * dropped too. Removing the edge leaves both blocks fully editable and only
+     * costs Stripe's payment-method preview inside the editor.
+     *
+     * The front end is untouched: admin_enqueue_scripts never fires there, and
+     * the -frontend handles carry their own copy of the dependency.
+     */
+    public static function drop_stripe_from_block_editor_deps(): void
+    {
+        if (!\function_exists('get_current_screen')) {
+            return;
+        }
+
+        $screen = \get_current_screen();
+
+        if (!$screen || !\method_exists($screen, 'is_block_editor') || !$screen->is_block_editor()) {
+            return;
+        }
+
+        $scripts = \wp_scripts();
+        $integration = 'wc-stripe-blocks-integration';
+
+        foreach (['wc-cart-block', 'wc-checkout-block'] as $handle) {
+            if (!isset($scripts->registered[$handle])) {
+                continue;
+            }
+
+            $deps = $scripts->registered[$handle]->deps ?? [];
+
+            if (!\in_array($integration, $deps, true)) {
+                continue;
+            }
+
+            $scripts->registered[$handle]->deps = \array_values(
+                \array_diff($deps, [$integration])
+            );
+        }
     }
 
     /**

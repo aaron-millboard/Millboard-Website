@@ -1,0 +1,25 @@
+// =============================================================================
+// Home Feature Pair -- editor
+// =============================================================================
+// Sticky positioning has nothing to stick to inside the editor canvas, where
+// the block is one item in a list rather than a section of a scrolling page,
+// and the reveals have no scroll to be released by. The editor gets the
+// resting state: both halves placed, visible and still.
+// =============================================================================
+
+.editor-styles-wrapper {
+    .home-feature {
+        &__media {
+            position: relative;
+            top: auto;
+        }
+
+        &__body,
+        &__media {
+            opacity: 1;
+            clip-path: none;
+            transform: none;
+            transition: none;
+        }
+    }
+}

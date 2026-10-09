@@ -1,0 +1,27 @@
+// =============================================================================
+// Home Vision Tiles -- editor
+// =============================================================================
+// The reveal-on-scroll classes start every element transparent and displaced,
+// and the observer that releases them only runs on the front end. Left alone,
+// the block would be invisible in the canvas.
+// =============================================================================
+
+.editor-styles-wrapper {
+    .home-vision {
+        .mbh-reveal {
+            opacity: 1;
+            transform: none;
+            clip-path: none;
+            transition: none;
+        }
+
+        // A hover scale on a picture an editor is trying to click is a nuisance.
+        &__image {
+            transition: none;
+        }
+
+        &__tile-link:hover &__image {
+            transform: none;
+        }
+    }
+}

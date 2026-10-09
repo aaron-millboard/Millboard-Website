@@ -1,0 +1,79 @@
+// =============================================================================
+// Home Hero -- editor
+// =============================================================================
+// The block's whole behaviour is scroll-driven: a 300svh section, a sticky
+// stage, and a frame whose insets collapse as the page moves. None of that is
+// meaningful inside the editor canvas, where there is no page scroll to read
+// and the block is one item in a list of others.
+//
+// So the editor gets the resting state, flattened: the frame open, the film
+// filling it, the strapline placed and still. Editing the copy is the job here;
+// the motion is judged on the front end.
+// =============================================================================
+
+.editor-styles-wrapper {
+    .home-hero {
+        height: auto;
+        min-height: #{px-to-rem(520)};
+        // No pulling up under a header that is not in the canvas.
+        margin-top: 0;
+
+        &__stage {
+            position: relative;
+            height: auto;
+            min-height: #{px-to-rem(520)};
+        }
+
+        &__frame {
+            position: relative;
+            inset: auto;
+            min-height: #{px-to-rem(520)};
+            clip-path: none;
+        }
+
+        &__aperture {
+            animation: none;
+        }
+
+        &__film,
+        &__poster {
+            position: absolute;
+            transform: none;
+        }
+
+        &__content {
+            position: absolute;
+            inset: 0;
+            transform: none;
+            opacity: 1;
+        }
+
+        &__eyebrow,
+        &__letter {
+            animation: none;
+        }
+
+        // The ring stands in for a cursor and has nothing to track in the
+        // canvas.
+        &__ring {
+            display: none;
+        }
+
+        &__toggle {
+            // Clicking the film in the editor should select the block, not
+            // start playing it.
+            pointer-events: none;
+        }
+
+        &__baseline {
+            position: relative;
+            height: auto;
+            padding: var(--space--s) clamp(#{px-to-rem(24)}, 5vw, #{px-to-rem(56)});
+            opacity: 1;
+        }
+
+        &__cue-rule {
+            animation: none;
+        }
+    }
+}

@@ -25,7 +25,7 @@
         <?php endif; ?>
 
         <?php if (!empty($args['people'])) : ?>
-            <ul class="advice-authors__list">
+            <ul class="advice-authors__list" tabindex="0" aria-label="<?php echo esc_attr__('Article authors', 'granola'); ?>">
                 <?php foreach ($args['people'] as $person) : ?>
                     <li class="advice-authors__person mbh-reveal" style="--mbh-reveal-delay: <?= (int) $person['delay']; ?>ms">
                         <span class="advice-authors__frame">

@@ -1,0 +1,228 @@
+.product-visualiser {
+    // Entry point inside the "Try before you buy" group.
+    &__button {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space--s);
+        width: 100%;
+        text-align: left;
+    }
+
+    &__button-text {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space--3xs);
+    }
+
+    &__button-sub {
+        font-weight: var(--type--1--font-weight);
+        letter-spacing: 0;
+        text-transform: none;
+    }
+
+    &__badge {
+        flex: none;
+        padding: 0.2em 0.7em;
+        // Darkened olivegreen so the white label meets 4.5:1 contrast (WCAG 1.4.3); kept on-brand via the token.
+        background-color: color-mix(in srgb, var(--color--olivegreen) 78%, black);
+        color: var(--color--white);
+        font-size: 0.75em;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+    }
+
+    // Link under the colour swatches.
+    &__swatch-link {
+        margin: var(--space--xs) 0 0;
+
+        a {
+            text-decoration: underline;
+            text-underline-offset: 0.2em;
+
+            &:hover,
+            &:focus-visible {
+                text-decoration-color: var(--color--olivegreen);
+            }
+        }
+    }
+
+    // Vertical tab fixed to the right edge. Wide screens only.
+    &__tab {
+        display: none;
+        position: fixed;
+        top: 50%;
+        right: 0;
+        z-index: 400;
+        transform: translateY(-50%) rotate(180deg);
+        writing-mode: vertical-rl;
+        padding: var(--space--s) var(--space--xs);
+        border: 0;
+        background-color: var(--color--wenge);
+        color: var(--color--springwood);
+        font: inherit;
+        font-size: 0.8125rem;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        cursor: pointer;
+
+        transition: opacity 0.2s ease;
+
+        &:hover {
+            opacity: 0.92;
+        }
+
+        @include mq('large') {
+            display: block;
+        }
+
+        &[hidden] {
+            display: none;
+        }
+    }
+
+    &--active &__tab {
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    &__overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 500;
+        background-color: rgba(47, 41, 46, 0.45);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+
+        &[hidden] {
+            display: none;
+        }
+    }
+
+    &--active &__overlay {
+        opacity: 1;
+    }
+
+    &__drawer {
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 510;
+        display: flex;
+        flex-direction: column;
+        width: 28.75rem;
+        max-width: 100vw;
+        background-color: var(--color--springwood);
+        box-shadow: 0 0 2rem rgba(0, 0, 0, 0.25);
+        transform: translateX(100%);
+        transition: transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
+
+        &[hidden] {
+            display: none;
+        }
+    }
+
+    &--active &__drawer {
+        transform: translateX(0);
+    }
+
+    // Only shown if the embed has not loaded, since the embed brings its own.
+    &__close {
+        position: absolute;
+        top: var(--space--xs);
+        right: var(--space--xs);
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 2.75rem;
+        height: 2.75rem;
+        border: 1px solid transparent;
+        background: none;
+        color: inherit;
+        cursor: pointer;
+
+        &:hover,
+        &:focus-visible {
+            border-color: rgba(47, 41, 46, 0.18);
+        }
+
+        svg {
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+
+        &[hidden] {
+            display: none;
+        }
+    }
+
+    &__body {
+        position: relative;
+        flex: 1 1 auto;
+        min-height: 0;
+
+        // Shown until the embed has loaded, so the drawer is never an empty box.
+        &::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 2rem;
+            height: 2rem;
+            margin: -1rem 0 0 -1rem;
+            border: 2px solid rgba(47, 41, 46, 0.18);
+            border-top-color: var(--color--wenge);
+            border-radius: 50%;
+            animation: product-visualiser-spin 0.8s linear infinite;
+        }
+
+        &--loaded::before {
+            display: none;
+        }
+    }
+
+    &__frame {
+        position: relative;
+        display: block;
+        width: 100%;
+        height: 100%;
+        border: 0;
+        opacity: 0;
+        transition: opacity 0.3s ease 0.1s;
+    }
+
+    &__body--loaded &__frame {
+        opacity: 1;
+    }
+}
+
+// Stops the page scrolling behind the drawer. The gutter is kept, so the page
+// does not jump sideways when the scrollbar would otherwise disappear.
+html.product-visualiser--open {
+    overflow: hidden;
+    scrollbar-gutter: stable;
+}
+
+@keyframes product-visualiser-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .product-visualiser {
+        &__overlay,
+        &__drawer,
+        &__frame,
+        &__tab {
+            transition: none;
+        }
+
+        &__body::before {
+            animation: none;
+        }
+    }
+}
