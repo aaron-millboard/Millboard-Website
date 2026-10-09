@@ -22,6 +22,15 @@
         padding: px-to-rem(72) clamp(20px, 5vw, 40px) px-to-rem(96);
     }
 
+    // The Summit logo sits at the very top, on the light background: its text is
+    // dark, so it would not read over the header photograph.
+    &__logo {
+        display: block;
+        width: 92px;
+        height: auto;
+        margin: 0 0 px-to-rem(40);
+    }
+
     &__form,
     &__thanks {
         display: flex;

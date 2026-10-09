@@ -92,6 +92,15 @@
             "instructions": "INT, FR and US. Media library URL of the agenda for this audience; shown under the introduction.",
             "required": 0,
             "default_value": ""
+        },
+        {
+            "key": "field_68e7a1c00010",
+            "label": "Summit logo (image URL)",
+            "name": "logo_url",
+            "type": "text",
+            "instructions": "Optional. Media library URL of the Millboard Summit logo, shown at the top of the form. Leave blank for no logo.",
+            "required": 0,
+            "default_value": ""
         }
     ],
     "location": [
@@ -112,5 +121,5 @@
     "active": true,
     "description": "Wiring and documents for the Summit pre-arrival form. The questions themselves are fixed in the template.",
     "show_in_rest": 0,
-    "modified": 1791900000
+    "modified": 1792000000
 }
