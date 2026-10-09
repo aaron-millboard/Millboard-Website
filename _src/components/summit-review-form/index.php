@@ -68,11 +68,12 @@ $yes_text = "Yes, I'd like to let you know about something";
 
 // INT (international distributors) adds travel, Open Diary and two more details.
 $is_int = !empty($args['is_int']);
+$is_us = !empty($args['is_us']); // US is the UK form plus the agenda link
 $is_travel = $is_int || $is_fr; // INT and FR delegates both give arrival flights
-$audience = $is_fr ? 'FR' : ($is_int ? 'INT' : 'UK');
+$audience = $is_fr ? 'FR' : ($is_int ? 'INT' : ($is_us ? 'US' : 'UK'));
 $flights_contact = $is_fr ? 'luderic.geminard@millboard.com' : 'sam.cockeram@millboard.com';
 $agenda = (string) ($args['agenda_url'] ?? '');
-$phone = $is_travel ? '+44 24 7643 9943' : '024 7643 9943';
+$phone = ($is_travel || $is_us) ? '+44 24 7643 9943' : '024 7643 9943'; // 024 is not dialable from abroad
 $detail_fields = [
     ['firstname', 'First name', 'text', 'given-name', ''],
     ['lastname', 'Last name', 'text', 'family-name', ''],
@@ -133,7 +134,7 @@ $travel_fields = [
                     <strong><?= esc_html($args['deadline']); ?></strong>
                     <?= esc_html__('so we can have everything ready for you.', 'granola'); ?>
                 </p>
-                <?php if ($is_travel) { $doc_link($agenda, 'View the high level agenda (PDF)'); } ?>
+                <?php if ($is_travel || $is_us) { $doc_link($agenda, 'View the high level agenda (PDF)'); } ?>
             </header>
 
             <div class="summit-review__progress" aria-live="polite">

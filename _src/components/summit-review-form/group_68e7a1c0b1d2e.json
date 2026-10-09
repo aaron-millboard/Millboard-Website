@@ -7,12 +7,13 @@
             "label": "Audience",
             "name": "audience",
             "type": "select",
-            "instructions": "UK is the base form. INT adds country and mobile, arrival flights, Open Diary sessions and the agenda link. FR is the French version: mobile and arrival flights, the programme link, no country or Open Diary.",
+            "instructions": "UK is the base form. INT adds country and mobile, arrival flights, Open Diary sessions and the agenda link. FR is the French version: mobile and arrival flights, the programme link, no country or Open Diary. US is the UK form with the high level agenda link.",
             "required": 0,
             "choices": {
                 "UK": "UK",
                 "INT": "INT (international distributors)",
-                "FR": "FR (French delegates, in French)"
+                "FR": "FR (French delegates, in French)",
+                "US": "US (UK form plus the agenda link)"
             },
             "default_value": "UK",
             "allow_null": 0,
@@ -88,7 +89,7 @@
             "label": "High level agenda / programme (PDF URL)",
             "name": "agenda_url",
             "type": "text",
-            "instructions": "INT and FR. Media library URL of the agenda for this audience; shown under the introduction.",
+            "instructions": "INT, FR and US. Media library URL of the agenda for this audience; shown under the introduction.",
             "required": 0,
             "default_value": ""
         }
@@ -111,5 +112,5 @@
     "active": true,
     "description": "Wiring and documents for the Summit pre-arrival form. The questions themselves are fixed in the template.",
     "show_in_rest": 0,
-    "modified": 1791800000
+    "modified": 1791900000
 }
