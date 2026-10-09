@@ -16,6 +16,10 @@
                     'max_depth' => $args['max_depth'],
                     'widget' => $args['mega_menu_widget'] ?? null,
                     'cta' => $args['mega_menu_cta'] ?? null,
+                    // The drawer draws the panel as a pane that slides over the
+                    // menu, headed by a back button and the section's own name.
+                    // The panel has no other way of knowing what it belongs to.
+                    'parent_title' => $args['item']->title,
                 ]); ?>
             <?php } else { ?>
                 <?= \Granola\Component::get('menu/menu-list', [

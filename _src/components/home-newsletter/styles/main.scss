@@ -1,0 +1,268 @@
+// =============================================================================
+// Home Newsletter
+// =============================================================================
+// A picture beside the mailing list sign-up, on Mist, closing the page before
+// the footer.
+//
+// Most of what follows styles markup this component does not write: the form
+// comes from Gravity Forms and arrives with its own wrapper, labels and
+// footer. The selectors below are the stable parts of that output (the
+// wrapper, the field list, the per-type field classes and the submit button),
+// and they are scoped inside .home-newsletter so nothing here reaches the
+// other forms on the site.
+// =============================================================================
+
+.home-newsletter {
+    --block--margin-top: 0;
+    --block--margin-bottom: 0;
+
+    // The hairline under every input, and the colour it turns when focused.
+    --home-newsletter--field-line: #{rgba(#2f292e, 0.45)};
+    --home-newsletter--field-line--focus: var(--color--olivegreen);
+
+    position: relative;
+    z-index: 3;
+    background-color: var(--color--mist);
+    // Shallower than a full section: this is a sign-off, not a chapter.
+    padding: clamp(#{px-to-rem(64)}, 8vw, #{px-to-rem(128)}) var(--mbh-section-x);
+
+    &__inner {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, #{px-to-rem(320)}), 1fr));
+        gap: clamp(#{px-to-rem(32)}, 5vw, #{px-to-rem(80)});
+        align-items: center;
+        max-width: var(--mbh-container);
+        margin: 0 auto;
+    }
+
+    &__image {
+        display: block;
+        width: 100%;
+        // Wider than it is tall, so it sits against the form rather than
+        // towering over it.
+        aspect-ratio: 16 / 10;
+        object-fit: cover;
+    }
+
+    // -------------------------------------------------------------------------
+    // Copy.
+    // -------------------------------------------------------------------------
+    &__rule {
+        display: block;
+        width: #{px-to-rem(56)};
+        height: #{px-to-rem(2)};
+        background-color: var(--color--olivegreen);
+    }
+
+    &__eyebrow {
+        margin: #{px-to-rem(24)} 0 #{px-to-rem(18)};
+        font-size: #{px-to-rem(12)};
+        font-weight: 700;
+        letter-spacing: var(--mbh-tracking-eyebrow);
+        text-transform: uppercase;
+        color: var(--color--foreground);
+    }
+
+    &__heading {
+        margin: 0;
+        font-weight: 300;
+        font-size: clamp(#{px-to-rem(24)}, 2.6vw, #{px-to-rem(38)});
+        line-height: 1.18;
+        letter-spacing: var(--mbh-tracking-heading);
+        text-transform: uppercase;
+        text-wrap: pretty;
+        color: var(--color--foreground);
+    }
+
+    &__description {
+        max-width: 46ch;
+        margin: #{px-to-rem(20)} 0 0;
+        font-weight: 300;
+        font-size: #{px-to-rem(16)};
+        line-height: var(--mbh-lh-body);
+        text-wrap: pretty;
+        color: var(--color--foreground);
+    }
+
+    &__reassurance {
+        // No max-width. It shared the description's 46ch, which at this smaller
+        // size is only 350px and broke one short sentence across two lines with
+        // 170px of empty column beside it. Left uncapped it takes the column and
+        // sits on one line wherever the column is wide enough, and still wraps
+        // on a phone, where it has to.
+        margin: #{px-to-rem(16)} 0 0;
+        font-weight: 300;
+        font-size: #{px-to-rem(13)};
+        line-height: 1.6;
+        color: var(--color--foreground);
+    }
+
+    // -------------------------------------------------------------------------
+    // The Gravity Form.
+    // -------------------------------------------------------------------------
+    &__form {
+        margin-top: clamp(#{px-to-rem(28)}, 3vw, #{px-to-rem(40)});
+        // Long enough for two fields side by side, short enough that the email
+        // line does not run the width of the column.
+        max-width: #{px-to-rem(520)};
+
+        .gform_fields {
+            display: grid;
+            // First name and last name share a row where there is room, and
+            // stack where there is not. No breakpoint needed.
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, #{px-to-rem(180)}), 1fr));
+            gap: #{px-to-rem(24)};
+        }
+
+        // The email address gets the full width under the two name fields.
+        .gfield--type-email {
+            grid-column: 1 / -1;
+        }
+
+        .gfield_label {
+            display: block;
+            margin-bottom: #{px-to-rem(8)};
+            font-size: #{px-to-rem(11)};
+            font-weight: 700;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--color--foreground);
+        }
+
+        // An asterisk on every field of a three-field form is noise. The form
+        // is short enough that the requirement is obvious, and the browser
+        // still enforces it.
+        .gfield_required {
+            display: none;
+        }
+
+        input[type='text'],
+        input[type='email'] {
+            width: 100%;
+            box-sizing: border-box;
+            padding: #{px-to-rem(10)} 0;
+            font-family: inherit;
+            // 16px exactly: anything smaller and iOS zooms the page when the
+            // field takes focus.
+            font-size: #{px-to-rem(16)};
+            font-weight: 300;
+            color: var(--color--foreground);
+            background-color: transparent;
+            border: 0;
+            border-bottom: 1px solid var(--home-newsletter--field-line);
+            border-radius: 0;
+            transition: border-color var(--mbh-dur-ui) var(--mbh-ease);
+
+            &::placeholder {
+                // Legible rather than decorative: these placeholders carry
+                // example content, and a faint grey fails AA.
+                color: #{rgba(#2f292e, 0.62)};
+            }
+
+            &:focus {
+                border-bottom-color: var(--home-newsletter--field-line--focus);
+                // The underline thickens and changes colour, so the focused
+                // field is obvious without an outline around a borderless box.
+                outline: none;
+                border-bottom-width: 2px;
+                // Keeps the field from shifting by the extra pixel.
+                padding-bottom: #{px-to-rem(9)};
+            }
+
+            // Keyboard users get the outline as well, since colour alone is
+            // not enough to carry a focus state.
+            &:focus-visible {
+                outline: 2px solid var(--color--foreground);
+                outline-offset: #{px-to-rem(3)};
+            }
+        }
+
+        .gform_footer {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: #{px-to-rem(20)};
+            margin-top: #{px-to-rem(24)};
+            padding: 0;
+        }
+
+        // Gravity Forms renders the submit as a <button class="gform_button">,
+        // not an input, and it arrives already carrying the theme's own
+        // .g-button. Targeting input[type=submit] alone missed it entirely
+        // and left the sign-up button transparent on Mist at 1.48:1. Both
+        // are listed because older Gravity Forms versions do use an input.
+        .gform_button,
+        button[type='submit'],
+        input[type='submit'] {
+            min-width: #{px-to-rem(120)};
+            min-height: #{px-to-rem(46)};
+            padding: 0 #{px-to-rem(28)};
+            font-family: inherit;
+            font-size: #{px-to-rem(13)};
+            font-weight: 700;
+            letter-spacing: var(--mbh-tracking-sub);
+            text-transform: uppercase;
+            color: var(--color--springwood);
+            background-color: var(--color--foreground);
+            border: 1px solid var(--color--foreground);
+            border-radius: 0;
+            cursor: pointer;
+            transition:
+                background-color var(--mbh-dur-ui) var(--mbh-ease),
+                color var(--mbh-dur-ui) var(--mbh-ease);
+
+            &:hover,
+            &:focus-visible {
+                color: var(--color--foreground);
+                background-color: transparent;
+            }
+        }
+
+        // Validation. Gravity Forms ships its own red; this brings it onto the
+        // brand's without weakening it -- it still has to read as a warning.
+        .gfield_error input[type='text'],
+        .gfield_error input[type='email'] {
+            border-bottom-color: var(--color--red, #b3261e);
+        }
+
+        .gfield_validation_message,
+        .validation_message {
+            margin-top: #{px-to-rem(8)};
+            padding: 0;
+            font-size: #{px-to-rem(13)};
+            font-weight: 300;
+            line-height: 1.5;
+            color: var(--color--red, #b3261e);
+            background: none;
+            border: 0;
+        }
+
+        .gform_validation_errors {
+            margin-bottom: #{px-to-rem(20)};
+            padding: #{px-to-rem(12)} #{px-to-rem(16)};
+            font-size: #{px-to-rem(14)};
+            background-color: transparent;
+            border: 1px solid var(--color--red, #b3261e);
+            border-radius: 0;
+            box-shadow: none;
+        }
+
+        .gform_confirmation_message {
+            font-weight: 300;
+            font-size: #{px-to-rem(16)};
+            line-height: var(--mbh-lh-body);
+            color: var(--color--foreground);
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        &__form {
+            input,
+            .gform_button,
+            button[type='submit'],
+            input[type='submit'] {
+                transition: none;
+            }
+        }
+    }
+}

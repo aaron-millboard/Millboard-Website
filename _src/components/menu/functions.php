@@ -17,6 +17,13 @@ function filter_args(array $args): ?array
         'theme_location' => null,
         'heading_button' => false,
         'expandable_element_attributes' => [],
+        // Render only part of the top-level items, as [offset, length].
+        // The redesigned site header sits the wordmark in the middle of the
+        // main nav, so it renders this menu twice -- the first half to the
+        // left of the logo, the second to the right. Two renders rather than
+        // three: on compact the two halves stack in the drawer and read as one
+        // list, so no item is output twice and DOM order still matches the menu.
+        'slice' => null,
     ], $args);
 
     // ---------------------------------------
@@ -103,6 +110,26 @@ function filter_args(array $args): ?array
         }
     }
     unset($item); // Pass by reference fix.
+
+    // Take the requested slice of top-level items, if any. Applied here, after
+    // children and current-item state are resolved, so a sliced menu still
+    // highlights the current page and still carries its sub-menus.
+    if (is_array($args['slice'])) {
+        [$offset, $length] = array_pad($args['slice'], 2, null);
+
+        $args['items'] = array_slice(
+            $args['items'],
+            (int) $offset,
+            $length === null ? null : (int) $length
+        );
+
+        // Nothing left to render once sliced, e.g. a two-item menu asked for a
+        // third-item offset. Return null so the component outputs nothing at all
+        // rather than an empty <nav> the layout would still reserve space for.
+        if (empty($args['items'])) {
+            return null;
+        }
+    }
 
     // Set menu heading from theme_location.
     if ($args['heading'] === true) {

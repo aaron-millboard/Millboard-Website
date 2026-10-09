@@ -168,6 +168,24 @@
             "ui": 1,
             "ui_on_text": "On",
             "ui_off_text": "Off"
+        },
+        {
+            "key": "field_6a0b1c2d3e4f5",
+            "label": "Visualiser embed URL",
+            "name": "visualiser_embed_url",
+            "aria-label": "",
+            "type": "url",
+            "instructions": "Address of the photo visualiser embed for this site, including the site parameter and without a SKU, e.g. https://example.com/embed?site=3. The product SKU is added for the chosen colour. Leave empty to switch the visualiser off on this site.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "allow_in_bindings": 0,
+            "placeholder": "https://"
         }
     ],
     "location": [
@@ -190,5 +208,5 @@
     "show_in_rest": 0,
     "display_title": "",
     "granola_save_location": 0,
-    "modified": 1785846200
+    "modified": 1791188923
 }

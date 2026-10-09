@@ -1,98 +1,112 @@
-@mixin site-footer-divider {
-    border-top: 1px solid var(--color--brand-1);
-    padding-top: var(--flex-column--gap);
-}
+// =============================================================================
+// Site Footer
+// =============================================================================
+// Wenge, with Spring Wood type and Apple on hover: the same dark ground the
+// Millboard story section uses, so the page closes the way it opened its one
+// dark chapter.
+//
+// Five link columns over a hairline, then the wordmark, the social links and
+// the copyright. The columns are auto-fit rather than a stated count, because
+// the number of footer menus is content: five today, and the grid does not
+// care if that changes.
+//
+// This renders on every page of every locale, so everything here is scoped to
+// .site-footer and nothing reaches the menu component's other uses.
+// =============================================================================
 
 .site-footer {
-    --link--color: var(--color--foreground);
-    --link--color--hover: var(--color--foreground);
-    --site-footer__images--aspect-ratio: 28 / 13;
-    --site-footer--padding--block: var(--space--xl);
-    --site-footer--logo-width: #{px-to-rem(169)};
-    --flex-column--gap: var(--space--l);
+    // Links on this ground, and what they do when pointed at.
+    --link--color: var(--color--springwood);
+    --link--color--hover: var(--color--apple);
+    --site-footer--rule: #{rgba(#f8f4f0, 0.25)};
 
-    $this: &;
+    // Roomier at the top than the bottom: the columns need air above them, the
+    // copyright does not need much below it.
+    padding:
+        clamp(#{px-to-rem(64)}, 8vw, #{px-to-rem(112)})
+        var(--mbh-section-x)
+        clamp(#{px-to-rem(32)}, 4vw, #{px-to-rem(56)});
 
-    padding-block: var(--site-footer--padding--block);
-
-    @include mq(large) {
-        --site-footer--padding--block: var(--space--2xl);
-        --site-footer--logo-width: #{px-to-rem(210)};
+    &__inner {
+        max-width: var(--mbh-container);
+        margin: 0 auto;
     }
 
     // -------------------------------------------------------------------------
-    // Logo.
-    // -------------------------------------------------------------------------
-    &__logo {
-        align-items: center;
-
-        a {
-            display: inline-block;
-            width: 100%;
-            max-width: var(--site-footer--logo-width);
-        }
-    }
-
-    // -------------------------------------------------------------------------
-    // Menus.
+    // Link columns.
     // -------------------------------------------------------------------------
     &__menus {
-        --grid--row-gap: var(--space--m);
-
-        @include site-footer-divider();
-        @include grid(1, 2, 5);
-
-        @include mq(large) {
-            --grid--column-gap: var(--space--2xl);
-        }
+        display: grid;
+        // 180px is the narrowest a column heading and a two-word link sit at
+        // without wrapping awkwardly. Below that they stack.
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, #{px-to-rem(180)}), 1fr));
+        gap: clamp(#{px-to-rem(32)}, 4vw, #{px-to-rem(64)});
     }
 
     &__menu {
-        $menu: &;
-
-        &__inner {
+        .menu__inner {
             @include list-reset-hard;
-
-            display: grid;
-            gap: var(--space--s);
-
             @include list-reset-hard--li;
         }
 
         .menu-list {
-            gap: var(--space--xs);
-            margin-top: var(--space--xs);
+            @include list-reset-hard;
+            @include list-reset-hard--li;
 
-            &[aria-hidden="true"] {
+            display: grid;
+            gap: #{px-to-rem(12)};
+
+            // The accordion on a phone. Kept exactly as it was: the heading
+            // button toggles aria-hidden and this is what acts on it.
+            &[aria-hidden='true'] {
                 display: none;
                 visibility: hidden;
             }
 
-            &:not([aria-hidden="true"]) {
+            &:not([aria-hidden='true']) {
                 display: grid;
                 visibility: visible;
             }
         }
 
         a {
-            @include link--2;
+            display: flex;
+            align-items: center;
+            // A 40px row, so a link is a comfortable target on a phone without
+            // the column turning into a list of buttons.
+            min-height: #{px-to-rem(40)};
+            font-weight: 300;
+            font-size: #{px-to-rem(14)};
+            line-height: 1.5;
+            color: var(--color--springwood);
+            transition: color var(--mbh-dur-ui) var(--mbh-ease);
 
-            @include mq($until: medium) {
-                font-family: var(--type--2--font-family);
-                font-weight: var(--type--2--font-weight);
+            // Every underline in this design is a border, never
+            // text-decoration, and in the footer there is none at all: the
+            // colour change carries the hover.
+            --link--text-decoration: none;
+            --link--text-decoration--hover: none;
 
+            &:hover,
+            &:focus-visible {
+                color: var(--color--apple);
             }
         }
     }
 
     .menu__heading {
-        @include typestyle-h6;
-        margin-bottom: 0;
+        margin: 0 0 #{px-to-rem(20)};
+        font-size: #{px-to-rem(11)};
+        font-weight: 700;
+        letter-spacing: var(--mbh-tracking-eyebrow);
+        text-transform: uppercase;
+        color: var(--color--springwood);
     }
 
     .menu__heading__button {
-        --button--background-color: var(--color--brand-1);
-        --button--border-color: var(--color--brand-1);
+        --button--background-color: transparent;
+        --button--border-color: #{rgba(#f8f4f0, 0.4)};
+        --button--color: var(--color--springwood);
         --button--size: #{px-to-rem(28)};
 
         rotate: 90deg;
@@ -102,31 +116,138 @@
             visibility: hidden;
         }
 
-        &[aria-expanded="true"] {
+        &[aria-expanded='true'] {
             rotate: -90deg;
         }
 
         &-wrap {
             @include mq($until: medium) {
                 display: flex;
-                justify-content: space-between;
                 align-items: center;
+                justify-content: space-between;
             }
         }
     }
 
-
     // -------------------------------------------------------------------------
-    // Socials.
+    // Below the hairline.
     // -------------------------------------------------------------------------
-    &__socials-text {
-        --link--color: currentColor;
-        --flex-column--gap: var(--space--m);
+    // The rule and the space above it live on the container rather than on the
+    // first row, so a subsite with no legal menu gets exactly the same closing
+    // line as one with. A grid only puts its gap between items, so the row of
+    // links costs nothing where it is absent.
+    &__bottom {
+        display: grid;
+        gap: clamp(#{px-to-rem(24)}, 3vw, #{px-to-rem(36)});
+        margin-top: clamp(#{px-to-rem(48)}, 6vw, #{px-to-rem(88)});
+        padding-top: clamp(#{px-to-rem(24)}, 3vw, #{px-to-rem(40)});
+        border-top: 1px solid var(--site-footer--rule);
+    }
 
-        @include site-footer-divider();
+    // The legal strip: along the bottom, not down a column.
+    &__legal {
+        .menu-list {
+            @include list-reset-hard;
+            @include list-reset-hard--li;
 
+            display: flex;
+            flex-wrap: wrap;
+            // Tight down the rows and generous across them, so a strip that
+            // wraps onto two lines still reads as one run of links rather than
+            // a small grid.
+            gap: #{px-to-rem(4)} clamp(#{px-to-rem(20)}, 3vw, #{px-to-rem(36)});
+        }
+
+        a {
+            display: inline-flex;
+            align-items: center;
+            // Smaller than the columns above: these are the small print, and
+            // the type size should say so before anyone reads a word of it.
+            font-size: #{px-to-rem(12)};
+            font-weight: 300;
+            line-height: 1.5;
+            // A 36px row keeps the tap target honest at this size, which
+            // matters more here than anywhere else in the footer: on a phone
+            // these links sit in a wrapped block with no headings to aim at.
+            min-height: #{px-to-rem(36)};
+            color: var(--color--springwood);
+            transition: color var(--mbh-dur-ui) var(--mbh-ease);
+
+            --link--text-decoration: none;
+            --link--text-decoration--hover: none;
+
+            &:hover,
+            &:focus-visible {
+                color: var(--color--apple);
+            }
+        }
+    }
+
+    &__bar {
+        display: flex;
+        flex-wrap: wrap;
         align-items: center;
-        color: var(--color--charcoal);
-        text-align: center;
+        justify-content: space-between;
+        gap: #{px-to-rem(24)};
+    }
+
+    &__logo {
+        a {
+            display: block;
+        }
+
+        svg {
+            display: block;
+            // The theme resets every svg to width: 100%, and this one carries
+            // its own width and height attributes.
+            width: auto;
+            height: #{px-to-rem(26)};
+            max-height: none;
+        }
+
+        // The logo file hardcodes a dark fill, which is invisible on Wenge.
+        // It is inlined rather than linked, so the fill can simply be
+        // overridden here instead of adding a second colourway of the asset.
+        svg path {
+            fill: var(--color--springwood);
+        }
+    }
+
+    &__socials {
+        a {
+            color: var(--color--springwood);
+
+            &:hover,
+            &:focus-visible {
+                color: var(--color--apple);
+            }
+        }
+    }
+
+    &__text {
+        margin: 0;
+        font-weight: 300;
+        font-size: #{px-to-rem(12)};
+        line-height: var(--mbh-lh-body);
+        text-wrap: pretty;
+        color: var(--color--springwood);
+
+        a {
+            color: var(--color--springwood);
+
+            &:hover,
+            &:focus-visible {
+                color: var(--color--apple);
+            }
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        &__menu a,
+        &__legal a,
+        &__socials a,
+        &__text a {
+            transition: none;
+        }
     }
 }

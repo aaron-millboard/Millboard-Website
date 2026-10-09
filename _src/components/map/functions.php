@@ -525,10 +525,9 @@ function marker_icon_url(string $marker, string $variant = 'marker'): string
         return '';
     }
 
-    // Every pin ships as SVG. The location pins are flat shields, and the installer
-    // pins are the Favicon marks, which carry no wording and so need no rasterising.
-    // Keep this in step with SVG_PIN_TYPES in Map.js, which makes the same decision
-    // for the fallback path.
+    // The two installer pins are the accreditation badges and ship as PNG; the three
+    // location pins are flat shields and ship as SVG. Keep this in step with
+    // SVG_PIN_TYPES in Map.js, which makes the same decision for the fallback path.
     $has_svg = in_array($marker, ['distributor', 'experience_centre', 'showroom', 'installer', 'installer-advanced'], true);
     $extension = $has_svg ? 'svg' : 'png';
     $file = $marker . '-marker.' . $extension;
@@ -641,12 +640,12 @@ function generate_installer_tier_filters($args): array
  * v3 is current).
  *
  * Installer type is a pick-one set of four tiles. They overlap on purpose: Decking lists
- * every installer who does decking, including those who also do cladding, and "Decking &
- * cladding" lists only those who do both. The Approved / Advanced accreditation is a
+ * every installer who does decking, including those who also do cladding, and "Cladding &
+ * decking" lists only those who do both. The Approved / Advanced accreditation is a
  * decking accreditation, so its tiles only show once a decking type is chosen.
  *
  * Each option also carries the words the summary line under the result count uses, e.g.
- * "Decking & cladding installers · Advanced".
+ * "Cladding & decking installers · Advanced".
  *
  * Returns [] unless both specialisms are present, in which case the map falls back to the
  * plain tier chips: on a locale where every installer is still decking only, the type
@@ -678,7 +677,7 @@ function generate_installer_type_filters($args): array
 
     $types = [
         'all' => [\__('All', 'granola'), \__('All installers', 'granola')],
-        'both' => [\__('Decking & cladding', 'granola'), \__('Decking & cladding installers', 'granola')],
+        'both' => [\__('Cladding & decking', 'granola'), \__('Cladding & decking installers', 'granola')],
         'decking' => [\__('Decking', 'granola'), \__('Decking installers', 'granola')],
         'cladding' => [\__('Cladding', 'granola'), \__('Cladding installers', 'granola')],
     ];

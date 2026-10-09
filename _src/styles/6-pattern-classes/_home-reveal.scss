@@ -1,0 +1,113 @@
+// ---------------------------------------------------
+// Home reveal
+// ---------------------------------------------------
+// Reveal-on-scroll for the homepage redesign's blocks. An element starts
+// displaced and transparent and is released once by HomeReveal.js, which adds
+// `is-revealed` and stops observing it.
+//
+// Not the existing `.animate` component: that one re-hides an element when you
+// scroll back up to it, and these reveals are deliberately one-shot -- the page
+// should not re-animate under someone scrolling back to re-read something. The
+// timings differ too (900-1200ms against `animate`'s own scale).
+//
+// The design's own prototype notes that this began as CSS
+// `animation-timeline: view()`, which did not fire reliably; the observer is
+// the deliberate replacement, not a fallback.
+//
+// Everything is a transition rather than an animation so that a reveal
+// interrupted mid-flight settles rather than restarting.
+//
+// IMPORTANT: the hidden state is deliberately NOT the default.
+//
+// Hiding on the bare class means a page whose content disappears whenever the
+// script does not run: a JS error, a blocked bundle, an observer that never
+// fires, and the entire home page below the hero is a blank column. The hidden
+// state therefore only applies under `.mbh-reveal-ready`, which HomeReveal.js
+// puts on the root element once it is actually in a position to reveal things
+// again. No script, no hiding.
+
+.mbh-reveal {
+    // Stagger, set per element where a group reveals in sequence.
+    --mbh-reveal-delay: 0ms;
+
+    transition:
+        opacity var(--mbh-dur-reveal) var(--mbh-ease) var(--mbh-reveal-delay),
+        transform #{1100ms} var(--mbh-ease) var(--mbh-reveal-delay);
+    will-change: opacity, transform;
+
+    &.is-revealed {
+        // Hand the layer back.
+        //
+        // will-change asks the browser to keep an element on its own
+        // compositor layer ready to move. That is worth it for the second
+        // the reveal takes and wasteful for the rest of the visit, and there
+        // are 29 of these on the home page. Each one is a one-shot, so once
+        // it has arrived it has no further use for the promise.
+        will-change: auto;
+    }
+
+    // Images arrive with the frame opening downward as well as rising, which is
+    // what stops a grid of photographs reading as one blunt fade.
+    &--image {
+        transition:
+            opacity var(--mbh-dur-reveal) var(--mbh-ease) var(--mbh-reveal-delay),
+            clip-path var(--mbh-dur-reveal-slow) var(--mbh-ease) var(--mbh-reveal-delay),
+            transform var(--mbh-dur-reveal-slow) var(--mbh-ease) var(--mbh-reveal-delay);
+    }
+
+    // No motion asked for: show everything, immediately, with no transition to
+    // interrupt. The observer also stops running, so nothing is left watching.
+    @media (prefers-reduced-motion: reduce) {
+        transition: none;
+        will-change: auto;
+    }
+}
+
+// The hidden state, applied only while the script is in charge.
+.mbh-reveal-ready {
+    .mbh-reveal:not(.is-revealed) {
+        opacity: 0;
+        transform: translateY(#{px-to-rem(52)});
+    }
+
+    .mbh-reveal--image:not(.is-revealed) {
+        clip-path: inset(0 0 32% 0);
+        transform: translateY(#{px-to-rem(44)}) scale(1.02);
+    }
+
+    // The mirrored feature blocks slide in laterally, from the side their image
+    // is not on.
+    .mbh-reveal--from-left:not(.is-revealed) {
+        transform: translate(#{px-to-rem(-46)}, #{px-to-rem(30)});
+    }
+
+    .mbh-reveal--from-right:not(.is-revealed) {
+        transform: translate(#{px-to-rem(46)}, #{px-to-rem(30)});
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .mbh-reveal:not(.is-revealed),
+        .mbh-reveal--image:not(.is-revealed),
+        .mbh-reveal--from-left:not(.is-revealed),
+        .mbh-reveal--from-right:not(.is-revealed) {
+            opacity: 1;
+            transform: none;
+            clip-path: none;
+        }
+    }
+}
+
+// Standing down.
+//
+// When the script gives up on the animation the content must simply appear.
+// Leaving the transition in place would mean the rescue itself depends on a
+// transition running, which is exactly the assumption that failed in the
+// first place: in a throttled tab the fade from 0 never advances and the
+// page stays blank despite the hiding rule having been withdrawn.
+.mbh-reveal-instant .mbh-reveal {
+    opacity: 1;
+    transform: none;
+    clip-path: none;
+    transition: none;
+    will-change: auto;
+}

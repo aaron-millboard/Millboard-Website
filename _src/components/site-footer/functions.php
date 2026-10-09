@@ -8,21 +8,28 @@ function filter_args(array $args): ?array
     // Default arguments.
     // ---------------------------------------
     $args = array_merge([
-        'background_color' => 'brand-2',
+        // brand-5 is Wenge. Set here rather than as a background-color in the
+        // stylesheet so the theme's colour context comes with it: the context
+        // class is what tells everything inside this footer that it is now on
+        // a dark ground, and it also wins over a plain declaration anyway.
+        'background_color' => 'brand-5',
         'classes' => [],
-        'site_name' => \get_bloginfo('name'),
+        // The brand, not the blog.
+        //
+        // get_bloginfo('name') returns the internal subsite name, so the
+        // copyright line has been reading "EN GB - Residential (c) 2026" on
+        // every page of every locale, and "DE-DE - Residential" on the German
+        // one. Those names are for the network admin list, not for readers.
+        // Millboard is one global brand, so the footer says so.
+        'site_name' => 'Millboard',
         'year' => date('Y'),
         'copyright_label' => '',
-        'wholegrain_label' => sprintf(
-            // translators: A link to Wholegrain's website.
-            \__('A website for people and planet by %s', 'granola'),
-            \Granola\Component::get('link', [
-                'url' => 'https://wholegraindigital.com',
-                'content' => 'Wholegrain',
-                'target' => '_blank',
-            ]),
-        ),
         'menus' => range(1, 5),
+        // The legal strip. A theme location rather than a list of pages,
+        // because what counts as legal differs by market: the UK carries two
+        // sets of sale terms, the US will not. Unassigned on a subsite, the
+        // strip is skipped entirely.
+        'legal_menu' => 'footer-legal',
     ], $args);
 
 

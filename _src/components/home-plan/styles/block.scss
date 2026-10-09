@@ -1,0 +1,22 @@
+// =============================================================================
+// Home Plan Your Space -- editor
+// =============================================================================
+// No page scroll to release the reveals, so the rows are shown at rest and the
+// hover tint is dropped: in the canvas a pointer is for selecting a block, not
+// for previewing a link state.
+// =============================================================================
+
+.editor-styles-wrapper {
+    .home-plan {
+        &__header,
+        &__row {
+            opacity: 1;
+            transform: none;
+            transition: none;
+        }
+
+        &__row:hover {
+            background-color: transparent;
+        }
+    }
+}
