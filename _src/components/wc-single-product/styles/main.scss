@@ -83,21 +83,3 @@
         }
     }
 }
-
-// Try before you buy group, in the product buy box.
-.product__try {
-    display: grid;
-    gap: var(--space--xs);
-
-    &-heading {
-        margin: 0;
-        font-size: 0.8125rem;
-        font-weight: 700;
-        letter-spacing: 0.16em;
-        text-transform: uppercase;
-    }
-
-    &-intro {
-        margin: 0;
-    }
-}

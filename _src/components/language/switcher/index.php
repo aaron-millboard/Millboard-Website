@@ -7,11 +7,7 @@
         <div <?= \Granola\Helpers::build_attributes($args['items_attributes']); ?>>
             <?= \Granola\Component::get('menu', [
                 'theme_location' => $args['menu_name'],
-                // Not the bare uid. That belongs to the wrapper above, which is
-                // what the button's aria-controls points at; handing the same one
-                // to the list inside put one id on two elements and left the
-                // control ambiguous about what it opens.
-                'menu_id' => $args['uid'] . '-menu',
+                'menu_id' => $args['uid'],
                 'classes' => ['language-switcher__menu'],
             ]); ?>
         </div>
