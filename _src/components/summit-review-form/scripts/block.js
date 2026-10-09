@@ -118,17 +118,28 @@ if (form) {
         const original = submit.textContent;
         submit.textContent = 'Sending…';
 
-        const url = 'https://api.hsforms.com/submissions/v3/integration/submit/'
-            + encodeURIComponent(form.dataset.portal) + '/' + encodeURIComponent(form.dataset.form);
+        const payload = fields(s);
+        const pageUri = window.location.href;
 
-        fetch(url, {
+        // Primary route: our own endpoint, which records the submission before
+        // forwarding it to HubSpot, so nothing is lost if HubSpot is down.
+        // Fallback: if our server cannot be reached or cannot log, post to
+        // HubSpot directly so the delegate is not turned away.
+        const viaSite = () => fetch(form.dataset.endpoint, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                fields: fields(s),
-                context: { pageUri: window.location.href, pageName: document.title },
-            }),
-        })
+            body: JSON.stringify({ form: form.dataset.form, pageUri, fields: payload.map((f) => ({ name: f.name, value: f.value })) }),
+        });
+        const direct = () => fetch('https://api.hsforms.com/submissions/v3/integration/submit/'
+            + encodeURIComponent(form.dataset.portal) + '/' + encodeURIComponent(form.dataset.form), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fields: payload, context: { pageUri, pageName: document.title } }),
+        });
+
+        viaSite()
+            .then((r) => (r.status >= 500 || r.status === 404 || r.status === 403 ? direct() : r))
+            .catch(() => direct())
             .then((r) => {
                 if (!r.ok) throw new Error('HTTP ' + r.status);
                 const thanks = document.querySelector('[data-review-thanks]');
