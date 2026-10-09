@@ -73,7 +73,8 @@ $yes_text = "Yes, I'd like to let you know about something";
 
         <form class="summit-review__form" data-review-form
               data-portal="<?= esc_attr($args['hubspot_portal_id']); ?>"
-              data-form="<?= esc_attr($args['hubspot_form_guid']); ?>" novalidate>
+              data-form="<?= esc_attr($args['hubspot_form_guid']); ?>"
+              data-endpoint="<?= esc_url(rest_url('millboard/v1/summit/review')); ?>" novalidate>
 
             <header class="summit-review__intro">
                 <div class="summit-review__rule"></div>
