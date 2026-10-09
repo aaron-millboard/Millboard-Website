@@ -56,6 +56,31 @@ $step = static function (string $n, string $title, string $key): void { ?>
 <?php };
 
 $yes_text = "Yes, I'd like to let you know about something";
+
+// INT (international distributors) adds travel, Open Diary and two more details.
+$is_int = !empty($args['is_int']);
+$agenda = (string) ($args['agenda_url'] ?? '');
+$phone = $is_int ? '+44 24 7643 9943' : '024 7643 9943';
+$detail_fields = [
+    ['firstname', 'First name', 'text', 'given-name', ''],
+    ['lastname', 'Last name', 'text', 'family-name', ''],
+    ['company', 'Company', 'text', 'organization', ''],
+    ['email', 'Email', 'email', 'email', ''],
+];
+if ($is_int) {
+    $detail_fields[] = ['summit_country', 'Country', 'text', 'country-name', ''];
+    $detail_fields[] = ['summit_mobile', 'Mobile number', 'tel', 'tel', 'Including country code, e.g. +33'];
+}
+$depts = ['Operations', 'Technical', 'Events', 'Social Media', 'Digital Marketing', 'Website', 'Customer Care'];
+$airports = ['London Heathrow (LHR)', 'Birmingham (BHX)', 'London Gatwick (LGW)', 'Manchester (MAN)', 'Other'];
+$travel_fields = [
+    ['summit_arrival_airline', 'Airline', 'text', 'e.g. Air France', true],
+    ['summit_arrival_flight', 'Flight number', 'text', 'e.g. AF1680', true],
+    ['summit_arrival_airport', 'Arrival airport', 'select', '', true],
+    ['summit_arrival_date', 'Arrival date', 'date', '', true],
+    ['summit_arrival_time', 'Arrival time (UK time)', 'time', '', true],
+    ['summit_arrival_from', 'Departing from', 'text', 'e.g. Paris CDG', false],
+];
 ?>
 <section <?= \Granola\Helpers::build_attributes($args['attributes']); ?>>
     <div class="summit-review__inner">
@@ -67,13 +92,14 @@ $yes_text = "Yes, I'd like to let you know about something";
             <p class="summit-review__small">
                 <?= esc_html__('Questions?', 'granola'); ?>
                 <a href="mailto:enquiries@millboard.com?subject=Millboard%20Summit%202026%20Enquiry">enquiries@millboard.com</a>
-                <?= esc_html__('or', 'granola'); ?> 024 7643 9943
+                <?= esc_html__('or', 'granola'); ?> <?= esc_html($phone); ?>
             </p>
         </div>
 
         <form class="summit-review__form" data-review-form
               data-portal="<?= esc_attr($args['hubspot_portal_id']); ?>"
               data-form="<?= esc_attr($args['hubspot_form_guid']); ?>"
+              data-audience="<?= $is_int ? 'INT' : 'UK'; ?>"
               data-endpoint="<?= esc_url(rest_url('millboard/v1/summit/review')); ?>" novalidate>
 
             <header class="summit-review__intro">
@@ -84,6 +110,7 @@ $yes_text = "Yes, I'd like to let you know about something";
                     <strong><?= esc_html($args['deadline']); ?></strong>
                     <?= esc_html__('so we can have everything ready for you.', 'granola'); ?>
                 </p>
+                <?php if ($is_int) { $doc_link($agenda, 'View the high level agenda (PDF)'); } ?>
             </header>
 
             <div class="summit-review__progress" aria-live="polite">
@@ -100,19 +127,48 @@ $yes_text = "Yes, I'd like to let you know about something";
                     <span class="summit-review__small"><strong>*</strong> <?= esc_html__('Required', 'granola'); ?></span>
                 </div>
                 <div class="summit-review__grid">
-                    <?php foreach ([
-                        ['firstname', 'First name', 'text', 'given-name'],
-                        ['lastname', 'Last name', 'text', 'family-name'],
-                        ['company', 'Company', 'text', 'organization'],
-                        ['email', 'Email', 'email', 'email'],
-                    ] as [$name, $label, $type, $auto]) { ?>
+                    <?php foreach ($detail_fields as [$name, $label, $type, $auto, $hint]) { ?>
                         <label class="summit-review__field">
                             <span><?= esc_html($label); ?><strong> *</strong></span>
-                            <input class="summit-review__input" type="<?= esc_attr($type); ?>" name="<?= esc_attr($name); ?>" autocomplete="<?= esc_attr($auto); ?>">
+                            <input class="summit-review__input" type="<?= esc_attr($type); ?>" name="<?= esc_attr($name); ?>" autocomplete="<?= esc_attr($auto); ?>"<?= $hint !== '' ? ' placeholder="' . esc_attr($hint) . '"' : ''; ?>>
                         </label>
                     <?php } ?>
                 </div>
             </section>
+
+            <?php if ($is_int) { ?>
+            <section class="summit-review__travel">
+                <div class="summit-review__step-head">
+                    <h2 class="summit-review__step-title"><?= esc_html__('Your travel', 'granola'); ?></h2>
+                    <span class="summit-review__done" data-done="travel" hidden><?= esc_html__('Complete', 'granola'); ?></span>
+                </div>
+                <p><?= esc_html__('Your arrival details help us plan around your arrival and contact you if anything changes. Transport during the event is arranged by us.', 'granola'); ?></p>
+                <label class="summit-review__choice">
+                    <input type="checkbox" name="summit_flights_not_booked">
+                    <?= esc_html__("I haven't booked my flight yet. I'll send them to sam.cockeram@millboard.com once booked.", 'granola'); ?>
+                </label>
+                <div class="summit-review__flights" data-flights>
+                    <h3 class="summit-review__sub"><?= esc_html__('Arriving in the UK', 'granola'); ?></h3>
+                    <div class="summit-review__grid">
+                        <?php foreach ($travel_fields as [$name, $label, $type, $hint, $req]) { ?>
+                            <label class="summit-review__field">
+                                <span><?= esc_html($label); ?><?= $req ? '<strong> *</strong>' : ''; ?></span>
+                                <?php if ($type === 'select') { ?>
+                                    <select class="summit-review__input" name="<?= esc_attr($name); ?>">
+                                        <option value=""><?= esc_html__('Select', 'granola'); ?></option>
+                                        <?php foreach ($airports as $airport) { ?>
+                                            <option value="<?= esc_attr($airport); ?>"><?= esc_html($airport); ?></option>
+                                        <?php } ?>
+                                    </select>
+                                <?php } else { ?>
+                                    <input class="summit-review__input" type="<?= esc_attr($type); ?>" name="<?= esc_attr($name); ?>"<?= $hint !== '' ? ' placeholder="' . esc_attr($hint) . '"' : ''; ?>>
+                                <?php } ?>
+                            </label>
+                        <?php } ?>
+                    </div>
+                </div>
+            </section>
+            <?php } ?>
 
             <section class="summit-review__step">
                 <span class="summit-review__num">01</span>
@@ -207,6 +263,36 @@ $yes_text = "Yes, I'd like to let you know about something";
                     <?php $check('summit_data_consent', 'I consent to Millboard processing my personal data for the purpose of my attendance at the event.'); ?>
                 </div>
             </section>
+
+            <?php if ($is_int) { ?>
+            <section class="summit-review__diary">
+                <h2 class="summit-review__title summit-review__title--sub"><?= esc_html__('Book your Open Diary sessions', 'granola'); ?></h2>
+                <p><?= esc_html__("We are pleased to include an Open Diary session in this year's Global Summit programme. It offers dedicated time with Millboard's specialist teams to discuss topics relevant to your market.", 'granola'); ?></p>
+                <dl class="summit-review__facts">
+                    <div><dt><?= esc_html__('When', 'granola'); ?></dt><dd><?= esc_html__('Wednesday 4 November', 'granola'); ?></dd></div>
+                    <div><dt><?= esc_html__('Format', 'granola'); ?></dt><dd><?= esc_html__('20-minute one-to-one meetings with individual departments', 'granola'); ?></dd></div>
+                </dl>
+                <p><?= esc_html__('Please tick each department you would like to meet.', 'granola'); ?></p>
+                <div class="summit-review__depts">
+                    <?php foreach ($depts as $dept) { ?>
+                        <label class="summit-review__choice">
+                            <input type="checkbox" name="diary_dept" value="<?= esc_attr($dept); ?>">
+                            <?= esc_html($dept); ?>
+                        </label>
+                    <?php } ?>
+                </div>
+                <div class="summit-review__notes" data-diary-notes hidden>
+                    <p><?= esc_html__('To help each team prepare, please add a brief note of the topics you would like to cover.', 'granola'); ?></p>
+                    <?php foreach ($depts as $dept) { ?>
+                        <label class="summit-review__field" data-diary-note="<?= esc_attr($dept); ?>" hidden>
+                            <span><?= esc_html($dept); ?></span>
+                            <textarea class="summit-review__input" rows="2" placeholder="<?= esc_attr('Topics to discuss with ' . $dept); ?>"></textarea>
+                        </label>
+                    <?php } ?>
+                </div>
+                <p><?= esc_html__('Slots are allocated in order of response, and we will confirm your meeting times before the day.', 'granola'); ?></p>
+            </section>
+            <?php } ?>
 
             <div class="summit-review__actions">
                 <button type="submit" class="summit-review__submit" data-review-submit disabled><?= esc_html__('Submit', 'granola'); ?></button>
