@@ -336,6 +336,92 @@
         font-size: px-to-rem(14);
     }
 
+    // INT only: arrival flights, then the Open Diary panel after step 06.
+    &__travel,
+    &__flights,
+    &__notes {
+        display: flex;
+        flex-direction: column;
+        gap: px-to-rem(20);
+    }
+
+    &__travel {
+        padding: 0 0 px-to-rem(48);
+
+        p {
+            margin: 0;
+            font-size: px-to-rem(15);
+            line-height: 1.6;
+        }
+    }
+
+    &__diary {
+        display: flex;
+        flex-direction: column;
+        gap: px-to-rem(20);
+        margin-top: px-to-rem(48);
+        padding: px-to-rem(40) clamp(20px, 4vw, 40px);
+        background: var(--sr--rule);
+
+        &::before {
+            content: '';
+            width: 60px;
+            height: 2px;
+            background: var(--sr--accent);
+        }
+
+        p {
+            margin: 0;
+            font-size: px-to-rem(15);
+            line-height: 1.6;
+            text-wrap: pretty;
+        }
+    }
+
+    &__title--sub {
+        font-size: clamp(22px, 3vw, 28px);
+        line-height: 1.25;
+    }
+
+    &__facts {
+        display: flex;
+        flex-direction: column;
+        margin: 0;
+        border-top: 1px solid rgba(47, 41, 46, 0.18);
+
+        > div {
+            display: flex;
+            flex-wrap: wrap;
+            gap: px-to-rem(16);
+            padding: px-to-rem(12) 0;
+            border-bottom: 1px solid rgba(47, 41, 46, 0.18);
+        }
+
+        dt {
+            flex: none;
+            width: 96px;
+            font-size: px-to-rem(11);
+            font-weight: 700;
+            line-height: 22px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        dd {
+            flex: 1;
+            min-width: 180px;
+            margin: 0;
+            font-size: px-to-rem(15);
+            line-height: 22px;
+        }
+    }
+
+    &__depts {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: px-to-rem(12) px-to-rem(24);
+    }
+
     // The hidden attribute must win over the display set above.
     [hidden] {
         display: none !important;

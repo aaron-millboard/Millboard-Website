@@ -35,6 +35,9 @@ class ReviewLog
         'summit_nda_accepted', 'summit_hs_accepted', 'summit_competition_law_accepted',
         'summit_data_consent', 'summit_health_data_consent', 'summit_dietary_requirements',
         'summit_dietary_notes', 'summit_accessibility_requirements', 'summit_photo_consent',
+        'summit_country', 'summit_mobile', 'summit_flights_not_booked', 'summit_arrival_airline',
+        'summit_arrival_flight', 'summit_arrival_airport', 'summit_arrival_date', 'summit_arrival_time',
+        'summit_arrival_from', 'summit_open_diary_departments', 'summit_open_diary_topics',
     ];
 
     public static function init(): void
