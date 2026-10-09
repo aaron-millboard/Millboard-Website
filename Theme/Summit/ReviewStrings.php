@@ -17,7 +17,6 @@ namespace Theme\Summit;
 final class ReviewStrings
 {
     public const FR = [
-        'Before you arrive' => "Avant votre arrivée",
         'Six short steps, all on this page. Please complete them by no later than' => "Six étapes rapides, toutes sur cette page. Merci de les compléter au plus tard le",
         'so we can have everything ready for you.' => "afin que nous puissions tout préparer pour vous.",
         'View the high level agenda (PDF)' => "Consulter le programme (PDF)",

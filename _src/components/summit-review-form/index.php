@@ -128,7 +128,6 @@ $travel_fields = [
 
             <header class="summit-review__intro">
                 <div class="summit-review__rule"></div>
-                <h2 class="summit-review__title"><?= esc_html__('Before you arrive', 'granola'); ?></h2>
                 <p class="summit-review__lead">
                     <?= esc_html__('Six short steps, all on this page. Please complete them by no later than', 'granola'); ?><br>
                     <strong><?= esc_html($args['deadline']); ?></strong>
