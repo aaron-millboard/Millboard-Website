@@ -25,8 +25,11 @@ function embed_base_url(): string
 /**
  * Whether the visualiser should show for a product.
  *
- * Needs the site option and a SKU, because the embed works per SKU. Use the
- * filter to narrow it to the ranges the visualiser supports.
+ * Needs the site option, a SKU (the embed works per SKU) and a product in one
+ * of the decking collections, which is all the visualiser launches with.
+ *
+ * ponytail: slugs are the en-gb ones, and only en-gb has the option set. Add each
+ * market's slugs (or use the filter) when its site is switched on.
  *
  * @param \WC_Product|null $product
  * @return bool
@@ -37,9 +40,11 @@ function is_available(?\WC_Product $product = null): bool
         return false;
     }
 
+    $collections = ['enhanced-grain', 'weathered-oak', 'lasta-grip', 'modello-linear', 'modello-contour'];
+
     return (bool) \apply_filters(
         'granola/product_visualiser/available',
-        default_sku($product) !== '',
+        default_sku($product) !== '' && \has_term($collections, 'product_cat', $product->get_id()),
         $product
     );
 }
