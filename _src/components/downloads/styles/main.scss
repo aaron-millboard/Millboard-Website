@@ -72,6 +72,7 @@
         flex-direction: row;
         gap: var(--space--m);
         align-items: end;
+        min-width: 0; // let the row shrink inside its grid cell instead of forcing horizontal scroll at 320px (WCAG 1.4.10)
 
         @include mq(medium) {
             align-items: baseline;
@@ -82,6 +83,8 @@
         @include typestyle-base;
         font-family: var(--type--2--font-family);
         font-weight: 400;
+        min-width: 0;
+        overflow-wrap: anywhere; // long file names wrap rather than overflow the viewport
     }
 
     &__file-size {

@@ -7,6 +7,7 @@
         <div <?= \Granola\Helpers::build_attributes($args['items_attributes']); ?>>
             <?= \Granola\Component::get('menu', [
                 'theme_location' => $args['menu_name'],
+                'aria_label' => __('Language', 'granola'),
                 // Not the bare uid. That belongs to the wrapper above, which is
                 // what the button's aria-controls points at; handing the same one
                 // to the list inside put one id on two elements and left the
