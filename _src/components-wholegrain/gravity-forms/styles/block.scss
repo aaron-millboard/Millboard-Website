@@ -11,10 +11,11 @@
 
     &__grid {
         display: grid;
+        grid-template-columns: minmax(0, 1fr); // cap the single column so an embedded form can't widen the page at 320px (WCAG 1.4.10)
         gap: var(--space--l);
 
         @include mq(medium) {
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
             gap: var(--space--3xl);
         }
     }
@@ -22,6 +23,7 @@
     &__column {
         display: flex;
         flex-direction: column;
+        min-width: 0; // let the column shrink below the embedded form's intrinsic width instead of overflowing
 
         &--content {
             gap: var(--space--m);
@@ -29,6 +31,27 @@
             @include mq(large) {
                 padding-right: var(--space--3xl);
             }
+        }
+    }
+
+    // Reflow at 320px (WCAG 1.4.10). The equivalent caps in the component's main.scss
+    // live inside an @media rule, which perfmatters strips when it builds Used CSS at
+    // desktop width. These base (media-query-free) rules live in the block stylesheet,
+    // which loads as its own <link> that perfmatters leaves intact, so the embedded
+    // HubSpot form can't push a 399px field past a 320px screen.
+    .hbspt-form {
+        max-width: 100%;
+
+        .form-columns-2,
+        .form-columns-3,
+        fieldset {
+            max-width: 100% !important;
+        }
+
+        .hs-form-field,
+        .hs-input:not([type='checkbox']):not([type='radio']) {
+            max-width: 100% !important;
+            box-sizing: border-box;
         }
     }
 

@@ -38,6 +38,7 @@
                 <?= \Granola\Component::get('menu', [
                     'theme_location' => 'top',
                     'menu_id' => 'top-menu', // Required for 'aria-controls' in burger component.
+                    'aria_label' => __('Top bar', 'granola'),
                     'classes' => [
                         'site-header__navigation site-header__navigation--top',
                     ],
@@ -81,6 +82,7 @@
                 <?= \Granola\Component::get('menu', [
                     'theme_location' => 'header-utility',
                     'menu_id' => 'header-utility-menu',
+                    'aria_label' => __('Utility', 'granola'),
                     'classes' => [
                         'site-header__navigation site-header__navigation--utility',
                     ],
@@ -121,6 +123,7 @@
         <?= \Granola\Component::get('menu', [
             'theme_location' => 'header',
             'menu_id' => 'main-menu', // Required for 'aria-controls' in burger component.
+            'aria_label' => __('Primary', 'granola'),
             'slice' => [0, $args['nav_split']],
             'classes' => [
                 'site-header__navigation site-header__navigation--primary site-header__navigation--start',
@@ -151,6 +154,7 @@
             <?= \Granola\Component::get('menu', [
                 'theme_location' => 'header',
                 'menu_id' => 'main-menu-end',
+                'aria_label' => __('Primary navigation (continued)', 'granola'),
                 'slice' => [$args['nav_split']],
                 'classes' => [
                     'site-header__navigation site-header__navigation--primary site-header__navigation--end',
