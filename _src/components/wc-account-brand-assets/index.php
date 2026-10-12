@@ -31,17 +31,22 @@ $panel_url = wc_get_account_endpoint_url('brand-assets');
 
 $items = [];
 $found = 0;
+$more = false;
 $failed = false;
 
 if (Client::is_configured()) {
+    // Both calls already drop every asset this user may not see (see
+    // Theme\Canto\Access), so `found` counts visible assets only.
     if ('' !== $query) {
         $result = Client::search($query, 60);
         $items = $result['results'];
         $found = $result['found'];
+        $more = $result['more'];
     } elseif ('' !== $node_id) {
         $result = Client::contents($scheme ?: 'album', $node_id, 60);
         $items = $result['results'];
         $found = $result['found'];
+        $more = $result['more'];
     } else {
         $items = Client::tree();
         $found = count($items);
@@ -224,14 +229,13 @@ if (Client::is_configured()) {
                 <?php endforeach; ?>
             </ul>
 
-            <?php if ($found > count($items)) : ?>
+            <?php if ($more) : ?>
                 <p class="mb-assets__more">
                     <?php
                     printf(
-                        /* translators: %1$s: shown, %2$s: total. */
-                        esc_html__('Showing %1$s of %2$s. Open the library for the rest.', 'granola'),
-                        esc_html(number_format_i18n(count($items))),
-                        esc_html(number_format_i18n($found))
+                        /* translators: %s: number of assets shown. */
+                        esc_html__('Showing the first %s. Open the library for the rest.', 'granola'),
+                        esc_html(number_format_i18n(count($items)))
                     );
                     ?>
                 </p>

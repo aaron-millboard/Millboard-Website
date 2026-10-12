@@ -194,49 +194,86 @@ class Client
     }
 
     /**
-     * Assets inside one album or folder.
+     * Assets inside one album or folder, limited to what this user may see.
      *
-     * @return array{results: array<int,array<string,mixed>>, found: int}
+     * `found` is the number of VISIBLE assets reached, never Canto's own total:
+     * that total counts the assets this user may not see, so showing it would
+     * leak how many there are. `more` says the page filled and Canto has more.
+     *
+     * @return array{results: array<int,array<string,mixed>>, found: int, more: bool}
      */
     public static function contents(string $scheme, string $id, int $limit = 60, int $start = 0): array
     {
         $scheme = \in_array($scheme, ['album', 'folder'], true) ? $scheme : 'album';
 
-        $body = self::get($scheme . '/' . $id, [
-            'limit' => $limit,
-            'start' => $start,
+        return self::visible_page($scheme . '/' . $id, [
             'sortBy' => 'name',
             'sortDirection' => 'ascending',
-        ]);
-
-        return [
-            'results' => \is_array($body) && \is_array($body['results'] ?? null) ? $body['results'] : [],
-            'found' => \is_array($body) ? (int) ($body['found'] ?? 0) : 0,
-        ];
+        ], $limit, $start);
     }
 
     /**
-     * Search the whole library.
+     * Search the whole library, limited to what this user may see.
      *
-     * @return array{results: array<int,array<string,mixed>>, found: int}
+     * @return array{results: array<int,array<string,mixed>>, found: int, more: bool}
      */
     public static function search(string $keyword, int $limit = 60, int $start = 0): array
     {
         $keyword = \trim($keyword);
 
         if ('' === $keyword) {
-            return ['results' => [], 'found' => 0];
+            return ['results' => [], 'found' => 0, 'more' => false];
         }
 
-        $body = self::get('search', [
-            'keyword' => $keyword,
-            'limit' => $limit,
-            'start' => $start,
-        ]);
+        return self::visible_page('search', ['keyword' => $keyword], $limit, $start);
+    }
+
+    /**
+     * Page through an endpoint until $limit visible assets are collected.
+     *
+     * Hidden assets are dropped AFTER the fetch, so a page full of embargoed
+     * boards would otherwise come back thin. Raw pages are read until enough
+     * visible ones turn up or Canto runs out, capped so one request cannot walk
+     * the whole library.
+     *
+     * @param array<string,scalar> $args
+     * @return array{results: array<int,array<string,mixed>>, found: int, more: bool}
+     */
+    private static function visible_page(string $path, array $args, int $limit, int $start): array
+    {
+        $audiences = Access::for_current_user();
+        $step = 100;
+        $requests = 10;
+        $visible = [];
+        $more = false;
+
+        for ($i = 0; $i < $requests; $i++) {
+            $body = self::get($path, $args + ['limit' => $step, 'start' => $start]);
+            $raw = \is_array($body) && \is_array($body['results'] ?? null) ? $body['results'] : [];
+            $total = \is_array($body) ? (int) ($body['found'] ?? 0) : 0;
+            $start += \count($raw);
+
+            $visible = \array_merge($visible, Access::filter($raw, $audiences));
+            $exhausted = !$raw || $start >= $total;
+
+            if (\count($visible) >= $limit) {
+                $more = \count($visible) > $limit || !$exhausted;
+                break;
+            }
+
+            if ($exhausted) {
+                break;
+            }
+
+            // Ran out of requests with more left in Canto: say so rather than
+            // pretend the library ended.
+            $more = ($i === $requests - 1);
+        }
 
         return [
-            'results' => \is_array($body) && \is_array($body['results'] ?? null) ? $body['results'] : [],
-            'found' => \is_array($body) ? (int) ($body['found'] ?? 0) : 0,
+            'results' => \array_slice($visible, 0, $limit),
+            'found' => \min(\count($visible), $limit),
+            'more' => $more,
         ];
     }
 
