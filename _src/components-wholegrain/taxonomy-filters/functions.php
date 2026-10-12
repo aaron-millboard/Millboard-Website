@@ -125,17 +125,12 @@ function get_taxonomy_items($args): array
         // Generate URL based on preserve_url setting
         if (!empty($args['preserve_url'])) {
             $nofollow = true; // adding query args to URL, links should be nofollowed.
-            $query_arg = isset($_GET[$args['taxonomy']]) ? \sanitize_text_field($_GET[$args['taxonomy']]) : null;
 
-            if (!empty($query_arg) && strpos($query_arg, $item->slug) === false) {
-                $item_url = \add_query_arg([
-                    $args['taxonomy'] => str_replace(' ', '+', $query_arg) . '+' . $item->slug,
-                ], $current_url);
-            } else {
-                $item_url = \add_query_arg([
-                    $args['taxonomy'] => $item->slug,
-                ], $current_url);
-            }
+            // Single-select: each link sets one term, never appends to the current ones.
+            // Appending made an unbounded crawl space of ?category=a+b+c URLs (12 Oct 2026 bot flood).
+            $item_url = \add_query_arg([
+                $args['taxonomy'] => $item->slug,
+            ], $current_url);
         } else {
             $item_url = \get_term_link($item->slug, $item->taxonomy);
         }
