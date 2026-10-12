@@ -4,7 +4,7 @@
 // Rendered up front because the visualiser entry points and the "Try before you
 // buy" group sit in different places below, and both depend on the same checks.
 $visualiser = \Granola\Component::get('product-visualiser');
-$has_visualiser = $visualiser !== '';
+$has_visualiser = trim($visualiser) !== '';
 $samples = \Granola\Component::get('product-samples');
 $has_samples = str_contains($samples, 'product-samples__button');
 ?>
