@@ -11,10 +11,11 @@
 
     &__grid {
         display: grid;
+        grid-template-columns: minmax(0, 1fr); // cap the single column so an embedded form can't widen the page at 320px (WCAG 1.4.10)
         gap: var(--space--l);
 
         @include mq(medium) {
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
             gap: var(--space--3xl);
         }
     }
@@ -22,6 +23,7 @@
     &__column {
         display: flex;
         flex-direction: column;
+        min-width: 0; // let the column shrink below the embedded form's intrinsic width instead of overflowing
 
         &--content {
             gap: var(--space--m);
