@@ -317,7 +317,53 @@ function get_installer_specialisms(\WP_Post $wp_post): array
 }
 
 
+/**
+ * The site whose partner records the finder should read.
+ *
+ * A /commercial/ subsite holds no distributors of its own, so its finder reads the
+ * residential site it sits under (/en-gb/commercial/ reads /en-gb/). Returns 0 on any
+ * other site, meaning "use this site". Filterable for the odd exception.
+ */
+function get_directory_source_blog(): int
+{
+    $home = rtrim((string) \wp_parse_url(\home_url(), PHP_URL_PATH), '/');
+    $source = 0;
+
+    if (str_ends_with($home, '/commercial')) {
+        $source = (int) \get_blog_id_from_url(
+            (string) \wp_parse_url(\home_url(), PHP_URL_HOST),
+            substr($home, 0, -strlen('/commercial')) . '/'
+        );
+    }
+
+    $source = (int) \apply_filters('granola/map/directory_source_blog', $source);
+
+    return $source !== \get_current_blog_id() ? $source : 0;
+}
+
+/**
+ * Reads the finder's records from the directory source site (see above), restoring the
+ * current site afterwards. Every value a listing needs is resolved inside the switch, so
+ * nothing downstream has to know which site the records came from.
+ */
 function get_item_data($args): array|null
+{
+    $source = get_directory_source_blog();
+
+    if (!$source) {
+        return query_item_data($args);
+    }
+
+    \switch_to_blog($source);
+
+    try {
+        return query_item_data($args);
+    } finally {
+        \restore_current_blog();
+    }
+}
+
+function query_item_data($args): array|null
 {
     $items = [];
 
