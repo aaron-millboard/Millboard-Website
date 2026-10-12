@@ -5,6 +5,7 @@ import HomeReveal from './scripts/helpers/HomeReveal.js';
 import initPartnerPhoneReveal from './scripts/PartnerPhoneReveal.js';
 import initOpeningStatus from './scripts/OpeningStatus.js';
 import initHubspotFormA11y from './scripts/HubspotFormA11y.js';
+import initSelect2A11y from './scripts/Select2A11y.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     new ScrollWatcher();
@@ -24,4 +25,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Correct HubSpot's invalid checkbox-list ARIA (they will not fix it their side).
     initHubspotFormA11y();
+
+    // Give select2's comboboxes (Woo country/state + custom checkout selects) an
+    // accessible name from their native <select> label (WCAG 4.1.2).
+    initSelect2A11y();
 });

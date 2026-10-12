@@ -45,6 +45,7 @@
                     <?= \Granola\Component::get('menu', [
                         'theme_location' => $args['legal_menu'],
                         'max_depth' => 1,
+                        'aria_label' => __('Legal', 'granola'),
                         'classes' => ['site-footer__legal-menu'],
                     ]); ?>
                 </div>
