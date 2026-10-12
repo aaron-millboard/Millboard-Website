@@ -219,7 +219,14 @@ export default class ExpandableElement {
             return;
         }
 
-        if (!this.targetElement.contains(event.target)) {
+        // Escape should close the disclosure whether focus is inside the panel
+        // OR still on the trigger that opened it (opening via Enter leaves focus
+        // on the button). keydown on the trigger does not bubble to the panel,
+        // so the trigger carries its own listener (added on expand).
+        const fromTrigger = [...this.triggerElements].some(
+            (trigger) => trigger === event.target || trigger.contains(event.target)
+        );
+        if (!this.targetElement.contains(event.target) && !fromTrigger) {
             return;
         }
 
@@ -247,6 +254,7 @@ export default class ExpandableElement {
 
         if (this.options.collapseOnEscape === true) {
             this.targetElement.removeEventListener('keydown', this);
+            this.triggerElements.forEach((trigger) => trigger.removeEventListener('keydown', this));
         }
 
         if (this.options.collapseOnAncestorCollapse === true) {
@@ -293,6 +301,7 @@ export default class ExpandableElement {
 
         if (this.options.collapseOnEscape === true) {
             this.targetElement.addEventListener('keydown', this);
+            this.triggerElements.forEach((trigger) => trigger.addEventListener('keydown', this));
         }
 
         if (this.options.collapseOnAncestorCollapse === true) {

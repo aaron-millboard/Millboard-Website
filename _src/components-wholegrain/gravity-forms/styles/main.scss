@@ -651,7 +651,33 @@
 // }
 
 .gravity-forms {
+    max-width: 100%;
+
     .hbspt-form {
+        max-width: 100%;
+        overflow-wrap: anywhere;
+
+        // Reflow at 320px (WCAG 1.4.10): HubSpot's embed stylesheet keeps its
+        // two/three-column field rows and ~48% field widths at narrow viewports,
+        // which pushes the form past a 320px screen. Stack the columns and let
+        // every field fill the width below the small breakpoint.
+        @media (max-width: 479px) {
+            .form-columns-2,
+            .form-columns-3 {
+                display: block !important;
+            }
+
+            .hs-form-field,
+            .hs-input:not([type='checkbox']):not([type='radio']) {
+                width: 100% !important;
+                float: none !important;
+            }
+
+            fieldset {
+                max-width: 100% !important;
+            }
+        }
+
         input,
         textarea {
             --input--background-color: transparent;

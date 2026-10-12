@@ -11,6 +11,11 @@ function filter_args(array $args): ?array
         'menu_id' => null,
         'menu_class' => null,
         'classes' => [],
+        'attributes' => [],
+        // Accessible name for the <nav> landmark. Falls back to the menu's
+        // heading when one is set, so multiple nav landmarks on a page are
+        // distinguishable to screen-reader users (WCAG 1.3.1 / 2.4.1).
+        'aria_label' => null,
         'items' => [],
         'heading' => null,
         'max_depth' => null,
@@ -134,6 +139,15 @@ function filter_args(array $args): ?array
     // Set menu heading from theme_location.
     if ($args['heading'] === true) {
         $args['heading'] = \wp_get_nav_menu_name($args['theme_location']);
+    }
+
+    // -------------------------------------------------------------------------
+    // Accessible name for the <nav> landmark (WCAG 1.3.1). Use the explicit
+    // aria_label, else the heading, so every nav on the page is distinguishable.
+    // -------------------------------------------------------------------------
+    $nav_label = $args['aria_label'] ?: (is_string($args['heading']) ? $args['heading'] : null);
+    if ($nav_label) {
+        $args['attributes']['aria-label'] = $nav_label;
     }
 
     // -------------------------------------------------------------------------
