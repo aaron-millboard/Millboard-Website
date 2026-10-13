@@ -80,5 +80,47 @@ if (2 !== \count($mixed)) {
     ++$fail;
 }
 
-echo $fail ? "{$fail} FAILED\n" : \count($cases) + \count($roles) + 1 . " checks passed\n";
+// partner index rules
+$pv = [
+    ['distributor value reaches partners', $asset(['Distributor']), true],
+    ['installer value reaches partners', $asset(['Installer']), true],
+    ['all three reach partners', $asset(['Distributor', 'Installer', 'Internal staff']), true],
+    ['staff-only never in the partner index', $asset(['Internal staff']), false],
+    ['embargoed never in the partner index', $asset(['Embargoed', 'Distributor']), false],
+    ['empty never in the partner index', $asset([]), false],
+    ['word elsewhere is not enough', ['scheme' => 'image', 'name' => 'Distributor Events', 'additional' => ['Portal Access' => ['Internal staff']]], false],
+    ['containers never in the partner index', ['scheme' => 'album', 'additional' => ['Portal Access' => ['Distributor']]], false],
+];
+
+foreach ($pv as [$label, $item, $expected]) {
+    if (Access::partner_visible($item) !== $expected) {
+        echo "FAIL: {$label}\n";
+        ++$fail;
+    }
+}
+
+$full = [
+    'id' => 'abc', 'scheme' => 'image', 'name' => 'Deck.jpg',
+    'url' => ['previewURI240' => 'p', 'directUrlOriginal' => 'o', 'detail' => 'd', 'download' => 'secret'],
+    'additional' => ['Portal Access' => ['Distributor'], 'SKU' => 'X'],
+    'relatedAlbums' => [['idPath' => 'N0G8G/KFTUP'], ['idPath' => '05/12345']],
+];
+$c = Access::compact($full);
+
+if (['N0G8G', 'KFTUP', '05', '12345'] !== $c['albums'] || $c['albums'] !== \array_map('strval', $c['albums'])) {
+    echo "FAIL: compact keeps every folder and album id as a string\n";
+    ++$fail;
+}
+
+if (isset($c['url']['download']) || isset($c['additional']['SKU']) || ['Distributor'] !== $c['additional']['Portal Access']) {
+    echo "FAIL: compact keeps only what the panel renders\n";
+    ++$fail;
+}
+
+if (!Access::visible($c, $dist) || Access::visible($c, $inst)) {
+    echo "FAIL: a compact record is filtered exactly like the full one\n";
+    ++$fail;
+}
+
+echo $fail ? "{$fail} FAILED\n" : \count($cases) + \count($roles) + \count($pv) + 4 . " checks passed\n";
 exit($fail ? 1 : 0);

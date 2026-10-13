@@ -27,6 +27,10 @@ class Client
 {
     private const TOKEN_TRANSIENT = 'mb_canto_token';
 
+    private const INDEX_TRANSIENT = 'mb_canto_partner_index';
+
+    private const INDEX_TTL = 45 * MINUTE_IN_SECONDS;
+
     /**
      * Shave a day off whatever expiry Canto reports, so a token is never used
      * in the minutes around its own expiry.
@@ -205,6 +209,28 @@ class Client
     public static function contents(string $scheme, string $id, int $limit = 60, int $start = 0): array
     {
         $scheme = \in_array($scheme, ['album', 'folder'], true) ? $scheme : 'album';
+        $audiences = Access::for_current_user();
+
+        // Partners see a small slice of a large album (about 12% of the library),
+        // so walking Canto's own listing page by page is slow. They are answered
+        // from the partner index instead, which holds only what they may see.
+        if (!\in_array(Access::STAFF, $audiences, true)) {
+            if (!$audiences) {
+                return ['results' => [], 'found' => 0, 'more' => false];
+            }
+
+            $index = self::partner_index();
+
+            if (null !== $index) {
+                $mine = \array_values(\array_filter($index, static fn ($item) => \in_array($id, $item['albums'], true) && Access::visible($item, $audiences)));
+
+                return [
+                    'results' => \array_slice($mine, $start, $limit),
+                    'found' => \count($mine),
+                    'more' => \count($mine) > $start + $limit,
+                ];
+            }
+        }
 
         return self::visible_page($scheme . '/' . $id, [
             'sortBy' => 'name',
@@ -242,12 +268,17 @@ class Client
     private static function visible_page(string $path, array $args, int $limit, int $start): array
     {
         $audiences = Access::for_current_user();
-        $step = 100;
-        $requests = 10;
+        // The first request is small, which is all a staff view needs because
+        // nearly everything is visible to them. When that is not enough the
+        // pages grow to 1000, Canto's largest, and eleven requests cover the
+        // whole library (about 9,300 assets), so a listing is complete rather
+        // than cut off after the first thousand.
+        $requests = 11;
         $visible = [];
         $more = false;
 
         for ($i = 0; $i < $requests; $i++) {
+            $step = 0 === $i ? 100 : 1000;
             $body = self::get($path, $args + ['limit' => $step, 'start' => $start]);
             $raw = \is_array($body) && \is_array($body['results'] ?? null) ? $body['results'] : [];
             $total = \is_array($body) ? (int) ($body['found'] ?? 0) : 0;
@@ -278,11 +309,72 @@ class Client
     }
 
     /**
+     * Every asset an external audience may see, in a compact form.
+     *
+     * Canto matches a keyword against custom field values, so searching for
+     * "Distributor" and "Installer" returns every asset whose Portal Access
+     * names them (checked against the whole library: all 1,140, none missing).
+     * Each hit is then checked by Access::partner_visible, which drops the few
+     * that merely contain the word elsewhere.
+     *
+     * Cached for 45 minutes. Canto's signed thumbnail links last a day, so a
+     * stale index never holds a dead link. A new Portal Access value shows
+     * after at most that long, or at once after Client::flush().
+     *
+     * Returns null when Canto cannot be reached, and caches nothing then.
+     *
+     * @return array<int,array<string,mixed>>|null
+     */
+    public static function partner_index(bool $force = false): ?array
+    {
+        if (!$force) {
+            $cached = \get_transient(self::INDEX_TRANSIENT);
+
+            if (\is_array($cached)) {
+                return $cached;
+            }
+        }
+
+        $found = [];
+
+        foreach (['Distributor', 'Installer'] as $keyword) {
+            for ($start = 0, $i = 0; $i < 10; $i++) {
+                $body = self::get('search', ['keyword' => $keyword, 'limit' => 1000, 'start' => $start]);
+
+                if (!\is_array($body) || !\is_array($body['results'] ?? null)) {
+                    return null;
+                }
+
+                foreach ($body['results'] as $item) {
+                    if (\is_array($item) && Access::partner_visible($item)) {
+                        $compact = Access::compact($item);
+                        $found[$compact['id']] = $compact;
+                    }
+                }
+
+                $start += \count($body['results']);
+
+                if (!$body['results'] || $start >= (int) ($body['found'] ?? 0)) {
+                    break;
+                }
+            }
+        }
+
+        $index = \array_values($found);
+        \usort($index, static fn ($a, $b) => \strnatcasecmp($a['name'], $b['name']));
+
+        \set_transient(self::INDEX_TRANSIENT, $index, self::INDEX_TTL);
+
+        return $index;
+    }
+
+    /**
      * Drop everything cached. Used by the panel's own refresh control.
      */
     public static function flush(): void
     {
         \delete_transient(self::TOKEN_TRANSIENT);
+        \delete_transient(self::INDEX_TRANSIENT);
         \delete_transient('mb_canto_tree');
     }
 
