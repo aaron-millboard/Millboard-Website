@@ -85,10 +85,62 @@ textarea,
     resize: vertical;
 }
 
+// Tick boxes and radios. These were the browser defaults (a tiny native box jammed against its
+// label), which looked unfinished on every form that does not build its own control. Drawn here once
+// from the checkbox/radio tokens so any form picks them up. Components that draw their own control
+// (Gravity Forms, checkout, toggle fields) override these with more specific selectors.
 [type='radio'],
 [type='checkbox'] {
-    width: 1em;
-    height: 1em;
-    accent-color: var(--input--border-color);
-    transform: translateY(0.15em);
+    position: relative;
+    display: inline-block;
+    flex: 0 0 auto;
+    appearance: none;
+    width: var(--checkbox--size);
+    height: var(--checkbox--size);
+    margin: 0 var(--space--2xs) 0 0;
+    border: var(--checkbox--border-width) solid var(--color--foreground);
+    background-color: transparent;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    color: var(--color--foreground);
+    cursor: pointer;
+    transform: none;
+    transition: transition(background-color, border-color, box-shadow);
+    vertical-align: -0.2em; // sits on the text baseline
+
+    &:hover:not(:disabled) {
+        background-color: var(--input--background-color--highlight);
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--color--brand-4);
+        outline-offset: 2px;
+    }
+
+    &:checked {
+        background-color: var(--color--foreground);
+    }
+
+    &:disabled {
+        cursor: not-allowed;
+        opacity: 0.45;
+    }
+}
+
+[type='checkbox'] {
+    border-radius: var(--checkbox--border-radius);
+
+    &:checked {
+        // the tick, drawn in the page background colour (#f8f4f0)
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M4.5 10.5l3.5 3.5 7.5-8' fill='none' stroke='%23f8f4f0' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    }
+}
+
+[type='radio'] {
+    border-radius: 50%;
+
+    &:checked {
+        box-shadow: inset 0 0 0 0.2em var(--color--background);
+    }
 }
