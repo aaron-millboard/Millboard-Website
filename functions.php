@@ -43,6 +43,7 @@ if (file_exists($autoloader = __DIR__ . '/vendor/autoload.php')) {
 // ----------------------------------------------------
 // WordPress - Optimisation & Other Functionality.
 // ----------------------------------------------------
+\Theme\WordPress\ClientSideMedia::init();
 \Theme\WordPress\Emails::init();
 \Theme\WordPress\Escaping::init();
 \Theme\WordPress\Excerpt::init();
