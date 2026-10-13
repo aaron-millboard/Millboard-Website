@@ -40,7 +40,7 @@ function is_available(?\WC_Product $product = null): bool
         return false;
     }
 
-    $collections = ['enhanced-grain', 'weathered-oak', 'lasta-grip', 'modello-linear', 'modello-contour'];
+    $collections = ['enhanced-grain', 'weathered-oak', 'lasta-grip'];
 
     return (bool) \apply_filters(
         'granola/product_visualiser/available',
