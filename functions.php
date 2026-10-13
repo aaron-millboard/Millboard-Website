@@ -171,6 +171,7 @@ require_once __DIR__ . '/sample-ordering/inc/millboard-sample-ordering.php';
 // ----------------------------------------------------
 // Other custom functionality.
 // ----------------------------------------------------
+\Theme\Hubspot\InlineEmbeds::init();
 \Theme\Hubspot\WriteGuard::init();
 \Theme\Hubspot\Attribution::init();
 
