@@ -26,6 +26,7 @@ class PartnerProfiles
         \add_filter('query_vars', static fn(array $vars): array => [...$vars, 'mb_partner', 'mb_partner_slug']);
         \add_action('template_redirect', [__CLASS__, 'render'], 1);
         \add_filter('wpseo_canonical', static fn($url) => self::$canonical ?: $url);
+        \add_filter('wpseo_opengraph_url', static fn($url) => self::$canonical ?: $url);
         \add_filter('wpseo_title', static fn($title) => self::$title ?: $title);
     }
 
@@ -108,7 +109,12 @@ class PartnerProfiles
         }
 
         if ($html === null) {
-            return; // Unknown slug: fall through to the normal 404.
+            // Unknown slug. The rewrite rule matched, so WordPress would otherwise serve this as a 200.
+            $wp_query->set_404();
+            \status_header(404);
+            \nocache_headers();
+
+            return;
         }
 
         $wp_query->is_404 = false;
