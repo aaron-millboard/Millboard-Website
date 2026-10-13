@@ -7,8 +7,8 @@
  * site, see get_directory_source_blog() in the map component). Linking finder listings to the
  * residential profile would drop a specifier into the homeowner header, footer and tone. So this
  * renders the residential record INSIDE the commercial site chrome at
- * /commercial/distributors/<slug>/ and /commercial/installers/<slug>/. No data is copied, and
- * the canonical points at the residential URL, so search engines see one profile.
+ * /commercial/distributors/<slug>/, /commercial/installers/<slug>/ and so on. No data is copied,
+ * and the canonical points at the residential URL, so search engines see one profile.
  */
 
 namespace Theme\Commercial;
@@ -80,54 +80,70 @@ class PartnerProfiles
             return;
         }
 
-        global $wp_query;
-        $saved_query = $wp_query;
-        $saved_post = $GLOBALS['post'] ?? null;
-        $html = null;
-
+        // Find the record first, so the head (title, canonical) and a 404 are decided before any
+        // output. Nothing is rendered yet.
         \switch_to_blog($source);
 
         try {
-            // The residential record's blocks resolve their own fields, images and links, so the
-            // whole body is rendered while switched. Header and footer stay the commercial ones.
-            $wp_query = new \WP_Query(['post_type' => $type, 'name' => $slug, 'posts_per_page' => 1]);
+            $found = (new \WP_Query(['post_type' => $type, 'name' => $slug, 'posts_per_page' => 1, 'fields' => 'ids']))->posts[0] ?? 0;
 
-            if ($wp_query->have_posts()) {
-                $content = [];
-
-                while (\have_posts()) {
-                    \the_post();
-                    $content[] = \apply_filters('the_content', \get_the_content());
-                }
-
-                $record = $wp_query->post;
-                self::$canonical = (string) \get_permalink($record);
-                self::$title = \get_the_title($record) . ' | Millboard';
-                $html = \Granola\Component::get('site-main', [
-                    'object' => \Granola\WordPress\PageObject::get(),
-                    'content' => implode($content),
-                ]);
+            if ($found) {
+                self::$canonical = (string) \get_permalink($found);
+                self::$title = \get_the_title($found) . ' | Millboard';
             }
         } finally {
-            $wp_query = $saved_query;
-            $GLOBALS['post'] = $saved_post;
             \restore_current_blog();
         }
 
-        if ($html === null) {
-            // Unknown slug. The rewrite rule matched, so WordPress would otherwise serve this as a 200.
-            $wp_query->set_404();
+        if (!$found) {
+            // The rewrite rule matched, so WordPress would otherwise serve this as a 200.
+            $GLOBALS['wp_query']->set_404();
             \status_header(404);
             \nocache_headers();
 
             return;
         }
 
-        $wp_query->is_404 = false;
+        $GLOBALS['wp_query']->is_404 = false;
         \status_header(200);
         \get_header();
-        echo $html;
+        // Rendered AFTER the head, as on any other page. Block stylesheets are enqueued while a
+        // block renders, so rendering first would print them BEFORE main.css and lose to its
+        // defaults (the media-object gap, for one).
+        echo self::render_body($source, $type, $slug);
         \get_footer();
         exit;
+    }
+
+    /**
+     * The record's body, rendered on the source site so its blocks resolve their own fields,
+     * images and links. The header and footer stay the commercial ones.
+     */
+    private static function render_body(int $source, string $type, string $slug): string
+    {
+        global $wp_query;
+        $saved_query = $wp_query;
+        $saved_post = $GLOBALS['post'] ?? null;
+
+        \switch_to_blog($source);
+
+        try {
+            $wp_query = new \WP_Query(['post_type' => $type, 'name' => $slug, 'posts_per_page' => 1]);
+            $content = [];
+
+            while (\have_posts()) {
+                \the_post();
+                $content[] = \apply_filters('the_content', \get_the_content());
+            }
+
+            return \Granola\Component::get('site-main', [
+                'object' => \Granola\WordPress\PageObject::get(),
+                'content' => implode($content),
+            ]);
+        } finally {
+            $wp_query = $saved_query;
+            $GLOBALS['post'] = $saved_post;
+            \restore_current_blog();
+        }
     }
 }
