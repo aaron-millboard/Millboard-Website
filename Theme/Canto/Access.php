@@ -119,6 +119,63 @@ final class Access
     }
 
     /**
+     * Does this asset reach any external audience at all?
+     *
+     * Used to build the partner index: an asset that is Embargoed, empty or
+     * staff-only can never be shown to a partner, so it is never stored there.
+     *
+     * @param array<string,mixed> $item
+     */
+    public static function partner_visible(array $item): bool
+    {
+        if (\in_array((string) ($item['scheme'] ?? ''), self::CONTAINERS, true)) {
+            return false;
+        }
+
+        $additional = $item['additional'] ?? null;
+        $values = \is_array($additional) ? \array_map('strval', (array) ($additional[self::FIELD] ?? [])) : [];
+
+        return !\in_array(self::EMBARGOED, $values, true)
+            && (bool) \array_intersect($values, [self::DISTRIBUTOR, self::INSTALLER]);
+    }
+
+    /**
+     * The few fields the brand-assets panel renders, plus the ids of every
+     * folder and album the asset sits in (so a listing can be answered from
+     * the index without asking Canto again).
+     *
+     * @param array<string,mixed> $item
+     * @return array<string,mixed>
+     */
+    public static function compact(array $item): array
+    {
+        $albums = [];
+
+        foreach ((array) ($item['relatedAlbums'] ?? []) as $album) {
+            foreach (\explode('/', (string) ($album['idPath'] ?? '')) as $id) {
+                if ('' !== $id) {
+                    $albums[$id] = true;
+                }
+            }
+        }
+
+        $url = (array) ($item['url'] ?? []);
+
+        return [
+            'id' => (string) ($item['id'] ?? ''),
+            'scheme' => (string) ($item['scheme'] ?? ''),
+            'name' => (string) ($item['name'] ?? ''),
+            'url' => [
+                'previewURI240' => (string) ($url['previewURI240'] ?? ''),
+                'directUrlOriginal' => (string) ($url['directUrlOriginal'] ?? ''),
+                'detail' => (string) ($url['detail'] ?? ''),
+            ],
+            'additional' => [self::FIELD => (array) ($item['additional'][self::FIELD] ?? [])],
+            'albums' => \array_map('strval', \array_keys($albums)),
+        ];
+    }
+
+    /**
      * @param array<int,array<string,mixed>> $items
      * @param string[]                       $audiences
      * @return array<int,array<string,mixed>>
