@@ -23,7 +23,7 @@
             </div>
 
             <div class="partner-contact-form__column partner-contact-form__column--form">
-                <div class="partner-contact-form__form">
+                <div class="partner-contact-form__form gravity-forms">
                     <?= $args['hubspot_script']; ?>
                 </div>
             </div>
