@@ -721,13 +721,22 @@
             font-size: inherit;
         }
 
+        // HubSpot writes a per-form sheet whose rule `.hs-custom-style > div input:not(...) x12` forces
+        // `padding: 0 15px; min-height: 27px` and out-specifies every selector above, which left single-line
+        // fields 34px tall. The padding has to be forced to keep these fields as roomy as the contact form's.
+        input.hs-input:not([type='checkbox']):not([type='radio']) {
+            padding: var(--input--padding-y) var(--input--padding-x) !important;
+            min-height: 0 !important;
+        }
+
         textarea {
             min-height: px-to-rem(140px);
             resize: vertical;
         }
 
         .legal-consent-container,
-        .hs-richtext {
+        .hs-richtext,
+        .hs-field-desc {
             @include typestyle-small;
             @include no-first-last-margin;
 
