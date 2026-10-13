@@ -30,8 +30,15 @@
                     </div>
                 <?php } ?>
                 <?php if ($args['form_type'] === 'hubspot' && !empty($args['hubspot_script'])) { ?>
+                    <?php
+                    // HubSpot draws a form inside an iframe, which the theme CSS cannot reach, unless the
+                    // embed is told `css: ''`. Add it here so every pasted embed renders in the page and
+                    // picks up the site's form styling (.gravity-forms .hbspt-form) instead of each form
+                    // being restyled by hand. Skipped when the embed already sets its own `css`.
+                    $hubspot_script = preg_replace('/hbspt\.forms\.create\(\s*\{(?![^}]*\bcss\s*:)/', "hbspt.forms.create({\n    css: '',", $args['hubspot_script'], 1);
+                    ?>
                     <div class="gravity-forms__form">
-                        <?= $args['hubspot_script']; ?>
+                        <?= $hubspot_script; ?>
                     </div>
                 <?php } ?>
             </div>
