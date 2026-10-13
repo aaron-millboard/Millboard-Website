@@ -342,6 +342,19 @@ function get_directory_source_blog(): int
 }
 
 /**
+ * Moves a record's own permalink from the source site to the commercial site. A custom
+ * directory link (anything but the record's permalink) is left exactly as the editor set it.
+ */
+function rewrite_profile_url(string $url, \WP_Post $wp_post, array $rewrite): string
+{
+    if ($url !== (string) \get_permalink($wp_post) || !str_starts_with($url, $rewrite[0])) {
+        return $url;
+    }
+
+    return $rewrite[1] . substr($url, strlen($rewrite[0]));
+}
+
+/**
  * Reads the finder's records from the directory source site (see above), restoring the
  * current site afterwards. Every value a listing needs is resolved inside the switch, so
  * nothing downstream has to know which site the records came from.
@@ -354,16 +367,20 @@ function get_item_data($args): array|null
         return query_item_data($args);
     }
 
+    // Listings link to the commercial copy of each profile (Theme\Commercial\PartnerProfiles),
+    // so a specifier stays inside the commercial header and footer.
+    $rewrite = [\trailingslashit(\get_home_url($source)), \trailingslashit(\home_url())];
+
     \switch_to_blog($source);
 
     try {
-        return query_item_data($args);
+        return query_item_data($args, $rewrite);
     } finally {
         \restore_current_blog();
     }
 }
 
-function query_item_data($args): array|null
+function query_item_data($args, ?array $rewrite = null): array|null
 {
     $items = [];
 
@@ -435,7 +452,7 @@ function query_item_data($args): array|null
             'phone' => \get_field('phone', $wp_post_id),
             'email' => \get_field('email', $wp_post_id),
             'website' => \get_field('website', $wp_post_id),
-            'url' => listing_url($wp_post),
+            'url' => $rewrite ? rewrite_profile_url(listing_url($wp_post), $wp_post, $rewrite) : listing_url($wp_post),
             'post' => $wp_post,
             'post_type' => $post_type,
             'type_label' => get_type_label($wp_post, $advanced_installer),
