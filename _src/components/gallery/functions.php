@@ -165,6 +165,31 @@ function process_image(array $row, int $key, array $args, int $pattern_part, boo
         return false;
     }
 
+    // Product captions: the product title and colour fill the captions (typed
+    // captions win) and link to the product page, the colour pre-selected.
+    $row['caption_main_url'] = '';
+    $row['caption_secondary_url'] = '';
+    $product_id = (int) ($row['product'] ?? 0);
+
+    if ($product_id && get_post_status($product_id) === 'publish') {
+        $product_url = get_permalink($product_id);
+        $row['caption_main_url'] = $product_url;
+
+        if (empty($row['caption_main'])) {
+            $row['caption_main'] = get_the_title($product_id);
+        }
+
+        $colour = !empty($row['colour']) ? get_term((int) $row['colour'], 'pa_colour') : null;
+
+        if ($colour && !is_wp_error($colour)) {
+            $row['caption_secondary_url'] = add_query_arg('attribute_pa_colour', $colour->slug, $product_url);
+
+            if (empty($row['caption_secondary'])) {
+                $row['caption_secondary'] = $colour->name;
+            }
+        }
+    }
+
     if (!empty($row['gallery_image'])) {
         $gallery_post_id = $row['gallery_image'];
         $image_id = get_post_thumbnail_id($gallery_post_id);
@@ -214,6 +239,8 @@ function process_image(array $row, int $key, array $args, int $pattern_part, boo
         'image_orientation' => $orientation,
         'caption_main' => $row['caption_main'] ?? '',
         'caption_secondary' => $row['caption_secondary'] ?? '',
+        'caption_main_url' => $row['caption_main_url'],
+        'caption_secondary_url' => $row['caption_secondary_url'] ?: $row['caption_main_url'],
         'button_attributes' => [
             'class' => ['gallery__card__button'],
             'data-lightbox-index' => $key,
@@ -222,6 +249,8 @@ function process_image(array $row, int $key, array $args, int $pattern_part, boo
             'aria-label' => (!empty($row['caption_main']) ? sprintf('%s: "%s"', $args['aria_label_prefix'], $row['caption_main']) : sprintf('%s %d', __('View image', 'granola'), $key)),
             'data-caption-main' => $row['caption_main'] ?? '',
             'data-caption-secondary' => $row['caption_secondary'] ?? '',
+            'data-caption-url' => $row['caption_main_url'],
+            'data-caption-secondary-url' => $row['caption_secondary_url'] ?: $row['caption_main_url'],
             'data-image-orientation' => $orientation,
             'aria-haspopup' => 'dialog',
         ],
