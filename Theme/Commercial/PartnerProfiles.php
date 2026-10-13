@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Serves distributor and installer profiles under a /commercial/ subsite.
+ * Serves partner profiles under a /commercial/ subsite.
  *
  * A /commercial/ subsite holds no partner records of its own (its finder reads the residential
  * site, see get_directory_source_blog() in the map component). Linking finder listings to the
@@ -15,7 +15,13 @@ namespace Theme\Commercial;
 
 class PartnerProfiles
 {
-    private const TYPES = ['distributors' => 'distributor', 'installers' => 'installer'];
+    // URL segment => record type. Every partner type the finder lists, or its listings would 404.
+    private const TYPES = [
+        'distributors' => 'distributor',
+        'installers' => 'installer',
+        'experience-centre' => 'experience_centre',
+        'showrooms' => 'showroom',
+    ];
 
     private static string $canonical = '';
     private static string $title = '';
@@ -58,7 +64,7 @@ class PartnerProfiles
         }
 
         \add_rewrite_rule(
-            '^(distributors|installers)/([^/]+)/?$',
+            '^(' . implode('|', array_keys(self::TYPES)) . ')/([^/]+)/?$',
             'index.php?mb_partner=$matches[1]&mb_partner_slug=$matches[2]',
             'top'
         );
