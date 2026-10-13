@@ -679,6 +679,7 @@
         }
 
         input,
+        select,
         textarea {
             --input--background-color: transparent;
             --input--border-color: var(--color--foreground);
@@ -692,6 +693,45 @@
         ul {
             list-style: none;
             padding-left: 0;
+        }
+
+        // HubSpot's own field sizing (34px fields, body-size consent text) looks unfinished next to the
+        // checkout, so give every inline HubSpot form the same boxed fields from the global input
+        // mixin, labels above at the small size, and the consent paragraph at the small size too.
+        .hs-form-field {
+            margin-bottom: var(--space--m);
+        }
+
+        label {
+            @include typestyle-small;
+
+            display: block;
+            margin-bottom: px-to-rem(8px);
+        }
+
+        .hs-input:not([type='checkbox']):not([type='radio']),
+        input[type='text'],
+        input[type='email'],
+        input[type='tel'],
+        input[type='number'],
+        select,
+        textarea {
+            @include input;
+
+            font-size: inherit;
+        }
+
+        textarea {
+            min-height: px-to-rem(140px);
+            resize: vertical;
+        }
+
+        .legal-consent-container,
+        .hs-richtext {
+            @include typestyle-small;
+            @include no-first-last-margin;
+
+            margin-bottom: var(--space--m);
         }
 
         .hs-error-msgs {
