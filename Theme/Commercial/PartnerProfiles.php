@@ -25,6 +25,7 @@ class PartnerProfiles
 
     private static string $canonical = '';
     private static string $title = '';
+    private static string $name = '';
 
     public static function init(): void
     {
@@ -89,7 +90,8 @@ class PartnerProfiles
 
             if ($found) {
                 self::$canonical = (string) \get_permalink($found);
-                self::$title = \get_the_title($found) . ' | Millboard';
+                self::$name = \get_the_title($found);
+                self::$title = self::$name . ' | Millboard';
             }
         } finally {
             \restore_current_blog();
@@ -110,59 +112,72 @@ class PartnerProfiles
         // Rendered AFTER the head, as on any other page. Block stylesheets are enqueued while a
         // block renders, so rendering first would print them BEFORE main.css and lose to its
         // defaults (the media-object gap, for one).
-        echo self::render_body($source, $type, $slug, self::hub($type));
+        echo self::set_breadcrumb(self::render_body($source, $type, $slug), self::hub($type));
         \get_footer();
         exit;
     }
 
     /**
      * The commercial page a profile sits under in its breadcrumb: the finder that lists this partner
-     * type, or the Experience Centres hub. Null when the commercial site has no such page.
+     * type (a finder map of that one type, or a mixed one that includes it), or the Experience
+     * Centres hub. Null when the commercial site has no such page.
      */
     private static function hub(string $type): ?array
     {
         global $wpdb;
 
-        $like = $type === 'experience_centre'
-            ? "post_name = 'experience-centres'"
-            : $wpdb->prepare('post_content LIKE %s', '%wp:acf/map %"content_type":"' . $type . '"%');
-
-        $id = (int) $wpdb->get_var("SELECT ID FROM {$wpdb->posts} WHERE post_type = 'page' AND post_status = 'publish' AND $like ORDER BY ID LIMIT 1");
+        if ($type === 'experience_centre') {
+            $id = (int) $wpdb->get_var("SELECT ID FROM {$wpdb->posts} WHERE post_type = 'page' AND post_status = 'publish' AND post_name = 'experience-centres' LIMIT 1");
+        } else {
+            $id = (int) $wpdb->get_var($wpdb->prepare(
+                "SELECT ID FROM {$wpdb->posts} WHERE post_type = 'page' AND post_status = 'publish' AND post_content LIKE %s
+                 AND (post_content LIKE %s OR post_content LIKE %s)
+                 ORDER BY (post_content LIKE %s) DESC, ID LIMIT 1",
+                '%wp:acf/map %',
+                '%"content_type":"' . $type . '"%',
+                '%"sources":[%"' . $type . '"%',
+                '%"content_type":"' . $type . '"%'
+            ));
+        }
 
         return $id ? ['url' => (string) \get_permalink($id), 'text' => \get_the_title($id)] : null;
+    }
+
+    /**
+     * Replaces the breadcrumb in the rendered body with Home / finder / partner on the commercial
+     * site. Yoast builds its trail from the page the head was printed for (here the commercial
+     * site's own query, which reads "Home / Latest News"), and its filter did not reliably reach a
+     * body rendered on another site, so the trail is written directly instead.
+     */
+    private static function set_breadcrumb(string $html, ?array $hub): string
+    {
+        return (string) preg_replace_callback('#<nav class="breadcrumbs">(.*?)</nav>#s', static function (array $m) use ($hub): string {
+            preg_match('#<a [^>]*>(.*?)</a>#s', $m[1], $home);
+            $crumbs = ['<span><a href="' . \esc_url(\home_url('/')) . '">' . ($home[1] ?? 'Home') . '</a></span>'];
+
+            if ($hub) {
+                $crumbs[] = '<span><a href="' . \esc_url($hub['url']) . '">' . \esc_html($hub['text']) . '</a></span>';
+            }
+
+            $crumbs[] = '<span class="breadcrumb_last" aria-current="page">' . \esc_html(self::$name) . '</span>';
+
+            return '<nav class="breadcrumbs"><span class="breadcrumbs__yoast-wrapper">'
+                . implode(' <span class="breadcrumbs__yoast-separator">/</span> ', $crumbs)
+                . '</span></nav>';
+        }, $html, 1);
     }
 
     /**
      * The record's body, rendered on the source site so its blocks resolve their own fields,
      * images and links. The header and footer stay the commercial ones.
      */
-    private static function render_body(int $source, string $type, string $slug, ?array $hub): string
+    private static function render_body(int $source, string $type, string $slug): string
     {
         global $wp_query;
         $saved_query = $wp_query;
         $saved_post = $GLOBALS['post'] ?? null;
 
-        $from = \get_home_url($source, '/');
-        $to = \home_url('/');
-
         \switch_to_blog($source);
-
-        // Yoast builds breadcrumbs from the page the head was printed for, which here is the commercial
-        // site's own query (it reads "Home / Latest News"). Give the profile its real trail instead.
-        $trail = static function (array $links) use ($hub, $from, $to): array {
-            $crumbs = [$links[0] ?? ['url' => \home_url('/'), 'text' => 'Home']];
-
-            if ($hub) {
-                $crumbs[] = $hub;
-            }
-
-            // The current page, at its commercial URL.
-            $url = (string) \get_permalink();
-            $crumbs[] = ['url' => str_starts_with($url, $from) ? $to . substr($url, strlen($from)) : $url, 'text' => \get_the_title()];
-
-            return $crumbs;
-        };
-        \add_filter('wpseo_breadcrumb_links', $trail, 99);
 
         try {
             $wp_query = new \WP_Query(['post_type' => $type, 'name' => $slug, 'posts_per_page' => 1]);
@@ -178,7 +193,6 @@ class PartnerProfiles
                 'content' => implode($content),
             ]);
         } finally {
-            \remove_filter('wpseo_breadcrumb_links', $trail, 99);
             $wp_query = $saved_query;
             $GLOBALS['post'] = $saved_post;
             \restore_current_blog();
