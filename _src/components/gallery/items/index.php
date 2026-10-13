@@ -13,12 +13,12 @@
                 </div>
                 <div class="gallery__card__caption is-style-typestyle-small is-style-typestyle-meta">
                     <div class="gallery__card__caption-main">
-                        <?= esc_html($image_row['image_1']['caption_main']); ?>
+                        <?= GranolaComponentsGalleryItemscaption_html($image_row['image_1']['caption_main'], $image_row['image_1']['caption_main_url']); ?>
                     </div>
 
                     <?php if (!empty($image_row['image_1']['caption_secondary'])) { ?>
                         <div class="gallery__card__caption-secondary">
-                            <?= esc_html($image_row['image_1']['caption_secondary']); ?>
+                            <?= GranolaComponentsGalleryItemscaption_html($image_row['image_1']['caption_secondary'], $image_row['image_1']['caption_secondary_url']); ?>
                         </div>
                     <?php } ?>
                 </div>
@@ -38,12 +38,12 @@
                 </div>
                 <div class="gallery__card__caption is-style-typestyle-small is-style-typestyle-meta">
                     <div class="gallery__card__caption-main">
-                        <?= esc_html($image_row['image_2']['caption_main']); ?>
+                        <?= GranolaComponentsGalleryItemscaption_html($image_row['image_2']['caption_main'], $image_row['image_2']['caption_main_url']); ?>
                     </div>
 
                     <?php if (!empty($image_row['image_2']['caption_secondary'])) { ?>
                         <div class="gallery__card__caption-secondary">
-                            <?= esc_html($image_row['image_2']['caption_secondary']); ?>
+                            <?= GranolaComponentsGalleryItemscaption_html($image_row['image_2']['caption_secondary'], $image_row['image_2']['caption_secondary_url']); ?>
                         </div>
                     <?php } ?>
                 </div>
