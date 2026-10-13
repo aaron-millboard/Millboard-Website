@@ -110,22 +110,59 @@ class PartnerProfiles
         // Rendered AFTER the head, as on any other page. Block stylesheets are enqueued while a
         // block renders, so rendering first would print them BEFORE main.css and lose to its
         // defaults (the media-object gap, for one).
-        echo self::render_body($source, $type, $slug);
+        echo self::render_body($source, $type, $slug, self::hub($type));
         \get_footer();
         exit;
+    }
+
+    /**
+     * The commercial page a profile sits under in its breadcrumb: the finder that lists this partner
+     * type, or the Experience Centres hub. Null when the commercial site has no such page.
+     */
+    private static function hub(string $type): ?array
+    {
+        global $wpdb;
+
+        $like = $type === 'experience_centre'
+            ? "post_name = 'experience-centres'"
+            : $wpdb->prepare('post_content LIKE %s', '%wp:acf/map %"content_type":"' . $type . '"%');
+
+        $id = (int) $wpdb->get_var("SELECT ID FROM {$wpdb->posts} WHERE post_type = 'page' AND post_status = 'publish' AND $like ORDER BY ID LIMIT 1");
+
+        return $id ? ['url' => (string) \get_permalink($id), 'text' => \get_the_title($id)] : null;
     }
 
     /**
      * The record's body, rendered on the source site so its blocks resolve their own fields,
      * images and links. The header and footer stay the commercial ones.
      */
-    private static function render_body(int $source, string $type, string $slug): string
+    private static function render_body(int $source, string $type, string $slug, ?array $hub): string
     {
         global $wp_query;
         $saved_query = $wp_query;
         $saved_post = $GLOBALS['post'] ?? null;
 
+        $from = \get_home_url($source, '/');
+        $to = \home_url('/');
+
         \switch_to_blog($source);
+
+        // Yoast builds breadcrumbs from the page the head was printed for, which here is the commercial
+        // site's own query (it reads "Home / Latest News"). Give the profile its real trail instead.
+        $trail = static function (array $links) use ($hub, $from, $to): array {
+            $crumbs = [$links[0] ?? ['url' => \home_url('/'), 'text' => 'Home']];
+
+            if ($hub) {
+                $crumbs[] = $hub;
+            }
+
+            // The current page, at its commercial URL.
+            $url = (string) \get_permalink();
+            $crumbs[] = ['url' => str_starts_with($url, $from) ? $to . substr($url, strlen($from)) : $url, 'text' => \get_the_title()];
+
+            return $crumbs;
+        };
+        \add_filter('wpseo_breadcrumb_links', $trail, 99);
 
         try {
             $wp_query = new \WP_Query(['post_type' => $type, 'name' => $slug, 'posts_per_page' => 1]);
@@ -141,6 +178,7 @@ class PartnerProfiles
                 'content' => implode($content),
             ]);
         } finally {
+            \remove_filter('wpseo_breadcrumb_links', $trail, 99);
             $wp_query = $saved_query;
             $GLOBALS['post'] = $saved_post;
             \restore_current_blog();
