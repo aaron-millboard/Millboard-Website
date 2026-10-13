@@ -342,16 +342,20 @@ function get_directory_source_blog(): int
 }
 
 /**
- * Moves a record's own permalink from the source site to the commercial site. A custom
- * directory link (anything but the record's permalink) is left exactly as the editor set it.
+ * Sends a listing to the commercial copy of its profile. Anything that lands on the source
+ * site (the record's own permalink, or an editor's directory link to one of its pages, as
+ * the Experience Centres have) becomes the commercial URL of the record. A link to anywhere
+ * else is left exactly as the editor set it.
  */
 function rewrite_profile_url(string $url, \WP_Post $wp_post, array $rewrite): string
 {
-    if ($url !== (string) \get_permalink($wp_post) || !str_starts_with($url, $rewrite[0])) {
+    $own = (string) \get_permalink($wp_post);
+
+    if (!str_starts_with($url, $rewrite[0]) || !str_starts_with($own, $rewrite[0])) {
         return $url;
     }
 
-    return $rewrite[1] . substr($url, strlen($rewrite[0]));
+    return $rewrite[1] . substr($own, strlen($rewrite[0]));
 }
 
 /**
