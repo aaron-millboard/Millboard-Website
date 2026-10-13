@@ -778,10 +778,45 @@
             }
         }
 
-        .hs_ops_out_marketing {
+        // HubSpot wraps each tick box / radio in its own label. Lay them out as a control beside its
+        // text (aligned to the first line when the text wraps), and put radio pairs (Ja / Nein) side
+        // by side with room between them instead of touching.
+        .hs-form-booleancheckbox-display,
+        .hs-form-radio-display,
+        .hs-form-checkbox-display {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--space--2xs);
+            margin-bottom: 0;
+            cursor: pointer;
+
             input {
-                margin-right: px-to-rem(8px);
+                margin: 0.15em 0 0;
             }
+        }
+
+        .inputs-list {
+            margin: 0;
+
+            li {
+                margin-bottom: var(--space--2xs);
+            }
+
+            &.inline-list {
+                display: flex;
+                flex-wrap: wrap;
+                gap: var(--space--s);
+
+                li {
+                    margin-bottom: 0;
+                    padding-right: 0;
+                }
+            }
+        }
+
+        .hs-form-required {
+            text-decoration: none;
+            border: 0;
         }
     }
 
