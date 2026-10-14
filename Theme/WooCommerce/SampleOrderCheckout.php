@@ -331,6 +331,7 @@ class SampleOrderCheckout
             $order->{"set_{$type}_state"}($p['billing_state'] ?? '');
             $order->{"set_{$type}_postcode"}($p['billing_postcode'] ?? '');
             $order->{"set_{$type}_country"}($p['billing_country'] ?? 'GB');
+            $order->{"set_{$type}_phone"}($p['billing_phone'] ?? '');
         }
 
         /*
@@ -529,7 +530,7 @@ class SampleOrderCheckout
                 'customer_first_name', 'customer_last_name', 'customer_email', 'billing_company',
                 self::MARKETING_OPT_OUT,
                 'billing_address_1', 'billing_address_2', 'billing_city',
-                'billing_state', 'billing_postcode', 'billing_country',
+                'billing_state', 'billing_postcode', 'billing_country', 'billing_phone',
             ]
         );
 
@@ -573,6 +574,7 @@ class SampleOrderCheckout
             'website_persona' => \__('This project is to be installed at', 'granola'),
             'billing_address_1' => \__('Address', 'granola'),
             'billing_postcode' => \__('Postcode', 'granola'),
+            'billing_phone' => \__('Customer phone number', 'granola'),
         ];
 
         $missing = [];
