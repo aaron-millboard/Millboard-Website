@@ -574,6 +574,7 @@ class SampleOrderCheckout
             'website_persona' => \__('This project is to be installed at', 'granola'),
             'billing_address_1' => \__('Address', 'granola'),
             'billing_postcode' => \__('Postcode', 'granola'),
+            'billing_phone' => \__('Customer phone number', 'granola'),
         ];
 
         $missing = [];
