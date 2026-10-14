@@ -153,6 +153,8 @@ $mb_select = static function ( string $key, array $options, bool $required = fal
 
 				$mb_row( 'billing_company', __( 'Company name', 'millboard' ), 'last', $mb_input( 'billing_company' ) );
 
+				$mb_row( 'billing_phone', __( 'Phone number', 'millboard' ), 'wide', $mb_input( 'billing_phone', false, '', 'tel' ), false, __( 'The customer’s own number, so a follow-up can reach them.', 'millboard' ) );
+
 				$mb_row(
 					'follow_up',
 					__( 'Does this customer require a follow-up from Millboard?', 'millboard' ),
