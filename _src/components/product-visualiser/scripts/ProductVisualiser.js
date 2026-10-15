@@ -167,8 +167,7 @@ export default class ProductVisualiser {
 
     /**
      * The embed says it cannot run here (for example, not offered in the
-     * visitor's country). Close the drawer, take the entry points away and let
-     * the samples stand on their own.
+     * visitor's country). Close the drawer and take the tab away.
      */
     markUnavailable() {
         this.close();
@@ -176,15 +175,6 @@ export default class ProductVisualiser {
         document.querySelectorAll('[data-visualiser-open]').forEach((el) => {
             el.hidden = true;
         });
-        this.root.classList.add('product-visualiser--unavailable');
-
-        const group = document.querySelector('.product__try');
-        if (!group) return;
-
-        const intro = group.querySelector('.product__try-intro');
-        if (intro && intro.dataset.fallback) intro.textContent = intro.dataset.fallback;
-
-        if (!group.querySelector('.product-samples__button')) group.hidden = true;
     }
 
     /**

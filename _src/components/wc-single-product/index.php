@@ -1,10 +1,8 @@
 <?php woocommerce_output_all_notices(); ?>
 
 <?php
-// Rendered up front because the visualiser entry points and the "Try before you
-// buy" group sit in different places below, and both depend on the same checks.
+// Rendered up front so the sample check can decide whether the group shows.
 $visualiser = \Granola\Component::get('product-visualiser');
-$has_visualiser = trim($visualiser) !== '';
 $samples = \Granola\Component::get('product-samples');
 $has_samples = str_contains($samples, 'product-samples__button');
 ?>
@@ -45,10 +43,6 @@ $has_samples = str_contains($samples, 'product-samples__button');
         if (!empty($args['selectors'])) {
             foreach ($args['selectors'] as $variation) {
                 echo \Granola\Component::get('product-variation-selector', $variation);
-
-                if ($variation['variation'] === 'colour' && $has_visualiser) {
-                    echo \Granola\Components\ProductVisualiser\trigger('swatch');
-                }
             }
         }
         ?>
@@ -65,18 +59,10 @@ $has_samples = str_contains($samples, 'product-samples__button');
             do_action('woocommerce_single_product_summary');
         ?>
 
-        <?php if ($has_visualiser || $has_samples) { ?>
-            <div class="product__content-section product__try" id="visualiser">
+        <?php if ($has_samples) { ?>
+            <div class="product__content-section product__try">
                 <h2 class="product__try-heading"><?= esc_html__('Try before you buy', 'granola'); ?></h2>
-                <p class="product__try-intro" data-fallback="<?= esc_attr__('Order a sample to see and feel the board at home.', 'granola'); ?>">
-                    <?= esc_html($has_visualiser
-                        ? __('See the colour at home before you order.', 'granola')
-                        : __('Order a sample to see and feel the board at home.', 'granola')); ?>
-                </p>
-
-                <?php if ($has_visualiser) { ?>
-                    <?= \Granola\Components\ProductVisualiser\trigger('button'); ?>
-                <?php } ?>
+                <p class="product__try-intro"><?= esc_html__('Order a sample to see and feel the board at home.', 'granola'); ?></p>
 
                 <?= $samples; ?>
             </div>
