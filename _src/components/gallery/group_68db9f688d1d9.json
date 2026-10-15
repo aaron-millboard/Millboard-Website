@@ -157,58 +157,28 @@
                             "bidirectional_target": []
                         },
                         {
-                            "aria-label": "",
-                            "instructions": "Fills the captions and links them to the product page. Typed captions below override the text but keep the link.",
-                            "required": 0,
-                            "conditional_logic": 0,
-                            "wrapper": {
-                                "width": "50",
-                                "class": "",
-                                "id": ""
-                            },
                             "key": "field_prodcapa1p",
                             "label": "Product",
                             "name": "product",
-                            "type": "post_object",
-                            "post_type": [
-                                "product"
-                            ],
-                            "post_status": [
-                                "publish"
-                            ],
-                            "taxonomy": "",
-                            "return_format": "id",
-                            "multiple": 0,
-                            "allow_null": 1,
-                            "allow_in_bindings": 0,
-                            "bidirectional": 0,
-                            "ui": 1,
-                            "bidirectional_target": []
-                        },
-                        {
                             "aria-label": "",
-                            "instructions": "Optional. Links to the product with this colour selected.",
+                            "type": "select",
+                            "instructions": "Optional. Fills both captions from the product and links them to it.",
                             "required": 0,
                             "conditional_logic": 0,
                             "wrapper": {
-                                "width": "50",
+                                "width": "",
                                 "class": "",
                                 "id": ""
                             },
-                            "key": "field_prodcapa1c",
-                            "label": "Colour",
-                            "name": "colour",
-                            "type": "taxonomy",
-                            "taxonomy": "pa_colour",
-                            "add_term": 0,
-                            "save_terms": 0,
-                            "load_terms": 0,
-                            "return_format": "id",
-                            "field_type": "select",
-                            "allow_null": 1,
-                            "bidirectional": 0,
+                            "choices": {},
+                            "default_value": "",
+                            "return_format": "value",
                             "multiple": 0,
-                            "bidirectional_target": []
+                            "allow_null": 1,
+                            "allow_in_bindings": 0,
+                            "ui": 1,
+                            "ajax": 0,
+                            "placeholder": ""
                         },
                         {
                             "key": "field_68db9fc221052",
@@ -224,6 +194,10 @@
                                         "field": "field_68db9ff321054",
                                         "operator": "!=",
                                         "value": "pattern-1"
+                                    },
+                                    {
+                                        "field": "field_prodcapa1p",
+                                        "operator": "==empty"
                                     }
                                 ],
                                 [
@@ -235,6 +209,10 @@
                                     {
                                         "field": "field_69282b351371c",
                                         "operator": "!=empty"
+                                    },
+                                    {
+                                        "field": "field_prodcapa1p",
+                                        "operator": "==empty"
                                     }
                                 ],
                                 [
@@ -247,6 +225,10 @@
                                         "field": "field_68dba02e21055",
                                         "operator": "==",
                                         "value": "1"
+                                    },
+                                    {
+                                        "field": "field_prodcapa1p",
+                                        "operator": "==empty"
                                     }
                                 ]
                             ],
@@ -276,6 +258,10 @@
                                         "field": "field_68db9ff321054",
                                         "operator": "!=",
                                         "value": "pattern-1"
+                                    },
+                                    {
+                                        "field": "field_prodcapa1p",
+                                        "operator": "==empty"
                                     }
                                 ],
                                 [
@@ -288,6 +274,10 @@
                                         "field": "field_68dba02e21055",
                                         "operator": "==",
                                         "value": "1"
+                                    },
+                                    {
+                                        "field": "field_prodcapa1p",
+                                        "operator": "==empty"
                                     }
                                 ]
                             ],
@@ -421,58 +411,28 @@
                             "bidirectional_target": []
                         },
                         {
-                            "aria-label": "",
-                            "instructions": "Fills the captions and links them to the product page. Typed captions below override the text but keep the link.",
-                            "required": 0,
-                            "conditional_logic": 0,
-                            "wrapper": {
-                                "width": "50",
-                                "class": "",
-                                "id": ""
-                            },
                             "key": "field_prodcapa2p",
                             "label": "Product",
                             "name": "product",
-                            "type": "post_object",
-                            "post_type": [
-                                "product"
-                            ],
-                            "post_status": [
-                                "publish"
-                            ],
-                            "taxonomy": "",
-                            "return_format": "id",
-                            "multiple": 0,
-                            "allow_null": 1,
-                            "allow_in_bindings": 0,
-                            "bidirectional": 0,
-                            "ui": 1,
-                            "bidirectional_target": []
-                        },
-                        {
                             "aria-label": "",
-                            "instructions": "Optional. Links to the product with this colour selected.",
+                            "type": "select",
+                            "instructions": "Optional. Fills both captions from the product and links them to it.",
                             "required": 0,
                             "conditional_logic": 0,
                             "wrapper": {
-                                "width": "50",
+                                "width": "",
                                 "class": "",
                                 "id": ""
                             },
-                            "key": "field_prodcapa2c",
-                            "label": "Colour",
-                            "name": "colour",
-                            "type": "taxonomy",
-                            "taxonomy": "pa_colour",
-                            "add_term": 0,
-                            "save_terms": 0,
-                            "load_terms": 0,
-                            "return_format": "id",
-                            "field_type": "select",
-                            "allow_null": 1,
-                            "bidirectional": 0,
+                            "choices": {},
+                            "default_value": "",
+                            "return_format": "value",
                             "multiple": 0,
-                            "bidirectional_target": []
+                            "allow_null": 1,
+                            "allow_in_bindings": 0,
+                            "ui": 1,
+                            "ajax": 0,
+                            "placeholder": ""
                         },
                         {
                             "key": "field_69282dd3bdca6",
@@ -488,6 +448,10 @@
                                         "field": "field_68db9ff321054",
                                         "operator": "!=",
                                         "value": "pattern-1"
+                                    },
+                                    {
+                                        "field": "field_prodcapa2p",
+                                        "operator": "==empty"
                                     }
                                 ],
                                 [
@@ -499,6 +463,10 @@
                                     {
                                         "field": "field_69282b351371c",
                                         "operator": "!=empty"
+                                    },
+                                    {
+                                        "field": "field_prodcapa2p",
+                                        "operator": "==empty"
                                     }
                                 ],
                                 [
@@ -511,6 +479,10 @@
                                         "field": "field_68dba02e21055",
                                         "operator": "==",
                                         "value": "1"
+                                    },
+                                    {
+                                        "field": "field_prodcapa2p",
+                                        "operator": "==empty"
                                     }
                                 ]
                             ],
@@ -540,6 +512,10 @@
                                         "field": "field_68db9ff321054",
                                         "operator": "!=",
                                         "value": "pattern-1"
+                                    },
+                                    {
+                                        "field": "field_prodcapa2p",
+                                        "operator": "==empty"
                                     }
                                 ],
                                 [
@@ -552,6 +528,10 @@
                                         "field": "field_68dba02e21055",
                                         "operator": "==",
                                         "value": "1"
+                                    },
+                                    {
+                                        "field": "field_prodcapa2p",
+                                        "operator": "==empty"
                                     }
                                 ]
                             ],
@@ -687,5 +667,5 @@
     "show_in_rest": 0,
     "display_title": "",
     "granola_save_location": 0,
-    "modified": 1791904937
+    "modified": 1792048375
 }
