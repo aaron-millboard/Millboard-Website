@@ -73,36 +73,16 @@ function default_sku(\WC_Product $product): string
 }
 
 /**
- * Entry point markup. $variant is one of: button, swatch, tab.
+ * The side tab that opens the drawer. Anything carrying data-visualiser-open
+ * opens it, so more entry points can be added without touching the script.
  *
- * Every entry point carries data-visualiser-open, so the script needs no
- * knowledge of which one was clicked.
- *
- * @param string $variant
  * @return string
  */
-function trigger(string $variant): string
+function trigger(): string
 {
-    switch ($variant) {
-        case 'swatch':
-            return '<p class="product-visualiser__swatch-link"><a href="#visualiser" data-visualiser-open>'
-                . \esc_html__('See this colour on your property', 'granola')
-                . '</a></p>';
-
-        case 'tab':
-            return '<button type="button" class="product-visualiser__tab" data-visualiser-open>'
-                . \esc_html__('See it on your property', 'granola')
-                . '</button>';
-
-        default:
-            return '<button type="button" class="g-button product-visualiser__button" data-visualiser-open>'
-                . '<span class="product-visualiser__button-text">'
-                . '<span class="product-visualiser__button-title">' . \esc_html__('See it on your property', 'granola') . '</span>'
-                . '<span class="product-visualiser__button-sub">' . \esc_html__('Upload a photo of your garden. Ready in about 30 seconds.', 'granola') . '</span>'
-                . '</span>'
-                . '<span class="product-visualiser__badge">' . \esc_html__('New', 'granola') . '</span>'
-                . '</button>';
-    }
+    return '<button type="button" class="product-visualiser__tab" data-visualiser-open>'
+        . \esc_html__('See it on your property', 'granola')
+        . '</button>';
 }
 
 function filter_args(array $args): ?array

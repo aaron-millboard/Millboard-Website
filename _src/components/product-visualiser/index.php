@@ -1,5 +1,5 @@
 <div <?= \Granola\Helpers::build_attributes($args['attributes']); ?>>
-    <?= \Granola\Components\ProductVisualiser\trigger('tab'); ?>
+    <?= \Granola\Components\ProductVisualiser\trigger(); ?>
 
     <div class="product-visualiser__overlay" data-visualiser-close hidden></div>
 
