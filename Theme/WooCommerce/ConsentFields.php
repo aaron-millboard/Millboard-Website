@@ -190,6 +190,12 @@ class ConsentFields
 
     public static function init(): void
     {
+        // Germany keeps its Checkout Field Editor question (one HubSpot branch reads
+        // it), but is drawn like the French one. See render_de_optin().
+        if (\get_locale() === 'de_DE') {
+            \add_filter('woocommerce_form_field_radio', [__CLASS__, 'render_de_optin'], 20, 4);
+        }
+
         if (self::config() === null) {
             return;
         }
@@ -355,6 +361,52 @@ class ConsentFields
         $objection_priority = (int) ($billing[self::OBJECTION_FIELD]['priority'] ?? 160);
 
         return $objection_priority - 8;
+    }
+
+    /**
+     * German opt-in: the Checkout Field Editor's radio, in the French markup.
+     *
+     * The plugin submits each option's VISIBLE text as its value, and HubSpot workflow
+     * 4278768829 matches `Ja` / `Nein` exactly (anything else raises "Opt in/out
+     * failed" and records no consent). So the text is free for Henrik to edit in the
+     * Checkout Field Editor, and the submitted values are pinned here: first option
+     * is `Ja`, second is `Nein`.
+     *
+     * @param string $field Markup built by the plugin, discarded.
+     * @param string $key
+     * @param array<string, mixed> $args
+     * @param string|null $value
+     */
+    public static function render_de_optin($field, $key, $args, $value): string
+    {
+        if ($key !== self::OBJECTION_FIELD) {
+            return (string) $field;
+        }
+
+        $values = ['Ja', 'Nein'];
+        $options = array_values((array) ($args['options'] ?? []));
+        $classes = array_merge((array) ($args['class'] ?? []), ['mb-consent']);
+
+        $html = '<div class="form-row ' . \esc_attr(implode(' ', array_unique($classes))) . '"'
+            . ' id="' . \esc_attr($key) . '_field"'
+            . ' data-priority="' . \esc_attr((string) ($args['priority'] ?? '')) . '">'
+            . '<fieldset class="mb-consent__fieldset">'
+            . '<legend class="mb-consent__legend">' . \esc_html((string) ($args['label'] ?? ''))
+            . '&nbsp;<span class="required" aria-hidden="true">*</span></legend>';
+
+        foreach ($options as $i => $text) {
+            if (!isset($values[$i])) {
+                break;
+            }
+
+            $html .= '<label class="mb-consent__option">'
+                . '<input type="radio" name="' . \esc_attr($key) . '"'
+                . ' value="' . \esc_attr($values[$i]) . '"'
+                . \checked((string) $value, $values[$i], false) . ' /> '
+                . '<span>' . \esc_html((string) $text) . '</span></label>';
+        }
+
+        return $html . '</fieldset></div>';
     }
 
     /**
