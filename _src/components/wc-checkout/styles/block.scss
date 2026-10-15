@@ -4,12 +4,18 @@
     gap: var(--space--xl);
 
     &__section-header {
+        // Also used on an <h2> (checkout summary): undo the global h2 type so it
+        // matches the <div> bars on the basket.
+        @include typestyle-base;
+        letter-spacing: normal;
+        text-transform: none;
         display: flex;
         justify-content: space-between;
         align-items: center;
         background-color: var(--color--brand-5);
         padding: var(--space--2xs) var(--space--xs);
         color: var(--color--brand-2);
+        margin-top: 0;
         margin-bottom: 0;
     }
 
