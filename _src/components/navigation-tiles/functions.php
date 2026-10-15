@@ -37,13 +37,27 @@ function filter_args(array $args): ?array
     if (!empty($args['tiles']) && is_array($args['tiles'])) {
         foreach ($args['tiles'] as $key => $tile) {
             if (!empty($tile['cta'])) {
+                $cta_attributes = [
+                    'target' => $tile['cta']['target'] ?? '',
+                    'rel'    => $tile['cta']['rel'] ?? '',
+                ];
+
+                // Give the CTA a descriptive accessible name. The visible label is
+                // usually generic ("Read more"/"Weiterlesen"), so on its own it does
+                // not say where the link goes; pair it with the tile title so screen
+                // readers (and link audits) get "Read more: <tile title>".
+                $cta_label = \wp_strip_all_tags((string) ($tile['cta']['title'] ?? ''));
+                $tile_title = \wp_strip_all_tags((string) ($tile['title'] ?? ''));
+                if ($tile_title !== '') {
+                    $cta_attributes['aria-label'] = $cta_label !== ''
+                        ? $cta_label . ': ' . $tile_title
+                        : $tile_title;
+                }
+
                 $args['tiles'][$key]['cta_data'] = [
                     'title'    => $tile['cta']['title'] ?? '',
                     'url'      => $tile['cta']['url'] ?? '',
-                    'attributes' => [
-                        'target' => $tile['cta']['target'] ?? '',
-                        'rel'    => $tile['cta']['rel'] ?? '',
-                    ],
+                    'attributes' => $cta_attributes,
                     'classes' => [
                         'navigation-tiles__tile-cta',
                         'g-button',
