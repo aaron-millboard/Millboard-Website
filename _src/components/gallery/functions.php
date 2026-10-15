@@ -436,7 +436,7 @@ function product_caption(int $product_id): ?array
         }
 
         return [
-            'main' => trim(preg_replace('/\s+\d+\s?mm\s*$/i', '', trim($main))),
+            'main' => trim(preg_replace('/\s+\d+(?:-\d+\/\d+)?\s?(?:mm|″|"|”)\s*$/iu', '', trim($main))),
             'secondary' => $colour,
             'url' => (string) \get_permalink($product_id),
         ];
