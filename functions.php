@@ -98,6 +98,7 @@ if (file_exists($autoloader = __DIR__ . '/vendor/autoload.php')) {
 // ----------------------------------------------------
 \Theme\Plugins\ACF::init();
 \Theme\Plugins\YoastSEO::init();
+\Theme\Plugins\YoastRedirectQueryString::init();
 
 // ----------------------------------------------------
 // WooCommerce functionality.
