@@ -165,6 +165,17 @@ function process_image(array $row, int $key, array $args, int $pattern_part, boo
         return false;
     }
 
+    // A selected product fills both captions and links them to the product.
+    $row['caption_main_url'] = '';
+    $row['caption_secondary_url'] = '';
+    $product = product_caption((int) ($row['product'] ?? 0));
+
+    if ($product) {
+        $row['caption_main'] = $product['main'];
+        $row['caption_secondary'] = $product['secondary'];
+        $row['caption_main_url'] = $row['caption_secondary_url'] = $product['url'];
+    }
+
     if (!empty($row['gallery_image'])) {
         $gallery_post_id = $row['gallery_image'];
         $image_id = get_post_thumbnail_id($gallery_post_id);
@@ -222,6 +233,8 @@ function process_image(array $row, int $key, array $args, int $pattern_part, boo
         'image_orientation' => $orientation,
         'caption_main' => $row['caption_main'] ?? '',
         'caption_secondary' => $row['caption_secondary'] ?? '',
+        'caption_main_url' => $row['caption_main_url'],
+        'caption_secondary_url' => $row['caption_secondary_url'] ?: $row['caption_main_url'],
         'button_attributes' => [
             'class' => ['gallery__card__button'],
             'data-lightbox-index' => $key,
@@ -230,6 +243,8 @@ function process_image(array $row, int $key, array $args, int $pattern_part, boo
             'aria-label' => (!empty($row['caption_main']) ? sprintf('%s: "%s"', $args['aria_label_prefix'], $row['caption_main']) : sprintf('%s %d', __('View image', 'granola'), $key)),
             'data-caption-main' => $row['caption_main'] ?? '',
             'data-caption-secondary' => $row['caption_secondary'] ?? '',
+            'data-caption-url' => $row['caption_main_url'],
+            'data-caption-secondary-url' => $row['caption_secondary_url'] ?: $row['caption_main_url'],
             'data-image-orientation' => $orientation,
             'aria-haspopup' => 'dialog',
         ],
@@ -319,4 +334,134 @@ function get_image_orientation(int $attachment_id): string
     } else {
         return 'square';
     }
+}
+
+/**
+ * Products live on the consumer site: /en-gb/commercial/ reads /en-gb/.
+ * Returns 0 on any other site. Same rule as the map component's directory source.
+ */
+function product_source_blog(): int
+{
+    $home = rtrim((string) \wp_parse_url(\home_url(), PHP_URL_PATH), '/');
+    $source = 0;
+
+    if (str_ends_with($home, '/commercial')) {
+        $source = (int) \get_blog_id_from_url(
+            (string) \wp_parse_url(\home_url(), PHP_URL_HOST),
+            substr($home, 0, -strlen('/commercial')) . '/'
+        );
+    }
+
+    $source = (int) \apply_filters('granola/map/directory_source_blog', $source);
+
+    return $source !== \get_current_blog_id() ? $source : 0;
+}
+
+/**
+ * Run a callback on the products' site. Woo registers its post type and
+ * taxonomies (permalinks, pa_colour) per site on init, so after a switch they
+ * are registered again for the site we land on, and again on the way back.
+ */
+function on_product_site(callable $callback): mixed
+{
+    $source = product_source_blog();
+
+    if (!$source) {
+        return $callback();
+    }
+
+    $register = static function (): void {
+        if (!class_exists('WC_Post_Types')) {
+            return;
+        }
+
+        foreach (['product_cat', 'product_tag', 'product_type', 'product_visibility', 'product_shipping_class'] as $taxonomy) {
+            \unregister_taxonomy($taxonomy);
+        }
+
+        foreach (\wc_get_attribute_taxonomies() as $attribute) {
+            \unregister_taxonomy('pa_' . $attribute->attribute_name);
+        }
+
+        \unregister_post_type('product');
+        \WC_Post_Types::register_post_types();
+        \WC_Post_Types::register_taxonomies();
+    };
+
+    \switch_to_blog($source);
+    \delete_transient('wc_attribute_taxonomies');
+    $register();
+
+    try {
+        return $callback();
+    } finally {
+        \restore_current_blog();
+        \delete_transient('wc_attribute_taxonomies');
+        $register();
+    }
+}
+
+/**
+ * Colour name of a product, from its colour attribute.
+ */
+function product_colour(int $product_id): string
+{
+    $terms = \get_the_terms($product_id, 'pa_colour');
+
+    return !empty($terms) && !\is_wp_error($terms) ? html_entity_decode($terms[0]->name, ENT_QUOTES) : '';
+}
+
+/**
+ * Captions and link for a product: the title without its colour and width
+ * ("Enhanced Grain 176mm Jarrah" -> "Enhanced Grain" / "Jarrah").
+ *
+ * @return array{main: string, secondary: string, url: string}|null
+ */
+function product_caption(int $product_id): ?array
+{
+    if (!$product_id) {
+        return null;
+    }
+
+    return on_product_site(static function () use ($product_id): ?array {
+        if (\get_post_type($product_id) !== 'product' || \get_post_status($product_id) !== 'publish') {
+            return null;
+        }
+
+        $colour = product_colour($product_id);
+        $main = html_entity_decode(\get_the_title($product_id), ENT_QUOTES);
+
+        if ($colour !== '' && str_ends_with($main, $colour)) {
+            $main = substr($main, 0, -strlen($colour));
+        }
+
+        return [
+            'main' => trim(preg_replace('/\s+\d+\s?mm\s*$/i', '', trim($main))),
+            'secondary' => $colour,
+            'url' => (string) \get_permalink($product_id),
+        ];
+    });
+}
+
+/**
+ * Editor choices for the Product field: products that have a colour.
+ */
+function product_choices(): array
+{
+    return on_product_site(static function (): array {
+        $products = \get_posts([
+            'post_type' => 'product',
+            'numberposts' => -1,
+            'orderby' => 'title',
+            'order' => 'ASC',
+            'no_found_rows' => true,
+            'update_post_meta_cache' => false,
+            'tax_query' => [['taxonomy' => 'pa_colour', 'operator' => 'EXISTS']],
+        ]);
+
+        return array_column(array_map(
+            static fn($p) => [$p->ID, html_entity_decode(\get_the_title($p), ENT_QUOTES)],
+            $products
+        ), 1, 0);
+    });
 }
