@@ -289,16 +289,40 @@ export default class Gallery {
     }
 
     /**
+     * Set a caption, linked when the item has a URL.
+     *
+     * @param {HTMLElement} el The caption element.
+     * @param {string} text The caption text.
+     * @param {string} url Optional link.
+     * @param {boolean} html Whether the text is markup (secondary caption legacy).
+     */
+    /* eslint-disable-next-line class-methods-use-this */
+    setCaption(el, text, url, html = false) {
+        const target = el;
+        target.textContent = '';
+        let node = target;
+        if (url && text) {
+            node = target.appendChild(document.createElement('a'));
+            node.href = url;
+        }
+        if (html) {
+            node.innerHTML = text || '';
+        } else {
+            node.textContent = text || '';
+        }
+    }
+
+    /**
      * Update the captions.
      *
      * @param {Object} item The item data.
      */
     updateCaptions(item) {
         if (this.selectedCaptionMain) {
-            this.selectedCaptionMain.textContent = item.heading || '';
+            this.setCaption(this.selectedCaptionMain, item.heading, item.url);
         }
         if (this.selectedCaptionSecondary) {
-            this.selectedCaptionSecondary.innerHTML = item.subheading || '';
+            this.setCaption(this.selectedCaptionSecondary, item.subheading, item.subheadingUrl, true);
         }
     }
 
@@ -435,6 +459,8 @@ export default class Gallery {
             alt: mainImage?.alt || '',
             heading: cardButton.dataset.captionMain || '',
             subheading: cardButton.dataset.captionSecondary || '',
+            url: cardButton.dataset.captionUrl || '',
+            subheadingUrl: cardButton.dataset.captionSecondaryUrl || '',
             imageOrientation: cardButton.dataset.imageOrientation || '',
         };
     }

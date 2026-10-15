@@ -157,6 +157,30 @@
                             "bidirectional_target": []
                         },
                         {
+                            "key": "field_prodcapa1p",
+                            "label": "Product",
+                            "name": "product",
+                            "aria-label": "",
+                            "type": "select",
+                            "instructions": "Optional. Fills both captions from the product and links them to it.",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "choices": {},
+                            "default_value": "",
+                            "return_format": "value",
+                            "multiple": 0,
+                            "allow_null": 1,
+                            "allow_in_bindings": 0,
+                            "ui": 1,
+                            "ajax": 0,
+                            "placeholder": ""
+                        },
+                        {
                             "key": "field_68db9fc221052",
                             "label": "Caption Main",
                             "name": "caption_main",
@@ -170,6 +194,10 @@
                                         "field": "field_68db9ff321054",
                                         "operator": "!=",
                                         "value": "pattern-1"
+                                    },
+                                    {
+                                        "field": "field_prodcapa1p",
+                                        "operator": "==empty"
                                     }
                                 ],
                                 [
@@ -181,6 +209,10 @@
                                     {
                                         "field": "field_69282b351371c",
                                         "operator": "!=empty"
+                                    },
+                                    {
+                                        "field": "field_prodcapa1p",
+                                        "operator": "==empty"
                                     }
                                 ],
                                 [
@@ -193,6 +225,10 @@
                                         "field": "field_68dba02e21055",
                                         "operator": "==",
                                         "value": "1"
+                                    },
+                                    {
+                                        "field": "field_prodcapa1p",
+                                        "operator": "==empty"
                                     }
                                 ]
                             ],
@@ -222,6 +258,10 @@
                                         "field": "field_68db9ff321054",
                                         "operator": "!=",
                                         "value": "pattern-1"
+                                    },
+                                    {
+                                        "field": "field_prodcapa1p",
+                                        "operator": "==empty"
                                     }
                                 ],
                                 [
@@ -234,6 +274,10 @@
                                         "field": "field_68dba02e21055",
                                         "operator": "==",
                                         "value": "1"
+                                    },
+                                    {
+                                        "field": "field_prodcapa1p",
+                                        "operator": "==empty"
                                     }
                                 ]
                             ],
@@ -367,6 +411,30 @@
                             "bidirectional_target": []
                         },
                         {
+                            "key": "field_prodcapa2p",
+                            "label": "Product",
+                            "name": "product",
+                            "aria-label": "",
+                            "type": "select",
+                            "instructions": "Optional. Fills both captions from the product and links them to it.",
+                            "required": 0,
+                            "conditional_logic": 0,
+                            "wrapper": {
+                                "width": "",
+                                "class": "",
+                                "id": ""
+                            },
+                            "choices": {},
+                            "default_value": "",
+                            "return_format": "value",
+                            "multiple": 0,
+                            "allow_null": 1,
+                            "allow_in_bindings": 0,
+                            "ui": 1,
+                            "ajax": 0,
+                            "placeholder": ""
+                        },
+                        {
                             "key": "field_69282dd3bdca6",
                             "label": "Caption Main",
                             "name": "caption_main",
@@ -380,6 +448,10 @@
                                         "field": "field_68db9ff321054",
                                         "operator": "!=",
                                         "value": "pattern-1"
+                                    },
+                                    {
+                                        "field": "field_prodcapa2p",
+                                        "operator": "==empty"
                                     }
                                 ],
                                 [
@@ -391,6 +463,10 @@
                                     {
                                         "field": "field_69282b351371c",
                                         "operator": "!=empty"
+                                    },
+                                    {
+                                        "field": "field_prodcapa2p",
+                                        "operator": "==empty"
                                     }
                                 ],
                                 [
@@ -403,6 +479,10 @@
                                         "field": "field_68dba02e21055",
                                         "operator": "==",
                                         "value": "1"
+                                    },
+                                    {
+                                        "field": "field_prodcapa2p",
+                                        "operator": "==empty"
                                     }
                                 ]
                             ],
@@ -432,6 +512,10 @@
                                         "field": "field_68db9ff321054",
                                         "operator": "!=",
                                         "value": "pattern-1"
+                                    },
+                                    {
+                                        "field": "field_prodcapa2p",
+                                        "operator": "==empty"
                                     }
                                 ],
                                 [
@@ -444,6 +528,10 @@
                                         "field": "field_68dba02e21055",
                                         "operator": "==",
                                         "value": "1"
+                                    },
+                                    {
+                                        "field": "field_prodcapa2p",
+                                        "operator": "==empty"
                                     }
                                 ]
                             ],
@@ -579,5 +667,5 @@
     "show_in_rest": 0,
     "display_title": "",
     "granola_save_location": 0,
-    "modified": 1764244916
+    "modified": 1792048375
 }
