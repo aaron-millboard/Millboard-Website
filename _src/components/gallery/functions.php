@@ -329,11 +329,24 @@ function get_image_orientation(int $attachment_id): string
 }
 
 /**
- * Products live on the consumer site; /en-gb/commercial/ reads /en-gb/.
+ * Products live on the consumer site: /en-gb/commercial/ reads /en-gb/.
+ * Returns 0 on any other site. Same rule as the map component's directory source.
  */
 function product_source_blog(): int
 {
-    return function_exists('Granola\Components\Map\get_directory_source_blog') ? \Granola\Components\Map\get_directory_source_blog() : 0;
+    $home = rtrim((string) \wp_parse_url(\home_url(), PHP_URL_PATH), '/');
+    $source = 0;
+
+    if (str_ends_with($home, '/commercial')) {
+        $source = (int) \get_blog_id_from_url(
+            (string) \wp_parse_url(\home_url(), PHP_URL_HOST),
+            substr($home, 0, -strlen('/commercial')) . '/'
+        );
+    }
+
+    $source = (int) \apply_filters('granola/map/directory_source_blog', $source);
+
+    return $source !== \get_current_blog_id() ? $source : 0;
 }
 
 /**
@@ -415,7 +428,7 @@ function product_caption(int $product_id): ?array
         }
 
         return [
-            'main' => trim(preg_replace('/\s+\d+\s?mm\s*$/i', '', trim($main))),
+            'main' => trim(preg_replace('/\s+\d+(?:-\d+\/\d+)?\s?(?:mm|″|"|”)\s*$/iu', '', trim($main))),
             'secondary' => $colour,
             'url' => (string) \get_permalink($product_id),
         ];
