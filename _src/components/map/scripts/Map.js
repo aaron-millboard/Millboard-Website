@@ -199,6 +199,7 @@ class Map {
                 this.LMAP_DISTANCE_CENTER = latlng;
                 this.hasUserSearchLocation = true;
                 this.filterByDistanceAndPostType();
+                this.pushFinderSearch('geolocate');
             });
         }
     }
@@ -762,6 +763,20 @@ let markerHtml = `
             this.searchedCountryCode = this.countryCodeFromGeocode(response);
             this.hasUserSearchLocation = true;
             this.filterListingsByDistance();
+            this.pushFinderSearch('typed');
+        });
+    }
+
+    /**
+     * Counts one finder search: a typed location that geocoded, or "search near
+     * me". GTM maps this to the GA4 `find_an_installer` / `find_a_reseller`
+     * events by page URL, so those events now mean searches, not page views.
+     */
+    pushFinderSearch(method) {
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({
+            event: 'finder_search',
+            finder_search_method: method,
         });
     }
 
