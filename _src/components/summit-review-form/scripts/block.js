@@ -43,7 +43,7 @@ if (form) {
             comp: checked('summit_competition_law_accepted'),
             data: checked('summit_data_consent'),
         };
-        const int = form.dataset.audience === 'INT';
+        const int = form.dataset.audience === 'INT' || form.dataset.audience === 'WD'; // WD = INT without Open Diary
         const travelOn = int || form.dataset.audience === 'FR'; // INT and FR give arrival flights
         const detailKeys = ['firstname', 'lastname', 'company']
             .concat(int ? ['summit_country'] : [])
