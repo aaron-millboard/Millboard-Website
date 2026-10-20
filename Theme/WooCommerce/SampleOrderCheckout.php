@@ -592,7 +592,6 @@ class SampleOrderCheckout
             'customer_first_name' => \__('Customer first name', 'granola'),
             'customer_last_name' => \__('Customer last name', 'granola'),
             'customer_email' => \__('Customer email address', 'granola'),
-            'website_persona' => \__('This project is to be installed at', 'granola'),
             'billing_address_1' => \__('Address', 'granola'),
             'billing_postcode' => \__('Postcode', 'granola'),
             'billing_phone' => \__('Customer phone number', 'granola'),
@@ -606,6 +605,15 @@ class SampleOrderCheckout
          * THIS site's checkout requires, read live, so the two can never say
          * different things about the same consent.
          */
+        /*
+         * website_persona is not on every checkout: en-us has none at all.
+         * Required only where the form actually renders it, or the US could
+         * never satisfy it.
+         */
+        if ('' !== self::checkout_label('website_persona')) {
+            $required['website_persona'] = \__('This project is to be installed at', 'granola');
+        }
+
         if ('' !== self::checkout_label(ConsentFields::AUDIENCE_FIELD)) {
             $required[ConsentFields::AUDIENCE_FIELD] = \__('Who the customer is', 'granola');
         }
