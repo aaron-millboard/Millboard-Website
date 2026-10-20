@@ -40,11 +40,14 @@ function is_available(?\WC_Product $product = null): bool
         return false;
     }
 
-    $collections = ['enhanced-grain', 'weathered-oak', 'lasta-grip'];
+    // Matches what the visualiser itself supports: no 126mm boards, Lasta-Grip or Modello.
+    $collections = ['enhanced-grain', 'weathered-oak'];
 
     return (bool) \apply_filters(
         'granola/product_visualiser/available',
-        default_sku($product) !== '' && \has_term($collections, 'product_cat', $product->get_id()),
+        default_sku($product) !== ''
+            && \has_term($collections, 'product_cat', $product->get_id())
+            && !\has_term('126mm', 'product_cat', $product->get_id()),
         $product
     );
 }
