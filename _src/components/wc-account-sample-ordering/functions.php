@@ -823,25 +823,23 @@ function sample_category_label(string $name): string
 }
 
 /*
- * Applied LAST, to the order list and to every row, so the two cannot
- * disagree: the package matches a row's category against the order list by
- * string, so translating one and not the other would empty every accordion.
+ * Applied LAST, to the order list and to the CLASSIFIER, so the two cannot
+ * disagree.
+ *
+ * It has to be the classifier and not `mb_sof_catalogue`. The package builds
+ * `$valid = array_flip(mb_sof_category_order())` and drops any row whose
+ * category is not in it, and that check runs INSIDE the build, before
+ * `mb_sof_catalogue` is applied. Translating the order list while the rows
+ * were still English matched nothing and emptied the whole French catalogue:
+ * 350 lines to 0. Caught by the snapshot test, not by reading.
  */
 \add_filter('mb_sof_category_order', static function (array $order): array {
     return \array_map(__NAMESPACE__ . '\\sample_category_label', $order);
 }, 99);
 
-\add_filter('mb_sof_catalogue', static function (array $items): array {
-    foreach ($items as &$item) {
-        if (isset($item['category'])) {
-            $item['category'] = sample_category_label((string) $item['category']);
-        }
-    }
-
-    unset($item);
-
-    return $items;
-}, 99);
+\add_filter('mb_sof_category', static function ($classified, $sku, $name) {
+    return \is_string($classified) ? sample_category_label($classified) : $classified;
+}, 99, 3);
 
 /**
  * The product categories that mark a line as POS / marketing stock.
