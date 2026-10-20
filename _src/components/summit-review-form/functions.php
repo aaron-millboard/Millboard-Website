@@ -36,6 +36,7 @@ function filter_args(array $args): ?array
     $args['is_int'] = $audience === 'INT';
     $args['is_fr'] = $audience === 'FR';
     $args['is_us'] = $audience === 'US';
+    $args['is_wd'] = $audience === 'WD';
 
     $args['has_form'] = trim((string) $args['hubspot_form_guid']) !== '';
 

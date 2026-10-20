@@ -13,7 +13,8 @@
                 "UK": "UK",
                 "INT": "INT (international distributors)",
                 "FR": "FR (French delegates, in French)",
-                "US": "US (UK form plus the agenda link)"
+                "US": "US (UK form plus the agenda link)",
+                "WD": "WD (Wooddeck guests: INT form without Open Diary)"
             },
             "default_value": "UK",
             "allow_null": 0,
