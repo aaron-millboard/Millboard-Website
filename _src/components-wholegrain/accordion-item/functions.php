@@ -82,13 +82,37 @@ function filter_args(array $args): ?array
 }
 
 /**
- * If this fires, we know there's an Accordion Item block on the page, so filter the page type.
+ * Mark the page as an FAQPage only when an accordion item actually carries FAQ.
+ *
+ * render_accordion_item_block_schema() adds a Question to mainEntity for every
+ * accordion item except one whose faq_content is present and empty (the FAQ
+ * toggle off). So the page gains a mainEntity only when at least one item is a
+ * real FAQ. The page type must follow the same rule: flipping it to FAQPage on
+ * block presence alone leaves a page of plain content accordions marked as an
+ * FAQPage with no mainEntity, which Google reports as "A value for the
+ * mainEntity field is required."
+ *
+ * Only suppress the flip when every item is positively content-only, so an
+ * unexpected block shape falls through to the flip and can never strip the type
+ * from a genuine FAQ page.
  *
  * @param array $blocks The blocks of this type on the current page.
  */
 function prepare_accordion_item_schema($blocks)
 {
-    \add_filter('wpseo_schema_webpage', __NAMESPACE__ . '\\change_schema_page_type');
+    foreach ((array) $blocks as $block) {
+        $data = is_array($block) ? ($block['attrs']['data'] ?? null) : null;
+
+        $content_only = is_array($data)
+            && array_key_exists('faq_content', $data)
+            && empty($data['faq_content']);
+
+        if (!$content_only) {
+            \add_filter('wpseo_schema_webpage', __NAMESPACE__ . '\\change_schema_page_type');
+
+            return;
+        }
+    }
 }
 
 /**
@@ -106,50 +130,6 @@ function change_schema_page_type($data)
     ];
 
     return $data;
-}
-
-/**
- * Drops FAQPage from the page type when the page carries no FAQ.
- *
- * change_schema_page_type() flips the page to ["WebPage","FAQPage"] whenever an
- * accordion-item block is present, but only items with FAQ content add a
- * Question to mainEntity. A page whose accordions are plain content (FAQ toggle
- * off) is then published as an FAQPage with no mainEntity, which Google reports
- * as "A value for the mainEntity field is required." This runs on the finished
- * graph, after the block filters have added any questions, and only strips the
- * type where mainEntity is genuinely empty, so a real FAQ page is left as is.
- *
- * @param array $graph The finished Yoast schema graph.
- *
- * @return array
- */
-function drop_empty_faqpage($graph)
-{
-    if (!is_array($graph)) {
-        return $graph;
-    }
-
-    foreach ($graph as $index => $piece) {
-        if (!is_array($piece)) {
-            continue;
-        }
-
-        $types = (array) ($piece['@type'] ?? []);
-
-        if (!in_array('FAQPage', $types, true) || !empty($piece['mainEntity'])) {
-            continue;
-        }
-
-        $types = array_values(array_filter($types, static function ($type) {
-            return $type !== 'FAQPage';
-        }));
-
-        $graph[$index]['@type'] = count($types) === 1 ? $types[0] : $types;
-
-        unset($graph[$index]['mainEntity']);
-    }
-
-    return $graph;
 }
 
 /**
