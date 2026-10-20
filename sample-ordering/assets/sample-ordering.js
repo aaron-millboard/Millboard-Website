@@ -119,6 +119,19 @@
       var products = productsIn(cat);
       var count = products.length;
 
+      // MILLBOARD EDIT - translated by the server where a catalogue exists,
+      // falling back to the original English so this cannot render blank.
+      function itemCount(n) {
+        var i18n = (window.MB_SOF_DATA && window.MB_SOF_DATA.i18n) || {};
+        var tpl = n === 1 ? i18n.itemsOne : i18n.itemsMany;
+
+        if (!tpl) {
+          return n + ' item' + (n !== 1 ? 's' : '');
+        }
+
+        return tpl.replace('%d', n);
+      }
+
       var div = document.createElement('div');
       div.className = 'accordion' + (idx === 0 ? ' open' : '');
       div.dataset.category = cat;
@@ -128,7 +141,7 @@
             '" aria-controls="acc-body-' + idx + '">' +
           '<span class="accordion-title">' + escapeHtml(cat) + '</span>' +
           '<div class="accordion-meta">' +
-            '<span class="accordion-count">' + count + ' item' + (count !== 1 ? 's' : '') + '</span>' +
+            '<span class="accordion-count">' + itemCount(count) + '</span>' +
             '<div class="accordion-toggle">' + (idx === 0 ? '−' : '+') + '</div>' +
           '</div>' +
         '</div>' +

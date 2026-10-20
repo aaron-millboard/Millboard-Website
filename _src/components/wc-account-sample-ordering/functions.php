@@ -772,6 +772,78 @@ function sample_size_mm(string $value): ?int
 }
 
 /**
+ * The accordion headings, translated.
+ *
+ * These are DATA, not strings: they arrive from approved-categories.json and
+ * the sub-grouping, so gettext never sees them and the French form showed
+ * "Decking: Enhanced Grain 126mm" in English. Listing them as literal __()
+ * calls makes them extractable and keeps the map in one place.
+ *
+ * Per the FR translation guideline, range and collection names stay in
+ * English (Enhanced Grain, Shadow Line+, Board & Batten+), so only the
+ * prefix and the generic categories translate.
+ *
+ * A heading with no entry here returns unchanged, which is why en-gb is
+ * untouched: every msgid is its own English on that locale anyway.
+ *
+ * @return array<string,string>
+ */
+function sample_category_labels(): array
+{
+    return [
+        'Decking: Enhanced Grain 126mm' => \__('Decking: Enhanced Grain 126mm', 'granola'),
+        'Decking: Enhanced Grain 176mm' => \__('Decking: Enhanced Grain 176mm', 'granola'),
+        'Decking: Weathered Oak' => \__('Decking: Weathered Oak', 'granola'),
+        'Decking: Lasta-Grip' => \__('Decking: Lasta-Grip', 'granola'),
+        'Decking: Bullnosed Board' => \__('Decking: Bullnosed Board', 'granola'),
+        'Decking: Modello Contour' => \__('Decking: Modello Contour', 'granola'),
+        'Decking: Modello Linear' => \__('Decking: Modello Linear', 'granola'),
+        'Cladding: Shadow Line+' => \__('Cladding: Shadow Line+', 'granola'),
+        'Cladding: Board & Batten+' => \__('Cladding: Board & Batten+', 'granola'),
+        'Cladding: Envello Decor Curve' => \__('Cladding: Envello Decor Curve', 'granola'),
+        'Cladding: Envello Decor Shutter' => \__('Cladding: Envello Decor Shutter', 'granola'),
+        'Cladding trims & corners' => \__('Cladding trims & corners', 'granola'),
+        'Fascias & step edges' => \__('Fascias & step edges', 'granola'),
+        'Subframe samples' => \__('Subframe samples', 'granola'),
+        'Sample boxes' => \__('Sample boxes', 'granola'),
+        'Presenter packs' => \__('Presenter packs', 'granola'),
+        'Full range sets' => \__('Full range sets', 'granola'),
+        'Literature' => \__('Literature', 'granola'),
+        'Display equipment' => \__('Display equipment', 'granola'),
+        'Name plates' => \__('Name plates', 'granola'),
+        'Branded merchandise' => \__('Branded merchandise', 'granola'),
+    ];
+}
+
+function sample_category_label(string $name): string
+{
+    $map = sample_category_labels();
+
+    return $map[$name] ?? $name;
+}
+
+/*
+ * Applied LAST, to the order list and to every row, so the two cannot
+ * disagree: the package matches a row's category against the order list by
+ * string, so translating one and not the other would empty every accordion.
+ */
+\add_filter('mb_sof_category_order', static function (array $order): array {
+    return \array_map(__NAMESPACE__ . '\\sample_category_label', $order);
+}, 99);
+
+\add_filter('mb_sof_catalogue', static function (array $items): array {
+    foreach ($items as &$item) {
+        if (isset($item['category'])) {
+            $item['category'] = sample_category_label((string) $item['category']);
+        }
+    }
+
+    unset($item);
+
+    return $items;
+}, 99);
+
+/**
  * The product categories that mark a line as POS / marketing stock.
  *
  * ⚠️ NOT YET POPULATED. The 84 POS lines in the portal export do not exist as
