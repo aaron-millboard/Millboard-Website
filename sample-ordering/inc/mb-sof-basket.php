@@ -30,15 +30,15 @@ function mb_sof_maybe_handle_submit() {
 
 	if ( ! isset( $_POST['mb_sof_nonce'] )
 		|| ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['mb_sof_nonce'] ) ), 'mb_sof_add' ) ) {
-		wp_die( esc_html__( 'That form has expired. Please go back and try again.', 'millboard' ), '', array( 'response' => 403 ) );
+		wp_die( esc_html__( 'That form has expired. Please go back and try again.', 'granola' ), '', array( 'response' => 403 ) );
 	}
 
 	if ( ! mb_sof_user_can_order() ) {
-		wp_die( esc_html__( 'You do not have access to sample ordering.', 'millboard' ), '', array( 'response' => 403 ) );
+		wp_die( esc_html__( 'You do not have access to sample ordering.', 'granola' ), '', array( 'response' => 403 ) );
 	}
 
 	if ( ! function_exists( 'WC' ) || ! WC()->cart ) {
-		wp_die( esc_html__( 'The basket is unavailable. Please try again.', 'millboard' ), '', array( 'response' => 500 ) );
+		wp_die( esc_html__( 'The basket is unavailable. Please try again.', 'granola' ), '', array( 'response' => 500 ) );
 	}
 
 	// phpcs:ignore WordPress.Security.NonceVerification.Missing -- verified above.
@@ -75,7 +75,7 @@ function mb_sof_maybe_handle_submit() {
 	}
 
 	if ( empty( $lines ) ) {
-		wc_add_notice( __( 'No samples were selected.', 'millboard' ), 'error' );
+		wc_add_notice( __( 'No samples were selected.', 'granola' ), 'error' );
 		wp_safe_redirect( mb_sof_form_url() );
 		exit;
 	}
@@ -128,7 +128,7 @@ function mb_sof_maybe_handle_submit() {
 		wc_add_notice(
 			sprintf(
 				/* translators: %1$s: number of failed lines, %2$s: list of SKUs and names. */
-				__( '%1$s sample line(s) could not be added and are not in your basket: %2$s', 'millboard' ),
+				__( '%1$s sample line(s) could not be added and are not in your basket: %2$s', 'granola' ),
 				number_format_i18n( count( $failed ) ),
 				esc_html( implode( '; ', $failed ) )
 			),
@@ -140,7 +140,7 @@ function mb_sof_maybe_handle_submit() {
 		wc_add_notice(
 			sprintf(
 				/* translators: %1$s: number of product lines, %2$s: total units. */
-				__( 'Added %1$s sample line(s), %2$s units in total, to your basket.', 'millboard' ),
+				__( 'Added %1$s sample line(s), %2$s units in total, to your basket.', 'granola' ),
 				number_format_i18n( $added ),
 				number_format_i18n( $units )
 			),

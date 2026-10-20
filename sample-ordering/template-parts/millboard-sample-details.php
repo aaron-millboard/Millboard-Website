@@ -109,12 +109,12 @@ $mb_select = static function ( string $key, array $options, bool $required = fal
 ?>
 <div class="mb-sof-details">
 
-	<h2 class="mb-account-panel__title"><?php esc_html_e( 'Delivery details', 'millboard' ); ?></h2>
+	<h2 class="mb-account-panel__title"><?php esc_html_e( 'Delivery details', 'granola' ); ?></h2>
 	<p class="mb-account-panel__intro">
 		<?php
 		printf(
 			/* translators: %1$s: number of product lines, %2$s: number of units. */
-			esc_html__( '%1$s product lines, %2$s units. Tell us who the samples are for and where they go.', 'millboard' ),
+			esc_html__( '%1$s product lines, %2$s units. Tell us who the samples are for and where they go.', 'granola' ),
 			'<strong>' . esc_html( number_format_i18n( count( $lines ) ) ) . '</strong>',
 			'<strong>' . esc_html( number_format_i18n( $units ) ) . '</strong>'
 		);
@@ -131,43 +131,43 @@ $mb_select = static function ( string $key, array $options, bool $required = fal
 
 		<div class="mb-sof-details__section">
 			<div class="mb-sof-details__section-header">
-				<h3><?php esc_html_e( 'Customer', 'millboard' ); ?></h3>
-				<p><?php esc_html_e( 'Who the samples are for.', 'millboard' ); ?></p>
+				<h3><?php esc_html_e( 'Customer', 'granola' ); ?></h3>
+				<p><?php esc_html_e( 'Who the samples are for.', 'granola' ); ?></p>
 			</div>
 
 			<div class="mb-sof-details__fields">
 				<?php
-				$mb_row( 'customer_first_name', __( 'First name', 'millboard' ), 'first', $mb_input( 'customer_first_name', true ), true );
-				$mb_row( 'customer_last_name', __( 'Last name', 'millboard' ), 'last', $mb_input( 'customer_last_name', true ), true );
+				$mb_row( 'customer_first_name', __( 'First name', 'granola' ), 'first', $mb_input( 'customer_first_name', true ), true );
+				$mb_row( 'customer_last_name', __( 'Last name', 'granola' ), 'last', $mb_input( 'customer_last_name', true ), true );
 
 				// The customer's own address, not the rep's. This is the key
 				// HubSpot matches the contact on, so without it the order is
 				// filed against whoever happened to be logged in.
 				$mb_row(
 					'customer_email',
-					__( 'Email address', 'millboard' ),
+					__( 'Email address', 'granola' ),
 					'first',
 					$mb_input( 'customer_email', true, '', 'email' ),
 					true,
-					__( 'The customer’s own address. This is what creates their record.', 'millboard' )
+					__( 'The customer’s own address. This is what creates their record.', 'granola' )
 				);
 
-				$mb_row( 'billing_company', __( 'Company name', 'millboard' ), 'last', $mb_input( 'billing_company' ) );
+				$mb_row( 'billing_company', __( 'Company name', 'granola' ), 'last', $mb_input( 'billing_company' ) );
 
-				$mb_row( 'billing_phone', __( 'Phone number', 'millboard' ), 'wide', $mb_input( 'billing_phone', true, '', 'tel' ), true, __( 'The customer’s own number, so a follow-up can reach them.', 'millboard' ) );
+				$mb_row( 'billing_phone', __( 'Phone number', 'granola' ), 'wide', $mb_input( 'billing_phone', true, '', 'tel' ), true, __( 'The customer’s own number, so a follow-up can reach them.', 'granola' ) );
 
 				$mb_row(
 					'follow_up',
-					__( 'Does this customer require a follow-up from Millboard?', 'millboard' ),
+					__( 'Does this customer require a follow-up from Millboard?', 'granola' ),
 					$mb_staff ? 'first' : 'wide',
 					$mb_select(
 						'follow_up',
 						array(
-							'Yes' => __( 'Yes', 'millboard' ),
-							'No'  => __( 'No', 'millboard' ),
+							'Yes' => __( 'Yes', 'granola' ),
+							'No'  => __( 'No', 'granola' ),
 						),
 						true,
-						__( 'Please select', 'millboard' )
+						__( 'Please select', 'granola' )
 					),
 					true
 				);
@@ -175,9 +175,9 @@ $mb_select = static function ( string $key, array $options, bool $required = fal
 				if ( $mb_staff ) {
 					$mb_row(
 						'on_behalf_of',
-						__( 'Order on behalf of', 'millboard' ),
+						__( 'Order on behalf of', 'granola' ),
 						'last',
-						$mb_select( 'on_behalf_of', array_combine( $mb_staff, $mb_staff ), false, __( 'Myself', 'millboard' ) )
+						$mb_select( 'on_behalf_of', array_combine( $mb_staff, $mb_staff ), false, __( 'Myself', 'granola' ) )
 					);
 				}
 				?>
@@ -206,8 +206,8 @@ $mb_select = static function ( string $key, array $options, bool $required = fal
 				<?php if ( $mb_consent_field ) : ?>
 					<div class="mb-sof-details__consent">
 						<p class="mb-sof-details__consent-instruction">
-							<strong><?php esc_html_e( 'Read the wording below to the customer before you answer.', 'millboard' ); ?></strong><br>
-							<?php esc_html_e( 'Only record “yes” if you have read it to them on this call and they agreed. If you did not ask, or they declined, record “no”. Their answer, today’s date and the exact wording version are stored against this order as the proof of consent.', 'millboard' ); ?>
+							<strong><?php esc_html_e( 'Read the wording below to the customer before you answer.', 'granola' ); ?></strong><br>
+							<?php esc_html_e( 'Only record “yes” if you have read it to them on this call and they agreed. If you did not ask, or they declined, record “no”. Their answer, today’s date and the exact wording version are stored against this order as the proof of consent.', 'granola' ); ?>
 						</p>
 						<?php
 						/*
@@ -276,46 +276,46 @@ $mb_select = static function ( string $key, array $options, bool $required = fal
 
 		<div class="mb-sof-details__section">
 			<div class="mb-sof-details__section-header">
-				<h3><?php esc_html_e( 'The project', 'millboard' ); ?></h3>
-				<p><?php esc_html_e( 'What the samples are being considered for.', 'millboard' ); ?></p>
+				<h3><?php esc_html_e( 'The project', 'granola' ); ?></h3>
+				<p><?php esc_html_e( 'What the samples are being considered for.', 'granola' ); ?></p>
 			</div>
 
 			<div class="mb-sof-details__fields">
 				<?php
-				$mb_row( 'website_persona', __( 'This project is to be installed at', 'millboard' ), 'wide', $mb_select( 'website_persona', $mb_persona, true ), true );
-				$mb_row( 'project-size', __( 'Project size', 'millboard' ), 'first', $mb_select( 'project-size', $mb_size ) );
-				$mb_row( 'project-start-time', __( 'When will they start the project?', 'millboard' ), 'last', $mb_select( 'project-start-time', $mb_start ) );
+				$mb_row( 'website_persona', __( 'This project is to be installed at', 'granola' ), 'wide', $mb_select( 'website_persona', $mb_persona, true ), true );
+				$mb_row( 'project-size', __( 'Project size', 'granola' ), 'first', $mb_select( 'project-size', $mb_size ) );
+				$mb_row( 'project-start-time', __( 'When will they start the project?', 'granola' ), 'last', $mb_select( 'project-start-time', $mb_start ) );
 				?>
 			</div>
 		</div>
 
 		<div class="mb-sof-details__section">
 			<div class="mb-sof-details__section-header">
-				<h3><?php esc_html_e( 'Delivery address', 'millboard' ); ?></h3>
-				<p><?php esc_html_e( 'Where the samples are sent.', 'millboard' ); ?></p>
+				<h3><?php esc_html_e( 'Delivery address', 'granola' ); ?></h3>
+				<p><?php esc_html_e( 'Where the samples are sent.', 'granola' ); ?></p>
 			</div>
 
 			<div class="mb-sof-details__fields">
 				<?php
-				$mb_row( 'billing_country', __( 'Country/Region', 'millboard' ), 'wide', $mb_select( 'billing_country', $mb_countries, false, '', 'country_to_state country_select' ) );
-				$mb_row( 'billing_address_1', __( 'Street address', 'millboard' ), 'wide', $mb_input( 'billing_address_1', true, __( 'Start typing the customer address…', 'millboard' ) ), true );
-				$mb_row( 'billing_address_2', __( 'Apartment, suite, unit, etc.', 'millboard' ), 'wide', $mb_input( 'billing_address_2' ) );
-				$mb_row( 'billing_city', __( 'Town/City', 'millboard' ), 'wide', $mb_input( 'billing_city' ) );
-				$mb_row( 'billing_state', __( 'County', 'millboard' ), 'wide', $mb_input( 'billing_state' ) );
-				$mb_row( 'billing_postcode', __( 'Postcode', 'millboard' ), 'wide', $mb_input( 'billing_postcode', true ), true );
+				$mb_row( 'billing_country', __( 'Country/Region', 'granola' ), 'wide', $mb_select( 'billing_country', $mb_countries, false, '', 'country_to_state country_select' ) );
+				$mb_row( 'billing_address_1', __( 'Street address', 'granola' ), 'wide', $mb_input( 'billing_address_1', true, __( 'Start typing the customer address…', 'granola' ) ), true );
+				$mb_row( 'billing_address_2', __( 'Apartment, suite, unit, etc.', 'granola' ), 'wide', $mb_input( 'billing_address_2' ) );
+				$mb_row( 'billing_city', __( 'Town/City', 'granola' ), 'wide', $mb_input( 'billing_city' ) );
+				$mb_row( 'billing_state', __( 'County', 'granola' ), 'wide', $mb_input( 'billing_state' ) );
+				$mb_row( 'billing_postcode', __( 'Postcode', 'granola' ), 'wide', $mb_input( 'billing_postcode', true ), true );
 				?>
 			</div>
 		</div>
 
 		<div class="mb-sof-details__section">
 			<div class="mb-sof-details__section-header">
-				<h3><?php esc_html_e( 'Internal', 'millboard' ); ?></h3>
-				<p><?php esc_html_e( 'Sales use only. This is not seen by logistics.', 'millboard' ); ?></p>
+				<h3><?php esc_html_e( 'Internal', 'granola' ); ?></h3>
+				<p><?php esc_html_e( 'Sales use only. This is not seen by logistics.', 'granola' ); ?></p>
 			</div>
 
 			<div class="mb-sof-details__fields">
 				<p class="form-row form-row-wide" id="sales_comments_field">
-					<label for="sales_comments"><?php esc_html_e( 'Comments', 'millboard' ); ?></label>
+					<label for="sales_comments"><?php esc_html_e( 'Comments', 'granola' ); ?></label>
 					<span class="woocommerce-input-wrapper">
 						<textarea name="sales_comments" id="sales_comments" class="input-text" rows="4"></textarea>
 					</span>
@@ -324,13 +324,13 @@ $mb_select = static function ( string $key, array $options, bool $required = fal
 		</div>
 
 		<div class="mb-sof-details__actions">
-			<button type="submit" class="mb-account-btn"><?php esc_html_e( 'Place sample order', 'millboard' ); ?></button>
-			<a class="mb-account-btn mb-account-btn--ghost" href="<?php echo esc_url( mb_sof_form_url() ); ?>"><?php esc_html_e( 'Back to the catalogue', 'millboard' ); ?></a>
+			<button type="submit" class="mb-account-btn"><?php esc_html_e( 'Place sample order', 'granola' ); ?></button>
+			<a class="mb-account-btn mb-account-btn--ghost" href="<?php echo esc_url( mb_sof_form_url() ); ?>"><?php esc_html_e( 'Back to the catalogue', 'granola' ); ?></a>
 			<span class="mb-sof-details__count">
 				<?php
 				printf(
 					/* translators: %1$s: number of product lines, %2$s: number of units. */
-					esc_html__( '%1$s lines, %2$s units', 'millboard' ),
+					esc_html__( '%1$s lines, %2$s units', 'granola' ),
 					esc_html( number_format_i18n( count( $lines ) ) ),
 					esc_html( number_format_i18n( $units ) )
 				);

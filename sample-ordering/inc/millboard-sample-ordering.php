@@ -186,21 +186,21 @@ add_action( 'wp_enqueue_scripts', 'mb_sof_register_assets' );
  */
 function mb_sof_render() {
 	if ( ! mb_sof_user_can_order() ) {
-		echo '<p>' . esc_html__( 'You do not have access to sample ordering.', 'millboard' ) . '</p>';
+		echo '<p>' . esc_html__( 'You do not have access to sample ordering.', 'granola' ) . '</p>';
 		return;
 	}
 
 	if ( ! function_exists( 'WC' ) ) {
-		echo '<p>' . esc_html__( 'WooCommerce is not active, so samples cannot be ordered.', 'millboard' ) . '</p>';
+		echo '<p>' . esc_html__( 'WooCommerce is not active, so samples cannot be ordered.', 'granola' ) . '</p>';
 		return;
 	}
 
 	$catalogue = mb_sof_get_catalogue();
 
 	if ( empty( $catalogue ) ) {
-		echo '<p>' . esc_html__( 'No sample products were found in the catalogue.', 'millboard' ) . '</p>';
+		echo '<p>' . esc_html__( 'No sample products were found in the catalogue.', 'granola' ) . '</p>';
 		if ( current_user_can( 'manage_woocommerce' ) ) {
-			echo '<p><em>' . esc_html__( 'Admin note: check that sample products are published, and that MB_SOF_PRODUCT_CAT matches a real product category slug.', 'millboard' ) . '</em></p>';
+			echo '<p><em>' . esc_html__( 'Admin note: check that sample products are published, and that MB_SOF_PRODUCT_CAT matches a real product category slug.', 'granola' ) . '</em></p>';
 		}
 		return;
 	}
@@ -260,7 +260,7 @@ function mb_sof_admin_notice() {
 		return;
 	}
 	echo '<div class="notice notice-error"><p>'
-		. esc_html__( 'Millboard Sample Ordering: WooCommerce is not active. The sample ordering tab cannot work without it.', 'millboard' )
+		. esc_html__( 'Millboard Sample Ordering: WooCommerce is not active. The sample ordering tab cannot work without it.', 'granola' )
 		. '</p></div>';
 }
 add_action( 'admin_notices', 'mb_sof_admin_notice' );
