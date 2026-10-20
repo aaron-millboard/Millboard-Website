@@ -82,13 +82,37 @@ function filter_args(array $args): ?array
 }
 
 /**
- * If this fires, we know there's an Accordion Item block on the page, so filter the page type.
+ * Mark the page as an FAQPage only when an accordion item actually carries FAQ.
+ *
+ * render_accordion_item_block_schema() adds a Question to mainEntity for every
+ * accordion item except one whose faq_content is present and empty (the FAQ
+ * toggle off). So the page gains a mainEntity only when at least one item is a
+ * real FAQ. The page type must follow the same rule: flipping it to FAQPage on
+ * block presence alone leaves a page of plain content accordions marked as an
+ * FAQPage with no mainEntity, which Google reports as "A value for the
+ * mainEntity field is required."
+ *
+ * Only suppress the flip when every item is positively content-only, so an
+ * unexpected block shape falls through to the flip and can never strip the type
+ * from a genuine FAQ page.
  *
  * @param array $blocks The blocks of this type on the current page.
  */
 function prepare_accordion_item_schema($blocks)
 {
-    \add_filter('wpseo_schema_webpage', __NAMESPACE__ . '\\change_schema_page_type');
+    foreach ((array) $blocks as $block) {
+        $data = is_array($block) ? ($block['attrs']['data'] ?? null) : null;
+
+        $content_only = is_array($data)
+            && array_key_exists('faq_content', $data)
+            && empty($data['faq_content']);
+
+        if (!$content_only) {
+            \add_filter('wpseo_schema_webpage', __NAMESPACE__ . '\\change_schema_page_type');
+
+            return;
+        }
+    }
 }
 
 /**
@@ -168,11 +192,27 @@ function render_accordion_item_block_schema($graph, $block)
         'inLanguage' => \get_bloginfo('language'),
     ];
 
-    if (empty($graph["0"]['mainEntity'])) {
-        $graph["0"]['mainEntity'] = [];
+    // Attach the question to the node that becomes the FAQPage. On an ordinary
+    // page that is $graph[0] (the WebPage), but on an advice article $graph[0]
+    // is the Article while change_schema_page_type() sets the FAQPage type on a
+    // separate WebPage node - so writing to $graph[0] there leaves the FAQPage
+    // with no mainEntity, which Google reports as "A value for the mainEntity
+    // field is required." Fall back to $graph[0] when no WebPage node is found.
+    $webpage_index = '0';
+
+    foreach ($graph as $i => $node) {
+        if (is_array($node) && in_array('WebPage', (array) ($node['@type'] ?? []), true)) {
+            $webpage_index = $i;
+
+            break;
+        }
     }
 
-    $graph["0"]['mainEntity'][] = [
+    if (empty($graph[$webpage_index]['mainEntity'])) {
+        $graph[$webpage_index]['mainEntity'] = [];
+    }
+
+    $graph[$webpage_index]['mainEntity'][] = [
         '@id' => $url . '#' . $id,
     ];
 
