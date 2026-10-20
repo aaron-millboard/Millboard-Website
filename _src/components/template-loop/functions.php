@@ -65,25 +65,69 @@ function filter_args(array $args): ?array
         }
     }
 
+    $tax_query = [];
+
+    /*
+     * The archive's OWN term.
+     *
+     * On /product-category/composite-decking/decking-accessories/fixings/ the
+     * term is in the URL PATH, and this query only ever looked at $_GET, so
+     * every taxonomy archive listed EVERY published post of the type, newest
+     * first, ignoring the category the visitor had actually asked for. It was
+     * invisible while the newest products were ordinary stock; importing 284
+     * internal sample-ordering lines on 7 Oct put them straight onto the
+     * front of the shop.
+     */
+    if (\is_tax() || \is_category() || \is_tag()) {
+        $queried = \get_queried_object();
+
+        if ($queried instanceof \WP_Term) {
+            $tax_query[] = [
+                'taxonomy' => $queried->taxonomy,
+                'field' => 'term_id',
+                'terms' => $queried->term_id,
+            ];
+        }
+    }
+
     // Filter by taxonomy if provided in URL.
     if (isset($_GET[$taxonomy]) && !empty($_GET[$taxonomy])) {
         $terms = array_filter(
             explode(' ', \sanitize_text_field(\wp_unslash($_GET[$taxonomy])))
         );
 
-        if (!empty($terms)) {
-            $query_args['tax_query'] = [
-                'relation' => 'AND',
+        foreach ($terms as $term) {
+            $tax_query[] = [
+                'taxonomy' => $taxonomy,
+                'field' => 'slug',
+                'terms' => $term,
             ];
-
-            foreach ($terms as $term) {
-                $query_args['tax_query'][] = [
-                    'taxonomy' => $taxonomy,
-                    'field' => 'slug',
-                    'terms' => $term,
-                ];
-            }
         }
+    }
+
+    /*
+     * Catalog visibility, which a bare WP_Query does not get for free.
+     *
+     * WooCommerce enforces "hidden" through the product_visibility taxonomy
+     * on its OWN queries. This builds its own, so a product marked hidden was
+     * listed anyway. That is what exposed the internal sample-ordering and
+     * marketing/POS products to customers.
+     */
+    if (\in_array('product', (array) $post_type, true)) {
+        $tax_query[] = [
+            'taxonomy' => 'product_visibility',
+            'field' => 'name',
+            'terms' => ['exclude-from-catalog'],
+            'operator' => 'NOT IN',
+        ];
+    }
+
+    if ($tax_query) {
+        if (count($tax_query) > 1) {
+            $tax_query['relation'] = 'AND';
+        }
+
+        $query_args['tax_query'] = $tax_query;
     }
 
     if (empty($args['items'])) {
