@@ -661,6 +661,117 @@ function get_retired_skus(): array
 
 
 /**
+ * Sample variations the package's own query cannot see.
+ *
+ * en-gb registered sample size as a GLOBAL attribute, so its variations carry
+ * `attribute_pa_sample-size` holding a term slug. fr-fr registered it PER
+ * PRODUCT, so 132 of its 135 carry `attribute_sample-size` holding a label
+ * instead, and the remaining 3 use the global attribute with a French
+ * vocabulary (`enchantillon-std`, `enchantillon-xl`). The package matches the
+ * global attribute with the slugs `small` and `large` only, so France matched
+ * NONE of its 135 and a French rep could order literature but not a board
+ * sample.
+ *
+ * Aaron hit the identical split on 25 Sep 2026 for the From prices
+ * (a4fec9c3): the fix there was `sample_size_of()`, reading either shape and
+ * testing "a size that is not the full board". This is that rule applied to
+ * the ordering catalogue.
+ *
+ * Deliberately NOT keyed on the locale. It appends whatever the package
+ * missed, wherever it runs, so en-gb is unchanged BY CONSTRUCTION rather than
+ * by an `if`: every en-gb variation is already returned, so there is nothing
+ * left for this to add. That is what makes the regression test meaningful.
+ */
+\add_filter('mb_sof_sample_variations', function (array $rows): array {
+    global $wpdb;
+
+    $already = [];
+
+    foreach ($rows as $row) {
+        $already[(int) ($row['id'] ?? 0)] = true;
+    }
+
+    $found = $wpdb->get_results(
+        "SELECT v.ID AS id, v.post_parent AS parent_id, parent.post_title AS name,
+                COALESCE(sku.meta_value, '') AS sku, size_meta.meta_value AS size_value
+         FROM {$wpdb->posts} v
+         INNER JOIN {$wpdb->posts} parent
+            ON parent.ID = v.post_parent AND parent.post_status = 'publish'
+         LEFT JOIN {$wpdb->postmeta} sku
+            ON sku.post_id = v.ID AND sku.meta_key = '_sku'
+         INNER JOIN {$wpdb->postmeta} size_meta
+            ON size_meta.post_id = v.ID
+           AND size_meta.meta_key IN ('attribute_pa_sample-size', 'attribute_sample-size')
+         WHERE v.post_type = 'product_variation'
+           AND v.post_status = 'publish'
+           AND size_meta.meta_value <> ''
+         GROUP BY v.ID",
+        ARRAY_A
+    );
+
+    if (!\is_array($found)) {
+        return $rows;
+    }
+
+    foreach ($found as $row) {
+        $id = (int) $row['id'];
+
+        if (isset($already[$id])) {
+            continue;
+        }
+
+        $size = sample_size_mm((string) $row['size_value']);
+
+        if (null === $size) {
+            continue;
+        }
+
+        // post_title holds HTML entities, and the widget escapes again on
+        // output, so an undecoded name renders as "&amp;" on screen.
+        $name = \html_entity_decode((string) $row['name'], ENT_QUOTES, 'UTF-8');
+
+        $rows[] = [
+            'id' => $id,
+            'parent_id' => (int) $row['parent_id'],
+            'sku' => (string) $row['sku'],
+            'name' => $name . ' — ' . $size . 'mm sample',
+            'sample_size' => $size,
+        ];
+
+        $already[$id] = true;
+    }
+
+    return $rows;
+});
+
+/**
+ * A sample-size attribute value in mm, or null when it is not a sample.
+ *
+ * Covers both vocabularies: en-gb slugs (`small`, `large`, `full`) and the
+ * French ones (`Small`, `Large`, `Full` on the per-product attribute,
+ * `enchantillon-std` and `enchantillon-xl` on the global one). `full` is the
+ * board itself and is never a sample.
+ */
+function sample_size_mm(string $value): ?int
+{
+    $value = \strtolower(\trim($value));
+
+    if ('' === $value || false !== \strpos($value, 'full')) {
+        return null;
+    }
+
+    if (false !== \strpos($value, 'small') || false !== \strpos($value, 'std')) {
+        return 100;
+    }
+
+    if (false !== \strpos($value, 'large') || false !== \strpos($value, 'xl')) {
+        return 300;
+    }
+
+    return null;
+}
+
+/**
  * The product categories that mark a line as POS / marketing stock.
  *
  * ⚠️ NOT YET POPULATED. The 84 POS lines in the portal export do not exist as

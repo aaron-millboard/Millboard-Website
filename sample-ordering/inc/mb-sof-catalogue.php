@@ -533,7 +533,23 @@ function mb_sof_fetch_sample_variations() {
 		);
 	}
 
-	return $out;
+	/**
+	 * MILLBOARD ADDITION - let a locale add variations this query cannot see.
+	 *
+	 * The query above is tied to the GLOBAL `pa_sample-size` attribute, which
+	 * is how en-gb registered sample size. fr-fr registered the same thing
+	 * per product (`attribute_sample-size`), so not one of its 135 variations
+	 * can ever be returned here and the French catalogue loses every board
+	 * and cladding sample.
+	 *
+	 * Widening the SQL for one locale would put locale knowledge in the
+	 * package. The result is filterable instead and the theme appends what
+	 * this missed, which is the same shape as the existing
+	 * `sample_size_of()` helper in the category-card component.
+	 *
+	 * @param array[] $out Rows of { id, parent_id, sku, name, sample_size }.
+	 */
+	return apply_filters( 'mb_sof_sample_variations', $out );
 }
 
 /**
