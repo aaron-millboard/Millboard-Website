@@ -217,6 +217,15 @@ function mb_sof_render() {
 				'categories' => mb_sof_visible_categories( $catalogue ),
 				'maxQty'    => mb_sof_max_qty(),
 				'cartUrl'   => wc_get_cart_url(),
+				/*
+				 * MILLBOARD EDIT - the accordion count is built in JS, so the
+				 * only way it can be translated is to hand it over. %d is the
+				 * number of lines.
+				 */
+				'i18n'      => array(
+					'itemsOne'  => __( '%d item', 'granola' ),
+					'itemsMany' => __( '%d items', 'granola' ),
+				),
 			)
 		) . ';',
 		'before'

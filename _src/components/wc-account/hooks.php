@@ -68,13 +68,16 @@ namespace Granola\Components\WC_Account;
 
     $sample = get_sample_endpoint();
 
-    // Each panel behind its own capability, so a distributor and an installer
-    // can differ from each other and from staff.
-    if (can_view_brand_assets()) {
-        $items[ENDPOINT_BRAND_ASSETS] = \__('Brand assets', 'granola');
-    } else {
-        unset($items[ENDPOINT_BRAND_ASSETS]);
-    }
+    /*
+     * Brand assets is gone. Aaron, 20 Oct 2026: the project is being dropped.
+     *
+     * Always removed rather than left behind a capability, so it cannot come
+     * back by someone configuring Canto. The endpoint, its title filter and
+     * can_view_brand_assets() are left in place for now: they are inert with
+     * no menu item, and tearing out the Canto client is a bigger change than
+     * was asked for.
+     */
+    unset($items[ENDPOINT_BRAND_ASSETS]);
 
     if (can_order_samples()) {
         // The widget adds its own item under this same key, labelled from
