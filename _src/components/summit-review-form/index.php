@@ -67,11 +67,12 @@ $step = static function (string $n, string $title, string $key): void { ?>
 $yes_text = "Yes, I'd like to let you know about something";
 
 // INT (international distributors) adds travel, Open Diary and two more details.
-$is_int = !empty($args['is_int']);
+$is_wd = !empty($args['is_wd']); // Wooddeck guests: the INT form without Open Diary
+$is_int = !empty($args['is_int']) || $is_wd;
 $is_us = !empty($args['is_us']); // US is the UK form plus the agenda link
 $is_travel = $is_int || $is_fr; // INT and FR delegates both give arrival flights
-$audience = $is_fr ? 'FR' : ($is_int ? 'INT' : ($is_us ? 'US' : 'UK'));
-$flights_contact = $is_fr ? 'luderic.geminard@millboard.com' : 'sam.cockeram@millboard.com';
+$audience = $is_fr ? 'FR' : ($is_wd ? 'WD' : ($is_int ? 'INT' : ($is_us ? 'US' : 'UK')));
+$flights_contact = $is_fr ? 'luderic.geminard@millboard.com' : ($is_wd ? 'sadie.haughton@millboard.com' : 'sam.cockeram@millboard.com');
 $agenda = (string) ($args['agenda_url'] ?? '');
 $phone = ($is_travel || $is_us) ? '+44 24 7643 9943' : '024 7643 9943'; // 024 is not dialable from abroad
 $detail_fields = [
@@ -170,7 +171,9 @@ $travel_fields = [
                     <h2 class="summit-review__step-title"><?= esc_html__('Your travel', 'granola'); ?></h2>
                     <span class="summit-review__done" data-done="travel" hidden><?= esc_html__('Complete', 'granola'); ?></span>
                 </div>
-                <p><?= esc_html__('Your arrival details help us plan around your arrival and contact you if anything changes. Transport during the event is arranged by us.', 'granola'); ?></p>
+                <p><?= $is_wd
+                    ? esc_html__('Your arrival details help us plan around your arrival and contact you if anything changes.', 'granola')
+                    : esc_html__('Your arrival details help us plan around your arrival and contact you if anything changes. Transport during the event is arranged by us.', 'granola'); ?></p>
                 <label class="summit-review__choice">
                     <input type="checkbox" name="summit_flights_not_booked">
                     <?= esc_html(sprintf(__("I haven't booked my flight yet. I'll send them to %s once booked.", 'granola'), $flights_contact)); ?>
@@ -292,7 +295,7 @@ $travel_fields = [
                 </div>
             </section>
 
-            <?php if ($is_int) { ?>
+            <?php if ($is_int && !$is_wd) { ?>
             <section class="summit-review__diary">
                 <h2 class="summit-review__title summit-review__title--sub"><?= esc_html__('Book your Open Diary sessions', 'granola'); ?></h2>
                 <p><?= esc_html__("We are pleased to include an Open Diary session in this year's Global Summit programme. It offers dedicated time with Millboard's specialist teams to discuss topics relevant to your market.", 'granola'); ?></p>
