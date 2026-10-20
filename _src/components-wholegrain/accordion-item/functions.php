@@ -192,11 +192,27 @@ function render_accordion_item_block_schema($graph, $block)
         'inLanguage' => \get_bloginfo('language'),
     ];
 
-    if (empty($graph["0"]['mainEntity'])) {
-        $graph["0"]['mainEntity'] = [];
+    // Attach the question to the node that becomes the FAQPage. On an ordinary
+    // page that is $graph[0] (the WebPage), but on an advice article $graph[0]
+    // is the Article while change_schema_page_type() sets the FAQPage type on a
+    // separate WebPage node - so writing to $graph[0] there leaves the FAQPage
+    // with no mainEntity, which Google reports as "A value for the mainEntity
+    // field is required." Fall back to $graph[0] when no WebPage node is found.
+    $webpage_index = '0';
+
+    foreach ($graph as $i => $node) {
+        if (is_array($node) && in_array('WebPage', (array) ($node['@type'] ?? []), true)) {
+            $webpage_index = $i;
+
+            break;
+        }
     }
 
-    $graph["0"]['mainEntity'][] = [
+    if (empty($graph[$webpage_index]['mainEntity'])) {
+        $graph[$webpage_index]['mainEntity'] = [];
+    }
+
+    $graph[$webpage_index]['mainEntity'][] = [
         '@id' => $url . '#' . $id,
     ];
 
