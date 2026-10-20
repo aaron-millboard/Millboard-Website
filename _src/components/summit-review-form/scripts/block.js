@@ -82,7 +82,7 @@ if (form) {
             form.querySelector('[data-flights]').hidden = s.notBooked;
             form.querySelector('[data-done="travel"]').hidden = !s.travel;
         }
-        if (s.int) {
+        if (s.int && form.querySelector('[data-diary-notes]')) { // WD has no Open Diary section
             const ticked = diaryDepts();
             form.querySelector('[data-diary-notes]').hidden = ticked.length === 0;
             form.querySelectorAll('[data-diary-note]').forEach((el) => {
