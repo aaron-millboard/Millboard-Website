@@ -109,6 +109,50 @@ function change_schema_page_type($data)
 }
 
 /**
+ * Drops FAQPage from the page type when the page carries no FAQ.
+ *
+ * change_schema_page_type() flips the page to ["WebPage","FAQPage"] whenever an
+ * accordion-item block is present, but only items with FAQ content add a
+ * Question to mainEntity. A page whose accordions are plain content (FAQ toggle
+ * off) is then published as an FAQPage with no mainEntity, which Google reports
+ * as "A value for the mainEntity field is required." This runs on the finished
+ * graph, after the block filters have added any questions, and only strips the
+ * type where mainEntity is genuinely empty, so a real FAQ page is left as is.
+ *
+ * @param array $graph The finished Yoast schema graph.
+ *
+ * @return array
+ */
+function drop_empty_faqpage($graph)
+{
+    if (!is_array($graph)) {
+        return $graph;
+    }
+
+    foreach ($graph as $index => $piece) {
+        if (!is_array($piece)) {
+            continue;
+        }
+
+        $types = (array) ($piece['@type'] ?? []);
+
+        if (!in_array('FAQPage', $types, true) || !empty($piece['mainEntity'])) {
+            continue;
+        }
+
+        $types = array_values(array_filter($types, static function ($type) {
+            return $type !== 'FAQPage';
+        }));
+
+        $graph[$index]['@type'] = count($types) === 1 ? $types[0] : $types;
+
+        unset($graph[$index]['mainEntity']);
+    }
+
+    return $graph;
+}
+
+/**
  * Question and answer text for the schema: no tags, entities decoded (&amp; &nbsp; &reg;), one space between words.
  */
 function schema_plain_text($text)
