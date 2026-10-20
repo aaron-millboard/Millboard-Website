@@ -614,7 +614,19 @@ class SampleOrderCheckout
             $required['website_persona'] = \__('This project is to be installed at', 'granola');
         }
 
-        if ('' !== self::checkout_label(ConsentFields::AUDIENCE_FIELD)) {
+        /*
+         * Gated on the CONSENT question, not on the audience field's own
+         * presence. The audience is only asked because the consent block
+         * branches on it, and that block only renders where the consent
+         * question exists. Keying this on AUDIENCE_FIELD required it on
+         * en-gb and en-us too, where the form never renders it, so neither
+         * could place an order at all: required, invisible, unsatisfiable.
+         *
+         * The rule is "require what the FORM renders", which is not always
+         * "require what the CHECKOUT has". The marketing and persona gates
+         * happen to be the same question; this one is not.
+         */
+        if ('' !== self::checkout_label(ConsentFields::CONSENT_FIELD)) {
             $required[ConsentFields::AUDIENCE_FIELD] = \__('Who the customer is', 'granola');
         }
 
