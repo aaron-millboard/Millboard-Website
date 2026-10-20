@@ -34,6 +34,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use Theme\WooCommerce\SampleOrderCheckout as Checkout;
+use Theme\WooCommerce\ConsentFields;
 
 $mb_persona   = Checkout::checkout_options( 'website_persona' );
 $mb_size      = Checkout::checkout_options( 'project-size' );
@@ -180,6 +181,57 @@ $mb_select = static function ( string $key, array $options, bool $required = fal
 					);
 				}
 				?>
+
+				<?php
+				/*
+				 * The consumer consent question, on locales whose checkout
+				 * asks it. France does: its law needs a positive, informed
+				 * opt-in recorded with a date before Millboard may telephone
+				 * a consumer, and a soft opt-in from a sample request no
+				 * longer counts.
+				 *
+				 * Rendered through woocommerce_form_field() with the field
+				 * definition read off the real checkout, so ConsentFields'
+				 * own renderer draws it: the same legend, the same hint, the
+				 * same options and the same 12-month withdrawal terms. There
+				 * is no second copy of the wording to drift.
+				 *
+				 * The rep is RECORDING a consent the customer gave on the
+				 * call, not giving it for them, so the instruction above it
+				 * is the gate: ask in these words or answer no.
+				 */
+				$mb_audience_field = Checkout::checkout_field( ConsentFields::AUDIENCE_FIELD );
+				$mb_consent_field  = Checkout::checkout_field( ConsentFields::CONSENT_FIELD );
+				?>
+				<?php if ( $mb_consent_field ) : ?>
+					<div class="mb-sof-details__consent">
+						<p class="mb-sof-details__consent-instruction">
+							<strong><?php esc_html_e( 'Read the wording below to the customer before you answer.', 'millboard' ); ?></strong><br>
+							<?php esc_html_e( 'Only record “yes” if you have read it to them on this call and they agreed. If you did not ask, or they declined, record “no”. Their answer, today’s date and the exact wording version are stored against this order as the proof of consent.', 'millboard' ); ?>
+						</p>
+						<?php
+						if ( $mb_audience_field ) {
+							woocommerce_form_field(
+								ConsentFields::AUDIENCE_FIELD,
+								array_merge(
+									$mb_audience_field,
+									array( 'required' => true, 'class' => array( 'form-row-wide' ) )
+								),
+								''
+							);
+						}
+
+						woocommerce_form_field(
+							ConsentFields::CONSENT_FIELD,
+							array_merge(
+								$mb_consent_field,
+								array( 'class' => array( 'form-row-wide' ) )
+							),
+							''
+						);
+						?>
+					</div>
+				<?php endif; ?>
 
 				<?php
 				// Marketing opt-OUT, not opt-in: ticking it means do not market.
