@@ -246,7 +246,23 @@ $mb_select = static function ( string $key, array $options, bool $required = fal
 				$mb_consent = Checkout::checkout_label( Checkout::MARKETING_OPT_OUT );
 				?>
 				<?php if ( '' !== $mb_consent ) : ?>
-					<p class="form-row form-row-wide" id="<?php echo esc_attr( Checkout::MARKETING_OPT_OUT ); ?>_field">
+					<?php
+					/*
+					 * On a locale with the consumer question, this row is the
+					 * BUSINESS branch of the same decision, so it carries the
+					 * classes the audience script hides it by. Without them a
+					 * consumer sees the legitimate-interest notice as well as the
+					 * opt-in, and the rep has two sets of wording to read from.
+					 *
+					 * Added here rather than by rendering this row through
+					 * woocommerce_form_field(), because that would change the
+					 * markup on en-gb too, where there is no branch to make.
+					 */
+					$mb_business_class = $mb_consent_field
+						? 'form-row form-row-wide mb-consent mb-consent--business'
+						: 'form-row form-row-wide';
+					?>
+					<p class="<?php echo esc_attr( $mb_business_class ); ?>" id="<?php echo esc_attr( Checkout::MARKETING_OPT_OUT ); ?>_field">
 						<span class="woocommerce-input-wrapper">
 							<label class="checkbox">
 								<input type="checkbox" class="input-checkbox" name="<?php echo esc_attr( Checkout::MARKETING_OPT_OUT ); ?>" id="<?php echo esc_attr( Checkout::MARKETING_OPT_OUT ); ?>" value="1">
