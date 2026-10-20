@@ -210,25 +210,29 @@ $mb_select = static function ( string $key, array $options, bool $required = fal
 							<?php esc_html_e( 'Only record “yes” if you have read it to them on this call and they agreed. If you did not ask, or they declined, record “no”. Their answer, today’s date and the exact wording version are stored against this order as the proof of consent.', 'millboard' ); ?>
 						</p>
 						<?php
-						if ( $mb_audience_field ) {
-							woocommerce_form_field(
-								ConsentFields::AUDIENCE_FIELD,
-								array_merge(
-									$mb_audience_field,
-									array( 'required' => true, 'class' => array( 'form-row-wide' ) )
-								),
-								''
+						/*
+						 * ADD to the class array, never replace it. ConsentFields
+						 * puts `mb-consent--consumer` and `mb-consent--business` on
+						 * these rows and the audience script keys off exactly those,
+						 * so overwriting the array leaves both questions on screen
+						 * at once -- which is worse here than at checkout, because
+						 * the rep is being told to read one of them aloud.
+						 */
+						$mb_widen = static function ( array $field ): array {
+							$field['class'] = array_merge(
+								(array) ( $field['class'] ?? array() ),
+								array( 'form-row-wide' )
 							);
+
+							return $field;
+						};
+
+						if ( $mb_audience_field ) {
+							$mb_audience_field['required'] = true;
+							woocommerce_form_field( ConsentFields::AUDIENCE_FIELD, $mb_widen( $mb_audience_field ), '' );
 						}
 
-						woocommerce_form_field(
-							ConsentFields::CONSENT_FIELD,
-							array_merge(
-								$mb_consent_field,
-								array( 'class' => array( 'form-row-wide' ) )
-							),
-							''
-						);
+						woocommerce_form_field( ConsentFields::CONSENT_FIELD, $mb_widen( $mb_consent_field ), '' );
 						?>
 					</div>
 				<?php endif; ?>
