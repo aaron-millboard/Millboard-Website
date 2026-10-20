@@ -116,7 +116,10 @@ function filter_args(array $args): ?array
     $results_count = count($args['items']);
 
     $args['sidebar_heading'] = [
-        'el' => 'h3',
+        // H2: this is the finder's top-level section under the page H1, and the
+        // result cards below it are H3. An H3 here skipped a level (H1 -> H3),
+        // which Semrush flags as poor heading hierarchy.
+        'el' => 'h2',
         'content' => sprintf(
             \_n(
                 // translators: the number of map results.
