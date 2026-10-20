@@ -277,6 +277,19 @@ class SampleOrderCheckout
         self::apply_shipping_line($order);
         self::apply_meta($order, $posted, $lines);
 
+        /*
+         * The lawful basis for contacting this customer, written by the SAME
+         * resolver the shop checkout uses rather than a second copy of the
+         * rules. It no-ops on a locale ConsentFields is not configured for,
+         * so the UK and US are untouched.
+         *
+         * On France this records all eight keys the live CRM Perks feeds are
+         * already mapped to, including the consent date and the wording
+         * version the customer agreed to, which is what makes the record
+         * demonstrable rather than merely asserted.
+         */
+        ConsentFields::record_permission($order, $posted);
+
         $order->set_created_via('millboard-sample-ordering');
         $order->calculate_totals(false);
         $order->update_status('processing', \__('Sample order placed from My Account.', 'granola'));
@@ -531,6 +544,14 @@ class SampleOrderCheckout
                 self::MARKETING_OPT_OUT,
                 'billing_address_1', 'billing_address_2', 'billing_city',
                 'billing_state', 'billing_postcode', 'billing_country', 'billing_phone',
+                /*
+                 * The consent pair, so ConsentFields::record_permission() can
+                 * resolve exactly what it resolves at checkout. Absent on a
+                 * locale that does not render them, which is harmless: the
+                 * resolver no-ops where it is not configured.
+                 */
+                ConsentFields::AUDIENCE_FIELD,
+                ConsentFields::CONSENT_FIELD,
             ]
         );
 
@@ -576,6 +597,22 @@ class SampleOrderCheckout
             'billing_postcode' => \__('Postcode', 'granola'),
             'billing_phone' => \__('Customer phone number', 'granola'),
         ];
+
+        /*
+         * Consent is per country. France asks the customer to opt in before
+         * Millboard may telephone them and the answer is mandatory; the UK
+         * asks only for an objection to legitimate interest; the US asks
+         * nothing at all. Rather than encode that here, require whatever
+         * THIS site's checkout requires, read live, so the two can never say
+         * different things about the same consent.
+         */
+        if ('' !== self::checkout_label(ConsentFields::AUDIENCE_FIELD)) {
+            $required[ConsentFields::AUDIENCE_FIELD] = \__('Who the customer is', 'granola');
+        }
+
+        if ('' !== self::checkout_label(ConsentFields::CONSENT_FIELD)) {
+            $required[ConsentFields::CONSENT_FIELD] = \__('Whether the customer agreed to be contacted', 'granola');
+        }
 
         $missing = [];
 
@@ -651,17 +688,35 @@ class SampleOrderCheckout
      */
     public static function checkout_label(string $key): string
     {
+        $field = self::checkout_field($key);
+
+        return isset($field['label']) ? (string) $field['label'] : '';
+    }
+
+    /**
+     * A checkout field's whole definition, read live.
+     *
+     * Returning the definition rather than just the label lets this form hand
+     * it straight to woocommerce_form_field(), which fires the same renderer
+     * the checkout fires - including ConsentFields' own markup for the
+     * `millboard_consent` type. The consent wording therefore cannot drift
+     * from the checkout's, because it IS the checkout's.
+     *
+     * @return array<string, mixed>
+     */
+    public static function checkout_field(string $key): array
+    {
         if (!\function_exists('WC') || !\WC()->checkout()) {
-            return '';
+            return [];
         }
 
         foreach (\WC()->checkout()->get_checkout_fields() as $set) {
-            if (isset($set[$key]['label'])) {
-                return (string) $set[$key]['label'];
+            if (isset($set[$key]) && \is_array($set[$key])) {
+                return $set[$key];
             }
         }
 
-        return '';
+        return [];
     }
 
     /**
