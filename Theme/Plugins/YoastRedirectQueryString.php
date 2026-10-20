@@ -89,7 +89,9 @@ class YoastRedirectQueryString
         // Yoast stores the target relative to the blog root; build an absolute URL
         // and trailing-slash the path (matching Yoast's own handling) so there is a
         // single clean hop, unless the target looks like a file.
-        if (\preg_match('#^https?://#i', $target)) {
+        $is_external = (bool) \preg_match('#^https?://#i', $target);
+
+        if ($is_external) {
             $target_url = $target;
         } else {
             $relative = \ltrim($target, '/');
@@ -110,7 +112,16 @@ class YoastRedirectQueryString
             $type = 301;
         }
 
-        \wp_safe_redirect($target_url, $type);
+        // Yoast's own handler sends an external target with wp_redirect(), so an
+        // absolute target (e.g. the Deck Planner at deckplanner.millboard.com) must go
+        // the same way here. wp_safe_redirect() validates against the allowed hosts and
+        // would reject the off-site host, bouncing the visitor to wp-admin. Internal
+        // targets are same-origin, so they keep wp_safe_redirect().
+        if ($is_external) {
+            \wp_redirect($target_url, $type);
+        } else {
+            \wp_safe_redirect($target_url, $type);
+        }
         exit;
     }
 }
