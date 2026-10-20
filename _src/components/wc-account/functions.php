@@ -36,10 +36,27 @@ const ENDPOINT_SAMPLE_ORDERING = 'sample-ordering';
 const SAMPLE_ORDERING_SITES = ['/en-gb/'];
 
 /**
+ * The per-site switch, so a market is turned on without a deploy.
+ *
+ * The docblock below has always said adding a market should be a setting, but
+ * nothing hooked the filter, so until now it was a constant and a deploy. With
+ * France and the US both wanted and Ireland behind them, that is three
+ * production deploys for three `'/xx-xx/'` strings.
+ *
+ *   wp option update millboard_sample_ordering_enabled yes --url=<site>/fr-fr/
+ *   wp option delete millboard_sample_ordering_enabled --url=<site>/fr-fr/
+ *
+ * en-gb stays in the constant rather than moving to an option: the UK must not
+ * be switchable off by a stray option write, and a fresh clone keeps working
+ * with no setup.
+ */
+const SAMPLE_ORDERING_OPTION = 'millboard_sample_ordering_enabled';
+
+/**
  * Is the current site one the sample tool runs on?
  *
- * Filterable so adding a market is a setting rather than a deploy -- the
- * portal is "UK only for now", and the obvious next step is Ireland.
+ * The constant is the floor and the option only ever ADDS a market. Nothing
+ * here can take en-gb away.
  */
 function is_sample_ordering_site(): bool
 {
@@ -52,7 +69,13 @@ function is_sample_ordering_site(): bool
     $site = \get_blog_details(\get_current_blog_id());
     $path = $site ? \trailingslashit((string) $site->path) : '/';
 
-    return \in_array($path, \apply_filters('millboard_sample_ordering_sites', SAMPLE_ORDERING_SITES), true);
+    $sites = SAMPLE_ORDERING_SITES;
+
+    if ('yes' === \get_option(SAMPLE_ORDERING_OPTION)) {
+        $sites[] = $path;
+    }
+
+    return \in_array($path, \apply_filters('millboard_sample_ordering_sites', $sites), true);
 }
 
 /**
