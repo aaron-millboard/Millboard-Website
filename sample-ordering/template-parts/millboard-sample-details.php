@@ -282,7 +282,17 @@ $mb_select = static function ( string $key, array $options, bool $required = fal
 
 			<div class="mb-sof-details__fields">
 				<?php
-				$mb_row( 'website_persona', __( 'This project is to be installed at', 'granola' ), 'wide', $mb_select( 'website_persona', $mb_persona, true ), true );
+				/*
+				 * Only where THIS site's checkout has it. en-us has no
+				 * website_persona field, so this rendered as an empty
+				 * required select that could never be satisfied and no US
+				 * sample order could be placed at all. Same rule the
+				 * marketing and consent rows already follow: render what the
+				 * checkout renders, read live.
+				 */
+				if ( $mb_persona ) {
+					$mb_row( 'website_persona', __( 'This project is to be installed at', 'granola' ), 'wide', $mb_select( 'website_persona', $mb_persona, true ), true );
+				}
 				$mb_row( 'project-size', __( 'Project size', 'granola' ), 'first', $mb_select( 'project-size', $mb_size ) );
 				$mb_row( 'project-start-time', __( 'When will they start the project?', 'granola' ), 'last', $mb_select( 'project-start-time', $mb_start ) );
 				?>
