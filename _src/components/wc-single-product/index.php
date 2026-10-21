@@ -44,7 +44,7 @@ $has_samples = str_contains($samples, 'product-samples__button');
                         'url' => $args['nbs_source_url'],
                         'content' => esc_html__('View on NBS Source', 'granola'),
                         'target' => '_blank',
-                        'classes' => ['g-button', 'g-button--secondary'],
+                        'classes' => ['g-button'],
                     ]); ?>
                 </div>
             <?php } ?>
