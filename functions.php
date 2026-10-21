@@ -58,6 +58,7 @@ if (file_exists($autoloader = __DIR__ . '/vendor/autoload.php')) {
 // ----------------------------------------------------
 \Theme\Meta\Schema::init();
 \Theme\Meta\ProductSchema::init();
+\Theme\Meta\SiteVerification::init();
 
 // ----------------------------------------------------
 // Custom Shortcodes.
