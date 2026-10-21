@@ -37,6 +37,10 @@
                 margin: 0;
             }
 
+            #{$this}__nbs-source {
+                margin-top: var(--space--xs);
+            }
+
             #{$this}__header-cta {
                 margin-top: var(--space--2xs);
 

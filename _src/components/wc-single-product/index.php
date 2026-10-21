@@ -37,6 +37,17 @@ $has_samples = str_contains($samples, 'product-samples__button');
                     <?= \Granola\Component::get('link', $args['header_cta']); ?>
                 </div>
             <?php } ?>
+
+            <?php if (!empty($args['nbs_source_url'])) { ?>
+                <div class="product__nbs-source">
+                    <?= \Granola\Component::get('link', [
+                        'url' => $args['nbs_source_url'],
+                        'content' => esc_html__('View on NBS Source', 'granola'),
+                        'target' => '_blank',
+                        'classes' => ['g-button', 'g-button--secondary'],
+                    ]); ?>
+                </div>
+            <?php } ?>
         </div>
 
         <?php
