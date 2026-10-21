@@ -17,6 +17,7 @@ class CaseStudy
         // \add_action('acf/init', [__CLASS__, 'add_settings_page']);
         \add_filter('granola/templates/post-types', [__CLASS__, 'filter_granola_templates_post_types']);
         \add_action('init', [__CLASS__, 'add_rewrite_rules'], 10, 0);
+        \add_filter('wpseo_robots_array', [__CLASS__, 'noindex_category_archive']);
     }
 
     /**
@@ -28,6 +29,32 @@ class CaseStudy
     {
         \add_rewrite_rule('^case-studies/category/([^/]*)/?', 'index.php?category_name=$matches[1]&post_type=' . self::SLUG, 'top');
         \add_rewrite_rule('^case-studies/category/(.+?)/page/?([0-9]{1,})/?$', 'index.php?category_name=$matches[1]&paged=$matches[2]&post_type=' . self::SLUG, 'top');
+    }
+
+    /**
+     * Noindex the case-study category archive views (/case-studies/category/<term>/).
+     *
+     * These filtered views are thin, near-duplicate facets of each other and of the
+     * main archive (one case study in most categories), and they render as the case
+     * study post type archive, so they share its single Yoast indexable and index by
+     * default. The main /case-studies/ archive must stay indexed, so this keys on the
+     * rewrite's own query vars (post_type=case-study + a category_name) to catch only
+     * the category-filtered views, paginated ones included.
+     *
+     * @param array $robots The Yoast robots directives.
+     *
+     * @return array
+     */
+    public static function noindex_category_archive($robots)
+    {
+        if (is_array($robots)
+            && \get_query_var('post_type') === self::SLUG
+            && \get_query_var('category_name') !== ''
+        ) {
+            $robots['index'] = 'noindex';
+        }
+
+        return $robots;
     }
 
     /**
