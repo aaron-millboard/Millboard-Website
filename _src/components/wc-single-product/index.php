@@ -42,7 +42,7 @@ $has_samples = str_contains($samples, 'product-samples__button');
                 <div class="product__nbs-source">
                     <?= \Granola\Component::get('link', [
                         'url' => $args['nbs_source_url'],
-                        'content' => esc_html__('View on NBS Source', 'granola'),
+                        'content' => GranolaSVG::get('icons-custom/nbs-source.svg') . '<span>' . esc_html__('View on NBS Source', 'granola') . '</span>',
                         'target' => '_blank',
                         'classes' => ['g-button'],
                     ]); ?>
