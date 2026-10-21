@@ -39,6 +39,13 @@
             ]
         },
         {
+            "key": "cpt_product_nbs_source_url",
+            "label": "NBS Source link",
+            "name": "nbs_source_url",
+            "type": "url",
+            "instructions": "Optional. Link to this product's range on NBS Source. When set, a 'View on NBS Source' button shows under the product description. Must start with https://."
+        },
+        {
             "key": "cpt_product_tab_product_description",
             "label": "Product Description",
             "type": "tab"

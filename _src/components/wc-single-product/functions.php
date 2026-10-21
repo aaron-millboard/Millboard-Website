@@ -112,6 +112,12 @@ function filter_args(array $args): ?array
         $args['header_cta']['content'] = \Granola\SVG::get('icons-custom/pencil.svg') . $args['header_cta']['title'];
     }
 
+    // Link to this product's range on NBS Source. Only a plain https URL is accepted, and nothing renders when it is empty.
+    $nbs_source_url = \get_field('nbs_source_url', $product->get_id());
+    $args['nbs_source_url'] = (is_string($nbs_source_url) && str_starts_with($nbs_source_url, 'https://'))
+        ? \esc_url_raw($nbs_source_url)
+        : '';
+
     // -------------------------------------------------------------------------
     // 3. Variations (to be used in the variation selector component)
     // -------------------------------------------------------------------------
