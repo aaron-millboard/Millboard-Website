@@ -118,6 +118,12 @@ function filter_args(array $args): ?array
         ? \esc_url_raw($nbs_source_url)
         : '';
 
+    // Lightbeans 3D texture download. Only a plain slug is accepted, and nothing renders when it is empty.
+    $lightbeans_slug = \get_field('lightbeans_slug', $product->get_id());
+    $args['lightbeans_slug'] = (is_string($lightbeans_slug) && preg_match('/^[a-z0-9-]+$/', $lightbeans_slug))
+        ? $lightbeans_slug
+        : '';
+
     // -------------------------------------------------------------------------
     // 3. Variations (to be used in the variation selector component)
     // -------------------------------------------------------------------------

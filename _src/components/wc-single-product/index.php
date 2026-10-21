@@ -48,6 +48,14 @@ $has_samples = str_contains($samples, 'product-samples__button');
                     ]); ?>
                 </div>
             <?php } ?>
+
+            <?php if (!empty($args['lightbeans_slug'])) { ?>
+                <div class="product__lightbeans">
+                    <button type="button" class="g-button" data-lightbeans-texture="<?= esc_attr($args['lightbeans_slug']); ?>">
+                        <?= esc_html__('Download 3D texture', 'granola'); ?>
+                    </button>
+                </div>
+            <?php } ?>
         </div>
 
         <?php

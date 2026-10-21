@@ -46,6 +46,13 @@
             "instructions": "Optional. Link to this product's range on NBS Source. When set, a 'View on NBS Source' button shows under the product description. Must start with https://."
         },
         {
+            "key": "cpt_product_lightbeans_slug",
+            "label": "Lightbeans texture slug",
+            "name": "lightbeans_slug",
+            "type": "text",
+            "instructions": "Optional. The product slug from the Lightbeans CMS, for example enhanced-grain-antique-oak. When set, a 'Download 3D texture' button shows under the product description. Lowercase letters, numbers and hyphens only."
+        },
+        {
             "key": "cpt_product_tab_product_description",
             "label": "Product Description",
             "type": "tab"
