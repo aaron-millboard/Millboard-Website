@@ -68,6 +68,21 @@ class ReviewLog
         return $wpdb->base_prefix . 'summit_review_log';
     }
 
+    /**
+     * Every submission, oldest first, for the form-status dashboard. Read only.
+     *
+     * @return array<int,array<string,string>>
+     */
+    public static function submissions(): array
+    {
+        global $wpdb;
+
+        return (array) $wpdb->get_results(
+            'SELECT id, created_at, email, form_guid, payload FROM ' . self::table() . ' ORDER BY id',
+            ARRAY_A
+        );
+    }
+
     private static function install(): void
     {
         if (\get_site_option('mb_summit_review_log_db') === self::DB_VERSION) {
