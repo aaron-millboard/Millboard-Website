@@ -181,3 +181,4 @@ require_once __DIR__ . '/sample-ordering/inc/millboard-sample-ordering.php';
 \Theme\Summit\Admin::init();
 \Theme\Summit\Cli::init();
 \Theme\Summit\ReviewLog::init();
+\Theme\Summit\FormStatus::init();
