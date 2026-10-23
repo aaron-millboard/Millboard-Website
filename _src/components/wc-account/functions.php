@@ -88,7 +88,49 @@ function is_sample_ordering_site(): bool
  */
 function can_view_brand_assets(?int $user_id = null): bool
 {
-    return user_can_mb(\Theme\Accounts\Roles::CAP_BRAND_ASSETS, $user_id);
+    if (!user_can_mb(\Theme\Accounts\Roles::CAP_BRAND_ASSETS, $user_id)) {
+        return false;
+    }
+
+    return in_asset_viewers($user_id ?: \get_current_user_id());
+}
+
+/**
+ * Is this person on the Assets list?
+ *
+ * ⚠ FAILS CLOSED. An absent or empty `millboard_asset_viewers` means NOBODY,
+ * which is the opposite of the POS allow-list. POS was a working feature
+ * being narrowed, so an empty list there means everyone and deploying the
+ * gate changed nothing for anyone. Assets is the other way round: it is
+ * switched back on for a named pair while the library is still being built,
+ * so a mistake should hide the tab, not show an unfinished library to all
+ * 99 staff.
+ *
+ * Matched on e-mail, which is what whoever maintains the list will
+ * recognise. Set it without a deploy:
+ *
+ *   wp option update millboard_asset_viewers --format=json
+ *     '["a@millboard.com","b@millboard.com"]' --url=<site>/en-gb/
+ */
+function in_asset_viewers(int $user_id): bool
+{
+    if (!$user_id) {
+        return false;
+    }
+
+    $allowed = \array_filter(\array_map(
+        static fn($email): string => \strtolower(\trim((string) $email)),
+        (array) \get_option('millboard_asset_viewers', [])
+    ));
+
+    if (!$allowed) {
+        return false;
+    }
+
+    $user = \get_userdata($user_id);
+
+    return $user instanceof \WP_User
+        && \in_array(\strtolower($user->user_email), $allowed, true);
 }
 
 /**

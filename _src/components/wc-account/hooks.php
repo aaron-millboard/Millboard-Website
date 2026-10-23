@@ -69,15 +69,17 @@ namespace Granola\Components\WC_Account;
     $sample = get_sample_endpoint();
 
     /*
-     * Brand assets is gone. Aaron, 20 Oct 2026: the project is being dropped.
+     * Assets, for the people on the list and nobody else.
      *
-     * Always removed rather than left behind a capability, so it cannot come
-     * back by someone configuring Canto. The endpoint, its title filter and
-     * can_view_brand_assets() are left in place for now: they are inert with
-     * no menu item, and tearing out the Canto client is a bigger change than
-     * was asked for.
+     * Dropped on 20 Oct when the project was shelved; back on 23 Oct at Ed
+     * Lumb's request, renamed from "Brand assets" to "Assets", and limited to
+     * `millboard_asset_viewers`.
      */
-    unset($items[ENDPOINT_BRAND_ASSETS]);
+    if (can_view_brand_assets()) {
+        $items[ENDPOINT_BRAND_ASSETS] = \__('Assets', 'granola');
+    } else {
+        unset($items[ENDPOINT_BRAND_ASSETS]);
+    }
 
     if (can_order_samples()) {
         // The widget adds its own item under this same key, labelled from
@@ -176,7 +178,7 @@ namespace Granola\Components\WC_Account;
  * Give the custom panels a page title, so the browser tab and any breadcrumb
  * read correctly rather than falling back to the bare "My account".
  */
-\add_filter('woocommerce_endpoint_' . ENDPOINT_BRAND_ASSETS . '_title', fn(): string => \__('Brand assets', 'granola'));
+\add_filter('woocommerce_endpoint_' . ENDPOINT_BRAND_ASSETS . '_title', fn(): string => \__('Assets', 'granola'));
 \add_filter('woocommerce_endpoint_' . ENDPOINT_SAMPLE_ORDERING . '_title', fn(): string => \__('Sample ordering', 'granola'));
 
 /**
