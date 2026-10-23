@@ -264,7 +264,29 @@ class Client
             return ['results' => [], 'found' => 0, 'more' => false, 'next_start' => 0];
         }
 
-        return self::visible_page('search', ['keyword' => $keyword], $limit, $start);
+        /*
+         * ⚠️ sortBy is NOT cosmetic. Without it Canto answers a search in an
+         * order that is only stable for an IDENTICAL request: ask for the same
+         * span with a different page size and the same assets come back in a
+         * different order. Measured against the live library: one read of 120
+         * from offset 300, versus three reads of 40 covering the same span,
+         * returned the same members in a different order every time, and were
+         * identical the moment sortBy=name was added.
+         *
+         * That makes offset paging meaningless, because "asset number 320"
+         * depends on how you asked. It also bit a single call, because the walk
+         * below deliberately changes page size part way through (100, then
+         * 1000), so a search needing more than one request could repeat and
+         * drop assets without anyone paging at all.
+         *
+         * contents() has always sent this, which is why folder listings paged
+         * cleanly and search did not.
+         */
+        return self::visible_page('search', [
+            'keyword' => $keyword,
+            'sortBy' => 'name',
+            'sortDirection' => 'ascending',
+        ], $limit, $start);
     }
 
     /**
