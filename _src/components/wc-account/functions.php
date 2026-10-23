@@ -484,7 +484,10 @@ function account_image(string $slot, string $description): string
     }
 
     return \sprintf(
-        '<span class="mb-account-figure__placeholder"><span class="mb-account-figure__note">%s</span></span>',
+        '<span class="mb-account-figure__placeholder">'
+            . '<span class="mb-account-figure__flag">Placeholder</span>'
+            . '<span class="mb-account-figure__note">%s</span>'
+        . '</span>',
         \esc_html($description)
     );
 }

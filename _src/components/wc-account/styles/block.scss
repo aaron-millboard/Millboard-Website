@@ -435,12 +435,30 @@
     // not. Goes the moment a real image id is set on the option.
     &__placeholder {
         display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
+        gap: #{px-to-rem(10)};
         width: 100%;
         height: 100%;
         padding: #{px-to-rem(16)};
-        border: 1px dashed rgba(47, 41, 46, 0.3);
+
+        // ⚠️ This is supposed to be hard to miss, and the first version was
+        // not: a 1px hairline at 30% opacity on Mist read as a finished grey
+        // panel with a caption under it, which is exactly the thing somebody
+        // ships without noticing. 2px at full strength, and the word
+        // "Placeholder" above the description, so nobody has to infer it.
+        border: #{px-to-rem(2)} dashed rgba(47, 41, 46, 0.55);
+    }
+
+    &__flag {
+        font-size: #{px-to-rem(11)};
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        padding: #{px-to-rem(4)} #{px-to-rem(10)};
+        background-color: var(--mba-ink);
+        color: var(--mba-paper);
     }
 
     &__note {
