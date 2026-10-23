@@ -408,7 +408,7 @@
 
     &--closed {
         border-color: var(--mbh-rule, #{rgba(#2f292e, 0.18)});
-        color: #6e6a6c;
+        color: var(--mba-muted);
     }
 }
 
@@ -515,7 +515,7 @@
     font-weight: 700;
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: #6e6a6c;
+    color: var(--mba-muted);
     text-decoration: none;
 
     &:hover,
@@ -657,14 +657,14 @@
     &__note {
         font-size: #{px-to-rem(13)};
         line-height: 1.5;
-        color: #6e6a6c;
+        color: var(--mba-muted);
     }
 
     // WooCommerce's own inline validation message.
     em {
         font-size: #{px-to-rem(13)};
         font-style: normal;
-        color: #6e6a6c;
+        color: var(--mba-muted);
     }
 }
 
@@ -710,7 +710,7 @@
 
     &__note {
         font-size: #{px-to-rem(13)};
-        color: #6e6a6c;
+        color: var(--mba-muted);
     }
 }
 
@@ -719,7 +719,7 @@
     font-weight: 700;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: #6e6a6c;
+    color: var(--mba-muted);
     text-decoration: none;
     border-bottom: 1px solid transparent;
 
@@ -749,7 +749,7 @@
         max-width: 60ch;
         font-size: #{px-to-rem(18)};
         line-height: 1.7;
-        color: #6e6a6c;
+        color: var(--mba-muted);
     }
 
     &__actions {
@@ -867,7 +867,7 @@
         margin: 0 0 #{px-to-rem(16)};
         font-size: #{px-to-rem(15)};
         line-height: 1.8;
-        color: #6e6a6c;
+        color: var(--mba-muted);
     }
 }
 
@@ -945,7 +945,7 @@
         font-weight: 700;
         letter-spacing: var(--mbh-tracking-sub, 0.16em);
         text-transform: uppercase;
-        color: #6e6a6c;
+        color: var(--mba-muted);
         text-decoration: none;
         border-bottom: 2px solid transparent;
 
@@ -960,34 +960,17 @@
         }
     }
 
-    // One grid definition shared by the header row and every order row, so the
-    // columns cannot drift apart.
-    --mba-order-cols: minmax(0, 1fr) auto;
-
-    @include mq('large') {
-        --mba-order-cols: minmax(#{px-to-rem(96)}, #{px-to-rem(108)}) minmax(#{px-to-rem(96)}, #{px-to-rem(120)}) minmax(#{px-to-rem(160)}, 2fr) #{px-to-rem(112)} minmax(#{px-to-rem(64)}, #{px-to-rem(78)});
-    }
-
-    &__head {
-        display: none;
-        grid-template-columns: var(--mba-order-cols);
-        gap: #{px-to-rem(16)};
-        padding: #{px-to-rem(18)} #{px-to-rem(4)} #{px-to-rem(12)};
-        border-bottom: 1px solid var(--mbh-rule, #{rgba(#2f292e, 0.18)});
-
-        @include mq('large') {
-            display: grid;
-        }
-
-        span {
-            font-size: #{px-to-rem(11)};
-            font-weight: 700;
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
-            color: #6e6a6c;
-            min-width: 0;
-        }
-    }
+    // The row is a wrapping flex line, not a table.
+    //
+    // It used to be a five-track grid with hand-placed grid-areas for narrow
+    // screens that were reset at 'large'. Two layouts had to be kept in step
+    // by hand, and adding anything meant editing both. Letting the row wrap
+    // does the same job with one rule and no breakpoint: the shade chips, the
+    // order and its summary, the status and the total each claim what they
+    // need and fall onto the next line when there is no room.
+    //
+    // The column header row went with it. Headings label columns, and these
+    // are no longer columns.
 
     &__list {
         border-top: 1px solid var(--color--brand-4);
@@ -998,11 +981,11 @@
     }
 
     &__row {
-        display: grid;
-        grid-template-columns: var(--mba-order-cols);
-        gap: #{px-to-rem(12)} #{px-to-rem(16)};
+        display: flex;
+        flex-wrap: wrap;
         align-items: center;
-        padding: #{px-to-rem(22)} #{px-to-rem(4)};
+        gap: #{px-to-rem(12)} #{px-to-rem(24)};
+        padding: #{px-to-rem(20)} #{px-to-rem(4)};
         border-bottom: 1px solid var(--mbh-rule, #{rgba(#2f292e, 0.18)});
         text-decoration: none;
         color: var(--color--foreground);
@@ -1015,62 +998,80 @@
         }
     }
 
-    // Narrow layout: id and total on the first line, date and status on the
-    // second, the item summary spanning the third.
+    // Up to three shades, overlapped, so an order reads as "the grey one"
+    // before any of the words beside it are read.
+    &__chips {
+        display: flex;
+        flex: none;
+    }
+
+    &__chip {
+        display: block;
+        width: #{px-to-rem(44)};
+        height: #{px-to-rem(44)};
+        border-radius: #{px-to-rem(2)};
+        object-fit: cover;
+
+        // The ring is the page colour, not a hairline: it is what separates
+        // one chip from the one it overlaps, and it has to work on hover when
+        // the row behind it changes.
+        border: #{px-to-rem(2)} solid var(--mba-paper);
+
+        + .mb-account-orders__chip {
+            margin-left: #{px-to-rem(-12)};
+        }
+    }
+
+    &__meta {
+        flex: 1 1 #{px-to-rem(240)};
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: #{px-to-rem(4)};
+    }
+
+    &__line {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: #{px-to-rem(4)} #{px-to-rem(16)};
+    }
+
     &__id {
-        grid-area: 1 / 1 / 2 / 2;
         font-size: #{px-to-rem(14)};
         font-weight: 700;
         letter-spacing: 0.08em;
         min-width: 0;
     }
 
-    &__total {
-        grid-area: 1 / 2 / 2 / 3;
+    &__date {
         font-size: #{px-to-rem(14)};
-        text-align: right;
+        color: var(--mba-muted);
         min-width: 0;
     }
 
-    &__date {
-        grid-area: 2 / 1 / 3 / 2;
-        font-size: #{px-to-rem(14)};
-        color: #6e6a6c;
+    &__summary {
+        font-size: #{px-to-rem(15)};
+        line-height: 1.45;
+        color: var(--mba-muted);
         min-width: 0;
     }
 
     &__status {
-        grid-area: 2 / 2 / 3 / 3;
-        min-width: 0;
-        justify-self: end;
+        flex: none;
     }
 
-    &__summary {
-        grid-area: 3 / 1 / 4 / 3;
-        font-size: #{px-to-rem(14)};
-        line-height: 1.45;
-        color: #6e6a6c;
-        min-width: 0;
-    }
-
-    @include mq('large') {
-        &__id,
-        &__date,
-        &__summary,
-        &__status,
-        &__total {
-            grid-area: auto;
-        }
-
-        &__status {
-            justify-self: start;
-        }
+    &__total {
+        flex: 0 0 #{px-to-rem(96)};
+        margin-left: auto;
+        font-size: #{px-to-rem(15)};
+        text-align: right;
     }
 
     &__count {
         margin: #{px-to-rem(24)} 0 0;
         font-size: #{px-to-rem(13)};
-        color: #6e6a6c;
+        color: var(--mba-muted);
     }
 
     &__pagination {
@@ -1107,7 +1108,7 @@
     &__meta {
         margin: 0 0 #{px-to-rem(48)};
         font-size: #{px-to-rem(15)};
-        color: #6e6a6c;
+        color: var(--mba-muted);
     }
 
     &__steps {
@@ -1138,12 +1139,12 @@
         letter-spacing: var(--mbh-tracking-sub, 0.16em);
         text-transform: uppercase;
         margin-bottom: #{px-to-rem(6)};
-        color: #6e6a6c;
+        color: var(--mba-muted);
     }
 
     &__step-when {
         font-size: #{px-to-rem(13)};
-        color: #6e6a6c;
+        color: var(--mba-muted);
     }
 
     &__step.is-reached {
@@ -1203,12 +1204,12 @@
     &__item-sub {
         display: block;
         font-size: #{px-to-rem(13)};
-        color: #6e6a6c;
+        color: var(--mba-muted);
     }
 
     &__item-qty {
         font-size: #{px-to-rem(14)};
-        color: #6e6a6c;
+        color: var(--mba-muted);
         min-width: #{px-to-rem(60)};
     }
 
@@ -1261,7 +1262,7 @@
         margin: 0 0 #{px-to-rem(16)};
         font-size: #{px-to-rem(15)};
         line-height: 1.8;
-        color: #6e6a6c;
+        color: var(--mba-muted);
         font-style: normal;
 
         &:last-child {
@@ -1287,14 +1288,14 @@
         font-weight: 700;
         letter-spacing: 0.18em;
         text-transform: uppercase;
-        color: #6e6a6c;
+        color: var(--mba-muted);
         margin-bottom: #{px-to-rem(8)};
     }
 
     &__note-body {
         font-size: #{px-to-rem(15)};
         line-height: 1.7;
-        color: #6e6a6c;
+        color: var(--mba-muted);
 
         p {
             margin: 0;
@@ -1354,7 +1355,7 @@
         margin: 0;
         font-size: #{px-to-rem(15)};
         line-height: 1.9;
-        color: #6e6a6c;
+        color: var(--mba-muted);
         font-style: normal;
     }
 }
@@ -1407,7 +1408,7 @@
 
     &__expiry {
         font-size: #{px-to-rem(14)};
-        color: #6e6a6c;
+        color: var(--mba-muted);
         min-width: #{px-to-rem(110)};
     }
 
@@ -1426,7 +1427,7 @@
         font-weight: 700;
         letter-spacing: 0.12em;
         text-transform: uppercase;
-        color: #6e6a6c;
+        color: var(--mba-muted);
         text-decoration: none;
         background: none;
         border: 0;
@@ -1453,7 +1454,7 @@
 .mb-account-embed-note {
     margin: #{px-to-rem(20)} 0 0;
     font-size: #{px-to-rem(13)};
-    color: #6e6a6c;
+    color: var(--mba-muted);
 
     a {
         color: var(--color--foreground);

@@ -20,6 +20,7 @@ use function Granola\Components\WC_Account\get_order_counts;
 use function Granola\Components\WC_Account\get_order_summary;
 use function Granola\Components\WC_Account\get_order_tabs;
 use function Granola\Components\WC_Account\is_closed;
+use function Granola\Components\WC_Account\order_shade_chips;
 
 do_action('woocommerce_before_account_orders', $has_orders);
 
@@ -81,14 +82,6 @@ $shown = $has_orders ? count($customer_orders->orders) : 0;
 
         <?php if ($has_orders) : ?>
 
-            <div class="mb-account-orders__head" aria-hidden="true">
-                <span><?php esc_html_e('Order', 'granola'); ?></span>
-                <span><?php esc_html_e('Date', 'granola'); ?></span>
-                <span><?php esc_html_e('Items', 'granola'); ?></span>
-                <span><?php esc_html_e('Status', 'granola'); ?></span>
-                <span><?php esc_html_e('Total', 'granola'); ?></span>
-            </div>
-
             <div class="mb-account-orders__list mb-account-orders__list--flush">
                 <?php foreach ($customer_orders->orders as $customer_order) :
                     $order = wc_get_order($customer_order);
@@ -105,13 +98,18 @@ $shown = $has_orders ? count($customer_orders->orders) : 0;
                             echo esc_attr(sprintf(__('View order number %s', 'woocommerce'), $order->get_order_number()));
                         ?>"
                     >
-                        <span class="mb-account-orders__id">#<?php echo esc_html($order->get_order_number()); ?></span>
-                        <span class="mb-account-orders__date">
-                            <time datetime="<?php echo esc_attr($order->get_date_created()->date('c')); ?>">
-                                <?php echo esc_html(wc_format_datetime($order->get_date_created(), 'j F Y')); ?>
-                            </time>
+                        <?php echo wp_kses_post(order_shade_chips($order)); ?>
+                        <span class="mb-account-orders__meta">
+                            <span class="mb-account-orders__line">
+                                <span class="mb-account-orders__id">#<?php echo esc_html($order->get_order_number()); ?></span>
+                                <span class="mb-account-orders__date">
+                                    <time datetime="<?php echo esc_attr($order->get_date_created()->date('c')); ?>">
+                                        <?php echo esc_html(wc_format_datetime($order->get_date_created(), 'j F Y')); ?>
+                                    </time>
+                                </span>
+                            </span>
+                            <span class="mb-account-orders__summary"><?php echo wp_kses_post(get_order_summary($order)); ?></span>
                         </span>
-                        <span class="mb-account-orders__summary"><?php echo wp_kses_post(get_order_summary($order)); ?></span>
                         <span class="mb-account-orders__status">
                             <span class="mb-account-pill<?php echo is_closed($order) ? ' mb-account-pill--closed' : ''; ?>">
                                 <?php echo esc_html(wc_get_order_status_name($order->get_status())); ?>
