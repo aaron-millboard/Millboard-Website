@@ -48,6 +48,7 @@ namespace Granola\Components\WC_Account;
         'projects' => projects_url(),
         'calculator' => CALCULATOR_URL,
         'visualiser' => VISUALISER_URL,
+        'deckplanner' => DECKPLANNER_URL,
     ];
 
     if (!isset($external[$endpoint]) || '' === $external[$endpoint]) {
@@ -101,7 +102,7 @@ namespace Granola\Components\WC_Account;
      * `millboard_asset_viewers`.
      */
     if (can_view_brand_assets()) {
-        $items[ENDPOINT_BRAND_ASSETS] = \__('Assets', 'granola');
+        $items[ENDPOINT_BRAND_ASSETS] = \__('Resources', 'granola');
     } else {
         unset($items[ENDPOINT_BRAND_ASSETS]);
     }
@@ -135,6 +136,17 @@ namespace Granola\Components\WC_Account;
         unset($items['visualiser']);
     }
 
+    /*
+     * The deck planner. Aaron's ordering calls this slot "configurator";
+     * the label follows what he called the link when he gave it, and is one
+     * word to change if that was the wrong way round.
+     */
+    if (can_view_deckplanner()) {
+        $items['deckplanner'] = \__('Deckplanner', 'granola');
+    } else {
+        unset($items['deckplanner']);
+    }
+
     if (can_order_samples()) {
         // The widget adds its own item under this same key, labelled from
         // MB_SOF_LABEL ("Sample Ordering"). Setting it here rather than only
@@ -146,21 +158,26 @@ namespace Granola\Components\WC_Account;
         unset($items[$sample]);
     }
 
+    /*
+     * Aaron's order, 23 Oct 2026. Every item is named here rather than left
+     * to fall through the merge below, because the merge keeps insertion
+     * order and insertion order is an accident of how this function reads.
+     */
     $order = [
         'dashboard',
         'orders',
         'edit-address',
         'payment-methods',
         'edit-account',
-        ENDPOINT_BRAND_ASSETS,
-        $sample,
-        // The two links out, named rather than left to fall through the
-        // merge below. They landed in the right place by insertion order
-        // alone, which is not a thing to rely on when the next person adds
-        // a third.
+
+        // Tools, in this exact sequence: the outward-facing tools first, then
+        // the two that do something to this account.
         'projects',
-        'calculator',
         'visualiser',
+        'deckplanner',
+        'calculator',
+        $sample,
+        ENDPOINT_BRAND_ASSETS,
     ];
 
     $sorted = [];
@@ -239,7 +256,7 @@ namespace Granola\Components\WC_Account;
  * Give the custom panels a page title, so the browser tab and any breadcrumb
  * read correctly rather than falling back to the bare "My account".
  */
-\add_filter('woocommerce_endpoint_' . ENDPOINT_BRAND_ASSETS . '_title', fn(): string => \__('Assets', 'granola'));
+\add_filter('woocommerce_endpoint_' . ENDPOINT_BRAND_ASSETS . '_title', fn(): string => \__('Resources', 'granola'));
 \add_filter('woocommerce_endpoint_' . ENDPOINT_SAMPLE_ORDERING . '_title', fn(): string => \__('Sample ordering', 'granola'));
 
 /**

@@ -188,7 +188,7 @@ function ajax_page(): void
 
     if (!\Granola\Components\WC_Account\can_view_brand_assets()) {
         \wp_send_json_error(
-            ['message' => \__('You do not have access to the asset library.', 'granola')],
+            ['message' => \__('You do not have access to the resource library.', 'granola')],
             403
         );
     }
