@@ -48,6 +48,19 @@
     --mba-rule: var(--mbh-rule, #{rgba(#2f292e, 0.18)});
     --mba-accent: var(--color--brand-4);
     --mba-wash: var(--color--brand-1);
+
+    // Surfaces the redesign names explicitly. Mist carries cards and panel
+    // headers, Wenge the order tracker, Apple the steps it has reached.
+    --mba-mist: var(--color--brand-1, #dedbd2);
+    --mba-mist-hover: #d3cfc5;
+    --mba-paper: var(--color--brand-2, #f8f4f0);
+    --mba-wenge: var(--color--brand-5, #625249);
+    --mba-apple: var(--color--apple, #a0cd4f);
+
+    // 3.4:1 on Spring Wood, which is what WCAG 1.4.11 asks of a control's
+    // own boundary. Not a text colour: do not reuse it for copy.
+    --mba-field-border: #858083;
+    --mba-error: #9b2c2c;
     --mba-ease: var(--mbh-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
     --mba-dur: var(--mbh-dur-ui, 240ms);
 
@@ -280,10 +293,29 @@
     &__title {
         margin: 0 0 #{px-to-rem(16)};
         font-weight: 300;
-        font-size: clamp(#{px-to-rem(24)}, 2.6vw, #{px-to-rem(32)});
+        font-size: clamp(#{px-to-rem(28)}, 3.2vw, #{px-to-rem(40)});
         line-height: 1.15;
         letter-spacing: var(--mbh-tracking-heading, 0.2em);
         text-transform: uppercase;
+
+        // Holds the hairline weight of a 300 at display size, which otherwise
+        // thins out to nearly nothing on the lighter surfaces.
+        -webkit-text-stroke: 0.2px currentColor;
+
+        // The olive rule above every panel title.
+        //
+        // Drawn here rather than added to each template: eight panels print
+        // this heading, three of them inside components and five inside
+        // WooCommerce overrides, so one pseudo-element keeps them identical
+        // and means a ninth panel gets it for free.
+        &::before {
+            content: '';
+            display: block;
+            width: #{px-to-rem(48)};
+            height: #{px-to-rem(2)};
+            margin-bottom: #{px-to-rem(16)};
+            background-color: var(--mba-accent);
+        }
     }
 
     &__intro {
@@ -291,7 +323,7 @@
         max-width: 60ch;
         font-size: #{px-to-rem(16)};
         line-height: 1.7;
-        color: #6e6a6c;
+        color: var(--mba-muted);
 
         a {
             color: var(--color--foreground);
@@ -307,11 +339,20 @@
 
     &__head {
         display: flex;
-        align-items: baseline;
+        // flex-start, not baseline: the badge has to sit level with the top of
+        // the title and drop below it when the row wraps. On baseline a long
+        // German title dragged the badge down with it.
+        align-items: flex-start;
         justify-content: space-between;
-        gap: var(--space--2xs);
+        gap: #{px-to-rem(16)} #{px-to-rem(24)};
         flex-wrap: wrap;
         margin-bottom: #{px-to-rem(20)};
+
+        // The title stops squeezing the badge and wraps instead.
+        .mb-account-panel__title {
+            flex: 1 1 #{px-to-rem(320)};
+            margin-bottom: 0;
+        }
     }
 
     &__badge {
@@ -322,6 +363,8 @@
         text-transform: uppercase;
         padding: #{px-to-rem(6)} #{px-to-rem(12)};
         border: 1px solid var(--color--brand-4);
+        color: var(--mba-ink);
+        white-space: nowrap;
     }
 }
 
@@ -363,7 +406,11 @@
 
 // Empty states: centred, hairline box, olive tick above the heading.
 .mb-account-empty {
-    border: 1px solid var(--mbh-rule, #{rgba(#2f292e, 0.18)});
+    // The imageless variant: a centred Mist block, which is what Assets,
+    // Sample ordering and Payment methods all use. A hairline box around
+    // nothing reads as a failure; a filled panel reads as a state.
+    background-color: var(--mba-mist);
+    border: 0;
     padding: clamp(#{px-to-rem(40)}, 6vw, #{px-to-rem(72)}) clamp(#{px-to-rem(28)}, 4vw, #{px-to-rem(48)});
     text-align: center;
 
@@ -377,9 +424,11 @@
 
     &__title {
         margin: 0 0 #{px-to-rem(14)};
-        font-size: #{px-to-rem(14)};
-        font-weight: 700;
-        letter-spacing: var(--mbh-tracking-sub, 0.16em);
+        // Light caps at 22px, matching the panel titles rather than the small
+        // bold section headings. An empty state is a statement, not a label.
+        font-size: #{px-to-rem(22)};
+        font-weight: 300;
+        letter-spacing: 0.14em;
         text-transform: uppercase;
     }
 
@@ -388,7 +437,7 @@
         max-width: 44ch;
         font-size: #{px-to-rem(15)};
         line-height: 1.7;
-        color: #6e6a6c;
+        color: var(--mba-muted);
 
         &:last-child {
             margin-bottom: 0;
@@ -477,8 +526,12 @@
 
 .mb-account-fields {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(#{px-to-rem(220)}, 1fr));
-    gap: #{px-to-rem(32)} #{px-to-rem(40)};
+    // min() so a single column never overflows its container: below 230px the
+    // track collapses to 100% instead of forcing a horizontal scroll. Three
+    // columns at desktop, falling to two then one on its own. Nothing here is
+    // sized to English string length.
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, #{px-to-rem(230)}), 1fr));
+    gap: #{px-to-rem(28)} #{px-to-rem(24)};
 
     &--tight {
         gap: #{px-to-rem(28)} #{px-to-rem(32)};
@@ -531,24 +584,40 @@
     select,
     textarea,
     .select2-container .select2-selection--single {
+        // Boxed, not underlined.
+        //
+        // This panel was the only place on the site using an underline, which
+        // made an account form look like a different product from the
+        // checkout. 48px tall and 16px type, so iOS does not zoom the page on
+        // focus, and every field is its own 44px target.
+        box-sizing: border-box;
         width: 100%;
+        min-height: #{px-to-rem(48)};
         font-family: inherit;
-        font-size: #{px-to-rem(15)};
+        font-size: #{px-to-rem(16)};
         font-weight: 300;
         line-height: 1.5;
-        padding: #{px-to-rem(10)} 0;
+        padding: #{px-to-rem(10)} #{px-to-rem(14)};
         background-color: transparent;
-        border: 0;
-        border-bottom: 1px solid var(--mbh-rule, #{rgba(#2f292e, 0.18)});
-        border-radius: 0;
+        border: 1px solid var(--mba-field-border);
+        border-radius: #{px-to-rem(2)};
         color: var(--color--foreground);
         outline: none;
         box-shadow: none;
 
+        // A 2px ring in the body ink rather than a colour shift. Olive on
+        // Spring Wood is too close in value to read as focus on its own, and
+        // focus must not rely on hue.
         &:focus,
         &:focus-visible {
-            border-bottom-color: var(--color--brand-4);
-            outline: none;
+            border-color: var(--mba-ink);
+            outline: #{px-to-rem(2)} solid var(--mba-ink);
+            outline-offset: 0;
+        }
+
+        &[aria-invalid='true'],
+        &.has-error {
+            border: #{px-to-rem(2)} solid var(--mba-error);
         }
 
         &::placeholder {
@@ -556,11 +625,12 @@
         }
     }
 
-    // Select2 is what WooCommerce uses for country and state. Strip its chrome
-    // back to the same underline rather than leaving a rounded grey box in the
-    // middle of a row of hairlines.
+    // Select2 is what WooCommerce uses for country and state. It gets the same
+    // box as every other field, so a country picker does not sit in a row of
+    // boxes wearing its own rounded grey chrome.
     .select2-container .select2-selection--single {
         height: auto;
+        min-height: #{px-to-rem(48)};
         display: flex;
         align-items: center;
 
@@ -572,7 +642,7 @@
 
         .select2-selection__arrow {
             height: 100%;
-            right: 0;
+            right: #{px-to-rem(10)};
         }
     }
 
@@ -590,22 +660,30 @@
     }
 }
 
+// Consent, and only consent.
+//
+// ⚠️ Always a real checkbox on its own Mist plate: never a switch, never
+// pre-ticked, and the wording is WooCommerce's word for word. If preference
+// toggles arrive later they should be switches with no plate, so that the
+// thing carrying a lawful basis never looks like the thing that does not.
 .mb-account-check {
     display: flex;
     align-items: flex-start;
-    gap: #{px-to-rem(12)};
-    font-size: #{px-to-rem(15)};
-    line-height: 1.7;
-    color: #6e6a6c;
+    gap: #{px-to-rem(16)};
+    padding: #{px-to-rem(20)} #{px-to-rem(24)};
+    background-color: var(--mba-mist);
+    font-size: #{px-to-rem(16)};
+    line-height: 1.6;
+    color: var(--mba-ink);
     cursor: pointer;
-    max-width: 60ch;
+    max-width: #{px-to-rem(640)};
 
     input[type='checkbox'] {
         flex: 0 0 auto;
-        width: #{px-to-rem(15)};
-        height: #{px-to-rem(15)};
-        margin-top: #{px-to-rem(5)};
-        accent-color: var(--color--brand-4);
+        width: #{px-to-rem(24)};
+        height: #{px-to-rem(24)};
+        margin-top: #{px-to-rem(1)};
+        accent-color: var(--mba-ink);
     }
 }
 
@@ -674,17 +752,24 @@
     }
 
     &__action {
-        display: block;
-        background-color: var(--color--brand-2);
-        border: 1px solid var(--mbh-rule, #{rgba(#2f292e, 0.18)});
-        padding: #{px-to-rem(28)} #{px-to-rem(24)} #{px-to-rem(26)};
+        // Mist with no border. The hairline was doing the work the fill now
+        // does, and the two together read as a form control rather than a
+        // card you can press.
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: #{px-to-rem(32)};
+        min-height: #{px-to-rem(156)};
+        background-color: var(--mba-mist);
+        border: 0;
+        padding: #{px-to-rem(28)} #{px-to-rem(24)} #{px-to-rem(24)};
         text-decoration: none;
         color: var(--color--foreground);
         transition: background-color var(--mbh-dur-ui, 240ms) var(--mbh-ease, ease);
 
         &:hover,
         &:focus-visible {
-            background-color: var(--color--brand-1);
+            background-color: var(--mba-mist-hover);
             color: var(--color--foreground);
         }
     }
@@ -713,13 +798,30 @@
         margin: 0;
         font-size: #{px-to-rem(14)};
         line-height: 1.6;
-        color: #6e6a6c;
+        // Mist, not the page, so this needs the darker muted value. See the
+        // --mba-muted note: the old #6e6a6c was 3.86:1 here.
+        color: var(--mba-muted);
     }
 
     &__tracker {
-        border: 1px solid var(--mbh-rule, #{rgba(#2f292e, 0.18)});
+        // Wenge, so the one order in flight is the darkest thing on the page
+        // and reads before anything else. Spring Wood ink on it is 6.9:1.
+        background-color: var(--mba-wenge);
+        color: var(--mba-paper);
+        border: 0;
         padding: clamp(#{px-to-rem(24)}, 3vw, #{px-to-rem(36)});
         margin-bottom: clamp(#{px-to-rem(48)}, 6vw, #{px-to-rem(80)});
+
+        // Links inside a dark panel cannot keep the body ink.
+        .mb-account-link {
+            color: var(--mba-paper);
+            border-bottom-color: rgba(248, 244, 240, 0.4);
+
+            &:hover,
+            &:focus-visible {
+                border-bottom-color: var(--mba-apple);
+            }
+        }
     }
 
     &__tracker-head {
@@ -739,10 +841,12 @@
         text-transform: uppercase;
     }
 
+    // Sits on Wenge, so it cannot keep the muted grey.
+    // Sits on Wenge now, so it cannot keep the muted grey.
     &__tracker-meta {
         margin: 0 0 #{px-to-rem(8)};
         font-size: #{px-to-rem(14)};
-        color: #6e6a6c;
+        color: rgba(248, 244, 240, 0.78);
     }
 
     &__columns {
@@ -775,10 +879,13 @@
         min-width: 0;
     }
 
+    // This component only ever renders inside the Wenge tracker, so it is
+    // styled for that surface directly rather than being given a dark
+    // variant to override a light default nobody uses.
     &__dot {
         display: block;
-        height: #{px-to-rem(2)};
-        background-color: rgba(47, 41, 46, 0.22);
+        height: #{px-to-rem(3)};
+        background-color: rgba(248, 244, 240, 0.28);
         margin-bottom: #{px-to-rem(14)};
     }
 
@@ -788,22 +895,24 @@
         letter-spacing: 0.12em;
         text-transform: uppercase;
         margin-bottom: #{px-to-rem(6)};
-        color: #6e6a6c;
+        color: rgba(248, 244, 240, 0.78);
     }
 
     &__when {
         font-size: #{px-to-rem(13)};
         line-height: 1.4;
-        color: #6e6a6c;
+        color: rgba(248, 244, 240, 0.78);
     }
 
     &__step.is-reached {
+        // Apple, not olive: olive is a mid green that all but disappears on
+        // Wenge, which is why the reached steps get the brighter one.
         .mb-account-steps__dot {
-            background-color: var(--color--brand-4);
+            background-color: var(--mba-apple);
         }
 
         .mb-account-steps__label {
-            color: var(--color--foreground);
+            color: var(--mba-paper);
         }
     }
 }
