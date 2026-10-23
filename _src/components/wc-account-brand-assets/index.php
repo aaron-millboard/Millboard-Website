@@ -67,6 +67,19 @@ foreach (['mbcq' => $query, 'mbca' => $node_id, 'mbcs' => $scheme, 'mbcn' => $no
     data-scheme="<?php echo esc_attr($scheme); ?>"
     data-next="<?php echo esc_attr((string) $next_start); ?>"
     data-more="<?php echo $more ? '1' : '0'; ?>"
+    <?php
+    // Every string the script shows comes from here, so it reaches Loco. A
+    // string built in the JS bundle never does, and this panel ships in six
+    // locales.
+    ?>
+    data-searching="<?php esc_attr_e('Searching…', 'granola'); ?>"
+    data-next-label="<?php esc_attr_e('Next', 'granola'); ?>"
+    data-failed="<?php esc_attr_e('We could not load those assets. Try again in a moment.', 'granola'); ?>"
+    <?php
+    /* translators: %1$d: page number. %2$d: number of assets on this page. %3$s: the search term. */
+    $count_template = __('Page %1$d &middot; %2$d shown for &ldquo;%3$s&rdquo;', 'granola');
+    ?>
+    data-count-template="<?php echo esc_attr($count_template); ?>"
 >
 
     <div class="mb-account-panel__head">
@@ -173,19 +186,23 @@ foreach (['mbcq' => $query, 'mbca' => $node_id, 'mbcs' => $scheme, 'mbcn' => $no
             </p>
         </div>
 
-        <?php if (!$items) : ?>
+        <?php
+        // The empty state and the grid are BOTH always rendered, the empty one
+        // hidden when there is something to show. They used to be either/or,
+        // which meant a page that first loaded with no results carried no grid
+        // for the script to attach to, so live search was dead on exactly the
+        // screen you most want to search again from -- a shared or bookmarked
+        // URL for a term that no longer matches.
+        ?>
+        <div class="mb-account-empty" data-mb-assets-empty<?php echo $items ? ' hidden' : ''; ?>>
+            <span class="mb-account-empty__rule" aria-hidden="true"></span>
+            <h3 class="mb-account-empty__title"><?php esc_html_e('Nothing here', 'granola'); ?></h3>
+            <p class="mb-account-empty__body">
+                <?php esc_html_e('No assets matched. Try a different word, or browse the folders.', 'granola'); ?>
+            </p>
+        </div>
 
-            <div class="mb-account-empty">
-                <span class="mb-account-empty__rule" aria-hidden="true"></span>
-                <h3 class="mb-account-empty__title"><?php esc_html_e('Nothing here', 'granola'); ?></h3>
-                <p class="mb-account-empty__body">
-                    <?php esc_html_e('No assets matched. Try a different word, or browse the folders.', 'granola'); ?>
-                </p>
-            </div>
-
-        <?php else : ?>
-
-            <ul class="mb-assets__grid" data-mb-assets-grid>
+        <ul class="mb-assets__grid" data-mb-assets-grid>
                 <?php
                 // Escaped field by field inside render_items(); the panel and
                 // the endpoint share it so a live result is the same markup.
@@ -209,8 +226,6 @@ foreach (['mbcq' => $query, 'mbca' => $node_id, 'mbcs' => $scheme, 'mbcn' => $no
                         <?php esc_html_e('Show more', 'granola'); ?>
                     </a>
                 </p>
-            <?php endif; ?>
-
         <?php endif; ?>
 
         <?php
