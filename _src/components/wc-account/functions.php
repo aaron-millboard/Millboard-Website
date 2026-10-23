@@ -176,6 +176,15 @@ const CALCULATOR_URL = 'https://calculator.millboard.com/calculator';
 const VISUALISER_URL = 'https://ai-visualiser.millboard.com';
 
 /**
+ * Where the deck planner lives.
+ *
+ * The fragment is part of the address, not decoration: the planner is a
+ * single-page app and routes on `#/en`. Dropping it lands on the app's own
+ * default rather than the English entry point.
+ */
+const DECKPLANNER_URL = 'https://deckplanner.millboard.com/en#/en';
+
+/**
  * May this person see the Calculator tab?
  *
  * Everyone with a Millboard account rather than a plain shop customer, which
@@ -197,6 +206,18 @@ function can_view_calculator(?int $user_id = null): bool
  * function that merely happens to agree with it today.
  */
 function can_view_visualiser(?int $user_id = null): bool
+{
+    return has_account_tools($user_id);
+}
+
+/**
+ * May this person see the Deckplanner tab?
+ *
+ * Same audience again. Three link-outs now share one gate, so widening who
+ * gets the Millboard tools is one change rather than three that have to be
+ * kept in agreement.
+ */
+function can_view_deckplanner(?int $user_id = null): bool
 {
     return has_account_tools($user_id);
 }
@@ -248,7 +269,14 @@ function nav_groups(array $endpoints): array
 {
     $tools = \array_intersect_key(
         $endpoints,
-        \array_flip([ENDPOINT_BRAND_ASSETS, ENDPOINT_SAMPLE_ORDERING, 'projects', 'calculator', 'visualiser'])
+        \array_flip([
+            ENDPOINT_BRAND_ASSETS,
+            ENDPOINT_SAMPLE_ORDERING,
+            'projects',
+            'calculator',
+            'visualiser',
+            'deckplanner',
+        ])
     );
 
     if (!$tools) {

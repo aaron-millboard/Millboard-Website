@@ -83,7 +83,7 @@ foreach (['mbcq' => $query, 'mbca' => $node_id, 'mbcs' => $scheme, 'mbcn' => $no
 >
 
     <div class="mb-account-panel__head">
-        <h2 class="mb-account-panel__title"><?php esc_html_e('Assets', 'granola'); ?></h2>
+        <h2 class="mb-account-panel__title"><?php esc_html_e('Resources', 'granola'); ?></h2>
         <?php
         // The badge says who the panel is for. On a distributor's or
         // installer's screen "Millboard team" is simply wrong, so staff see
@@ -114,7 +114,7 @@ foreach (['mbcq' => $query, 'mbca' => $node_id, 'mbcs' => $scheme, 'mbcn' => $no
         ?>
         <div class="mb-account-empty">
             <span class="mb-account-empty__rule" aria-hidden="true"></span>
-            <h3 class="mb-account-empty__title"><?php esc_html_e('Assets unavailable', 'granola'); ?></h3>
+            <h3 class="mb-account-empty__title"><?php esc_html_e('Resources unavailable', 'granola'); ?></h3>
             <p class="mb-account-empty__body">
                 <?php
                 if (!Client::is_configured()) {
