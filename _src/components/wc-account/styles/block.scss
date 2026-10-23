@@ -861,6 +861,12 @@
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(#{px-to-rem(260)}, 1fr));
         gap: clamp(#{px-to-rem(32)}, 4vw, #{px-to-rem(56)});
+
+        // "Delivering to" and "Your details" were sitting flush against the
+        // last order row, so the recent orders list appeared to run straight
+        // into an address. Its opposite number on the order detail screen has
+        // always carried this; the dashboard was simply missed.
+        margin-top: clamp(#{px-to-rem(48)}, 6vw, #{px-to-rem(64)});
     }
 
     &__summary {
@@ -1000,9 +1006,19 @@
 
     // Up to three shades, overlapped, so an order reads as "the grey one"
     // before any of the words beside it are read.
+    // Reserve room for three, even when an order has one.
+    //
+    // The group is as wide as the number of shades in the order, so without
+    // this the order number starts in a different place on every row and the
+    // column of #UK- references reads as ragged. 44px for the first chip plus
+    // 32px for each of the two that overlap it by 12.
+    //
+    // An order with no shades at all still indents, which is the point: the
+    // numbers line up whatever each row happens to contain.
     &__chips {
         display: flex;
         flex: none;
+        min-width: #{px-to-rem(108)};
     }
 
     &__chip {
