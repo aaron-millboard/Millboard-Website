@@ -14,6 +14,7 @@
 
 defined('ABSPATH') || exit;
 
+use function Granola\Components\WC_Account\account_image;
 use function Granola\Components\WC_Account\can_order_samples;
 use function Granola\Components\WC_Account\get_order_steps;
 use function Granola\Components\WC_Account\get_order_summary;
@@ -94,16 +95,34 @@ $quick_actions = [
 
 <div class="mb-account-dash">
 
-    <h2 class="mb-account-dash__greeting">
-        <?php
-        /* translators: %s: the customer's first name. */
-        printf(esc_html__('Hello, %s', 'granola'), esc_html($customer->get_first_name() ?: $customer->get_display_name()));
-        ?>
-    </h2>
+    <div class="mb-account-dash__welcome">
 
-    <p class="mb-account-dash__intro">
-        <?php esc_html_e('Everything for your Millboard projects in one place: recent orders, the addresses we deliver to, and the details we hold for you.', 'granola'); ?>
-    </p>
+        <div class="mb-account-dash__welcome-text">
+            <h2 class="mb-account-dash__greeting">
+                <?php
+                /* translators: %s: the customer's first name. */
+                printf(esc_html__('Hello, %s', 'granola'), esc_html($customer->get_first_name() ?: $customer->get_display_name()));
+                ?>
+            </h2>
+
+            <p class="mb-account-dash__intro">
+                <?php esc_html_e('Everything for your Millboard projects in one place: recent orders, the addresses we deliver to, and the details we hold for you.', 'granola'); ?>
+            </p>
+        </div>
+
+        <?php
+        // 4:3, beside the greeting. Decorative, so it is hidden from assistive
+        // technology entirely rather than described: the heading next to it
+        // already says whose account this is.
+        ?>
+        <figure class="mb-account-figure mb-account-dash__hero" aria-hidden="true">
+            <?php
+            // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside account_image().
+            echo account_image('dash-hero', 'Lifestyle photograph: a finished Millboard deck in warm evening light');
+            ?>
+        </figure>
+
+    </div>
 
     <div class="mb-account-dash__actions">
         <?php foreach ($quick_actions as $action) : ?>
