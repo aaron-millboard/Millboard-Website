@@ -91,19 +91,33 @@ foreach (['mbcq' => $query, 'mbca' => $node_id, 'mbcs' => $scheme, 'mbcn' => $no
 
     <?php if (!Client::is_configured() || $failed) : ?>
 
+        <?php
+        // "Open it directly" is only advice a member of staff can act on, so
+        // the wording and the button both follow who is looking. Telling a
+        // distributor to go to Canto when we cannot reach it sends them to a
+        // sign-in wall they have no account for, which reads as a second
+        // fault rather than a way round the first.
+        $staff = \Granola\Components\WC_Account\is_staff();
+        ?>
         <div class="mb-account-empty">
             <span class="mb-account-empty__rule" aria-hidden="true"></span>
-            <h3 class="mb-account-empty__title"><?php esc_html_e('Brand library unavailable', 'granola'); ?></h3>
+            <h3 class="mb-account-empty__title"><?php esc_html_e('Assets unavailable', 'granola'); ?></h3>
             <p class="mb-account-empty__body">
                 <?php
-                echo Client::is_configured()
-                    ? esc_html__('We could not reach Canto just now. The library itself is fine, so it is worth opening it directly.', 'granola')
-                    : esc_html__('The connection to Canto is not set up on this site yet.', 'granola');
+                if (!Client::is_configured()) {
+                    esc_html_e('The connection to Canto is not set up on this site yet.', 'granola');
+                } elseif ($staff) {
+                    esc_html_e('We could not reach Canto just now. The library itself is fine, so it is worth opening it directly.', 'granola');
+                } else {
+                    esc_html_e('We could not load the assets just now. Please try again shortly.', 'granola');
+                }
                 ?>
             </p>
-            <a class="mb-account-btn" href="<?php echo esc_url($library_url); ?>" target="_blank" rel="noopener">
-                <?php esc_html_e('Open the brand library', 'granola'); ?>
-            </a>
+            <?php if ($staff) : ?>
+                <a class="mb-account-btn" href="<?php echo esc_url($library_url); ?>" target="_blank" rel="noopener">
+                    <?php esc_html_e('Open the brand library', 'granola'); ?>
+                </a>
+            <?php endif; ?>
         </div>
 
     <?php else : ?>
@@ -199,16 +213,24 @@ foreach (['mbcq' => $query, 'mbca' => $node_id, 'mbcs' => $scheme, 'mbcn' => $no
 
         <?php endif; ?>
 
-        <p class="mb-account-embed-note">
-            <?php
-            printf(
-                /* translators: %1$s: opening link tag, %2$s: closing link tag. */
-                esc_html__('Looking for something not here? %1$sOpen the full library in Canto%2$s.', 'granola'),
-                '<a href="' . esc_url($library_url) . '" target="_blank" rel="noopener">',
-                '</a>'
-            );
-            ?>
-        </p>
+        <?php
+        // Staff only, for the same reason as the per-asset "In Canto" link:
+        // Canto's own interface needs a Canto login, which a distributor or
+        // installer does not have. Pointing them at it would only produce a
+        // sign-in wall and a support call.
+        ?>
+        <?php if (\Granola\Components\WC_Account\is_staff()) : ?>
+            <p class="mb-account-embed-note">
+                <?php
+                printf(
+                    /* translators: %1$s: opening link tag, %2$s: closing link tag. */
+                    esc_html__('Looking for something not here? %1$sOpen the full library in Canto%2$s.', 'granola'),
+                    '<a href="' . esc_url($library_url) . '" target="_blank" rel="noopener">',
+                    '</a>'
+                );
+                ?>
+            </p>
+        <?php endif; ?>
 
     <?php endif; ?>
 
