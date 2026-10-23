@@ -531,10 +531,10 @@ function order_shade_chips(\WC_Order $order, int $limit = 3): string
 {
     $swatches = order_shade_swatches($order, $limit);
 
-    if (!$swatches) {
-        return '';
-    }
-
+    // The container is rendered even with nothing in it. It reserves the width
+    // of three chips, which is what keeps the column of order numbers aligned
+    // down the page; an order of accessories with no board in it would
+    // otherwise start its number 108px to the left of the row above.
     $out = '<span class="mb-account-orders__chips" aria-hidden="true">';
 
     foreach ($swatches as $swatch) {
