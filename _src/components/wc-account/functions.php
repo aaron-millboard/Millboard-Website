@@ -19,6 +19,15 @@ const ENDPOINT_BRAND_ASSETS = 'brand-assets';
 const ENDPOINT_SAMPLE_ORDERING = 'sample-ordering';
 
 /**
+ * The attribute holding a board's shade.
+ *
+ * WooCommerce calls it "Colour" and the redesign calls it shade; they are the
+ * same thing. Named here so the order list is not the place someone has to
+ * discover that.
+ */
+const SHADE_TAXONOMY = 'pa_colour';
+
+/**
  * Sites the sample tool runs on, by site path.
  *
  * Aaron, 6 Oct 2026: "this entire sample ordering tab is only for the UK site."
@@ -435,6 +444,112 @@ function get_order_summary(\WC_Order $order): string
     }
 
     return $summary;
+}
+
+/**
+ * The board shades in an order, as swatches, at most three.
+ *
+ * What a customer actually recognises an order by is the colour of the board,
+ * which the one-line summary can only spell out in words. Three chips at the
+ * head of the row say "the grey one" faster than any sentence.
+ *
+ * ⚠️ The swatch is the TERM's own image, not a hex value. The redesign's
+ * prototype used a hand-written table of twelve approximate hex tones, which
+ * would be a second source of truth for product colour and would drift from
+ * the real boards the first time one is retouched. The images are already in
+ * `pa_colour` term meta and are what the shop renders everywhere else.
+ *
+ * A shade with no swatch image is skipped rather than drawn as an empty box.
+ *
+ * @return array<int,array{name: string, src: string}>
+ */
+function order_shade_swatches(\WC_Order $order, int $limit = 3): array
+{
+    $found = [];
+
+    foreach ($order->get_items() as $item) {
+        if (!$item instanceof \WC_Order_Item_Product) {
+            continue;
+        }
+
+        $product = $item->get_product();
+
+        if (!$product instanceof \WC_Product) {
+            continue;
+        }
+
+        $term = null;
+
+        // A variation records the shade it was bought in on itself, as a slug.
+        // Reading the parent's terms instead would give whichever colour
+        // happens to be first, so a Jarrah order could show an Ashwood chip.
+        if ($product instanceof \WC_Product_Variation) {
+            $slug = (string) ($product->get_attributes()[SHADE_TAXONOMY] ?? '');
+            $term = '' !== $slug ? \get_term_by('slug', $slug, SHADE_TAXONOMY) : null;
+        }
+
+        if (!$term instanceof \WP_Term) {
+            $terms = \wc_get_product_terms(
+                $product->get_parent_id() ?: $product->get_id(),
+                SHADE_TAXONOMY,
+                ['fields' => 'all']
+            );
+
+            $term = \is_array($terms) && $terms ? $terms[0] : null;
+        }
+
+        if (!$term instanceof \WP_Term || isset($found[$term->term_id])) {
+            continue;
+        }
+
+        $image = (int) \get_term_meta($term->term_id, 'image', true);
+        $src = $image ? (string) \wp_get_attachment_image_url($image, 'thumbnail') : '';
+
+        if ('' === $src) {
+            continue;
+        }
+
+        $found[$term->term_id] = ['name' => $term->name, 'src' => $src];
+
+        if (\count($found) >= $limit) {
+            break;
+        }
+    }
+
+    return \array_values($found);
+}
+
+/**
+ * Those swatches as markup, so both order lists stay one line each.
+ *
+ * Decorative on purpose. The summary beside it already names the shade in
+ * words ("Enhanced Grain 126mm Antique Oak and more"), so announcing the chips
+ * as well would read the same colour out twice. The title attribute is there
+ * for a sighted pointer user, not for assistive technology.
+ */
+function order_shade_chips(\WC_Order $order, int $limit = 3): string
+{
+    $swatches = order_shade_swatches($order, $limit);
+
+    if (!$swatches) {
+        return '';
+    }
+
+    $out = '<span class="mb-account-orders__chips" aria-hidden="true">';
+
+    foreach ($swatches as $swatch) {
+        // An <img>, not a background-image. Both templates pass this through
+        // wp_kses_post, which runs inline styles through safecss_filter_attr
+        // and is free to drop a url(), so a background would have risked
+        // rendering three empty boxes. An img needs no inline style at all.
+        $out .= \sprintf(
+            '<img class="mb-account-orders__chip" src="%s" alt="" title="%s" width="44" height="44" loading="lazy" />',
+            \esc_url($swatch['src']),
+            \esc_attr($swatch['name'])
+        );
+    }
+
+    return $out . '</span>';
 }
 
 /**

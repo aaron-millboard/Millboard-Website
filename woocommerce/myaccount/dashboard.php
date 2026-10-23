@@ -20,6 +20,7 @@ use function Granola\Components\WC_Account\get_order_summary;
 use function Granola\Components\WC_Account\get_trackable_order;
 use function Granola\Components\WC_Account\get_visible_statuses;
 use function Granola\Components\WC_Account\is_closed;
+use function Granola\Components\WC_Account\order_shade_chips;
 
 $user_id = get_current_user_id();
 $customer = new WC_Customer($user_id);
@@ -170,9 +171,14 @@ $quick_actions = [
             <div class="mb-account-orders__list">
                 <?php foreach ($recent_orders as $order) : ?>
                     <a class="mb-account-orders__row" href="<?php echo esc_url($order->get_view_order_url()); ?>">
-                        <span class="mb-account-orders__id">#<?php echo esc_html($order->get_order_number()); ?></span>
-                        <span class="mb-account-orders__date"><?php echo esc_html(wc_format_datetime($order->get_date_created(), 'j F Y')); ?></span>
-                        <span class="mb-account-orders__summary"><?php echo wp_kses_post(get_order_summary($order)); ?></span>
+                        <?php echo wp_kses_post(order_shade_chips($order)); ?>
+                        <span class="mb-account-orders__meta">
+                            <span class="mb-account-orders__line">
+                                <span class="mb-account-orders__id">#<?php echo esc_html($order->get_order_number()); ?></span>
+                                <span class="mb-account-orders__date"><?php echo esc_html(wc_format_datetime($order->get_date_created(), 'j F Y')); ?></span>
+                            </span>
+                            <span class="mb-account-orders__summary"><?php echo wp_kses_post(get_order_summary($order)); ?></span>
+                        </span>
                         <span class="mb-account-orders__status">
                             <span class="mb-account-pill<?php echo is_closed($order) ? ' mb-account-pill--closed' : ''; ?>">
                                 <?php echo esc_html(wc_get_order_status_name($order->get_status())); ?>
