@@ -92,45 +92,73 @@ function can_view_brand_assets(?int $user_id = null): bool
         return false;
     }
 
-    return in_asset_viewers($user_id ?: \get_current_user_id());
+    return user_in_allow_list('millboard_asset_viewers', $user_id, false);
 }
 
 /**
- * Is this person on the Assets list?
+ * Is this person on a named allow-list?
  *
- * ⚠ FAILS CLOSED. An absent or empty `millboard_asset_viewers` means NOBODY,
- * which is the opposite of the POS allow-list. POS was a working feature
- * being narrowed, so an empty list there means everyone and deploying the
- * gate changed nothing for anyone. Assets is the other way round: it is
- * switched back on for a named pair while the library is still being built,
- * so a mistake should hide the tab, not show an unfinished library to all
- * 99 staff.
+ * Three panels are now gated this way, so the check lives once. Each list is
+ * an option holding e-mail addresses, because that is what whoever maintains
+ * it will recognise, and it can be changed without a deploy:
  *
- * Matched on e-mail, which is what whoever maintains the list will
- * recognise. Set it without a deploy:
+ *   wp option update <option> --format=json '["a@millboard.com"]' --url=<site>/en-gb/
  *
- *   wp option update millboard_asset_viewers --format=json
- *     '["a@millboard.com","b@millboard.com"]' --url=<site>/en-gb/
+ * ⚠ `$when_empty` is NOT the same for every list, on purpose:
+ *
+ *   millboard_pos_orderers    TRUE  - a working feature being narrowed, so an
+ *                                     empty list means everyone and deploying
+ *                                     the gate changed nothing for anyone.
+ *   millboard_asset_viewers   FALSE - switched back on for a named pair while
+ *   millboard_projects_viewers        the thing behind it is unfinished, so a
+ *                                     mistake must hide the tab rather than
+ *                                     show it to all 99 staff.
  */
-function in_asset_viewers(int $user_id): bool
+function user_in_allow_list(string $option, ?int $user_id, bool $when_empty): bool
 {
+    $user_id = $user_id ?: \get_current_user_id();
+
     if (!$user_id) {
         return false;
     }
 
     $allowed = \array_filter(\array_map(
         static fn($email): string => \strtolower(\trim((string) $email)),
-        (array) \get_option('millboard_asset_viewers', [])
+        (array) \get_option($option, [])
     ));
 
     if (!$allowed) {
-        return false;
+        return $when_empty;
     }
 
     $user = \get_userdata($user_id);
 
     return $user instanceof \WP_User
         && \in_array(\strtolower($user->user_email), $allowed, true);
+}
+
+/**
+ * May this person see the Projects tab?
+ *
+ * It links somewhere outside the site, so there is no capability and no
+ * endpoint to protect: the list IS the permission. It also does not render
+ * at all until `millboard_projects_url` is set, because a menu item that
+ * goes nowhere is worse than no menu item.
+ */
+function can_view_projects(?int $user_id = null): bool
+{
+    return '' !== projects_url()
+        && user_in_allow_list('millboard_projects_viewers', $user_id, false);
+}
+
+/**
+ * Where Projects points. Empty until someone sets it.
+ */
+function projects_url(): string
+{
+    $url = \trim((string) \get_option('millboard_projects_url', ''));
+
+    return \esc_url_raw($url);
 }
 
 /**
@@ -183,19 +211,7 @@ function can_order_pos(?int $user_id = null): bool
         return true;
     }
 
-    $allowed = \array_filter(\array_map(
-        static fn($email): string => \strtolower(\trim((string) $email)),
-        (array) \get_option('millboard_pos_orderers', [])
-    ));
-
-    if (!$allowed) {
-        return true;
-    }
-
-    $user = \get_userdata($user_id);
-
-    return $user instanceof \WP_User
-        && \in_array(\strtolower($user->user_email), $allowed, true);
+    return user_in_allow_list('millboard_pos_orderers', $user_id, true);
 }
 
 /**

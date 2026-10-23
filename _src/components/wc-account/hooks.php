@@ -33,6 +33,23 @@ namespace Granola\Components\WC_Account;
 });
 
 /**
+ * Send the Projects item to its external URL.
+ *
+ * WooCommerce builds every account menu link with
+ * wc_get_account_endpoint_url(), which would give /my-account/projects/.
+ * There is no such endpoint, so without this the tab would 404.
+ */
+\add_filter('woocommerce_get_endpoint_url', function ($url, $endpoint) {
+    if ('projects' !== $endpoint) {
+        return $url;
+    }
+
+    $external = projects_url();
+
+    return '' !== $external ? $external : $url;
+}, 10, 2);
+
+/**
  * Let WooCommerce treat the custom endpoints as account queries.
  */
 \add_filter('woocommerce_get_query_vars', function (array $vars): array {
@@ -79,6 +96,16 @@ namespace Granola\Components\WC_Account;
         $items[ENDPOINT_BRAND_ASSETS] = \__('Assets', 'granola');
     } else {
         unset($items[ENDPOINT_BRAND_ASSETS]);
+    }
+
+    /*
+     * Projects. A link out, so no endpoint is registered and
+     * /my-account/projects/ deliberately does not resolve.
+     */
+    if (can_view_projects()) {
+        $items['projects'] = \__('Projects', 'granola');
+    } else {
+        unset($items['projects']);
     }
 
     if (can_order_samples()) {
