@@ -162,6 +162,42 @@ function projects_url(): string
 }
 
 /**
+ * The account menu, split into the groups the design asks for.
+ *
+ * "Your account" is whatever WooCommerce offers. "Tools" is the three panels
+ * this theme adds on top. Membership is decided by naming the tools rather
+ * than the account items, so anything WooCommerce introduces later lands in
+ * the first group, which is where an unrecognised endpoint belongs.
+ *
+ * ⚠️ The caller shows the group HEADINGS only when there is more than one
+ * group, and this returns a single unlabelled group when Tools is empty. A
+ * customer therefore sees one plain list of five, exactly as before. That is
+ * not only cosmetic: headings on a one-group menu would advertise that other
+ * groups exist for other people.
+ *
+ * Order within each group is WooCommerce's, which hooks.php has already set.
+ *
+ * @param array<string,string> $endpoints
+ * @return array<int,array{label: string, items: array<string,string>}>
+ */
+function nav_groups(array $endpoints): array
+{
+    $tools = \array_intersect_key(
+        $endpoints,
+        \array_flip([ENDPOINT_BRAND_ASSETS, ENDPOINT_SAMPLE_ORDERING, 'projects'])
+    );
+
+    if (!$tools) {
+        return [['label' => '', 'items' => $endpoints]];
+    }
+
+    return [
+        ['label' => \__('Your account', 'granola'), 'items' => \array_diff_key($endpoints, $tools)],
+        ['label' => \__('Tools', 'granola'), 'items' => $tools],
+    ];
+}
+
+/**
  * May this user send samples?
  *
  * Site first, then capability. hooks.php points the widget's own

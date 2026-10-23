@@ -39,7 +39,12 @@
     // rather than restated, so a change to the shared vocabulary reaches here.
     // ---------------------------------------------------------------------
     --mba-ink: var(--color--foreground);
-    --mba-muted: #6e6a6c;
+    // Darkened from #6e6a6c on the redesign's instruction, and it is a WCAG
+    // fix rather than a preference. Measured against this component's two
+    // surfaces: #6e6a6c is 4.87:1 on Spring Wood #F8F4F0 but only 3.86:1 on
+    // Mist #DEDBD2, which every card and panel header uses, so muted copy on
+    // a card was failing AA. #5a5458 is 6.75:1 and 5.35:1, passing on both.
+    --mba-muted: #5a5458;
     --mba-rule: var(--mbh-rule, #{rgba(#2f292e, 0.18)});
     --mba-accent: var(--color--brand-4);
     --mba-wash: var(--color--brand-1);
@@ -142,16 +147,43 @@
         }
     }
 
+    &__nav-group {
+        // The hairline belongs to the group that follows it, never to the
+        // first. Above the first list the masthead's own rule already closes
+        // the column, and two hairlines a gap apart look like a slip.
+        + .mb-account__nav-group {
+            margin-top: #{px-to-rem(32)};
+            padding-top: #{px-to-rem(32)};
+            border-top: 1px solid var(--mba-rule);
+        }
+    }
+
+    &__nav-group-head {
+        display: flex;
+        flex-direction: column;
+        gap: #{px-to-rem(10)};
+        padding: 0 #{px-to-rem(16)} #{px-to-rem(12)};
+    }
+
+    &__nav-group-rule {
+        display: block;
+        width: #{px-to-rem(24)};
+        height: #{px-to-rem(2)};
+        background-color: var(--mba-accent);
+    }
+
+    &__nav-group-label {
+        font-size: var(--mba-fs-micro);
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--mba-muted);
+    }
+
     &__nav-list {
         list-style: none;
         margin: 0;
         padding: 0;
-
-        // Stacked under the masthead, the masthead's own rule already closes
-        // the top of the list. Two hairlines a gap apart look like a slip.
-        @include mq('large') {
-            border-top: 1px solid var(--mba-rule);
-        }
     }
 
     &__nav-item {

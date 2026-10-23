@@ -39,6 +39,17 @@ const PAGE_SIZE = 24;
  */
 function render_items(array $items, string $panel_url): string
 {
+    /*
+     * "In Canto" opens the asset in Canto's own interface, which needs a Canto
+     * login. Staff have one through the shared account; a distributor or
+     * installer does not and never will, so for them the link is a door they
+     * cannot open. Download is the signed CDN URL and needs no login, so it
+     * stays for everyone.
+     *
+     * Read once rather than per item: this runs for every tile on the page.
+     */
+    $staff = \Granola\Components\WC_Account\is_staff();
+
     \ob_start();
 
     foreach ($items as $item) {
@@ -104,7 +115,7 @@ function render_items(array $items, string $panel_url): string
                                 </a>
                             <?php endif; ?>
 
-                            <?php if ($detail) : ?>
+                            <?php if ($detail && $staff) : ?>
                                 <a class="mb-account-link" href="<?php echo \esc_url($detail); ?>" target="_blank" rel="noopener">
                                     <?php \esc_html_e('In Canto', 'granola'); ?>
                                 </a>
