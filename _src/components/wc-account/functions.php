@@ -447,6 +447,49 @@ function get_order_summary(\WC_Order $order): string
 }
 
 /**
+ * A photograph the design asks for, or a placeholder standing in its place.
+ *
+ * The redesign names exactly two: the dashboard hero and the one beside the
+ * empty payment-methods panel. Neither photograph has been chosen yet, so both
+ * slots render a marked placeholder until somebody sets one.
+ *
+ * Set a real image without a deploy, the same way `millboard_projects_url`
+ * works:
+ *
+ *   wp option update millboard_account_images --format=json \
+ *     '{"dash-hero":1234,"pay-empty":5678}' --url=<site>/en-gb/
+ *
+ * ⚠️ The placeholder's wording is deliberately NOT translated. It is
+ * scaffolding, so putting it through Loco would add strings in six locales
+ * that exist only to be deleted. It also carries a dashed outline and says
+ * what it is, because the one thing worse than a missing photograph is a
+ * tasteful grey rectangle nobody notices is unfinished.
+ *
+ * @param string $slot        Which image: 'dash-hero' or 'pay-empty'.
+ * @param string $description What the photograph should eventually be.
+ */
+function account_image(string $slot, string $description): string
+{
+    $images = (array) \get_option('millboard_account_images', []);
+    $id = (int) ($images[$slot] ?? 0);
+
+    if ($id && \wp_attachment_is_image($id)) {
+        // Decorative: every one of these sits beside copy that already says
+        // what the panel is for, so a description here is read-out noise.
+        return \wp_get_attachment_image($id, 'large', false, [
+            'class' => 'mb-account-figure__image',
+            'alt' => '',
+            'loading' => 'lazy',
+        ]);
+    }
+
+    return \sprintf(
+        '<span class="mb-account-figure__placeholder"><span class="mb-account-figure__note">%s</span></span>',
+        \esc_html($description)
+    );
+}
+
+/**
  * The board shades in an order, as swatches, at most three.
  *
  * What a customer actually recognises an order by is the colour of the board,

@@ -413,6 +413,63 @@
 }
 
 // Empty states: centred, hairline box, olive tick above the heading.
+// =============================================================================
+// Photographs, and the placeholders standing in for them
+// =============================================================================
+
+.mb-account-figure {
+    margin: 0;
+    aspect-ratio: 4 / 3;
+    background-color: var(--mba-mist);
+    overflow: hidden;
+
+    &__image {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    // Deliberately conspicuous. A tasteful grey rectangle is the version
+    // somebody ships by accident; a dashed box that says what is missing is
+    // not. Goes the moment a real image id is set on the option.
+    &__placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        padding: #{px-to-rem(16)};
+        border: 1px dashed rgba(47, 41, 46, 0.3);
+    }
+
+    &__note {
+        max-width: 30ch;
+        text-align: center;
+        font-size: #{px-to-rem(13)};
+        line-height: 1.5;
+        color: var(--mba-muted);
+    }
+}
+
+.mb-account-dash__welcome {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: #{px-to-rem(32)} #{px-to-rem(48)};
+    margin-bottom: clamp(#{px-to-rem(40)}, 5vw, #{px-to-rem(56)});
+}
+
+.mb-account-dash__welcome-text {
+    flex: 1 1 #{px-to-rem(300)};
+    min-width: 0;
+}
+
+.mb-account-dash__hero {
+    flex: 1 1 #{px-to-rem(300)};
+    min-width: 0;
+}
+
 .mb-account-empty {
     // The imageless variant: a centred Mist block, which is what Assets,
     // Sample ordering and Payment methods all use. A hairline box around
@@ -438,6 +495,37 @@
         font-weight: 300;
         letter-spacing: 0.14em;
         text-transform: uppercase;
+    }
+
+    // The variant with a photograph beside it: image and words share the Mist
+    // panel rather than the words sitting centred in it alone.
+    &--figured {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: stretch;
+        padding: 0;
+        text-align: left;
+
+        .mb-account-empty__figure {
+            flex: 1 1 #{px-to-rem(260)};
+        }
+
+        .mb-account-empty__body-wrap {
+            flex: 1 1 #{px-to-rem(260)};
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: center;
+            gap: #{px-to-rem(16)};
+            padding: clamp(#{px-to-rem(28)}, 4vw, #{px-to-rem(40)});
+        }
+
+        .mb-account-empty__rule,
+        .mb-account-empty__title,
+        .mb-account-empty__body {
+            margin: 0;
+            max-width: none;
+        }
     }
 
     &__body {
