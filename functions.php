@@ -61,6 +61,7 @@ if (file_exists($autoloader = __DIR__ . '/vendor/autoload.php')) {
 // ----------------------------------------------------
 \Theme\Meta\Schema::init();
 \Theme\Meta\ProductSchema::init();
+\Theme\Meta\SiteVerification::init();
 
 // ----------------------------------------------------
 // Custom Shortcodes.
@@ -121,6 +122,8 @@ if (file_exists($autoloader = __DIR__ . '/vendor/autoload.php')) {
 \Theme\WooCommerce\SampleOrderReport::init();
 // Finish a sample order inside My Account rather than the shop basket.
 \Theme\WooCommerce\SampleOrderCheckout::init();
+// Australian orders shipping to NSW go to TPD (via Sam), not Concept Materials.
+\Theme\WooCommerce\RegionalOrderRouting::init();
 // A working unsubscribe link in the order confirmation. Compliance's condition
 // for letting a rep enter a customer's details on their behalf.
 \Theme\WooCommerce\EmailUnsubscribe::init();

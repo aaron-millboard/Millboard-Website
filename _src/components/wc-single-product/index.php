@@ -37,6 +37,25 @@ $has_samples = str_contains($samples, 'product-samples__button');
                     <?= \Granola\Component::get('link', $args['header_cta']); ?>
                 </div>
             <?php } ?>
+
+            <?php if (!empty($args['nbs_source_url'])) { ?>
+                <div class="product__nbs-source">
+                    <?= \Granola\Component::get('link', [
+                        'url' => $args['nbs_source_url'],
+                        'content' => \Granola\SVG::get('icons-custom/nbs-source.svg') . '<span>' . esc_html__('View on NBS Source', 'granola') . '</span>',
+                        'target' => '_blank',
+                        'classes' => ['g-button'],
+                    ]); ?>
+                </div>
+            <?php } ?>
+
+            <?php if (!empty($args['lightbeans_slug'])) { ?>
+                <div class="product__lightbeans">
+                    <button type="button" class="g-button" data-lightbeans-texture="<?= esc_attr($args['lightbeans_slug']); ?>">
+                        <?= esc_html__('Download 3D texture', 'granola'); ?>
+                    </button>
+                </div>
+            <?php } ?>
         </div>
 
         <?php
