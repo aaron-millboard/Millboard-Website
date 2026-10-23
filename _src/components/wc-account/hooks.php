@@ -47,6 +47,7 @@ namespace Granola\Components\WC_Account;
     $external = [
         'projects' => projects_url(),
         'calculator' => CALCULATOR_URL,
+        'visualiser' => VISUALISER_URL,
     ];
 
     if (!isset($external[$endpoint]) || '' === $external[$endpoint]) {
@@ -124,6 +125,16 @@ namespace Granola\Components\WC_Account;
         unset($items['calculator']);
     }
 
+    /*
+     * The AI visualiser. The third link out, and the map below is why that
+     * cost one line rather than another copy of a filter.
+     */
+    if (can_view_visualiser()) {
+        $items['visualiser'] = \__('Visualiser', 'granola');
+    } else {
+        unset($items['visualiser']);
+    }
+
     if (can_order_samples()) {
         // The widget adds its own item under this same key, labelled from
         // MB_SOF_LABEL ("Sample Ordering"). Setting it here rather than only
@@ -149,6 +160,7 @@ namespace Granola\Components\WC_Account;
         // a third.
         'projects',
         'calculator',
+        'visualiser',
     ];
 
     $sorted = [];

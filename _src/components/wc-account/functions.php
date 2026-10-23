@@ -171,6 +171,11 @@ function can_view_projects(?int $user_id = null): bool
 const CALCULATOR_URL = 'https://calculator.millboard.com/calculator';
 
 /**
+ * Where the AI visualiser lives. Same reasoning as CALCULATOR_URL.
+ */
+const VISUALISER_URL = 'https://ai-visualiser.millboard.com';
+
+/**
  * May this person see the Calculator tab?
  *
  * Everyone with a Millboard account rather than a plain shop customer, which
@@ -178,13 +183,34 @@ const CALCULATOR_URL = 'https://calculator.millboard.com/calculator';
  * this way keeps a customer's menu exactly as it is: one flat list of five and
  * no headings, which is what nav_groups() promises.
  *
- * ⚠️ Tested through CAP_BRAND_ASSETS, which reads oddly for a calculator and
- * is deliberate. Every role in Roles::map() holds that capability and a plain
- * customer holds none of them, so it is the cheapest accurate test for "is one
- * of ours". Inventing a capability would mean a roles install bump across six
- * sites to gate a link to a public page.
+ * See has_account_tools() for why the test is the one it is.
  */
 function can_view_calculator(?int $user_id = null): bool
+{
+    return has_account_tools($user_id);
+}
+
+/**
+ * May this person see the Visualiser tab?
+ *
+ * The same audience as the Calculator, so the same gate rather than a second
+ * function that merely happens to agree with it today.
+ */
+function can_view_visualiser(?int $user_id = null): bool
+{
+    return has_account_tools($user_id);
+}
+
+/**
+ * Does this person have a Millboard account, as opposed to a plain customer?
+ *
+ * ⚠️ Tested through CAP_BRAND_ASSETS, which reads oddly as a general test and
+ * is deliberate. Every role in Roles::map() holds that capability and a plain
+ * customer holds none of them, so it is the cheapest accurate answer.
+ * Inventing a capability for this would mean a roles install bump across six
+ * sites in order to gate links to public pages.
+ */
+function has_account_tools(?int $user_id = null): bool
 {
     return user_can_mb(\Theme\Accounts\Roles::CAP_BRAND_ASSETS, $user_id);
 }
@@ -222,7 +248,7 @@ function nav_groups(array $endpoints): array
 {
     $tools = \array_intersect_key(
         $endpoints,
-        \array_flip([ENDPOINT_BRAND_ASSETS, ENDPOINT_SAMPLE_ORDERING, 'projects', 'calculator'])
+        \array_flip([ENDPOINT_BRAND_ASSETS, ENDPOINT_SAMPLE_ORDERING, 'projects', 'calculator', 'visualiser'])
     );
 
     if (!$tools) {
