@@ -289,6 +289,29 @@
 // descendants of the same wrapper (the auth screen uses them too).
 // =============================================================================
 
+// The olive rule above every panel heading.
+//
+// Drawn with a pseudo-element rather than added to each template: nine panels
+// print a heading, three inside components and six inside WooCommerce
+// overrides, so one rule keeps them identical and a tenth gets it for free.
+//
+// ⚠️ Two selectors, because the dashboard does NOT use .mb-account-panel__title
+// -- its greeting is its own element. Shipping this on the title alone left the
+// dashboard as the single panel in the section with no rule above its heading,
+// which is exactly the kind of miss a single shared selector prevents. A new
+// heading joins by being added here.
+.mb-account-panel__title,
+.mb-account-dash__greeting {
+    &::before {
+        content: '';
+        display: block;
+        width: #{px-to-rem(48)};
+        height: #{px-to-rem(2)};
+        margin-bottom: #{px-to-rem(16)};
+        background-color: var(--mba-accent);
+    }
+}
+
 .mb-account-panel {
     &__title {
         margin: 0 0 #{px-to-rem(16)};
@@ -301,21 +324,6 @@
         // Holds the hairline weight of a 300 at display size, which otherwise
         // thins out to nearly nothing on the lighter surfaces.
         -webkit-text-stroke: 0.2px currentColor;
-
-        // The olive rule above every panel title.
-        //
-        // Drawn here rather than added to each template: eight panels print
-        // this heading, three of them inside components and five inside
-        // WooCommerce overrides, so one pseudo-element keeps them identical
-        // and means a ninth panel gets it for free.
-        &::before {
-            content: '';
-            display: block;
-            width: #{px-to-rem(48)};
-            height: #{px-to-rem(2)};
-            margin-bottom: #{px-to-rem(16)};
-            background-color: var(--mba-accent);
-        }
     }
 
     &__intro {
