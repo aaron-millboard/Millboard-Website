@@ -33,20 +33,27 @@ namespace Granola\Components\WC_Account;
 });
 
 /**
- * Send the Projects item to its external URL.
+ * Send the menu items that are links out to their real URLs.
  *
  * WooCommerce builds every account menu link with
- * wc_get_account_endpoint_url(), which would give /my-account/projects/.
- * There is no such endpoint, so without this the tab would 404.
+ * wc_get_account_endpoint_url(), which would give /my-account/projects/ or
+ * /my-account/calculator/. Neither endpoint is registered, so without this
+ * both would 404.
+ *
+ * A map rather than a branch per item, because there are two now and the next
+ * one should be a line rather than another copy of this function.
  */
 \add_filter('woocommerce_get_endpoint_url', function ($url, $endpoint) {
-    if ('projects' !== $endpoint) {
+    $external = [
+        'projects' => projects_url(),
+        'calculator' => CALCULATOR_URL,
+    ];
+
+    if (!isset($external[$endpoint]) || '' === $external[$endpoint]) {
         return $url;
     }
 
-    $external = projects_url();
-
-    return '' !== $external ? $external : $url;
+    return $external[$endpoint];
 }, 10, 2);
 
 /**
@@ -108,6 +115,15 @@ namespace Granola\Components\WC_Account;
         unset($items['projects']);
     }
 
+    /*
+     * The decking calculator. Another link out, like Projects.
+     */
+    if (can_view_calculator()) {
+        $items['calculator'] = \__('Calculator', 'granola');
+    } else {
+        unset($items['calculator']);
+    }
+
     if (can_order_samples()) {
         // The widget adds its own item under this same key, labelled from
         // MB_SOF_LABEL ("Sample Ordering"). Setting it here rather than only
@@ -127,6 +143,12 @@ namespace Granola\Components\WC_Account;
         'edit-account',
         ENDPOINT_BRAND_ASSETS,
         $sample,
+        // The two links out, named rather than left to fall through the
+        // merge below. They landed in the right place by insertion order
+        // alone, which is not a thing to rely on when the next person adds
+        // a third.
+        'projects',
+        'calculator',
     ];
 
     $sorted = [];
