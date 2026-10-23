@@ -63,7 +63,7 @@
         font-weight: 700;
         letter-spacing: var(--mbh-tracking-sub, 0.16em);
         text-transform: uppercase;
-        color: #6e6a6c;
+        color: var(--mba-muted, #5a5458);
     }
 
     // -------------------------------------------------------------
@@ -74,8 +74,86 @@
         margin: 0;
         padding: 0;
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(#{px-to-rem(180)}, 1fr));
+        // A fixed 240px track, not a stretching one. Canto's thumbnail is a
+        // 240px image, so a 1fr column scales it up and softens every asset
+        // in the library on a wide screen. Folder cards stay fluid, which is
+        // why they get their own rule below.
+        grid-template-columns: repeat(auto-fill, #{px-to-rem(240)});
         gap: #{px-to-rem(20)};
+    }
+
+    // Folders carry no image, so they may fill the row rather than leaving a
+    // gutter of empty space beside them.
+    &__item--folder {
+        grid-column: span 1;
+    }
+
+    // ---- while a page loads -------------------------------------
+    // The grid keeps its shape rather than emptying. Collapsing it throws the
+    // rest of the page up the screen, which on a slow reply reads as the
+    // content having disappeared rather than being on its way.
+    &__item--skeleton {
+        border-color: transparent;
+        background-color: var(--mba-mist, #dedbd2);
+        min-height: #{px-to-rem(220)};
+
+        @media (prefers-reduced-motion: no-preference) {
+            animation: mb-assets-pulse 1.4s ease-in-out infinite;
+        }
+    }
+
+    &__status {
+        margin: 0 0 #{px-to-rem(16)};
+        font-size: #{px-to-rem(13)};
+        color: var(--mba-muted, #5a5458);
+
+        &:empty {
+            display: none;
+        }
+    }
+
+    // ---- the pager ----------------------------------------------
+    // Only the pages reached, plus the next one. There is no total to count
+    // towards: the real one includes assets this person may not see.
+    &__pager {
+        display: flex;
+        flex-wrap: wrap;
+        gap: #{px-to-rem(8)};
+        align-items: center;
+        justify-content: center;
+        margin-top: #{px-to-rem(24)};
+        padding-top: #{px-to-rem(24)};
+        border-top: 1px solid var(--mbh-rule, #{rgba(#2f292e, 0.18)});
+    }
+
+    &__page {
+        min-width: #{px-to-rem(44)};
+        min-height: #{px-to-rem(44)};
+        padding: 0 #{px-to-rem(12)};
+        background: none;
+        border: 1px solid var(--mbh-rule, #{rgba(#2f292e, 0.18)});
+        font-family: inherit;
+        font-size: #{px-to-rem(13)};
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        color: var(--color--foreground);
+        cursor: pointer;
+
+        &:hover:not(:disabled),
+        &:focus-visible {
+            border-color: var(--color--foreground);
+        }
+
+        &.is-current {
+            background-color: var(--color--foreground);
+            border-color: var(--color--foreground);
+            color: var(--color--brand-2);
+        }
+
+        &:disabled {
+            opacity: 0.4;
+            cursor: default;
+        }
     }
 
     &__item {
@@ -126,7 +204,7 @@
         font-weight: 700;
         letter-spacing: 0.18em;
         text-transform: uppercase;
-        color: #6e6a6c;
+        color: var(--mba-muted, #5a5458);
     }
 
     // ---- assets ----
@@ -169,6 +247,17 @@
     &__more {
         margin: #{px-to-rem(24)} 0 0;
         font-size: #{px-to-rem(13)};
-        color: #6e6a6c;
+        color: var(--mba-muted, #5a5458);
+    }
+}
+
+@keyframes mb-assets-pulse {
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.55;
     }
 }
