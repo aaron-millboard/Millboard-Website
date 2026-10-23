@@ -204,7 +204,14 @@ class Client
      * that total counts the assets this user may not see, so showing it would
      * leak how many there are. `more` says the page filled and Canto has more.
      *
-     * @return array{results: array<int,array<string,mixed>>, found: int, more: bool}
+     * `next_start` is an OPAQUE cursor: pass it straight back to get the next
+     * page. It is not an item count and the two branches below do not even
+     * measure it in the same units (a raw Canto offset for staff, a position
+     * in the partner index for everyone else). Nothing outside this class may
+     * do arithmetic on it, and a caller must not carry one from `search()`
+     * into `contents()` or the other way round.
+     *
+     * @return array{results: array<int,array<string,mixed>>, found: int, more: bool, next_start: int}
      */
     public static function contents(string $scheme, string $id, int $limit = 60, int $start = 0): array
     {
@@ -216,7 +223,7 @@ class Client
         // from the partner index instead, which holds only what they may see.
         if (!\in_array(Access::STAFF, $audiences, true)) {
             if (!$audiences) {
-                return ['results' => [], 'found' => 0, 'more' => false];
+                return ['results' => [], 'found' => 0, 'more' => false, 'next_start' => 0];
             }
 
             $index = self::partner_index();
@@ -224,10 +231,14 @@ class Client
             if (null !== $index) {
                 $mine = \array_values(\array_filter($index, static fn ($item) => \in_array($id, $item['albums'], true) && Access::visible($item, $audiences)));
 
+                // Already filtered, so here the cursor really is a plain
+                // position in $mine -- which is why it must stay opaque to
+                // callers that cannot tell which branch answered them.
                 return [
                     'results' => \array_slice($mine, $start, $limit),
                     'found' => \count($mine),
                     'more' => \count($mine) > $start + $limit,
+                    'next_start' => \min($start + $limit, \count($mine)),
                 ];
             }
         }
@@ -241,14 +252,16 @@ class Client
     /**
      * Search the whole library, limited to what this user may see.
      *
-     * @return array{results: array<int,array<string,mixed>>, found: int, more: bool}
+     * `next_start` is the same opaque cursor described on contents().
+     *
+     * @return array{results: array<int,array<string,mixed>>, found: int, more: bool, next_start: int}
      */
     public static function search(string $keyword, int $limit = 60, int $start = 0): array
     {
         $keyword = \trim($keyword);
 
         if ('' === $keyword) {
-            return ['results' => [], 'found' => 0, 'more' => false];
+            return ['results' => [], 'found' => 0, 'more' => false, 'next_start' => 0];
         }
 
         return self::visible_page('search', ['keyword' => $keyword], $limit, $start);
@@ -262,12 +275,24 @@ class Client
      * visible ones turn up or Canto runs out, capped so one request cannot walk
      * the whole library.
      *
+     * `next_start` is the RAW Canto offset to resume from, and it is counted
+     * item by item rather than page by page.
+     *
+     * ⚠ Counting by page is WRONG here, which is what this used to do. A raw
+     * page can carry more visible assets than are being returned; the surplus
+     * was sliced off the end AFTER the cursor had already moved past the whole
+     * page, so resuming from it would step straight over assets nobody had
+     * seen. Nothing ever resumed while the panel rendered one fixed page of 60,
+     * so the bug was inert. Paging is what makes it live, so it is fixed here
+     * rather than worked around in the caller.
+     *
      * @param array<string,scalar> $args
-     * @return array{results: array<int,array<string,mixed>>, found: int, more: bool}
+     * @return array{results: array<int,array<string,mixed>>, found: int, more: bool, next_start: int}
      */
     private static function visible_page(string $path, array $args, int $limit, int $start): array
     {
         $audiences = Access::for_current_user();
+        $limit = \max(1, $limit);
         // The first request is small, which is all a staff view needs because
         // nearly everything is visible to them. When that is not enough the
         // pages grow to 1000, Canto's largest, and eleven requests cover the
@@ -275,24 +300,37 @@ class Client
         // than cut off after the first thousand.
         $requests = 11;
         $visible = [];
+        $cursor = \max(0, $start);
         $more = false;
 
         for ($i = 0; $i < $requests; $i++) {
             $step = 0 === $i ? 100 : 1000;
-            $body = self::get($path, $args + ['limit' => $step, 'start' => $start]);
+            $body = self::get($path, $args + ['limit' => $step, 'start' => $cursor]);
             $raw = \is_array($body) && \is_array($body['results'] ?? null) ? $body['results'] : [];
             $total = \is_array($body) ? (int) ($body['found'] ?? 0) : 0;
-            $start += \count($raw);
 
-            $visible = \array_merge($visible, Access::filter($raw, $audiences));
-            $exhausted = !$raw || $start >= $total;
+            foreach ($raw as $item) {
+                $cursor++;
 
-            if (\count($visible) >= $limit) {
-                $more = \count($visible) > $limit || !$exhausted;
-                break;
+                if (!\is_array($item) || !Access::visible($item, $audiences)) {
+                    continue;
+                }
+
+                $visible[] = $item;
+
+                if (\count($visible) >= $limit) {
+                    // Stop ON the boundary, so the cursor names the next unread
+                    // asset rather than the end of the page it happened to be in.
+                    return [
+                        'results' => $visible,
+                        'found' => $limit,
+                        'more' => $cursor < $total,
+                        'next_start' => $cursor,
+                    ];
+                }
             }
 
-            if ($exhausted) {
+            if (!$raw || $cursor >= $total) {
                 break;
             }
 
@@ -302,9 +340,10 @@ class Client
         }
 
         return [
-            'results' => \array_slice($visible, 0, $limit),
-            'found' => \min(\count($visible), $limit),
+            'results' => $visible,
+            'found' => \count($visible),
             'more' => $more,
+            'next_start' => $cursor,
         ];
     }
 
