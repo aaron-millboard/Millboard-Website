@@ -61,6 +61,10 @@ class SampleFulfilment
         \add_action('add_meta_boxes', [self::class, 'meta_box']);
         \add_action('woocommerce_process_shop_order_meta', [self::class, 'save'], 10, 1);
 
+        // Editing in the list itself, which is the point of the feature.
+        \add_action('admin_enqueue_scripts', [self::class, 'admin_assets']);
+        \add_action('wp_ajax_mb_fulfil_inline', [self::class, 'ajax_inline']);
+
         // ⚠️ The guard. See the class docblock.
         \add_filter('woocommerce_email_enabled_customer_completed_order', [self::class, 'suppress_retrospective_email'], 10, 2);
     }
@@ -107,6 +111,7 @@ class SampleFulfilment
             if ('order_status' === $key) {
                 $out['mb_versanddatum'] = \__('Versanddatum', 'granola');
                 $out['mb_sendungsnummer'] = \__('Sendungsnummer', 'granola');
+                $out['mb_anmerkungen'] = \__('Anmerkungen', 'granola');
             }
         }
 
@@ -114,6 +119,7 @@ class SampleFulfilment
         if (!isset($out['mb_versanddatum'])) {
             $out['mb_versanddatum'] = \__('Versanddatum', 'granola');
             $out['mb_sendungsnummer'] = \__('Sendungsnummer', 'granola');
+            $out['mb_anmerkungen'] = \__('Anmerkungen', 'granola');
         }
 
         return $out;
@@ -129,22 +135,211 @@ class SampleFulfilment
             return;
         }
 
-        if ('mb_versanddatum' === $column) {
-            $value = (string) $order->get_meta(self::META_DISPATCHED_ON);
+        $map = [
+            'mb_versanddatum' => [self::META_DISPATCHED_ON, 'date'],
+            'mb_sendungsnummer' => [self::META_TRACKING, 'text'],
+            'mb_anmerkungen' => [self::META_NOTES, 'text'],
+        ];
 
-            echo $value
-                ? \esc_html(\date_i18n(\get_option('date_format'), \strtotime($value)))
-                : '<span aria-hidden="true">&mdash;</span><span class="screen-reader-text">'
-                    . \esc_html__('Not dispatched', 'granola') . '</span>';
-
+        if (!isset($map[$column])) {
             return;
         }
 
-        if ('mb_sendungsnummer' === $column) {
-            $value = (string) $order->get_meta(self::META_TRACKING);
+        [$meta_key, $type] = $map[$column];
+        $raw = (string) $order->get_meta($meta_key);
 
-            echo $value ? \esc_html($value) : '<span aria-hidden="true">&mdash;</span>';
+        // Shown formatted, edited raw. A German rep reading the list wants
+        // 26.10.2026; the input underneath has to be the ISO value or the
+        // browser's date control refuses it.
+        $shown = ('date' === $type && '' !== $raw)
+            ? \date_i18n(\get_option('date_format'), (int) \strtotime($raw))
+            : $raw;
+
+        \printf(
+            '<button type="button" class="mb-fulfil-cell" data-order="%d" data-field="%s" data-type="%s" data-raw="%s" title="%s">%s</button>',
+            $order->get_id(),
+            \esc_attr($meta_key),
+            \esc_attr($type),
+            \esc_attr($raw),
+            \esc_attr__('Click to edit', 'granola'),
+            '' !== $shown
+                ? \esc_html($shown)
+                : '<span class="mb-fulfil-empty" aria-hidden="true">&mdash;</span>'
+                    . '<span class="screen-reader-text">' . \esc_html__('Empty, click to edit', 'granola') . '</span>'
+        );
+    }
+
+    /**
+     * The inline editor: the whole point of this feature.
+     *
+     * The agency's job is a list of parcels, not 200 order screens. Opening an
+     * order to type a tracking number is what the Google Sheet never made them
+     * do, and the first thing they would complain about.
+     *
+     * A button, not a contenteditable or a permanent input: a button is
+     * already focusable, already reachable by keyboard, and already announced
+     * as something you activate. The script swaps it for a real input on
+     * click and puts it back on save.
+     */
+    public static function admin_assets(string $hook): void
+    {
+        if (!self::is_orders_screen($hook) || !\current_user_can('edit_shop_orders')) {
+            return;
         }
+
+        \wp_register_script('mb-fulfil-inline', '', ['jquery'], null, true);
+        \wp_enqueue_script('mb-fulfil-inline');
+
+        \wp_localize_script('mb-fulfil-inline', 'mbFulfil', [
+            'ajax' => \admin_url('admin-ajax.php'),
+            'nonce' => \wp_create_nonce('mb_fulfil_inline'),
+            'saving' => \__('Saving…', 'granola'),
+            'failed' => \__('Could not save. Reload and try again.', 'granola'),
+        ]);
+
+        \wp_add_inline_script('mb-fulfil-inline', self::inline_script());
+        \wp_register_style('mb-fulfil-inline', false, [], null);
+        \wp_enqueue_style('mb-fulfil-inline');
+        \wp_add_inline_style('mb-fulfil-inline', self::inline_style());
+    }
+
+    private static function is_orders_screen(string $hook): bool
+    {
+        return \str_contains($hook, 'wc-orders') || 'edit.php' === $hook;
+    }
+
+    private static function inline_style(): string
+    {
+        return '.mb-fulfil-cell{background:none;border:1px dashed transparent;padding:2px 6px;cursor:text;'
+            . 'font:inherit;color:inherit;text-align:left;min-width:7em;border-radius:2px}'
+            . '.mb-fulfil-cell:hover,.mb-fulfil-cell:focus{border-color:#2271b1;background:#fff}'
+            . '.mb-fulfil-empty{color:#8c8f94}'
+            . '.mb-fulfil-input{width:100%;min-width:7em}'
+            . '.mb-fulfil-busy{opacity:.5}';
+    }
+
+    private static function inline_script(): string
+    {
+        // Delegated, because WooCommerce redraws this table on filter and sort
+        // and a listener bound to a cell would be lost with it.
+        return <<<'JS'
+(function () {
+    document.addEventListener('click', function (e) {
+        var cell = e.target.closest ? e.target.closest('.mb-fulfil-cell') : null;
+        if (!cell || cell.dataset.editing === '1') { return; }
+        e.preventDefault();
+
+        cell.dataset.editing = '1';
+        var input = document.createElement('input');
+        input.type = cell.dataset.type === 'date' ? 'date' : 'text';
+        input.className = 'mb-fulfil-input';
+        input.value = cell.dataset.raw || '';
+        cell.replaceWith(input);
+        input.focus();
+
+        var done = false;
+        function finish(save) {
+            if (done) { return; }
+            done = true;
+            var next = input.value;
+            if (!save || next === (cell.dataset.raw || '')) { input.replaceWith(cell); cell.dataset.editing = ''; return; }
+
+            input.disabled = true;
+            input.classList.add('mb-fulfil-busy');
+
+            var body = new URLSearchParams({
+                action: 'mb_fulfil_inline',
+                nonce: mbFulfil.nonce,
+                order: cell.dataset.order,
+                field: cell.dataset.field,
+                value: next
+            });
+
+            fetch(mbFulfil.ajax, { method: 'POST', credentials: 'same-origin', body: body })
+                .then(function (r) { return r.json(); })
+                .then(function (p) {
+                    if (!p || !p.success) { throw new Error('failed'); }
+                    cell.dataset.raw = p.data.raw;
+                    cell.innerHTML = p.data.html;
+                    input.replaceWith(cell);
+                    cell.dataset.editing = '';
+                    // Entering a date completes the order, so the row's status
+                    // is now stale. Saying so beats showing a lie.
+                    if (p.data.status_changed) { location.reload(); }
+                })
+                .catch(function () {
+                    window.alert(mbFulfil.failed);
+                    input.replaceWith(cell);
+                    cell.dataset.editing = '';
+                });
+        }
+
+        input.addEventListener('blur', function () { finish(true); });
+        input.addEventListener('keydown', function (ev) {
+            if (ev.key === 'Enter') { ev.preventDefault(); finish(true); }
+            if (ev.key === 'Escape') { ev.preventDefault(); finish(false); }
+        });
+    });
+}());
+JS;
+    }
+
+    /**
+     * Save one cell.
+     *
+     * Reads the other two fields off the order rather than trusting the page,
+     * so an inline edit can never blank a field the editor could not see.
+     */
+    public static function ajax_inline(): void
+    {
+        if (!\check_ajax_referer('mb_fulfil_inline', 'nonce', false)) {
+            \wp_send_json_error(['message' => 'bad nonce'], 403);
+        }
+
+        if (!\current_user_can('edit_shop_orders')) {
+            \wp_send_json_error(['message' => 'not permitted'], 403);
+        }
+
+        $order = \wc_get_order(isset($_POST['order']) ? \absint($_POST['order']) : 0);
+        $field = isset($_POST['field']) ? \sanitize_text_field(\wp_unslash($_POST['field'])) : '';
+        $value = isset($_POST['value']) ? \sanitize_text_field(\wp_unslash($_POST['value'])) : '';
+
+        $allowed = [self::META_DISPATCHED_ON, self::META_TRACKING, self::META_NOTES];
+
+        if (!$order instanceof \WC_Order || !\in_array($field, $allowed, true)) {
+            \wp_send_json_error(['message' => 'unknown order or field'], 400);
+        }
+
+        $before = $order->get_status();
+
+        $current = [
+            self::META_DISPATCHED_ON => (string) $order->get_meta(self::META_DISPATCHED_ON),
+            self::META_TRACKING => (string) $order->get_meta(self::META_TRACKING),
+            self::META_NOTES => (string) $order->get_meta(self::META_NOTES),
+        ];
+
+        $current[$field] = $value;
+
+        self::apply(
+            $order,
+            $current[self::META_DISPATCHED_ON],
+            $current[self::META_TRACKING],
+            $current[self::META_NOTES]
+        );
+
+        $fresh = \wc_get_order($order->get_id());
+
+        $shown = (self::META_DISPATCHED_ON === $field && '' !== $value)
+            ? \date_i18n(\get_option('date_format'), (int) \strtotime($value))
+            : $value;
+
+        \wp_send_json_success([
+            'raw' => $value,
+            'html' => '' !== $shown
+                ? \esc_html($shown)
+                : '<span class="mb-fulfil-empty" aria-hidden="true">&mdash;</span>',
+            'status_changed' => $fresh instanceof \WC_Order && $fresh->get_status() !== $before,
+        ]);
     }
 
     public static function meta_box(): void
@@ -225,17 +420,35 @@ class SampleFulfilment
             return;
         }
 
-        $had_date = '' !== (string) $order->get_meta(self::META_DISPATCHED_ON);
+        self::apply(
+            $order,
+            isset($_POST[self::META_DISPATCHED_ON])
+                ? \sanitize_text_field(\wp_unslash($_POST[self::META_DISPATCHED_ON]))
+                : '',
+            isset($_POST[self::META_TRACKING])
+                ? \sanitize_text_field(\wp_unslash($_POST[self::META_TRACKING]))
+                : '',
+            isset($_POST[self::META_NOTES])
+                ? \sanitize_textarea_field(\wp_unslash($_POST[self::META_NOTES]))
+                : ''
+        );
+    }
 
-        $date = isset($_POST[self::META_DISPATCHED_ON])
-            ? \sanitize_text_field(\wp_unslash($_POST[self::META_DISPATCHED_ON]))
-            : '';
-        $tracking = isset($_POST[self::META_TRACKING])
-            ? \sanitize_text_field(\wp_unslash($_POST[self::META_TRACKING]))
-            : '';
-        $notes = isset($_POST[self::META_NOTES])
-            ? \sanitize_textarea_field(\wp_unslash($_POST[self::META_NOTES]))
-            : '';
+    /**
+     * Write the three fields and complete the order if a date has appeared.
+     *
+     * ⚠️ The ONLY place this is done. The meta box and the inline editor both
+     * come through here, because two copies of "entering a date completes the
+     * order and mails the customer" would eventually disagree, and the way
+     * they would disagree is one of them mailing when it should not.
+     *
+     * @param string $date     Dispatch date, or '' to clear.
+     * @param string $tracking Tracking number.
+     * @param string $notes    Free text.
+     */
+    public static function apply(\WC_Order $order, string $date, string $tracking, string $notes): void
+    {
+        $had_date = '' !== (string) $order->get_meta(self::META_DISPATCHED_ON);
 
         $order->update_meta_data(self::META_DISPATCHED_ON, $date);
         $order->update_meta_data(self::META_TRACKING, $tracking);
