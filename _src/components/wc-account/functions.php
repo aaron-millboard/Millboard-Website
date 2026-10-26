@@ -303,7 +303,47 @@ function can_view_deckplanner(?int $user_id = null): bool
  */
 function has_account_tools(?int $user_id = null): bool
 {
-    return user_can_mb(\Theme\Accounts\Roles::CAP_BRAND_ASSETS, $user_id);
+    $user_id = $user_id ?: \get_current_user_id();
+
+    if (!$user_id) {
+        return false;
+    }
+
+    $user = \get_userdata($user_id);
+
+    if (!$user instanceof \WP_User) {
+        return false;
+    }
+
+    return (bool) \array_intersect($user->roles, tool_roles());
+}
+
+/**
+ * Who the Millboard tools are for.
+ *
+ * Aaron, 26 Oct 2026: internal staff, distributors and installers.
+ *
+ * ⚠️ Named roles, NOT a capability. This used to test CAP_BRAND_ASSETS as a
+ * cheap stand-in for "is one of ours", which was fine while the tools and the
+ * asset library went to the same people. They no longer do: architects (145)
+ * and asset viewers (50) hold that capability and are deliberately NOT on this
+ * list, so the proxy would now quietly hand them four tools nobody asked to
+ * give them.
+ *
+ * staff_roles() rather than ROLE_STAFF alone, or every administrator, editor
+ * and shop manager loses the tools on the day this ships.
+ *
+ * @return string[]
+ */
+function tool_roles(): array
+{
+    return (array) \apply_filters('millboard/account/tool_roles', \array_merge(
+        \Theme\Accounts\Roles::staff_roles(),
+        [
+            \Theme\Accounts\Roles::ROLE_DISTRIBUTOR,
+            \Theme\Accounts\Roles::ROLE_INSTALLER,
+        ]
+    ));
 }
 
 /**
