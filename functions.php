@@ -122,6 +122,10 @@ if (file_exists($autoloader = __DIR__ . '/vendor/autoload.php')) {
 \Theme\WooCommerce\SampleOrderReport::init();
 // Finish a sample order inside My Account rather than the shop basket.
 \Theme\WooCommerce\SampleOrderCheckout::init();
+// The dispatch queue a third-party agency works. Germany has no Saltbox, so
+// fulfilment has always happened in a Google Sheet; this puts it back on the
+// order. Read the class docblock before touching German order statuses.
+\Theme\WooCommerce\SampleFulfilment::init();
 // Australian orders shipping to NSW go to TPD (via Sam), not Concept Materials.
 \Theme\WooCommerce\RegionalOrderRouting::init();
 // A working unsubscribe link in the order confirmation. Compliance's condition
