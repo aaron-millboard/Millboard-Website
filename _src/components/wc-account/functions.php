@@ -156,8 +156,78 @@ function user_in_allow_list(string $option, ?int $user_id, bool $when_empty): bo
  */
 function can_view_projects(?int $user_id = null): bool
 {
-    return '' !== projects_url()
-        && user_in_allow_list('millboard_projects_viewers', $user_id, false);
+    if ('' === projects_url()) {
+        return false;
+    }
+
+    // The named list stays. Aaron asked for advanced installers to see
+    // Projects; he did not ask for the people already watching it to lose it,
+    // and silently removing someone's tab is the worse way to be wrong.
+    return user_in_allow_list('millboard_projects_viewers', $user_id, false)
+        || is_advanced_installer($user_id);
+}
+
+/**
+ * Is this an installer Millboard has marked "advanced"?
+ *
+ * ⚠️ The flag does not live on the account. `advanced_installer` is post meta
+ * on the installer PROFILE, and the only thing joining a profile to a login is
+ * the profile's `email` meta matching the user's address. That join is the
+ * weak part, not this function: on 26 Oct, 10 profiles were flagged and only 5
+ * of them reached an account, because three carried no e-mail at all and two
+ * had an address nobody had registered with.
+ *
+ * So a false here can mean "not advanced" OR "advanced, but nothing links them
+ * to this login". Anyone chasing a missing tab should check the profile before
+ * the code.
+ *
+ * UK by site membership: the role is held on en-gb, which is what "UK
+ * installer" means on a multisite where roles are per site.
+ *
+ * Cached per user for an hour. This runs on every account page render, and
+ * without it every installer costs a meta query to draw a menu.
+ */
+function is_advanced_installer(?int $user_id = null): bool
+{
+    $user_id = $user_id ?: \get_current_user_id();
+
+    if (!$user_id) {
+        return false;
+    }
+
+    $user = \get_userdata($user_id);
+
+    // Cheap test first: all but a few hundred people stop here, and never
+    // touch the database for a profile they do not have.
+    if (!$user instanceof \WP_User
+        || !\in_array(\Theme\Accounts\Roles::ROLE_INSTALLER, (array) $user->roles, true)) {
+        return false;
+    }
+
+    $key = 'mb_advanced_installer_' . $user_id;
+    $cached = \get_transient($key);
+
+    if (false !== $cached) {
+        return '1' === $cached;
+    }
+
+    $profiles = \get_posts([
+        'post_type' => 'installer',
+        'post_status' => 'publish',
+        'numberposts' => 1,
+        'fields' => 'ids',
+        'meta_query' => [
+            'relation' => 'AND',
+            ['key' => 'email', 'value' => $user->user_email],
+            ['key' => 'advanced_installer', 'value' => '1'],
+        ],
+    ]);
+
+    $is = !empty($profiles);
+
+    \set_transient($key, $is ? '1' : '0', HOUR_IN_SECONDS);
+
+    return $is;
 }
 
 /**

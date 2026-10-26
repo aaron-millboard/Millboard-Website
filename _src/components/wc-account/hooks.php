@@ -390,3 +390,38 @@ namespace Granola\Components\WC_Account;
 
     \update_user_meta($customer_id, MARKETING_META_KEY, empty($post['millboard_marketing_opt_in']) ? 'no' : 'yes');
 });
+
+/*
+ * Clear the advanced-installer answer when a profile changes.
+ *
+ * is_advanced_installer() caches for an hour because it runs on every account
+ * page render. Without this, ticking "advanced installer" on a profile would
+ * take up to an hour to give someone the Projects tab, and unticking it would
+ * take an hour to take the tab away -- which is the direction that matters.
+ *
+ * Keyed by the profile's own e-mail, because that address IS the join to the
+ * account.
+ *
+ * ⚠️ One case this cannot cover: if the e-mail ITSELF was what changed, this
+ * clears the new address's user and the previous one keeps a stale answer
+ * until the hour runs out. Reading the old value would mean caching it before
+ * the save, which is more machinery than an hour of staleness is worth on a
+ * flag that changes a handful of times a year.
+ */
+\add_action('save_post_installer', function (int $post_id): void {
+    if (\wp_is_post_revision($post_id) || \wp_is_post_autosave($post_id)) {
+        return;
+    }
+
+    $email = \trim((string) \get_post_meta($post_id, 'email', true));
+
+    if ('' === $email) {
+        return;
+    }
+
+    $user = \get_user_by('email', $email);
+
+    if ($user) {
+        \delete_transient('mb_advanced_installer_' . $user->ID);
+    }
+}, 10, 1);
