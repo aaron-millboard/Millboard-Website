@@ -102,9 +102,49 @@ function get_taxonomy_items($args): array
         'hide_empty' => true,
     ];
 
+    /*
+     * Never offer a product category whose products are all hidden.
+     *
+     * `hide_empty` does not drop these: "Marketing and POS" and "Sample
+     * ordering" hold 284 and 84 products, every one of them carrying
+     * exclude-from-catalog. They were listed as filter buttons on customer
+     * facing shop pages, naming internal stock.
+     *
+     * Restricting the lookup to catalog-visible products removes them and
+     * keeps doing so as products change, which naming the two slugs would
+     * not. Cached, because it is one query per page otherwise.
+     */
+    if ('product_cat' === $args['taxonomy']) {
+        $visible = \get_transient('millboard_visible_product_ids');
+
+        if (!\is_array($visible)) {
+            $visible = \get_posts([
+                'post_type' => 'product',
+                'post_status' => 'publish',
+                'numberposts' => -1,
+                'fields' => 'ids',
+                'tax_query' => [[
+                    'taxonomy' => 'product_visibility',
+                    'field' => 'name',
+                    'terms' => ['exclude-from-catalog'],
+                    'operator' => 'NOT IN',
+                ]],
+            ]);
+
+            \set_transient('millboard_visible_product_ids', $visible, 12 * HOUR_IN_SECONDS);
+        }
+
+        $post_ids = empty($post_ids) ? $visible : \array_intersect($post_ids, $visible);
+
+        // Nothing visible at all: fall through to no filters rather than all.
+        if (empty($post_ids)) {
+            return $items;
+        }
+    }
+
     // Filter by post type if we have post IDs
     if (!empty($post_ids)) {
-        $term_args['object_ids'] = $post_ids;
+        $term_args['object_ids'] = \array_values($post_ids);
     }
 
     $terms = \get_terms($term_args);
@@ -227,4 +267,18 @@ function get_reset_item($args): array
             'taxonomy-filters__item-wrap--all',
         ],
     ];
+}
+
+/*
+ * The visible-product cache has to drop when a product is published, hidden
+ * or deleted, or a new product stays out of the filters for up to 12 hours.
+ * Mirrors the POS id cache in wc-account-sample-ordering.
+ */
+\add_action('save_post_product', __NAMESPACE__ . '\\flush_visible_products');
+\add_action('deleted_post', __NAMESPACE__ . '\\flush_visible_products');
+\add_action('woocommerce_update_product', __NAMESPACE__ . '\\flush_visible_products');
+
+function flush_visible_products(): void
+{
+    \delete_transient('millboard_visible_product_ids');
 }
