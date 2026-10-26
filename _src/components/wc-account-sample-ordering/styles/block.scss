@@ -289,3 +289,16 @@
         margin-left: auto;
     }
 }
+
+// The consent block sits in the two-column field grid, so without this the
+// wording the rep is told to read aloud is set in a half-width column. It is a
+// paragraph to be read from, not a field.
+.mb-sof-details__consent {
+    grid-column: 1 / -1;
+    width: 100%;
+
+    &-instruction {
+        margin: 0 0 var(--space--2xs);
+        max-width: none;
+    }
+}

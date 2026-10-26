@@ -87,7 +87,7 @@ class StripePaymentGuard
             'mb_stripe_payment_details_missing',
             \__(
                 'Your payment details were not completed, so your order has not been placed and you have not been charged. Please enter your card details in the payment section above and select Place order again. If the payment section is empty, reload this page and try once more.',
-                'millboard'
+                'granola'
             )
         );
     }

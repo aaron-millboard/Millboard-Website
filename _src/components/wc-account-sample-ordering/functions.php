@@ -661,6 +661,187 @@ function get_retired_skus(): array
 
 
 /**
+ * Sample variations the package's own query cannot see.
+ *
+ * en-gb registered sample size as a GLOBAL attribute, so its variations carry
+ * `attribute_pa_sample-size` holding a term slug. fr-fr registered it PER
+ * PRODUCT, so 132 of its 135 carry `attribute_sample-size` holding a label
+ * instead, and the remaining 3 use the global attribute with a French
+ * vocabulary (`enchantillon-std`, `enchantillon-xl`). The package matches the
+ * global attribute with the slugs `small` and `large` only, so France matched
+ * NONE of its 135 and a French rep could order literature but not a board
+ * sample.
+ *
+ * Aaron hit the identical split on 25 Sep 2026 for the From prices
+ * (a4fec9c3): the fix there was `sample_size_of()`, reading either shape and
+ * testing "a size that is not the full board". This is that rule applied to
+ * the ordering catalogue.
+ *
+ * Deliberately NOT keyed on the locale. It appends whatever the package
+ * missed, wherever it runs, so en-gb is unchanged BY CONSTRUCTION rather than
+ * by an `if`: every en-gb variation is already returned, so there is nothing
+ * left for this to add. That is what makes the regression test meaningful.
+ */
+\add_filter('mb_sof_sample_variations', function (array $rows): array {
+    global $wpdb;
+
+    $already = [];
+
+    foreach ($rows as $row) {
+        $already[(int) ($row['id'] ?? 0)] = true;
+    }
+
+    $found = $wpdb->get_results(
+        "SELECT v.ID AS id, v.post_parent AS parent_id, parent.post_title AS name,
+                COALESCE(sku.meta_value, '') AS sku, size_meta.meta_value AS size_value
+         FROM {$wpdb->posts} v
+         INNER JOIN {$wpdb->posts} parent
+            ON parent.ID = v.post_parent AND parent.post_status = 'publish'
+         LEFT JOIN {$wpdb->postmeta} sku
+            ON sku.post_id = v.ID AND sku.meta_key = '_sku'
+         INNER JOIN {$wpdb->postmeta} size_meta
+            ON size_meta.post_id = v.ID
+           AND size_meta.meta_key IN ('attribute_pa_sample-size', 'attribute_sample-size')
+         WHERE v.post_type = 'product_variation'
+           AND v.post_status = 'publish'
+           AND size_meta.meta_value <> ''
+         GROUP BY v.ID",
+        ARRAY_A
+    );
+
+    if (!\is_array($found)) {
+        return $rows;
+    }
+
+    foreach ($found as $row) {
+        $id = (int) $row['id'];
+
+        if (isset($already[$id])) {
+            continue;
+        }
+
+        $size = sample_size_mm((string) $row['size_value']);
+
+        if (null === $size) {
+            continue;
+        }
+
+        // post_title holds HTML entities, and the widget escapes again on
+        // output, so an undecoded name renders as "&amp;" on screen.
+        $name = \html_entity_decode((string) $row['name'], ENT_QUOTES, 'UTF-8');
+
+        $rows[] = [
+            'id' => $id,
+            'parent_id' => (int) $row['parent_id'],
+            'sku' => (string) $row['sku'],
+            'name' => $name . ' — ' . $size . 'mm sample',
+            'sample_size' => $size,
+        ];
+
+        $already[$id] = true;
+    }
+
+    return $rows;
+});
+
+/**
+ * A sample-size attribute value in mm, or null when it is not a sample.
+ *
+ * Covers both vocabularies: en-gb slugs (`small`, `large`, `full`) and the
+ * French ones (`Small`, `Large`, `Full` on the per-product attribute,
+ * `enchantillon-std` and `enchantillon-xl` on the global one). `full` is the
+ * board itself and is never a sample.
+ */
+function sample_size_mm(string $value): ?int
+{
+    $value = \strtolower(\trim($value));
+
+    if ('' === $value || false !== \strpos($value, 'full')) {
+        return null;
+    }
+
+    if (false !== \strpos($value, 'small') || false !== \strpos($value, 'std')) {
+        return 100;
+    }
+
+    if (false !== \strpos($value, 'large') || false !== \strpos($value, 'xl')) {
+        return 300;
+    }
+
+    return null;
+}
+
+/**
+ * The accordion headings, translated.
+ *
+ * These are DATA, not strings: they arrive from approved-categories.json and
+ * the sub-grouping, so gettext never sees them and the French form showed
+ * "Decking: Enhanced Grain 126mm" in English. Listing them as literal __()
+ * calls makes them extractable and keeps the map in one place.
+ *
+ * Per the FR translation guideline, range and collection names stay in
+ * English (Enhanced Grain, Shadow Line+, Board & Batten+), so only the
+ * prefix and the generic categories translate.
+ *
+ * A heading with no entry here returns unchanged, which is why en-gb is
+ * untouched: every msgid is its own English on that locale anyway.
+ *
+ * @return array<string,string>
+ */
+function sample_category_labels(): array
+{
+    return [
+        'Decking: Enhanced Grain 126mm' => \__('Decking: Enhanced Grain 126mm', 'granola'),
+        'Decking: Enhanced Grain 176mm' => \__('Decking: Enhanced Grain 176mm', 'granola'),
+        'Decking: Weathered Oak' => \__('Decking: Weathered Oak', 'granola'),
+        'Decking: Lasta-Grip' => \__('Decking: Lasta-Grip', 'granola'),
+        'Decking: Bullnosed Board' => \__('Decking: Bullnosed Board', 'granola'),
+        'Decking: Modello Contour' => \__('Decking: Modello Contour', 'granola'),
+        'Decking: Modello Linear' => \__('Decking: Modello Linear', 'granola'),
+        'Cladding: Shadow Line+' => \__('Cladding: Shadow Line+', 'granola'),
+        'Cladding: Board & Batten+' => \__('Cladding: Board & Batten+', 'granola'),
+        'Cladding: Envello Decor Curve' => \__('Cladding: Envello Decor Curve', 'granola'),
+        'Cladding: Envello Decor Shutter' => \__('Cladding: Envello Decor Shutter', 'granola'),
+        'Cladding trims & corners' => \__('Cladding trims & corners', 'granola'),
+        'Fascias & step edges' => \__('Fascias & step edges', 'granola'),
+        'Subframe samples' => \__('Subframe samples', 'granola'),
+        'Sample boxes' => \__('Sample boxes', 'granola'),
+        'Presenter packs' => \__('Presenter packs', 'granola'),
+        'Full range sets' => \__('Full range sets', 'granola'),
+        'Literature' => \__('Literature', 'granola'),
+        'Display equipment' => \__('Display equipment', 'granola'),
+        'Name plates' => \__('Name plates', 'granola'),
+        'Branded merchandise' => \__('Branded merchandise', 'granola'),
+    ];
+}
+
+function sample_category_label(string $name): string
+{
+    $map = sample_category_labels();
+
+    return $map[$name] ?? $name;
+}
+
+/*
+ * Applied LAST, to the order list and to the CLASSIFIER, so the two cannot
+ * disagree.
+ *
+ * It has to be the classifier and not `mb_sof_catalogue`. The package builds
+ * `$valid = array_flip(mb_sof_category_order())` and drops any row whose
+ * category is not in it, and that check runs INSIDE the build, before
+ * `mb_sof_catalogue` is applied. Translating the order list while the rows
+ * were still English matched nothing and emptied the whole French catalogue:
+ * 350 lines to 0. Caught by the snapshot test, not by reading.
+ */
+\add_filter('mb_sof_category_order', static function (array $order): array {
+    return \array_map(__NAMESPACE__ . '\\sample_category_label', $order);
+}, 99);
+
+\add_filter('mb_sof_category', static function ($classified, $sku, $name) {
+    return \is_string($classified) ? sample_category_label($classified) : $classified;
+}, 99, 3);
+
+/**
  * The product categories that mark a line as POS / marketing stock.
  *
  * ⚠️ NOT YET POPULATED. The 84 POS lines in the portal export do not exist as
