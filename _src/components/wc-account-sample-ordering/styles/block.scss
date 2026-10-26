@@ -398,6 +398,119 @@
 // The consent block sits in the two-column field grid, so without this the
 // wording the rep is told to read aloud is set in a half-width column. It is a
 // paragraph to be read from, not a field.
+// ---- the consent question ---------------------------------------
+//
+// Ported from the checkout rather than shared, and that is the lesser evil.
+// `.mb-consent` is styled in wc-checkout's own stylesheet, which cannot be
+// enqueued here: the first lines of that component's script fire
+// `update_checkout`, which must never run on My Account. Lifting the field
+// without its styling is what left these radios as browser defaults.
+//
+// The treatment is deliberately identical to the checkout's, because it is the
+// same question carrying the same lawful basis. If one changes, change both.
+//
+// Scoped to this panel. The sample form has no shipping-method or payment
+// radios today, but the account area as a whole does, and a bare
+// input[type='radio'] rule would reach them.
+.mb-sof-details {
+    .mb-consent {
+        &__fieldset {
+            border: 0;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: #{px-to-rem(8)};
+        }
+
+        &__legend {
+            padding: 0;
+            margin: 0 0 #{px-to-rem(8)};
+            font-size: #{px-to-rem(15)};
+            line-height: 1.5;
+        }
+
+        &__option {
+            display: flex;
+            align-items: flex-start;
+            gap: #{px-to-rem(10)};
+            cursor: pointer;
+            font-size: #{px-to-rem(15)};
+            line-height: 1.5;
+        }
+
+        // Round, drawn with borders rather than an SVG: the theme's global
+        // `svg { width: 100% }` reset makes inline icons unpredictable.
+        input[type='radio'] {
+            flex-shrink: 0;
+            appearance: none;
+            position: relative;
+            width: #{px-to-rem(20)};
+            height: #{px-to-rem(20)};
+            margin: #{px-to-rem(2)} 0 0;
+            transform: none;
+            border: 1px solid var(--color--foreground);
+            border-radius: 50%;
+            background-color: var(--color--background);
+            cursor: pointer;
+
+            &:checked::after {
+                content: '';
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: #{px-to-rem(10)};
+                height: #{px-to-rem(10)};
+                border-radius: 50%;
+                background-color: var(--color--foreground);
+            }
+
+            &:focus-visible {
+                outline: 1px solid var(--color--foreground);
+                outline-offset: #{px-to-rem(2)};
+            }
+        }
+
+        // The business notice is a checkbox, not a radio: square, with a tick
+        // drawn the same way for the same reason.
+        input[type='checkbox'] {
+            flex-shrink: 0;
+            appearance: none;
+            position: relative;
+            width: #{px-to-rem(20)};
+            height: #{px-to-rem(20)};
+            margin: #{px-to-rem(2)} 0 0;
+            transform: none;
+            border: 1px solid var(--color--foreground);
+            border-radius: #{px-to-rem(2)};
+            background-color: var(--color--background);
+            cursor: pointer;
+
+            &:checked {
+                background-color: var(--color--foreground);
+
+                &::after {
+                    content: '';
+                    position: absolute;
+                    top: 45%;
+                    left: 50%;
+                    width: #{px-to-rem(10)};
+                    height: #{px-to-rem(5)};
+                    border: solid var(--color--background);
+                    border-width: 0 0 2px 2px;
+                    transform: translate(-50%, -50%) rotate(-45deg);
+                }
+            }
+
+            &:focus-visible {
+                outline: 1px solid var(--color--foreground);
+                outline-offset: #{px-to-rem(2)};
+            }
+        }
+    }
+}
+
 .mb-sof-details__consent {
     grid-column: 1 / -1;
     width: 100%;
