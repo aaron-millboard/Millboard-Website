@@ -248,13 +248,14 @@ class Client
         }
 
         // A deliberate choice wins, but only while it is still a valid one.
-        // Resolving the stored id through the index means a cover that has
-        // since been restricted, or removed, quietly reverts to the automatic
-        // pick rather than leaving a broken image on the tile.
+        // Covers::resolve_url() handles both libraries and returns '' for a
+        // choice that no longer resolves, so a cover that has since been
+        // restricted, deleted or had its rights changed quietly reverts to the
+        // automatic pick rather than leaving a broken image on the tile.
         $chosen = Covers::for_container($id);
 
         if ('' !== $chosen) {
-            $url = self::asset_map()[$chosen] ?? '';
+            $url = Covers::resolve_url($chosen);
 
             if ('' !== $url) {
                 return $url;
@@ -296,6 +297,11 @@ class Client
      *
      * @return array<string,string>
      */
+    public static function asset_url(string $asset_id): string
+    {
+        return self::asset_map()[$asset_id] ?? '';
+    }
+
     private static function asset_map(): array
     {
         static $map = null;
