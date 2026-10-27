@@ -51,3 +51,31 @@ window.addEventListener('load', () => {
 		quantityInput.addEventListener('change', updateTotalPrice);
 	}
 });
+
+// Lightbeans 3D texture download. The Lightbeans script loads on first click only, then opens the popup for this colour.
+document.addEventListener('click', (e) => {
+	const btn = e.target.closest('[data-lightbeans-texture]');
+	if (!btn) {
+		return;
+	}
+
+	const show = () => document.body.dispatchEvent(new CustomEvent('__lb_show_popup_', {
+		detail: {
+			texture: '/organizations/millboard/products/' + btn.dataset.lightbeansTexture,
+			lang: 'en',
+			bkgcolor: 'default',
+		},
+	}));
+
+	if (document.getElementById('lightbeans-platform')) {
+		show();
+		return;
+	}
+
+	const s = document.createElement('script');
+	s.id = 'lightbeans-platform';
+	s.async = true;
+	s.src = 'https://cdn.lightbeans.com/js/t-platform/t-platform.min.js';
+	s.onload = () => setTimeout(show, 500); // the platform registers its listener just after load
+	document.body.appendChild(s);
+});
