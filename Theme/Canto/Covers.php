@@ -590,6 +590,19 @@ final class Covers
 
         Client::flush();
 
+        /*
+         * Warm the two expensive shared caches before redirecting.
+         *
+         * Clearing and redirecting straight away looked tidy and was not: the
+         * list page then had to rebuild the tree, the partner index AND every
+         * container's permission on one request, and it came back EMPTY --
+         * the button appeared to delete the library. Paying for the tree and
+         * the index here, where the person is already waiting on a form post,
+         * leaves the page only the per-container lookups to do.
+         */
+        Client::tree();
+        Client::partner_index();
+
         \wp_safe_redirect(
             \add_query_arg(
                 ['page' => self::MENU_SLUG, 'refreshed' => \max(0, $cleared)],

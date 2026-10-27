@@ -82,6 +82,40 @@ function drop_hidden_containers(array $items): array
 }
 
 /**
+ * Turn a Canto asset URL into one the browser will actually download.
+ *
+ * Clicking Download opened the picture in the tab instead of saving it. Two
+ * reasons, and the obvious fix is neither of them:
+ *
+ * 1. The `download` attribute does nothing cross-origin. It is honoured only
+ *    for same-origin URLs, and these are on canto.global.
+ * 2. Canto sends `Content-Disposition: inline` whatever you ask it, so the
+ *    browser renders it.
+ *
+ * What does work is the `content-type` already in Canto's own URL. Asked for
+ * `application/octet-stream` it answers with that type, and a browser cannot
+ * render octet-stream inline, so it saves instead. Measured against the live
+ * CDN; the `filename*` in the disposition header survives, so the saved file
+ * keeps its real name.
+ *
+ * Nothing is proxied: the link still points straight at Canto.
+ */
+function download_url(string $url): string
+{
+    if ('' === $url) {
+        return '';
+    }
+
+    $octet = 'application/octet-stream';
+
+    if (false !== \strpos($url, 'content-type=')) {
+        return (string) \preg_replace('/content-type=[^&]*/', 'content-type=' . \rawurlencode($octet), $url);
+    }
+
+    return $url . (false === \strpos($url, '?') ? '?' : '&') . 'content-type=' . \rawurlencode($octet);
+}
+
+/**
  * Find a node anywhere in the library tree, by id.
  *
  * The tree is one cached call covering the whole library, so this costs nothing
@@ -301,7 +335,7 @@ function render_items(array $items, string $panel_url): string
                             <?php endif; ?>
 
                             <?php if ($original) : ?>
-                                <a class="mb-account-link" href="<?php echo \esc_url($original); ?>" download>
+                                <a class="mb-account-link" href="<?php echo \esc_url(download_url($original)); ?>" download>
                                     <?php \esc_html_e('Download', 'granola'); ?>
                                 </a>
                             <?php endif; ?>
