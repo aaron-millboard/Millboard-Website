@@ -1610,3 +1610,25 @@
         }
     }
 }
+
+// ---- one underline per link ------------------------------------
+// Throughout My Account the underline on a link IS its bottom border, which
+// changes colour on hover. The theme separately underlines any <a> on hover,
+// and `text-decoration: none` on a resting state does not carry into the hover
+// state, so the two stack: a dark text-decoration line under the coloured
+// border.
+//
+// This was fixed once on .mb-account-link, then reported again on Log out, and
+// there are eleven places in this file using the same border convention. So it
+// is turned off for the whole account rather than chased one class at a time.
+//
+// Scoped to the account's own body class, which beats a bare `a:hover` on
+// specificity. Anything here that genuinely wants a text-decoration underline
+// has to ask for it explicitly, which is the right way round given the design
+// never does.
+.is-mb-account {
+    a:hover,
+    a:focus-visible {
+        text-decoration: none;
+    }
+}
