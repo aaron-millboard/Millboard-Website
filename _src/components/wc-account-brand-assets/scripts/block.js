@@ -288,3 +288,155 @@ function init(panel) {
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll(PANEL).forEach(init);
 });
+
+/**
+ * The View overlay.
+ *
+ * Delegated from the document rather than bound per tile, because the grid is
+ * replaced wholesale by search and paging -- anything bound to a tile would be
+ * thrown away with it on the first keystroke.
+ *
+ * One overlay is built lazily and reused. Canto's 800px preview is loaded on
+ * demand, so nothing is fetched for assets nobody opens.
+ */
+function lightbox() {
+    let box = null;
+    let image = null;
+    let caption = null;
+    let lastFocus = null;
+
+    function build() {
+        box = document.createElement('div');
+        box.className = 'mb-assets-lightbox';
+        box.hidden = true;
+        box.setAttribute('role', 'dialog');
+        box.setAttribute('aria-modal', 'true');
+
+        const close = document.createElement('button');
+        close.type = 'button';
+        close.className = 'mb-assets-lightbox__close';
+        close.innerHTML = '&times;';
+        close.addEventListener('click', hide);
+
+        image = document.createElement('img');
+        image.className = 'mb-assets-lightbox__image';
+        image.alt = '';
+
+        caption = document.createElement('p');
+        caption.className = 'mb-assets-lightbox__caption';
+
+        box.append(close, image, caption);
+
+        // Clicking the backdrop closes; clicking the picture itself must not.
+        box.addEventListener('click', (event) => {
+            if (event.target === box) {
+                hide();
+            }
+        });
+
+        document.body.appendChild(box);
+    }
+
+    function hide() {
+        if (!box || box.hidden) {
+            return;
+        }
+
+        box.hidden = true;
+        // Drop the source so a large image is not held in memory, and so the
+        // next open never flashes the previous asset while it loads.
+        image.removeAttribute('src');
+
+        if (lastFocus && document.contains(lastFocus)) {
+            lastFocus.focus();
+        }
+    }
+
+    function show(src, name) {
+        if (!box) {
+            build();
+        }
+
+        lastFocus = document.activeElement;
+        image.src = src;
+        caption.textContent = name || '';
+        box.setAttribute('aria-label', name || '');
+        box.hidden = false;
+        box.querySelector('.mb-assets-lightbox__close').focus();
+    }
+
+    document.addEventListener('click', (event) => {
+        const trigger = event.target.closest('[data-mb-view]');
+
+        if (!trigger) {
+            return;
+        }
+
+        event.preventDefault();
+        show(trigger.getAttribute('data-mb-view'), trigger.getAttribute('data-mb-view-name'));
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+            hide();
+        }
+    });
+}
+
+lightbox();
+
+/**
+ * Grid / list toggle.
+ *
+ * The class goes on the panel, not the grid, because search and paging replace
+ * the grid's contents -- a class set there would be lost on the first keystroke.
+ *
+ * The choice is remembered per browser. localStorage can throw outright in a
+ * private window or with site data blocked, so every call is guarded and the
+ * panel simply opens in grid view when it is unavailable.
+ */
+function layoutToggle(panel) {
+    const KEY = 'mb-assets-layout';
+    const buttons = panel.querySelectorAll('[data-mb-layout]');
+
+    if (!buttons.length) {
+        return;
+    }
+
+    function apply(mode) {
+        panel.classList.toggle('is-list', mode === 'list');
+
+        buttons.forEach((button) => {
+            const current = button.getAttribute('data-mb-layout') === mode;
+            button.classList.toggle('is-current', current);
+            button.setAttribute('aria-pressed', current ? 'true' : 'false');
+        });
+    }
+
+    let saved = null;
+
+    try {
+        saved = window.localStorage.getItem(KEY);
+    } catch (error) {
+        saved = null;
+    }
+
+    apply(saved === 'list' ? 'list' : 'grid');
+
+    buttons.forEach((button) => {
+        button.addEventListener('click', () => {
+            const mode = button.getAttribute('data-mb-layout');
+            apply(mode);
+
+            try {
+                window.localStorage.setItem(KEY, mode);
+            } catch (error) {
+                // A remembered layout is a convenience, not a requirement.
+            }
+        });
+    });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll(PANEL).forEach(layoutToggle);
+});

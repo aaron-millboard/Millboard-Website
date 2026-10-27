@@ -30,6 +30,82 @@ const AJAX_ACTION = 'granola_brand_assets';
 const PAGE_SIZE = 24;
 
 /**
+ * Find a node anywhere in the library tree, by id.
+ *
+ * The tree is one cached call covering the whole library, so this costs nothing
+ * per lookup. It carries `children` for a folder's real contents, and
+ * `idPath` / `namePath` for the ancestry a breadcrumb needs -- neither of which
+ * the folder endpoint gives us.
+ *
+ * @return array<string,mixed>|null
+ */
+function tree_node(string $id): ?array
+{
+    if ('' === $id) {
+        return null;
+    }
+
+    $find = static function (array $nodes) use (&$find, $id): ?array {
+        foreach ($nodes as $node) {
+            if ((string) ($node['id'] ?? '') === $id) {
+                return $node;
+            }
+
+            if (!empty($node['children'])) {
+                $hit = $find($node['children']);
+
+                if (null !== $hit) {
+                    return $hit;
+                }
+            }
+        }
+
+        return null;
+    };
+
+    return $find(Client::tree());
+}
+
+/**
+ * The ancestry of a node, nearest ancestor last, for the breadcrumb.
+ *
+ * Canto hands us `idPath` and `namePath` as matching slash-separated strings,
+ * so the two are zipped back together. The node itself is dropped: the crumb
+ * shows where you can go, and you are already here.
+ *
+ * @return array<int,array{id: string, name: string}>
+ */
+function ancestors(string $id): array
+{
+    $node = tree_node($id);
+
+    if (null === $node) {
+        return [];
+    }
+
+    $ids = \array_filter(\explode('/', (string) ($node['idPath'] ?? '')));
+    $names = \array_filter(\explode('/', (string) ($node['namePath'] ?? '')));
+
+    // A name containing a slash would desync the two lists, and there is no
+    // way to tell which slash was the separator, so bail rather than guess.
+    if (\count($ids) !== \count($names)) {
+        return [];
+    }
+
+    $out = [];
+
+    foreach (\array_values($ids) as $i => $ancestor_id) {
+        if ($ancestor_id === $id) {
+            continue;
+        }
+
+        $out[] = ['id' => $ancestor_id, 'name' => \array_values($names)[$i]];
+    }
+
+    return $out;
+}
+
+/**
  * One grid's worth of items, as HTML.
  *
  * Returns the `<li>` elements only. The `<ul>` lives in the panel so that a
@@ -57,9 +133,23 @@ function render_items(array $items, string $panel_url): string
         $name = (string) ($item['name'] ?? '');
         $id = (string) ($item['id'] ?? '');
         $is_container = \in_array($item_scheme, ['folder', 'album'], true);
-        $thumb = (string) ($item['url']['previewURI240'] ?? '');
+        /*
+         * The 800px render for photographs, falling back to the 240px CDN
+         * thumbnail for anything without one (documents, video posters). The
+         * tiles stretch to fill the row now, and a 240px source upscales and
+         * blurs once a column is wider than that. Both are lazy-loaded.
+         */
+        $thumb = (string) ($item['url']['directUrlPreview'] ?? '')
+            ?: (string) ($item['url']['previewURI240'] ?? '');
         $original = (string) ($item['url']['directUrlOriginal'] ?? '');
         $detail = (string) ($item['url']['detail'] ?? '');
+        /*
+         * View opens this rather than the original: directUrlPreview is an
+         * 800px render that needs no token, where the original can be a 30MB
+         * TIFF nobody wants loaded into a lightbox. Only images get it --
+         * there is nothing to show for a PDF or a video.
+         */
+        $preview = 'image' === $item_scheme ? (string) ($item['url']['directUrlPreview'] ?? '') : '';
         ?>
         <li class="mb-assets__item<?php echo $is_container ? ' mb-assets__item--folder' : ''; ?>">
             <?php if ($is_container) : ?>
@@ -109,6 +199,17 @@ function render_items(array $items, string $panel_url): string
                         <span class="mb-assets__name"><?php echo \esc_html($name); ?></span>
 
                         <span class="mb-assets__actions">
+                            <?php if ($preview) : ?>
+                                <button
+                                    type="button"
+                                    class="mb-account-link mb-assets__view"
+                                    data-mb-view="<?php echo \esc_url($preview); ?>"
+                                    data-mb-view-name="<?php echo \esc_attr($name); ?>"
+                                >
+                                    <?php \esc_html_e('View', 'granola'); ?>
+                                </button>
+                            <?php endif; ?>
+
                             <?php if ($original) : ?>
                                 <a class="mb-account-link" href="<?php echo \esc_url($original); ?>" download>
                                     <?php \esc_html_e('Download', 'granola'); ?>
@@ -151,6 +252,27 @@ function fetch_page(string $query, string $node_id, string $scheme, int $start):
     // Theme\Canto\Access), so `found` counts visible assets only.
     if ('' !== $query) {
         $result = Client::search($query, PAGE_SIZE, $start);
+    } elseif ('' !== $node_id && 'folder' === $scheme) {
+        /*
+         * ⚠️ Canto's folder endpoint answers with every DESCENDANT asset, not
+         * the folder's direct children. Asking it for "Accessories" returns the
+         * 7 albums AND all 101 assets sitting inside those albums, so the panel
+         * listed every touch-up tin beside the album that already contained it.
+         * Canto's own interface shows 7 items for the same folder.
+         *
+         * The tree knows the real shape and is one cached call, so a folder is
+         * answered from there: its children, and nothing from further down. An
+         * album still goes to the API, because that is where its assets live.
+         */
+        $node = tree_node($node_id);
+        $children = $node['children'] ?? [];
+
+        $result = [
+            'results' => \array_values($children),
+            'found' => \count($children),
+            'more' => false,
+            'next_start' => 0,
+        ];
     } elseif ('' !== $node_id) {
         $result = Client::contents($scheme ?: 'album', $node_id, PAGE_SIZE, $start);
     } else {
