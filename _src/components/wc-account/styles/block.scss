@@ -624,6 +624,12 @@
     &:focus-visible {
         color: var(--color--foreground);
         border-bottom-color: var(--color--brand-4);
+        // Re-asserted, not redundant. The underline here is the border above,
+        // which turns olive on hover. The theme also underlines any <a> on
+        // hover, and `text-decoration: none` on the resting state does not
+        // carry into it, so the two stacked: a dark text-decoration line under
+        // the olive border. Measured on staging before fixing.
+        text-decoration: none;
     }
 }
 
