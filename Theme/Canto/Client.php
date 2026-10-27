@@ -198,6 +198,72 @@ class Client
     }
 
     /**
+     * Is this folder or album restricted in Canto?
+     *
+     * Canto's own per-container permission, "Restrict to Admin(s) Only" or
+     * "Restrict to specific Users & Groups", which the library's listing
+     * endpoints do not mention at all. The site reads Canto as one
+     * admin-scoped client, so a restricted album comes back like any other and
+     * the panel would happily draw it.
+     *
+     * ⚠️ The flag lives on the RECORD, at /rest/{scheme}/{id} -> data.acl_enabled.
+     * It is NOT on the /api/v1/ listing or in the tree, which is why this needs
+     * its own request. An empty `acl` beside the flag means admins only; names
+     * appear as `user#…` or `group#…`.
+     *
+     * Cached per container for an hour, matching the tree, and looked up only
+     * for containers actually being listed. A sweep of all 102 containers takes
+     * about nine seconds, which is fine as a one-off but not something to hang
+     * a page load on; a folder's handful of children costs well under a second
+     * once, then nothing.
+     *
+     * Fails OPEN. If Canto cannot be reached the container is treated as
+     * unrestricted, because the alternative is an outage emptying the panel.
+     * The asset-level gates in Access still apply either way.
+     */
+    public static function restricted(string $scheme, string $id): bool
+    {
+        if ('' === $id || !\in_array($scheme, ['folder', 'album'], true)) {
+            return false;
+        }
+
+        $key = 'mb_canto_acl_' . \md5($scheme . '/' . $id);
+        $cached = \get_transient($key);
+
+        if (false !== $cached) {
+            return '1' === $cached;
+        }
+
+        $response = \wp_remote_get(
+            'https://' . self::tenant() . '.' . self::domain() . '/rest/' . $scheme . '/' . \rawurlencode($id),
+            [
+                'timeout' => 15,
+                'headers' => [
+                    'Authorization' => 'Bearer ' . self::token(),
+                    'User-Agent' => 'App Millboard Website',
+                ],
+            ]
+        );
+
+        if (\is_wp_error($response) || 200 !== (int) \wp_remote_retrieve_response_code($response)) {
+            self::log('ACL lookup failed for ' . $scheme . '/' . $id, $response);
+
+            return false;
+        }
+
+        $body = \json_decode((string) \wp_remote_retrieve_body($response), true);
+        $flag = \is_array($body) ? ($body['data']['acl_enabled'] ?? null) : null;
+
+        // Canto answers with ["true"] rather than a boolean, and sometimes a
+        // bare string, so compare on the normalised values rather than casting.
+        $restricted = \in_array('true', \array_map('strval', (array) $flag), true);
+
+        \set_transient($key, $restricted ? '1' : '0', HOUR_IN_SECONDS);
+
+        return $restricted;
+    }
+
+    /**
      * Assets inside one album or folder, limited to what this user may see.
      *
      * `found` is the number of VISIBLE assets reached, never Canto's own total:
