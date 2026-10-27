@@ -221,6 +221,94 @@ class Client
      * unrestricted, because the alternative is an outage emptying the panel.
      * The asset-level gates in Access still apply either way.
      */
+    /**
+     * A cover image for a folder or album, as a public URL. '' when there is none.
+     *
+     * Canto gives folders no cover at all, and an album's own `previewURI` is
+     * whatever Canto picked, which may be a PDF, or an asset nobody outside
+     * Millboard is allowed to see. So the cover is chosen here instead: the
+     * first asset in the container that is an image and reaches external
+     * audiences.
+     *
+     * partner_visible() is the test on purpose, rather than the current
+     * viewer's audiences. A cover is decoration shown on a tile before anyone
+     * has opened anything, and caching one per audience would triple the
+     * lookups to decorate a tile. Requiring the least-privileged audience
+     * means the same cover is safe for everyone, staff included, and it
+     * carries the usage-rights gate with it.
+     *
+     * Costs no Canto request: the answer comes from the partner index, which
+     * is already fetched and cached for the partner panel. See cover_map().
+     */
+    public static function cover(string $scheme, string $id): string
+    {
+        if ('' === $id || !\in_array($scheme, ['folder', 'album'], true)) {
+            return '';
+        }
+
+        $covers = self::cover_map();
+
+        return $covers[$id] ?? '';
+    }
+
+    /**
+     * container id => cover URL, for every container with a usable image.
+     *
+     * Built from the partner index, which is already fetched and cached for
+     * the partner panel, so covers cost no Canto requests at all.
+     *
+     * Each indexed record carries `albums`: every folder and album id on its
+     * idPath, ancestors included. So walking the index once gives a cover for
+     * a top-level folder and for the album four levels down from the same
+     * pass.
+     *
+     * The first scanning version asked Canto for each container's first 60
+     * assets and picked from those. It found nothing for "01 - Product
+     * Assets", because all twelve images in that window are marked Internal
+     * staff: the window was wrong, not the rule. The index has no window.
+     *
+     * Static for the request: the panel asks for a cover per tile, and
+     * rebuilding this per tile would be the one expensive thing about a
+     * cheap lookup.
+     *
+     * @return array<string,string>
+     */
+    private static function cover_map(): array
+    {
+        static $map = null;
+
+        if (null !== $map) {
+            return $map;
+        }
+
+        $map = [];
+        $index = self::partner_index();
+
+        foreach ((array) $index as $asset) {
+            if (!\is_array($asset) || 'image' !== (string) ($asset['scheme'] ?? '')) {
+                continue;
+            }
+
+            $url = (string) ($asset['url']['directUrlPreview'] ?? '');
+
+            if ('' === $url) {
+                continue;
+            }
+
+            // First one wins. The index is sorted by name, so a container's
+            // cover is stable between page loads rather than wandering.
+            foreach ((array) ($asset['albums'] ?? []) as $container) {
+                $container = (string) $container;
+
+                if ('' !== $container && !isset($map[$container])) {
+                    $map[$container] = $url;
+                }
+            }
+        }
+
+        return $map;
+    }
+
     public static function restricted(string $scheme, string $id): bool
     {
         if ('' === $id || !\in_array($scheme, ['folder', 'album'], true)) {

@@ -211,7 +211,27 @@ function render_items(array $items, string $panel_url): string
                     'mbcs' => $item_scheme,
                     'mbcn' => $name,
                 ], $panel_url)); ?>">
-                    <span class="mb-assets__folder-mark" aria-hidden="true"></span>
+                    <?php
+                    // A picture of what is inside, falling back to the mark
+                    // when the container has nothing showable. See
+                    // Client::cover() for why it is not Canto's own cover.
+                    $cover = Client::cover($item_scheme, $id);
+                    ?>
+
+                    <?php if ('' !== $cover) : ?>
+                        <span class="mb-assets__thumb mb-assets__thumb--cover">
+                            <img
+                                src="<?php echo \esc_url($cover); ?>"
+                                alt=""
+                                loading="lazy"
+                                decoding="async"
+                                data-spai-excluded
+                            />
+                        </span>
+                    <?php else : ?>
+                        <span class="mb-assets__folder-mark" aria-hidden="true"></span>
+                    <?php endif; ?>
+
                     <span class="mb-assets__name"><?php echo \esc_html($name); ?></span>
 
                     <?php
