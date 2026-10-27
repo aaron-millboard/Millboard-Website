@@ -38,6 +38,7 @@ final class Covers
     {
         \add_action('admin_menu', [self::class, 'register_page']);
         \add_action('admin_post_millboard_canto_cover', [self::class, 'handle_save']);
+        \add_action('admin_post_millboard_canto_refresh', [self::class, 'handle_refresh']);
     }
 
     /**
@@ -240,6 +241,24 @@ final class Covers
         $overrides = self::all();
 
         echo '<h1>' . \esc_html__('Resources cover images', 'granola') . '</h1>';
+
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display only.
+        if (isset($_GET['refreshed'])) {
+            echo '<div class="notice notice-success is-dismissible"><p>';
+            echo \esc_html__('Read again from Canto. Permission and metadata changes are now reflected.', 'granola');
+            echo '</p></div>';
+        }
+
+        /*
+         * Everything from Canto is cached for an hour, so a change made there
+         * does not show here until it expires. This is the "I have just
+         * changed something" button, which saves explaining the cache.
+         */
+        echo '<form method="post" action="' . \esc_url(\admin_url('admin-post.php')) . '" style="float:right">';
+        \wp_nonce_field('millboard_canto_refresh');
+        echo '<input type="hidden" name="action" value="millboard_canto_refresh" />';
+        \submit_button(\__('Refresh from Canto', 'granola'), 'secondary', '', false);
+        echo '</form>';
         echo '<p>' . \esc_html__('Each folder and album in My Account shows a cover image. By default it is the first image inside it. Choose one here to pin a specific picture instead.', 'granola') . '</p>';
 
         self::$pruned = 0;
@@ -462,12 +481,24 @@ final class Covers
     {
         ?>
         <script>
-        (function () {
+        document.addEventListener('DOMContentLoaded', function () {
             var button = document.getElementById('mb-cover-pick');
             var field = document.getElementById('mb-cover-wp-id');
             var preview = document.getElementById('mb-cover-wp-preview');
 
+            /*
+             * ⚠️ Wait for DOMContentLoaded. This script is printed in the body,
+             * but wp.media is enqueued into the FOOTER, so running immediately
+             * found window.wp.media undefined and the guard below bailed --
+             * leaving a button that looked fine and did nothing at all when
+             * clicked. DOMContentLoaded fires after footer scripts execute.
+             */
             if (!button || !field || !window.wp || !window.wp.media) {
+                if (button) {
+                    button.disabled = true;
+                    button.title = 'The media library did not load on this page.';
+                }
+
                 return;
             }
 
@@ -504,7 +535,7 @@ final class Covers
 
                 frame.open();
             });
-        }());
+        });
         </script>
         <?php
     }
@@ -526,6 +557,46 @@ final class Covers
 
         \printf('<span style="display:block;font-size:11px;word-break:break-all;margin-top:4px">%s</span>', \esc_html($label));
         echo '</label>';
+    }
+
+    /**
+     * Forget everything cached from Canto and read it again.
+     *
+     * Permissions, usage rights and new uploads are all changed in Canto, and
+     * the site only notices on the hour. Rather than explain that each time,
+     * this is the button that says "I have just changed something".
+     *
+     * It clears rather than rebuilds: the next page load does the fetching, so
+     * nobody waits on a redirect while the library is re-read.
+     */
+    public static function handle_refresh(): void
+    {
+        if (!\current_user_can('manage_options')) {
+            \wp_die(\esc_html__('You cannot do that.', 'granola'));
+        }
+
+        \check_admin_referer('millboard_canto_refresh');
+
+        global $wpdb;
+
+        // Every Canto transient: the tree, the per-container ACL verdicts and
+        // the partner index. Matched by prefix so a cache added later is not
+        // quietly left behind when someone forgets to update this list.
+        $cleared = (int) $wpdb->query(
+            "DELETE FROM {$wpdb->options}
+             WHERE option_name LIKE '\_transient\_mb\_canto\_%'
+                OR option_name LIKE '\_transient\_timeout\_mb\_canto\_%'"
+        );
+
+        Client::flush();
+
+        \wp_safe_redirect(
+            \add_query_arg(
+                ['page' => self::MENU_SLUG, 'refreshed' => \max(0, $cleared)],
+                \admin_url('admin.php')
+            )
+        );
+        exit;
     }
 
     public static function handle_save(): void
