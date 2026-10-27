@@ -76,6 +76,6 @@ document.addEventListener('click', (e) => {
 	s.id = 'lightbeans-platform';
 	s.async = true;
 	s.src = 'https://cdn.lightbeans.com/js/t-platform/t-platform.min.js';
-	s.onload = show;
+	s.onload = () => setTimeout(show, 500); // the platform registers its listener just after load
 	document.body.appendChild(s);
 });
