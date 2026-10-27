@@ -30,42 +30,52 @@ const AJAX_ACTION = 'granola_brand_assets';
 const PAGE_SIZE = 24;
 
 /**
- * Drop containers that hold nothing.
+ * Drop containers the panel has no business listing.
  *
- * An empty album is a tile that promises assets and opens onto "nothing here".
- * Canto reports the count on every node in the tree, so this is free: `size` is
- * the asset count on an album and the child count on a folder, and zero means
- * empty either way.
+ * Two reasons a folder or album goes:
  *
- * ⚠️ This is emptiness in CANTO, not emptiness after filtering. An album whose
- * assets are all hidden by Access (wrong usage rights, wrong audience) still
- * reports a size and still shows. Catching that needs the visible count per
- * container, which means reading every album's contents rather than one cached
- * tree call, so it is deliberately not done here.
+ * 1. It holds nothing. An empty album is a tile that promises assets and opens
+ *    onto "nothing here". Canto reports the count on every node in the tree, so
+ *    this costs nothing: `size` is the asset count on an album and the child
+ *    count on a folder, and zero means empty either way.
+ * 2. It is restricted in Canto. See Client::restricted(). The site reads the
+ *    library as one admin-scoped client, so Canto's own permission never
+ *    filters anything by itself and has to be applied here.
  *
- * Assets are passed through untouched: only containers carry a size.
+ * ⚠️ Reason 1 is emptiness in CANTO, not emptiness after filtering. An album
+ * whose assets are all hidden by Access (wrong usage rights, wrong audience)
+ * still reports a size and still shows. Catching that needs the visible count
+ * per container, which means reading every album's contents rather than one
+ * cached tree call, so it is deliberately not done here.
+ *
+ * Assets are passed through untouched: only containers carry either signal.
  *
  * @param array<int,array<string,mixed>> $items
  * @return array<int,array<string,mixed>>
  */
-function drop_empty_containers(array $items): array
+function drop_hidden_containers(array $items): array
 {
     $kept = \array_filter($items, static function ($item): bool {
         if (!\is_array($item)) {
             return false;
         }
 
-        if (!\in_array((string) ($item['scheme'] ?? ''), ['folder', 'album'], true)) {
+        $scheme = (string) ($item['scheme'] ?? '');
+
+        if (!\in_array($scheme, ['folder', 'album'], true)) {
             return true;
         }
 
         // Absent rather than zero means Canto did not say, and guessing
         // "empty" would hide a real folder. Only an explicit zero hides.
-        if (!isset($item['size'])) {
-            return true;
+        if (isset($item['size']) && 0 === (int) $item['size']) {
+            return false;
         }
 
-        return 0 !== (int) $item['size'];
+        // Restricted in Canto itself. Checked second because it costs a
+        // request on a cold cache and the size test is free, so an empty
+        // container never pays for a lookup it does not need.
+        return !Client::restricted($scheme, (string) ($item['id'] ?? ''));
     });
 
     return \array_values($kept);
@@ -326,7 +336,7 @@ function fetch_page(string $query, string $node_id, string $scheme, int $start):
 
     // An empty container is a door onto an empty room. Canto already tells us
     // the count in the tree, so this costs no extra request.
-    $result['results'] = drop_empty_containers($result['results'] ?? []);
+    $result['results'] = drop_hidden_containers($result['results'] ?? []);
     $result['found'] = \count($result['results']);
 
     // Checked AFTER the call: an empty token here means the request itself
