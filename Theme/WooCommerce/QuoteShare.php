@@ -634,14 +634,27 @@ class QuoteShare
             return self::get_posted_cart_snapshot();
         }
 
-        $total = \wp_strip_all_tags(\html_entity_decode(WC()->cart->get_total(), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
-        $total_raw = (string) \round((float) WC()->cart->get_total('edit'), 2);
-
         return [
             'items' => $items,
             'lines' => $lines,
-            'total' => $total,
-            'total_raw' => $total_raw,
+        ] + self::get_quote_total();
+    }
+
+    /**
+     * The basket total without delivery. get_total() includes shipping once the session has a
+     * calculated address, and a quote must not carry a delivery charge.
+     *
+     * @return array{total: string, total_raw: string}
+     */
+    public static function get_quote_total(): array
+    {
+        $cart = WC()->cart;
+        $amount = (float) $cart->get_total('edit') - (float) $cart->get_shipping_total() - (float) $cart->get_shipping_tax();
+        $amount = \max(0.0, \round($amount, 2));
+
+        return [
+            'total' => \wp_strip_all_tags(\html_entity_decode(\wc_price($amount), ENT_QUOTES | ENT_HTML5, 'UTF-8')),
+            'total_raw' => (string) $amount,
         ];
     }
 

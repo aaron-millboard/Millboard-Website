@@ -338,9 +338,7 @@ do_action('woocommerce_before_cart');?>
                     $quote_snapshot = [
                         'items' => [],
                         'lines' => [],
-                        'total' => wp_strip_all_tags(html_entity_decode(WC()->cart->get_total(), ENT_QUOTES | ENT_HTML5, 'UTF-8')),
-                        'total_raw' => (string) round((float) WC()->cart->get_total('edit'), 2),
-                    ];
+                    ] + \Theme\WooCommerce\QuoteShare::get_quote_total();
 
                     foreach (WC()->cart->get_cart() as $quote_item) {
                         if (empty($quote_item['data']) || !$quote_item['data'] instanceof \WC_Product) {
