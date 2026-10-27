@@ -30,6 +30,48 @@ const AJAX_ACTION = 'granola_brand_assets';
 const PAGE_SIZE = 24;
 
 /**
+ * Drop containers that hold nothing.
+ *
+ * An empty album is a tile that promises assets and opens onto "nothing here".
+ * Canto reports the count on every node in the tree, so this is free: `size` is
+ * the asset count on an album and the child count on a folder, and zero means
+ * empty either way.
+ *
+ * ⚠️ This is emptiness in CANTO, not emptiness after filtering. An album whose
+ * assets are all hidden by Access (wrong usage rights, wrong audience) still
+ * reports a size and still shows. Catching that needs the visible count per
+ * container, which means reading every album's contents rather than one cached
+ * tree call, so it is deliberately not done here.
+ *
+ * Assets are passed through untouched: only containers carry a size.
+ *
+ * @param array<int,array<string,mixed>> $items
+ * @return array<int,array<string,mixed>>
+ */
+function drop_empty_containers(array $items): array
+{
+    $kept = \array_filter($items, static function ($item): bool {
+        if (!\is_array($item)) {
+            return false;
+        }
+
+        if (!\in_array((string) ($item['scheme'] ?? ''), ['folder', 'album'], true)) {
+            return true;
+        }
+
+        // Absent rather than zero means Canto did not say, and guessing
+        // "empty" would hide a real folder. Only an explicit zero hides.
+        if (!isset($item['size'])) {
+            return true;
+        }
+
+        return 0 !== (int) $item['size'];
+    });
+
+    return \array_values($kept);
+}
+
+/**
  * Find a node anywhere in the library tree, by id.
  *
  * The tree is one cached call covering the whole library, so this costs nothing
@@ -281,6 +323,11 @@ function fetch_page(string $query, string $node_id, string $scheme, int $start):
         $items = Client::tree();
         $result = ['results' => $items, 'found' => \count($items), 'more' => false, 'next_start' => 0];
     }
+
+    // An empty container is a door onto an empty room. Canto already tells us
+    // the count in the tree, so this costs no extra request.
+    $result['results'] = drop_empty_containers($result['results'] ?? []);
+    $result['found'] = \count($result['results']);
 
     // Checked AFTER the call: an empty token here means the request itself
     // could not be authorised, which is a reachability problem rather than an
