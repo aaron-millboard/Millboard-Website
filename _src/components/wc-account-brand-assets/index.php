@@ -18,6 +18,7 @@
 
 use Theme\Canto\Client;
 
+use function Granola\Components\WC_Account_Brand_Assets\ancestors;
 use function Granola\Components\WC_Account_Brand_Assets\fetch_page;
 use function Granola\Components\WC_Account_Brand_Assets\render_items;
 
@@ -150,14 +151,65 @@ foreach (['mbcq' => $query, 'mbca' => $node_id, 'mbcs' => $scheme, 'mbcn' => $no
         </form>
 
         <div class="mb-assets__bar">
-            <p class="mb-assets__crumb">
+            <?php
+            /*
+             * The full path rather than a single way out. Going back one level
+             * from a four-deep album used to mean starting at the top and
+             * clicking down again, which is three clicks to undo one.
+             *
+             * A search has no place in the tree, so it keeps the plain link
+             * back to the top.
+             */
+            $crumbs = '' === $query ? ancestors($node_id) : [];
+            ?>
+            <nav class="mb-assets__crumb" aria-label="<?php esc_attr_e('Library path', 'granola'); ?>">
                 <?php if ('' !== $query || '' !== $node_id) : ?>
                     <a class="mb-account-back" href="<?php echo esc_url($panel_url); ?>">
                         <span aria-hidden="true">&lsaquo;</span>
                         <?php esc_html_e('All folders', 'granola'); ?>
                     </a>
+
+                    <?php foreach ($crumbs as $crumb) : ?>
+                        <span class="mb-assets__crumb-sep" aria-hidden="true">/</span>
+                        <a
+                            class="mb-assets__crumb-link"
+                            href="<?php echo esc_url(add_query_arg([
+                                'mbca' => $crumb['id'],
+                                'mbcs' => 'folder',
+                                'mbcn' => $crumb['name'],
+                            ], $panel_url)); ?>"
+                        >
+                            <?php echo esc_html($crumb['name']); ?>
+                        </a>
+                    <?php endforeach; ?>
                 <?php endif; ?>
-            </p>
+            </nav>
+
+            <?php
+            /*
+             * Grid or list. The choice is remembered per browser in the script,
+             * not stored against the account: it is a viewing preference, not
+             * data, and it should not follow someone onto a shared machine.
+             */
+            ?>
+            <div class="mb-assets__views" role="group" aria-label="<?php esc_attr_e('Layout', 'granola'); ?>">
+                <button
+                    type="button"
+                    class="mb-assets__view-toggle is-current"
+                    data-mb-layout="grid"
+                    aria-pressed="true"
+                >
+                    <?php esc_html_e('Grid', 'granola'); ?>
+                </button>
+                <button
+                    type="button"
+                    class="mb-assets__view-toggle"
+                    data-mb-layout="list"
+                    aria-pressed="false"
+                >
+                    <?php esc_html_e('List', 'granola'); ?>
+                </button>
+            </div>
 
             <p class="mb-assets__count" data-mb-assets-count>
                 <?php
