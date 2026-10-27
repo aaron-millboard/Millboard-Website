@@ -206,7 +206,8 @@ class Client
      * admin-scoped client, so a restricted album comes back like any other and
      * the panel would happily draw it.
      *
-     * ⚠️ The flag lives on the RECORD, at /rest/{scheme}/{id} -> data.acl_enabled.
+     * ⚠️ The flag comes from /rest/{scheme}/{id}, but at a different path for
+     * each container type. See the comment at the lookup below.
      * It is NOT on the /api/v1/ listing or in the tree, which is why this needs
      * its own request. An empty `acl` beside the flag means admins only; names
      * appear as `user#…` or `group#…`.
@@ -340,7 +341,20 @@ class Client
         }
 
         $body = \json_decode((string) \wp_remote_retrieve_body($response), true);
-        $flag = \is_array($body) ? ($body['data']['acl_enabled'] ?? null) : null;
+        /*
+         * ⚠️ The flag sits in a DIFFERENT PLACE for the two container types,
+         * and reading only the album shape made this silently return false for
+         * every folder. An album answers with a record, so it is at
+         * data.acl_enabled. A folder answers with a LISTING whose first hit is
+         * the folder itself, so it is at hits.hit[0].data.acl_enabled.
+         *
+         * The symptom was that restricting an album worked and restricting a
+         * folder did nothing at all, which reads like a caching problem rather
+         * than a missing path.
+         */
+        $flag = \is_array($body)
+            ? ($body['data']['acl_enabled'] ?? ($body['hits']['hit'][0]['data']['acl_enabled'] ?? null))
+            : null;
 
         // Canto answers with ["true"] rather than a boolean, and sometimes a
         // bare string, so compare on the normalised values rather than casting.
