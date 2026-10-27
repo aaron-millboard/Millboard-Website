@@ -79,7 +79,10 @@
         // loads Canto's 800px `directUrlPreview` instead, so a column of any
         // reasonable width is downscaling, and the row can fill the panel
         // rather than leaving a gutter down the right.
-        grid-template-columns: repeat(auto-fit, minmax(#{px-to-rem(240)}, 1fr));
+        // auto-FILL, not auto-fit. Both stretch the tracks to fill the row,
+        // but auto-fit collapses the empty ones, so an album holding a single
+        // asset rendered that one tile across the entire panel.
+        grid-template-columns: repeat(auto-fill, minmax(#{px-to-rem(240)}, 1fr));
         gap: #{px-to-rem(20)};
     }
 
@@ -388,19 +391,30 @@
         border-bottom: 1px solid rgba(0, 0, 0, 0.08);
     }
 
+    // Two children, not three: the tile is a <figure> holding the thumb and a
+    // <figcaption>, and the caption is what carries the name and the actions.
+    // Laying this out as three columns left the actions stacked under the name.
     .mb-assets__asset,
     .mb-assets__link {
         display: grid;
-        // Thumb, then everything else, then the actions hard right.
-        grid-template-columns: #{px-to-rem(56)} 1fr auto;
+        grid-template-columns: #{px-to-rem(56)} 1fr;
         align-items: center;
         gap: #{px-to-rem(16)};
-        padding: #{px-to-rem(8)} 0;
+        padding: #{px-to-rem(10)} #{px-to-rem(12)};
     }
 
     .mb-assets__thumb {
         width: #{px-to-rem(56)};
         aspect-ratio: 1;
+    }
+
+    // The caption becomes the row: name on the left, actions hard right.
+    .mb-assets__caption {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: #{px-to-rem(16)};
+        padding: 0;
     }
 
     .mb-assets__name {
@@ -409,8 +423,11 @@
     }
 
     .mb-assets__actions {
-        display: flex;
         gap: #{px-to-rem(12)};
+        flex-wrap: nowrap;
         white-space: nowrap;
+        // Clears the `margin-top: auto` that pins actions to the bottom of a
+        // grid card, which in a row would shove them off centre.
+        margin-top: 0;
     }
 }
