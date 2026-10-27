@@ -9,6 +9,13 @@ namespace Theme\Canto;
  * admin-scoped API client, so every asset is readable by the server and the
  * only gate is the one applied here, before anything is rendered.
  *
+ * There are TWO gates and an asset must pass both.
+ *
+ * 1. Usage rights: is this cleared to leave Millboard at all? See USAGE_FIELD.
+ *    Applies to staff as well, because the panel hands out signed links that
+ *    work for anyone holding them.
+ * 2. Portal access: who may see it. Described below.
+ *
  * The rule is driven by the "Portal Access" multiple-choice field on each asset:
  *
  *   Distributor | Installer | Internal staff   audiences allowed to see it
@@ -33,6 +40,29 @@ final class Access
     public const STAFF = 'Internal staff';
     public const DISTRIBUTOR = 'Distributor';
     public const INSTALLER = 'Installer';
+
+    /**
+     * The second gate: usage rights.
+     *
+     * Portal Access says who may see an asset. This says whether the asset is
+     * cleared to leave Millboard at all. Both must pass.
+     *
+     * An asset shows only when this field holds exactly one value and that
+     * value is OPEN_USAGE. Anything else -- empty, "Internal use or project
+     * reference only", "Approval needed from Global Marketing", "Usage rights
+     * unknown", or OPEN_USAGE sitting alongside any of them -- is hidden.
+     *
+     * Deliberately strict, and deliberately not a blocklist. A blocklist has
+     * to be extended every time someone adds an option to the field in Canto,
+     * and until it is, the new option reads as permitted. Requiring the one
+     * known-good value means a new option fails closed on the day it appears.
+     *
+     * This applies to staff as well. Resources hands out signed download links
+     * that work for anyone holding them, so "staff can be trusted" is not the
+     * question; the asset either cleared for release or it did not.
+     */
+    public const USAGE_FIELD = 'Usage Rights';
+    public const OPEN_USAGE = 'Global open usage-all channels';
 
     private const CONTAINERS = ['folder', 'album'];
 
@@ -101,9 +131,11 @@ final class Access
             return true;
         }
 
-        $additional = $item['additional'] ?? null;
-        $value = \is_array($additional) ? ($additional[self::FIELD] ?? null) : null;
-        $values = \array_values(\array_filter(\array_map('strval', (array) $value), 'strlen'));
+        if (!self::usage_cleared($item)) {
+            return false;
+        }
+
+        $values = self::field_values($item, self::FIELD);
 
         if (!$values || \in_array(self::EMBARGOED, $values, true)) {
             return false;
@@ -132,11 +164,48 @@ final class Access
             return false;
         }
 
-        $additional = $item['additional'] ?? null;
-        $values = \is_array($additional) ? \array_map('strval', (array) ($additional[self::FIELD] ?? [])) : [];
+        if (!self::usage_cleared($item)) {
+            return false;
+        }
+
+        $values = self::field_values($item, self::FIELD);
 
         return !\in_array(self::EMBARGOED, $values, true)
             && (bool) \array_intersect($values, [self::DISTRIBUTOR, self::INSTALLER]);
+    }
+
+    /**
+     * Is this asset cleared for release outside Millboard?
+     *
+     * True only when Usage Rights holds exactly one value and it is
+     * OPEN_USAGE. See the constant for why a single value is required rather
+     * than merely containing it: "Global open usage-all channels" together
+     * with "Internal use or project reference only" is a contradiction, and
+     * the restrictive half is the half that matters.
+     *
+     * @param array<string,mixed> $item
+     */
+    public static function usage_cleared(array $item): bool
+    {
+        return [self::OPEN_USAGE] === self::field_values($item, self::USAGE_FIELD);
+    }
+
+    /**
+     * The non-empty values of one Canto multiple-choice field, as strings.
+     *
+     * Canto answers with a list, a bare string, or nothing at all depending on
+     * how many options are ticked, so every caller normalising this by hand is
+     * a bug waiting to happen.
+     *
+     * @param array<string,mixed> $item
+     * @return string[]
+     */
+    private static function field_values(array $item, string $field): array
+    {
+        $additional = $item['additional'] ?? null;
+        $value = \is_array($additional) ? ($additional[$field] ?? null) : null;
+
+        return \array_values(\array_filter(\array_map('strval', (array) $value), 'strlen'));
     }
 
     /**
@@ -167,10 +236,24 @@ final class Access
             'name' => (string) ($item['name'] ?? ''),
             'url' => [
                 'previewURI240' => (string) ($url['previewURI240'] ?? ''),
+                // The tile and the View overlay both prefer this 800px render;
+                // without it a partner-index asset falls back to the 240px
+                // thumbnail and softens in a stretched column.
+                'directUrlPreview' => (string) ($url['directUrlPreview'] ?? ''),
                 'directUrlOriginal' => (string) ($url['directUrlOriginal'] ?? ''),
                 'detail' => (string) ($url['detail'] ?? ''),
             ],
-            'additional' => [self::FIELD => (array) ($item['additional'][self::FIELD] ?? [])],
+            /*
+             * BOTH gating fields, or the record cannot be filtered later.
+             * A compact record is re-checked by visible() when the partner
+             * index is read, so dropping Usage Rights here would make every
+             * indexed asset fail usage_cleared() and the panel would come back
+             * empty for partners. The selfcheck covers exactly that.
+             */
+            'additional' => [
+                self::FIELD => (array) ($item['additional'][self::FIELD] ?? []),
+                self::USAGE_FIELD => (array) ($item['additional'][self::USAGE_FIELD] ?? []),
+            ],
             'albums' => \array_map('strval', \array_keys($albums)),
         ];
     }

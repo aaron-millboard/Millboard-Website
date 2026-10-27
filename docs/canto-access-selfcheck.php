@@ -17,7 +17,12 @@ $staff = Access::audiences(['administrator'], $staff_roles);
 $dist = Access::audiences(['millboard_distributor'], $staff_roles);
 $inst = Access::audiences(['millboard_installer'], $staff_roles);
 
-$asset = static fn ($value) => ['scheme' => 'image', 'additional' => ['Portal Access' => $value]];
+// Usage rights default to cleared, so these cases keep testing Portal Access
+// alone. The usage gate has its own cases below, which vary the second argument.
+$asset = static fn ($value, $usage = [Access::OPEN_USAGE]) => [
+    'scheme' => 'image',
+    'additional' => [Access::FIELD => $value, Access::USAGE_FIELD => $usage],
+];
 
 $cases = [
     // [label, item, audiences, expected]
@@ -44,6 +49,26 @@ $cases = [
     ['album always passes', ['scheme' => 'album'], [], true],
     ['document is filtered too', ['scheme' => 'document', 'additional' => ['Portal Access' => ['Embargoed']]], $staff, false],
     ['video is filtered too', ['scheme' => 'video'], $dist, false],
+
+    // ---- usage rights: the second gate ----------------------------------
+    // Only the single value OPEN_USAGE passes, for everyone including staff.
+    ['open usage visible to staff', $asset(['Internal staff'], [Access::OPEN_USAGE]), $staff, true],
+    ['open usage visible to distributor', $asset(['Distributor'], [Access::OPEN_USAGE]), $dist, true],
+    ['missing usage rights hidden from staff', $asset(['Internal staff'], []), $staff, false],
+    ['missing usage rights hidden from partner', $asset(['Distributor'], []), $dist, false],
+    ['null usage rights hidden', $asset(['Internal staff'], null), $staff, false],
+    ['internal-use-only hidden from staff', $asset(['Internal staff'], ['Internal use or project reference only']), $staff, false],
+    ['approval-needed hidden from staff', $asset(['Internal staff'], ['Approval needed from Global Marketing']), $staff, false],
+    ['rights-unknown hidden from staff', $asset(['Internal staff'], ['Usage rights unknown']), $staff, false],
+    // The combinations Aaron ruled on: open usage must stand alone.
+    ['open usage plus internal-only is hidden', $asset(['Internal staff'], [Access::OPEN_USAGE, 'Internal use or project reference only']), $staff, false],
+    ['open usage plus paid media is hidden', $asset(['Distributor'], ['Paid Media Approved', Access::OPEN_USAGE]), $dist, false],
+    ['open usage plus attribution needed is hidden', $asset(['Distributor'], [Access::OPEN_USAGE, 'Photographer or supplier attribution needed']), $dist, false],
+    // A value nobody has seen yet must fail closed, not sneak through.
+    ['an unknown future usage value is hidden', $asset(['Internal staff'], ['Some new option']), $staff, false],
+    ['plain string usage value works', $asset(['Distributor'], Access::OPEN_USAGE), $dist, true],
+    // Containers carry no usage rights and must still pass.
+    ['folder passes without usage rights', ['scheme' => 'folder'], $dist, true],
 ];
 
 $roles = [
@@ -90,6 +115,10 @@ $pv = [
     ['empty never in the partner index', $asset([]), false],
     ['word elsewhere is not enough', ['scheme' => 'image', 'name' => 'Distributor Events', 'additional' => ['Portal Access' => ['Internal staff']]], false],
     ['containers never in the partner index', ['scheme' => 'album', 'additional' => ['Portal Access' => ['Distributor']]], false],
+    // The usage gate applies here too, or a restricted asset would be indexed
+    // for partners and served from the index without ever being re-checked.
+    ['restricted usage never in the partner index', $asset(['Distributor'], ['Internal use or project reference only']), false],
+    ['missing usage rights never in the partner index', $asset(['Distributor'], []), false],
 ];
 
 foreach ($pv as [$label, $item, $expected]) {
@@ -102,7 +131,7 @@ foreach ($pv as [$label, $item, $expected]) {
 $full = [
     'id' => 'abc', 'scheme' => 'image', 'name' => 'Deck.jpg',
     'url' => ['previewURI240' => 'p', 'directUrlOriginal' => 'o', 'detail' => 'd', 'download' => 'secret'],
-    'additional' => ['Portal Access' => ['Distributor'], 'SKU' => 'X'],
+    'additional' => ['Portal Access' => ['Distributor'], 'Usage Rights' => [Access::OPEN_USAGE], 'SKU' => 'X'],
     'relatedAlbums' => [['idPath' => 'N0G8G/KFTUP'], ['idPath' => '05/12345']],
 ];
 $c = Access::compact($full);
@@ -119,6 +148,23 @@ if (isset($c['url']['download']) || isset($c['additional']['SKU']) || ['Distribu
 
 if (!Access::visible($c, $dist) || Access::visible($c, $inst)) {
     echo "FAIL: a compact record is filtered exactly like the full one\n";
+    ++$fail;
+}
+
+// The trap this guards: compact() used to keep Portal Access only. Once usage
+// rights became a second gate, a record that dropped them failed usage_cleared()
+// and every indexed asset would have vanished for partners.
+if ([Access::OPEN_USAGE] !== ($c['additional'][Access::USAGE_FIELD] ?? null)) {
+    echo "FAIL: compact carries Usage Rights, or the index cannot be filtered\n";
+    ++$fail;
+}
+
+$restricted = Access::compact(\array_replace_recursive($full, [
+    'additional' => ['Usage Rights' => ['Internal use or project reference only']],
+]));
+
+if (Access::visible($restricted, $dist) || Access::visible($restricted, $staff)) {
+    echo "FAIL: a compacted restricted-usage asset stays hidden\n";
     ++$fail;
 }
 
