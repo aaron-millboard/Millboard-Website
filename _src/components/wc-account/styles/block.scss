@@ -169,6 +169,21 @@
             padding-top: #{px-to-rem(32)};
             border-top: 1px solid var(--mba-rule);
         }
+
+        // ...and the same slip was still happening between groups. Every item
+        // closes with a hairline, then the next group opens with one of its
+        // own, so above a group label you got two full-width rules a gap apart
+        // plus the accent mark: three lines to separate two things.
+        //
+        // The item's goes, not the group's, because the group's is what sets
+        // the spacing. `:last-of-type` rather than `:last-child`: the Log out
+        // link is the nav's real last child, so the final GROUP never matches
+        // that, and it has to keep its hairline or the column ends unclosed.
+        &:not(:last-of-type) {
+            .mb-account__nav-item:last-child {
+                border-bottom: 0;
+            }
+        }
     }
 
     &__nav-group-head {
