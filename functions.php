@@ -167,6 +167,14 @@ if (file_exists($autoloader = __DIR__ . '/vendor/autoload.php')) {
 \Theme\Accounts\Roles::init();
 
 // ----------------------------------------------------
+// Canto.
+// ----------------------------------------------------
+// Chosen cover images for the folders and albums in Resources. Admin only:
+// the reading side is static and needs no bootstrapping.
+// ----------------------------------------------------
+\Theme\Canto\Covers::init();
+
+// ----------------------------------------------------
 // Internal sample ordering (IT team's mb-sof package).
 // ----------------------------------------------------
 // Hand-maintained by IT and kept verbatim apart from one asset-path edit,

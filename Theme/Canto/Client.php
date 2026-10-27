@@ -247,9 +247,21 @@ class Client
             return '';
         }
 
-        $covers = self::cover_map();
+        // A deliberate choice wins, but only while it is still a valid one.
+        // Resolving the stored id through the index means a cover that has
+        // since been restricted, or removed, quietly reverts to the automatic
+        // pick rather than leaving a broken image on the tile.
+        $chosen = Covers::for_container($id);
 
-        return $covers[$id] ?? '';
+        if ('' !== $chosen) {
+            $url = self::asset_map()[$chosen] ?? '';
+
+            if ('' !== $url) {
+                return $url;
+            }
+        }
+
+        return self::cover_map()[$id] ?? '';
     }
 
     /**
@@ -274,6 +286,42 @@ class Client
      *
      * @return array<string,string>
      */
+    /**
+     * asset id => public preview URL, for everything in the partner index.
+     *
+     * Only used to resolve a chosen cover. An id is stored rather than a URL
+     * because Canto's direct links carry a signature it can rotate; resolving
+     * through the index also means a cover that has since been restricted
+     * simply is not found, and the tile falls back to the automatic pick.
+     *
+     * @return array<string,string>
+     */
+    private static function asset_map(): array
+    {
+        static $map = null;
+
+        if (null !== $map) {
+            return $map;
+        }
+
+        $map = [];
+
+        foreach ((array) self::partner_index() as $asset) {
+            if (!\is_array($asset)) {
+                continue;
+            }
+
+            $id = (string) ($asset['id'] ?? '');
+            $url = (string) ($asset['url']['directUrlPreview'] ?? '');
+
+            if ('' !== $id && '' !== $url) {
+                $map[$id] = $url;
+            }
+        }
+
+        return $map;
+    }
+
     private static function cover_map(): array
     {
         static $map = null;
