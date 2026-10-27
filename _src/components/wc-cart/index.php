@@ -314,7 +314,21 @@ do_action('woocommerce_before_cart');?>
                         <?php esc_html_e('Total', 'woocommerce'); ?>
                     </div>
                     <div class="cart__totals__item--value" data-title="<?php esc_attr_e('Total', 'woocommerce'); ?>">
-                        <?php wc_cart_totals_order_total_html(); ?>
+                        <?php
+                        // Delivery is only quoted at checkout, so keep it out of the basket total
+                        // (get_total() includes it once the session has a calculated address).
+                        $basket_total = \Theme\WooCommerce\QuoteShare::get_quote_total();
+                        $basket_tax = max(0.0, (float) WC()->cart->get_total_tax() - (float) WC()->cart->get_shipping_tax());
+                        ?>
+                        <strong><?php echo wp_kses_post(wc_price((float) $basket_total['total_raw'])); ?></strong>
+                        <?php if (wc_tax_enabled() && $basket_tax > 0) : ?>
+                            <small class="includes_tax">(<?php echo wp_kses_post(sprintf(
+                                /* translators: %s: tax amount */
+                                __('includes %s', 'woocommerce') . ' %s',
+                                wc_price($basket_tax),
+                                esc_html(WC()->countries->tax_or_vat())
+                            )); ?>)</small>
+                        <?php endif; ?>
                     </div>
                 </div>
 
@@ -338,9 +352,7 @@ do_action('woocommerce_before_cart');?>
                     $quote_snapshot = [
                         'items' => [],
                         'lines' => [],
-                        'total' => wp_strip_all_tags(html_entity_decode(WC()->cart->get_total(), ENT_QUOTES | ENT_HTML5, 'UTF-8')),
-                        'total_raw' => (string) round((float) WC()->cart->get_total('edit'), 2),
-                    ];
+                    ] + \Theme\WooCommerce\QuoteShare::get_quote_total();
 
                     foreach (WC()->cart->get_cart() as $quote_item) {
                         if (empty($quote_item['data']) || !$quote_item['data'] instanceof \WC_Product) {
