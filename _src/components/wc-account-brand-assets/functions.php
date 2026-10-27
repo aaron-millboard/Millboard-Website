@@ -213,6 +213,24 @@ function render_items(array $items, string $panel_url): string
                 ], $panel_url)); ?>">
                     <span class="mb-assets__folder-mark" aria-hidden="true"></span>
                     <span class="mb-assets__name"><?php echo \esc_html($name); ?></span>
+
+                    <?php
+                    /*
+                     * Canto's own description, written by the people who own
+                     * the library, rather than a second copy maintained here
+                     * that would drift from it.
+                     *
+                     * In practice folders carry these and albums rarely do,
+                     * which is why it is optional rather than part of the
+                     * tile's shape.
+                     */
+                    $description = \trim((string) ($item['description'] ?? ''));
+                    ?>
+
+                    <?php if ('' !== $description) : ?>
+                        <span class="mb-assets__blurb"><?php echo \esc_html($description); ?></span>
+                    <?php endif; ?>
+
                     <span class="mb-assets__meta">
                         <?php
                         echo 'folder' === $item_scheme

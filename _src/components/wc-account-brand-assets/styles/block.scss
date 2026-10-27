@@ -439,3 +439,23 @@
         margin-top: 0;
     }
 }
+
+// ---- folder blurb ----------------------------------------------
+// Canto's own folder description, shown under the name on a container tile.
+// Clamped rather than truncated server-side so the full text stays in the
+// markup for anyone reading it with a screen reader or searching the page.
+.mb-assets__blurb {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-size: #{px-to-rem(13)};
+    line-height: 1.45;
+    color: var(--mba-muted, #5a5458);
+}
+
+// In a row there is no height to clamp into, so it sits on one line and the
+// name keeps priority.
+.mb-account-assets.is-list .mb-assets__blurb {
+    -webkit-line-clamp: 1;
+}
