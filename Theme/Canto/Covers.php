@@ -68,6 +68,38 @@ final class Covers
     }
 
     /**
+     * Turn a stored choice into a URL, whichever library it came from.
+     *
+     * A WordPress attachment is stored as `wp:123`; anything else is a Canto
+     * asset id. The prefix is what keeps the two apart, and an id that no
+     * longer resolves returns '' so the tile falls back to the automatic pick
+     * rather than showing a broken image.
+     *
+     * ⚠️ A WordPress image is NOT subject to the Canto usage-rights gate.
+     * Whoever picks one is asserting it is cleared for a partner-facing page,
+     * which is why the Canto library is offered first and this is the fallback
+     * for folders Canto cannot cover.
+     */
+    public static function resolve_url(string $stored): string
+    {
+        if ('' === $stored) {
+            return '';
+        }
+
+        if (0 === \strpos($stored, 'wp:')) {
+            $attachment = (int) \substr($stored, 3);
+
+            if ($attachment <= 0 || !\wp_attachment_is_image($attachment)) {
+                return '';
+            }
+
+            return (string) \wp_get_attachment_image_url($attachment, 'large');
+        }
+
+        return Client::asset_url($stored);
+    }
+
+    /**
      * Images that may be used as this container's cover.
      *
      * Read from the partner index, which is already cached, so opening the
@@ -100,6 +132,53 @@ final class Covers
         return $out;
     }
 
+    /**
+     * Images anywhere in the library whose file name matches.
+     *
+     * Searched over the cached partner index, so it costs no Canto requests
+     * and can only return something a partner is allowed to see. Capped,
+     * because a bare search can match hundreds and a page of hundreds of
+     * thumbnails helps nobody.
+     *
+     * @return array<int,array{id: string, name: string, url: string}>
+     */
+    public static function search_candidates(string $term, int $limit = 60): array
+    {
+        $term = \trim($term);
+
+        if ('' === $term) {
+            return [];
+        }
+
+        $out = [];
+
+        foreach ((array) Client::partner_index() as $asset) {
+            if (!\is_array($asset) || 'image' !== (string) ($asset['scheme'] ?? '')) {
+                continue;
+            }
+
+            $name = (string) ($asset['name'] ?? '');
+
+            if (false === \stripos($name, $term)) {
+                continue;
+            }
+
+            $url = (string) ($asset['url']['directUrlPreview'] ?? '');
+
+            if ('' === $url) {
+                continue;
+            }
+
+            $out[] = ['id' => (string) $asset['id'], 'name' => $name, 'url' => $url];
+
+            if (\count($out) >= $limit) {
+                break;
+            }
+        }
+
+        return $out;
+    }
+
     // ------------------------------------------------------------------
     // Admin screen
     // ------------------------------------------------------------------
@@ -126,6 +205,10 @@ final class Covers
         if (!\current_user_can('manage_options')) {
             return;
         }
+
+        // wp.media is not on an admin page unless asked for, and the picker
+        // button silently does nothing without it.
+        \wp_enqueue_media();
 
         // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only navigation.
         $container = isset($_GET['container']) ? \sanitize_text_field(\wp_unslash($_GET['container'])) : '';
@@ -215,50 +298,191 @@ final class Covers
      */
     private static function render_picker(string $container_id): void
     {
-        $candidates = self::candidates($container_id);
         $chosen = self::for_container($container_id);
         $name = self::name_of($container_id);
         $back = \add_query_arg(['page' => self::MENU_SLUG], \admin_url('admin.php'));
 
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only filter.
+        $search = isset($_GET['s']) ? \sanitize_text_field(\wp_unslash($_GET['s'])) : '';
+
         \printf('<h1>%s</h1>', \esc_html($name ?: $container_id));
         \printf('<p><a href="%s">&larr; %s</a></p>', \esc_url($back), \esc_html__('All folders', 'granola'));
 
-        if (!$candidates) {
-            echo '<div class="notice notice-warning inline"><p>';
-            echo \esc_html__('Nothing in this folder can be used as a cover. Covers come from images that reach distributors and installers, so a folder of internal-only assets has none to offer.', 'granola');
-            echo '</p></div>';
+        /*
+         * The container's own images first, because that is usually what you
+         * want, then the rest of the library behind a search.
+         *
+         * The first version offered ONLY the container's own images and said
+         * "nothing here can be used" when it had none, which is a dead end:
+         * a cover is decoration and there is no reason it has to live inside
+         * the thing it decorates. Envello Coloured Head Screws has exactly one
+         * asset, internal-only and awaiting marketing approval, so the folder
+         * could never have had a cover at all.
+         */
+        $own = self::candidates($container_id);
+        $library = '' !== $search ? self::search_candidates($search) : [];
 
-            return;
-        }
-
+        // Search form, always available, so there is never a dead end.
+        echo '<form method="get" style="margin:12px 0">';
+        echo '<input type="hidden" name="page" value="' . \esc_attr(self::MENU_SLUG) . '" />';
+        \printf('<input type="hidden" name="container" value="%s" />', \esc_attr($container_id));
         \printf(
-            '<p>%s</p>',
-            \esc_html(
-                \sprintf(
-                    /* translators: %d: how many images are available. */
-                    \_n('%d image available.', '%d images available.', \count($candidates), 'granola'),
-                    \count($candidates)
-                )
-            )
+            '<input type="search" name="s" value="%s" placeholder="%s" style="width:320px" /> ',
+            \esc_attr($search),
+            \esc_attr__('Search the whole library by file name…', 'granola')
         );
+        \submit_button(\__('Search', 'granola'), 'secondary', '', false);
+        echo '</form>';
 
         echo '<form method="post" action="' . \esc_url(\admin_url('admin-post.php')) . '">';
         \wp_nonce_field('millboard_canto_cover');
         echo '<input type="hidden" name="action" value="millboard_canto_cover" />';
         \printf('<input type="hidden" name="container" value="%s" />', \esc_attr($container_id));
 
-        echo '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin:16px 0">';
+        $grid = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin:16px 0">';
+
+        echo '<h2>' . \esc_html__('In this folder', 'granola') . '</h2>';
+        echo $grid; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static markup.
 
         // "Automatic" first, so clearing a choice is as easy as making one.
         self::render_choice('', \__('Automatic (first image)', 'granola'), '', '' === $chosen);
 
-        foreach ($candidates as $candidate) {
+        foreach ($own as $candidate) {
             self::render_choice($candidate['id'], $candidate['name'], $candidate['url'], $chosen === $candidate['id']);
         }
 
         echo '</div>';
+
+        if (!$own) {
+            echo '<p class="description">';
+            echo \esc_html__('This folder has no images of its own that reach distributors and installers, so search the library below instead.', 'granola');
+            echo '</p>';
+        }
+
+        if ('' !== $search) {
+            \printf(
+                '<h2>%s</h2>',
+                \esc_html(
+                    \sprintf(
+                        /* translators: %1$d: number of matches. %2$s: the search term. */
+                        \__('%1$d match for &ldquo;%2$s&rdquo;', 'granola'),
+                        \count($library),
+                        $search
+                    )
+                )
+            );
+
+            if ($library) {
+                echo $grid; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static markup.
+
+                foreach ($library as $candidate) {
+                    self::render_choice($candidate['id'], $candidate['name'], $candidate['url'], $chosen === $candidate['id']);
+                }
+
+                echo '</div>';
+            }
+        }
+
+        /*
+         * The escape hatch. Canto cannot cover every folder: Envello Coloured
+         * Head Screws holds one asset, internal-only and awaiting marketing
+         * approval, so no amount of searching the library helps.
+         *
+         * Deliberately last and labelled, because an image from here does NOT
+         * pass the Canto usage-rights gate. Whoever picks one is asserting it
+         * is cleared for a partner-facing page.
+         */
+        $wp_id = 0 === \strpos($chosen, 'wp:') ? (int) \substr($chosen, 3) : 0;
+
+        echo '<h2>' . \esc_html__('Or use a WordPress image', 'granola') . '</h2>';
+        echo '<p class="description">';
+        echo \esc_html__('For folders Canto has no suitable image for. These are not checked against Canto usage rights, so only pick one you know is cleared for partners.', 'granola');
+        echo '</p>';
+
+        echo '<p>';
+        \printf(
+            '<label style="display:inline-flex;align-items:center;gap:8px"><input type="radio" name="asset" value="%s" %s /> %s</label>',
+            $wp_id ? 'wp:' . $wp_id : 'wp:0',
+            \checked($wp_id > 0, true, false),
+            \esc_html__('Use the image below', 'granola')
+        );
+        echo '</p>';
+
+        \printf(
+            '<p><input type="hidden" id="mb-cover-wp-id" name="wp_attachment" value="%d" />'
+                . '<button type="button" class="button" id="mb-cover-pick">%s</button></p>',
+            $wp_id,
+            \esc_html__('Choose from media library', 'granola')
+        );
+
+        echo '<p id="mb-cover-wp-preview">';
+        if ($wp_id) {
+            echo \wp_get_attachment_image($wp_id, 'medium', false, ['style' => 'max-width:260px;height:auto']);
+        }
+        echo '</p>';
+
         \submit_button(\__('Save cover', 'granola'));
         echo '</form>';
+
+        self::render_picker_script();
+    }
+
+    /**
+     * The media-library button.
+     *
+     * Inline rather than a build-step asset: it is a dozen lines that only
+     * ever run on this one admin screen, and routing it through the theme
+     * build would make it something to find rather than something to read.
+     */
+    private static function render_picker_script(): void
+    {
+        ?>
+        <script>
+        (function () {
+            var button = document.getElementById('mb-cover-pick');
+            var field = document.getElementById('mb-cover-wp-id');
+            var preview = document.getElementById('mb-cover-wp-preview');
+
+            if (!button || !field || !window.wp || !window.wp.media) {
+                return;
+            }
+
+            var frame;
+
+            button.addEventListener('click', function () {
+                if (!frame) {
+                    frame = window.wp.media({
+                        title: button.textContent,
+                        library: { type: 'image' },
+                        multiple: false
+                    });
+
+                    frame.on('select', function () {
+                        var picked = frame.state().get('selection').first().toJSON();
+
+                        field.value = picked.id;
+
+                        // Tick the radio for the person, so choosing an image
+                        // and forgetting to select it cannot silently do nothing.
+                        var radio = document.querySelector('input[name="asset"][value^="wp:"]');
+
+                        if (radio) {
+                            radio.value = 'wp:' + picked.id;
+                            radio.checked = true;
+                        }
+
+                        var size = (picked.sizes && (picked.sizes.medium || picked.sizes.full)) || null;
+                        preview.innerHTML = size
+                            ? '<img src="' + size.url + '" style="max-width:260px;height:auto" alt="" />'
+                            : '';
+                    });
+                }
+
+                frame.open();
+            });
+        }());
+        </script>
+        <?php
     }
 
     private static function render_choice(string $value, string $label, string $url, bool $checked): void
@@ -290,6 +514,20 @@ final class Covers
 
         $container = isset($_POST['container']) ? \sanitize_text_field(\wp_unslash($_POST['container'])) : '';
         $asset = isset($_POST['asset']) ? \sanitize_text_field(\wp_unslash($_POST['asset'])) : '';
+
+        /*
+         * The WordPress option carries the attachment id in its own field, so
+         * the radio only has to say "use the WordPress one". Taking the id
+         * from here rather than from the radio's value means the two cannot
+         * disagree if someone picks an image and the radio did not update.
+         */
+        if (0 === \strpos($asset, 'wp:')) {
+            $attachment = isset($_POST['wp_attachment']) ? (int) $_POST['wp_attachment'] : 0;
+
+            // Nothing picked, or not an image: treat as automatic rather than
+            // storing a reference to something that cannot render.
+            $asset = ($attachment > 0 && \wp_attachment_is_image($attachment)) ? 'wp:' . $attachment : '';
+        }
 
         if ('' !== $container) {
             $all = self::all();
