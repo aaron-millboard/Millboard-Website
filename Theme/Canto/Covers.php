@@ -26,6 +26,14 @@ final class Covers
 
     private const MENU_SLUG = 'millboard-canto-covers';
 
+    /**
+     * How many containers the last flatten() left out.
+     *
+     * Counted so the screen can say "12 not shown" rather than quietly
+     * listing fewer things than Canto holds, which would read as a fault.
+     */
+    private static int $pruned = 0;
+
     public static function init(): void
     {
         \add_action('admin_menu', [self::class, 'register_page']);
@@ -234,7 +242,23 @@ final class Covers
         echo '<h1>' . \esc_html__('Resources cover images', 'granola') . '</h1>';
         echo '<p>' . \esc_html__('Each folder and album in My Account shows a cover image. By default it is the first image inside it. Choose one here to pin a specific picture instead.', 'granola') . '</p>';
 
+        self::$pruned = 0;
         $rows = self::flatten(Client::tree());
+
+        if (self::$pruned > 0) {
+            echo '<p class="description">';
+            \printf(
+                /* translators: %d: how many folders and albums are not listed. */
+                \esc_html(\_n(
+                    '%d folder or album is not listed, because it is empty or restricted in Canto and so never appears in My Account.',
+                    '%d folders and albums are not listed, because they are empty or restricted in Canto and so never appear in My Account.',
+                    self::$pruned,
+                    'granola'
+                )),
+                (int) self::$pruned
+            );
+            echo '</p>';
+        }
 
         if (!$rows) {
             echo '<div class="notice notice-warning"><p>' . \esc_html__('The Canto library could not be read, so there is nothing to show.', 'granola') . '</p></div>';
@@ -564,14 +588,38 @@ final class Covers
 
             $scheme = (string) ($node['scheme'] ?? '');
 
-            if (\in_array($scheme, ['folder', 'album'], true)) {
-                $out[] = [
-                    'id' => (string) ($node['id'] ?? ''),
-                    'name' => (string) ($node['name'] ?? ''),
-                    'scheme' => $scheme,
-                    'depth' => $depth,
-                ];
+            if (!\in_array($scheme, ['folder', 'album'], true)) {
+                continue;
             }
+
+            $id = (string) ($node['id'] ?? '');
+
+            /*
+             * Anything My Account will not list has no use for a cover, so it
+             * is not offered one. The branch is pruned rather than the single
+             * node skipped: a folder nobody can open makes its children
+             * unreachable too, whatever their own settings say.
+             *
+             * Same two tests the panel applies, in the same order, so the free
+             * one runs first and an empty container never pays for an ACL
+             * lookup it does not need.
+             */
+            if (isset($node['size']) && 0 === (int) $node['size']) {
+                self::$pruned++;
+                continue;
+            }
+
+            if (Client::restricted($scheme, $id)) {
+                self::$pruned++;
+                continue;
+            }
+
+            $out[] = [
+                'id' => $id,
+                'name' => (string) ($node['name'] ?? ''),
+                'scheme' => $scheme,
+                'depth' => $depth,
+            ];
 
             if (!empty($node['children'])) {
                 $out = \array_merge($out, self::flatten((array) $node['children'], $depth + 1));
@@ -581,14 +629,35 @@ final class Covers
         return $out;
     }
 
+    /**
+     * Walks the RAW tree, not flatten(), which prunes anything hidden. The
+     * picker is reachable by URL, so a container that is no longer listed
+     * should still show its name rather than a bare id.
+     */
     private static function name_of(string $container_id): string
     {
-        foreach (self::flatten(Client::tree()) as $row) {
-            if ($row['id'] === $container_id) {
-                return $row['name'];
-            }
-        }
+        $find = static function (array $nodes) use (&$find, $container_id): string {
+            foreach ($nodes as $node) {
+                if (!\is_array($node)) {
+                    continue;
+                }
 
-        return '';
+                if ((string) ($node['id'] ?? '') === $container_id) {
+                    return (string) ($node['name'] ?? '');
+                }
+
+                if (!empty($node['children'])) {
+                    $hit = $find((array) $node['children']);
+
+                    if ('' !== $hit) {
+                        return $hit;
+                    }
+                }
+            }
+
+            return '';
+        };
+
+        return $find(Client::tree());
     }
 }
