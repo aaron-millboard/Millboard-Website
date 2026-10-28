@@ -112,13 +112,7 @@ function filter_args(array $args): ?array
         $args['header_cta']['content'] = \Granola\SVG::get('icons-custom/pencil.svg') . $args['header_cta']['title'];
     }
 
-    // (The NBS Source link renders in the Specifications block, see list-specifications.)
-
-    // Lightbeans 3D texture download. Only a plain slug is accepted, and nothing renders when it is empty.
-    $lightbeans_slug = \get_field('lightbeans_slug', $product->get_id());
-    $args['lightbeans_slug'] = (is_string($lightbeans_slug) && preg_match('/^[a-z0-9-]+$/', $lightbeans_slug))
-        ? $lightbeans_slug
-        : '';
+    // (The NBS Source link and the Lightbeans 3D texture button render in the Specifications block, see list-specifications.)
 
     // -------------------------------------------------------------------------
     // 3. Variations (to be used in the variation selector component)

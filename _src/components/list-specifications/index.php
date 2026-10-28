@@ -23,6 +23,14 @@
                     ]); ?>
                 </div>
             <?php } ?>
+
+            <?php if (!empty($args['lightbeans_slug'])) { ?>
+                <div class="list-specifications__lightbeans">
+                    <button type="button" class="g-button" data-lightbeans-texture="<?= esc_attr($args['lightbeans_slug']); ?>">
+                        <?= esc_html__('Download 3D texture', 'granola'); ?>
+                    </button>
+                </div>
+            <?php } ?>
         </div>
 
         <?php if (!empty($args['specifications']) && is_array($args['specifications'])) { ?>
