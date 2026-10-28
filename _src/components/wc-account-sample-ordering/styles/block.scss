@@ -381,12 +381,27 @@
             // dialog in the top-left corner. Put it back.
             margin: auto;
 
-            overflow: auto;
+            // The LIST scrolls, not the dialog. Scrolling the dialog itself
+            // meant the bar had to be sticky, and a sticky last child can only
+            // reach the edge of the content box -- leaving the dialog's own
+            // bottom padding below it for rows to show through as they passed
+            // under. A column with one scrolling middle has no such gap, and
+            // keeps the heading in place as a bonus.
+            overflow: hidden;
+
             padding: #{px-to-rem(24)};
             border: 0;
             border-radius: 0;
             background-color: var(--color--background, #fff);
             color: var(--color--foreground);
+
+            // `display` has to be set on [open] only: a bare `display: flex`
+            // would override the browser's `display: none` and leave the
+            // dialog on screen permanently.
+            &[open] {
+                display: flex;
+                flex-direction: column;
+            }
 
             &::backdrop {
                 background-color: rgba(0, 0, 0, 0.55);
@@ -394,6 +409,7 @@
         }
 
         .basket-dialog-head {
+            flex: 0 0 auto;
             display: flex;
             align-items: baseline;
             justify-content: space-between;
@@ -416,9 +432,24 @@
         }
 
         .basket-dialog-hint {
+            flex: 0 0 auto;
             margin: #{px-to-rem(4)} 0 #{px-to-rem(20)};
             font-size: #{px-to-rem(13)};
             opacity: 0.75;
+        }
+
+        // The one part that scrolls. `min-height: 0` because a flex item will
+        // not shrink below its content otherwise, which would push the bar
+        // back off the bottom of the dialog.
+        .basket-dialog-body {
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow-y: auto;
+
+            // The rows reach the dialog's edges; the scrollbar sits with them
+            // rather than inside a 24px inset.
+            margin: 0 #{px-to-rem(-24)};
+            padding: 0 #{px-to-rem(24)};
         }
 
         .basket-group + .basket-group {
@@ -439,16 +470,12 @@
         }
 
         .basket-dialog-foot {
-            // Long baskets scroll; the totals and the way out should not scroll away.
-            position: sticky;
+            // The bottom row of the column, so it sits on the dialog's edge
+            // without sticky positioning or a gap under it.
+            flex: 0 0 auto;
 
-            // Flush with the bottom of the scrollport. A negative `bottom` would park
-            // the bar that far BELOW the dialog's edge, where it is simply clipped.
-            bottom: 0;
-
-            // Pulled out into the dialog's own padding and given it back as the bar's
-            // padding, so the bar is full-bleed and no row shows through beside or
-            // beneath it while the list scrolls under.
+            // Pulled out into the dialog's padding and given it back as its
+            // own, so the bar is full-bleed to all three edges.
             margin: #{px-to-rem(24)} #{px-to-rem(-24)} #{px-to-rem(-24)};
             padding: #{px-to-rem(16)} #{px-to-rem(24)};
 
