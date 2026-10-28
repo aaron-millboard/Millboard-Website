@@ -42,15 +42,23 @@ function filter_args(array $args): ?array
     // -------------------------------------------------------------------------
     // NBS Source link for the product this page is about (UK products carry the field).
     // Shown once, under the heading of the first specifications block. Only a plain https URL is accepted.
+    // Below it, the Lightbeans 3D texture button (a plain slug is accepted; the click handler is in wc-single-product).
     // -------------------------------------------------------------------------
-    static $nbs_shown = false;
+    static $buttons_shown = false;
 
-    if (!$nbs_shown && \is_singular('product')) {
-        $nbs_source_url = \get_field('nbs_source_url', \get_queried_object_id());
+    if (!$buttons_shown && \is_singular('product')) {
+        $product_id = \get_queried_object_id();
+        $nbs_source_url = \get_field('nbs_source_url', $product_id);
+        $lightbeans_slug = \get_field('lightbeans_slug', $product_id);
 
         if (is_string($nbs_source_url) && str_starts_with($nbs_source_url, 'https://')) {
             $args['nbs_source_url'] = \esc_url_raw($nbs_source_url);
-            $nbs_shown = true;
+            $buttons_shown = true;
+        }
+
+        if (is_string($lightbeans_slug) && preg_match('/^[a-z0-9-]+$/', $lightbeans_slug)) {
+            $args['lightbeans_slug'] = $lightbeans_slug;
+            $buttons_shown = true;
         }
     }
 
