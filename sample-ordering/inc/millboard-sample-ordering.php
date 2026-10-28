@@ -162,8 +162,25 @@ function mb_sof_register_assets() {
 	$base = get_stylesheet_directory_uri() . '/sample-ordering/assets/';
 	$path = get_stylesheet_directory() . '/sample-ordering/assets/';
 
-	$ver = static function ( $file ) use ( $path ) {
-		return file_exists( $path . $file ) ? filemtime( $path . $file ) : MB_SOF_VERSION;
+	/*
+	 * MILLBOARD EDIT - the cache-buster is baked into the URL as `mv`, and the
+	 * version argument is left null.
+	 *
+	 * The theme strips `?ver=` off every enqueued asset site-wide
+	 * (Granola\WordPress\Enqueue::remove_asset_version), and Kinsta serves
+	 * these files `Cache-Control: max-age=315360000`. Between the two, a file
+	 * whose name never changes is frozen in a returning browser for ten years,
+	 * so passing filemtime() as the version achieved nothing: an edit to the
+	 * JS simply never reached anyone who had already loaded the page.
+	 *
+	 * The theme's own bundles are immune because webpack hashes their
+	 * filenames. This package is not built, so it needs the query string, and
+	 * `mv` survives because that filter only looks for `ver`.
+	 */
+	$asset = static function ( $file ) use ( $base, $path ) {
+		$stamp = file_exists( $path . $file ) ? filemtime( $path . $file ) : MB_SOF_VERSION;
+
+		return $base . $file . '?mv=' . rawurlencode( (string) $stamp );
 	};
 
 	wp_register_style(
@@ -172,8 +189,8 @@ function mb_sof_register_assets() {
 		array(),
 		null
 	);
-	wp_register_style( 'mb-sof', $base . 'sample-ordering.css', array( 'mb-sof-fonts' ), $ver( 'sample-ordering.css' ) );
-	wp_register_script( 'mb-sof', $base . 'sample-ordering.js', array(), $ver( 'sample-ordering.js' ), true );
+	wp_register_style( 'mb-sof', $asset( 'sample-ordering.css' ), array( 'mb-sof-fonts' ), null );
+	wp_register_script( 'mb-sof', $asset( 'sample-ordering.js' ), array(), null, true );
 }
 add_action( 'wp_enqueue_scripts', 'mb_sof_register_assets' );
 

@@ -141,3 +141,52 @@ document.addEventListener('DOMContentLoaded', () => {
       $(document.body).on('change', TRIGGER, apply);
    });
 })(jQuery);
+
+/**
+ * The full basket dialog.
+ *
+ * Two triggers open the same dialog, one by the summary and one by the submit
+ * button, because the moment someone wants to check a large order is the
+ * moment before they place it.
+ *
+ * The list is already in the page. This only opens and closes it, so with
+ * JavaScript off the dialog is simply never shown rather than the breakdown
+ * being unavailable.
+ */
+document.addEventListener('DOMContentLoaded', function () {
+    const dialog = document.querySelector('[data-mb-basket]');
+
+    if (!dialog) {
+        return;
+    }
+
+    const supported = typeof dialog.showModal === 'function';
+
+    document.querySelectorAll('[data-mb-basket-open]').forEach(function (trigger) {
+        // An old browser without <dialog> would show a button that does
+        // nothing, so the trigger is removed rather than left to disappoint.
+        if (!supported) {
+            trigger.hidden = true;
+
+            return;
+        }
+
+        trigger.addEventListener('click', function () {
+            dialog.showModal();
+        });
+    });
+
+    dialog.querySelectorAll('[data-mb-basket-close]').forEach(function (button) {
+        button.addEventListener('click', function () {
+            dialog.close();
+        });
+    });
+
+    // Clicking the backdrop closes. A <dialog>'s backdrop is part of the
+    // element, so the target is the dialog itself rather than a child.
+    dialog.addEventListener('click', function (event) {
+        if (event.target === dialog) {
+            dialog.close();
+        }
+    });
+});

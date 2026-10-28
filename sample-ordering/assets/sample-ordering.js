@@ -229,7 +229,67 @@
     byId('bar-units').textContent = units;
     byId('bar-lines').textContent = lines;
     byId('btn-submit').disabled = lines === 0;
+    byId('btn-view-basket').disabled = lines === 0;
+
+    // The dialog carries the same two numbers, and is open while they edit.
+    byId('basket-units').textContent = units;
+    byId('basket-lines').textContent = lines;
   }
+
+  // ── Basket dialog ──────────────────────────────────────────────────────────
+  // The bar gives sales two numbers; large orders need the list behind them.
+  // The rows are the catalogue's own, so setQty() already keeps both copies in
+  // step and an edit here lands in the order like any other.
+
+  var dialog = byId('basket-dialog');
+
+  var PRODUCT_BY_ID = (function () {
+    var m = {};
+    CATALOGUE.forEach(function (p) { m[p.id] = p; });
+    return m;
+  }());
+
+  function renderBasket() {
+    var chosen = Object.keys(order)
+      .filter(function (id) { return order[id] > 0; })
+      .map(function (id) { return PRODUCT_BY_ID[id]; })
+      .filter(Boolean);
+
+    if (chosen.length === 0) {
+      byId('basket-dialog-body').innerHTML =
+        '<p class="basket-dialog-empty">Nothing selected yet.</p>';
+      return;
+    }
+
+    var html = '';
+
+    CATEGORY_ORDER.forEach(function (cat) {
+      var inCat = chosen.filter(function (p) { return p.category === cat; });
+      if (inCat.length === 0) return;
+
+      html +=
+        '<div class="basket-group">' +
+          '<h3 class="basket-group-title">' + escapeHtml(cat) + '</h3>' +
+          inCat.map(function (p) { return productRowHtml(p); }).join('') +
+        '</div>';
+    });
+
+    var body = byId('basket-dialog-body');
+    body.innerHTML = html;
+    attachStepperEvents(body);
+  }
+
+  byId('btn-view-basket').addEventListener('click', function () {
+    // Built fresh on open, so anything zeroed last time has gone. A line
+    // zeroed WHILE it is open stays put at 0, which is what lets them undo a
+    // mistake without hunting for the product again.
+    renderBasket();
+    dialog.showModal();
+  });
+
+  dialog.querySelectorAll('[data-basket-close]').forEach(function (btn) {
+    btn.addEventListener('click', function () { dialog.close(); });
+  });
 
   // ── Search ─────────────────────────────────────────────────────────────────
 

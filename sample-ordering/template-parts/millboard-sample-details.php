@@ -119,7 +119,95 @@ $mb_select = static function ( string $key, array $options, bool $required = fal
 			'<strong>' . esc_html( number_format_i18n( $units ) ) . '</strong>'
 		);
 		?>
+
+		<?php
+		/*
+		 * Sales order in large quantities, and a count is a number to trust
+		 * rather than a list to check. The breakdown is rendered here rather
+		 * than fetched, so it is in the page they are already reading and
+		 * works with the dialog closed, with JavaScript off, and on paper.
+		 */
+		$mb_breakdown = mb_sof_basket_breakdown( $lines );
+		?>
+		<button type="button" class="mb-account-link mb-sof-basket__open" data-mb-basket-open>
+			<?php esc_html_e( 'View full basket', 'granola' ); ?>
+		</button>
 	</p>
+
+	<?php
+	// A native <dialog>: Escape, the backdrop and focus handling come with it,
+	// and it degrades to a plain block if the browser is old enough to lack it.
+	?>
+	<dialog class="mb-sof-basket" data-mb-basket aria-labelledby="mb-sof-basket-title">
+		<div class="mb-sof-basket__head">
+			<h3 id="mb-sof-basket-title" class="mb-sof-basket__title"><?php esc_html_e( 'Your sample selection', 'granola' ); ?></h3>
+			<button type="button" class="mb-sof-basket__close" data-mb-basket-close aria-label="<?php esc_attr_e( 'Close', 'granola' ); ?>">&times;</button>
+		</div>
+
+		<table class="mb-sof-basket__table">
+			<thead>
+				<tr>
+					<th scope="col"><?php esc_html_e( 'Product', 'granola' ); ?></th>
+					<th scope="col"><?php esc_html_e( 'SKU', 'granola' ); ?></th>
+					<th scope="col" class="mb-sof-basket__qty"><?php esc_html_e( 'Qty', 'granola' ); ?></th>
+				</tr>
+			</thead>
+			<tbody>
+				<?php
+				/*
+				 * ⚠️ $mb_basket_line, NOT $mb_row. This template builds its
+				 * form rows with a CLOSURE called $mb_row, defined near the
+				 * top, and a foreach here that binds $mb_row replaces it with
+				 * an array. The next form row then fatals with "Array callback
+				 * must have exactly two elements" and the page stops rendering
+				 * part way down, taking the submit button with it.
+				 */
+				$mb_last_category = null;
+
+				foreach ( $mb_breakdown['rows'] as $mb_basket_line ) :
+					// A heading row each time the category changes, so a long
+					// basket is scannable by range rather than one flat list.
+					if ( '' !== $mb_basket_line['category'] && $mb_basket_line['category'] !== $mb_last_category ) :
+						$mb_last_category = $mb_basket_line['category'];
+						?>
+						<tr class="mb-sof-basket__group">
+							<th scope="colgroup" colspan="3"><?php echo esc_html( $mb_basket_line['category'] ); ?></th>
+						</tr>
+						<?php
+					endif;
+					?>
+					<tr>
+						<td><?php echo esc_html( $mb_basket_line['name'] ); ?></td>
+						<td class="mb-sof-basket__sku"><?php echo esc_html( $mb_basket_line['sku'] ); ?></td>
+						<td class="mb-sof-basket__qty"><?php echo esc_html( number_format_i18n( $mb_basket_line['qty'] ) ); ?></td>
+					</tr>
+				<?php endforeach; ?>
+			</tbody>
+			<tfoot>
+				<tr>
+					<th scope="row" colspan="2">
+						<?php
+						printf(
+							/* translators: %s: number of product lines. */
+							esc_html__( 'Total across %s lines', 'granola' ),
+							esc_html( number_format_i18n( $mb_breakdown['lines'] ) )
+						);
+						?>
+					</th>
+					<td class="mb-sof-basket__qty"><strong><?php echo esc_html( number_format_i18n( $mb_breakdown['units'] ) ); ?></strong></td>
+				</tr>
+			</tfoot>
+		</table>
+
+		<div class="mb-sof-basket__actions">
+			<a class="mb-account-btn mb-account-btn--ghost" href="<?php echo esc_url( mb_sof_form_url() ); ?>">
+				<?php esc_html_e( 'Change the selection', 'granola' ); ?>
+			</a>
+			<button type="button" class="mb-account-btn" data-mb-basket-close>
+				<?php esc_html_e( 'Looks right', 'granola' ); ?>
+			</button>
+		</div>
+	</dialog>
 
 	<form id="mb-sof-details-form" class="mb-sof-details__form" method="post" action="<?php echo esc_url( mb_sof_form_url() ); ?>">
 		<?php wp_nonce_field( Checkout::NONCE, 'mb_sof_nonce' ); ?>
@@ -336,6 +424,15 @@ $mb_select = static function ( string $key, array $options, bool $required = fal
 		<div class="mb-sof-details__actions">
 			<button type="submit" class="mb-account-btn"><?php esc_html_e( 'Place sample order', 'granola' ); ?></button>
 			<a class="mb-account-btn mb-account-btn--ghost" href="<?php echo esc_url( mb_sof_form_url() ); ?>"><?php esc_html_e( 'Back to the catalogue', 'granola' ); ?></a>
+			<?php
+			// The same control again beside the submit button. This is the
+			// last moment before a large order is placed, and it is the point
+			// at which someone actually wants to check it.
+			?>
+			<button type="button" class="mb-account-link mb-sof-basket__open" data-mb-basket-open>
+				<?php esc_html_e( 'View full basket', 'granola' ); ?>
+			</button>
+
 			<span class="mb-sof-details__count">
 				<?php
 				printf(

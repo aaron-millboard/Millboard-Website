@@ -130,12 +130,57 @@ if ( ! defined( 'ABSPATH' ) ) {
 						<?php esc_html_e( 'Product lines', 'granola' ); ?>
 					</div>
 				</div>
-				<button type="submit" class="btn-primary" id="btn-submit" disabled>
-					<?php esc_html_e( 'Continue to delivery details', 'granola' ); ?>
-				</button>
+				<div class="order-bar-actions">
+					<button type="button" class="btn-view-basket" id="btn-view-basket" disabled>
+						<?php esc_html_e( 'View full basket', 'granola' ); ?>
+					</button>
+					<button type="submit" class="btn-primary" id="btn-submit" disabled>
+						<?php esc_html_e( 'Continue to delivery details', 'granola' ); ?>
+					</button>
+				</div>
 			</div>
 
 		</form>
+
+		<?php
+		/*
+		 * The basket, in full, while they are still choosing. Sales order in
+		 * large quantities and the bar only gives them two numbers.
+		 *
+		 * Deliberately OUTSIDE the form: the rows carry the same steppers as
+		 * the catalogue, and a number input inside a form submits it on Enter.
+		 * Still inside #mb-sof, which is what the script scopes its lookups
+		 * to, so one setQty() keeps the dialog and the catalogue in step.
+		 *
+		 * The rows are built by the script from the live order, not rendered
+		 * here: PHP only ever sees an empty basket on this step.
+		 */
+		?>
+		<dialog class="basket-dialog" id="basket-dialog" aria-labelledby="basket-dialog-title">
+			<div class="basket-dialog-head">
+				<h2 class="basket-dialog-title" id="basket-dialog-title">
+					<?php esc_html_e( 'Your sample selection', 'granola' ); ?>
+				</h2>
+				<button type="button" class="basket-dialog-close" data-basket-close aria-label="<?php esc_attr_e( 'Close', 'granola' ); ?>">&times;</button>
+			</div>
+
+			<p class="basket-dialog-hint">
+				<?php esc_html_e( 'Change any quantity here and the order updates as you go.', 'granola' ); ?>
+			</p>
+
+			<div class="basket-dialog-body" id="basket-dialog-body"></div>
+
+			<div class="basket-dialog-foot">
+				<div class="basket-dialog-totals">
+					<strong id="basket-units">0</strong> <?php esc_html_e( 'total units', 'granola' ); ?>
+					<span aria-hidden="true">&middot;</span>
+					<strong id="basket-lines">0</strong> <?php esc_html_e( 'product lines', 'granola' ); ?>
+				</div>
+				<button type="button" class="btn-primary" data-basket-close>
+					<?php esc_html_e( 'Done', 'granola' ); ?>
+				</button>
+			</div>
+		</dialog>
 	</div>
 
 </div>
