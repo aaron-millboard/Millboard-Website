@@ -198,6 +198,176 @@
         .no-results {
             font-size: #{px-to-rem(15)};
         }
+        // ── The live basket, on the catalogue step ───────────────────────
+        // Sales pick in large quantities and the sticky bar only gives them
+        // two numbers. This is the list behind them, editable in place: the
+        // rows ARE the catalogue's rows, so a change here is a change to the
+        // order.
+        //
+        // These rules HAVE to stay nested in here. The package ships its own
+        // reset, and it is aggressive:
+        //
+        //     .mb-sof *      { margin: 0; padding: 0 }
+        //     .mb-sof button { text-transform: none; letter-spacing: normal }
+        //
+        // and `sample-ordering.css` is enqueued after this bundle. A top-level
+        // `.btn-view-basket` ties the first on specificity and loses the tie
+        // on order, and loses the second outright, so the button keeps its
+        // border and colour but silently drops its padding, uppercase and
+        // tracking. Nested, these read `.mb-account-samples .mb-sof .x` and
+        // win cleanly -- which is how .btn-primary above has always done it.
+
+        // Both buttons together on the right, so the bar reads stats on one side and
+        // what you can do on the other. The bar is already space-between, so grouping
+        // them is all it takes.
+        .order-bar-actions {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: flex-end;
+            gap: #{px-to-rem(12)};
+            flex-shrink: 0;
+        }
+
+        // Continue's twin, outlined: same box and same lettering, but drawn in Spring
+        // Wood on the bar's Sustainable Green instead of filled, so the two read as a
+        // pair without this one competing for the press. Spring Wood on Sustainable
+        // Green measures 10.3:1.
+        //
+        // Nothing else in the panel targets this class, so it carries the whole box
+        // itself rather than borrowing .btn-primary, which the bar fills in solid as
+        // soon as there is an order -- which is the only time this button is shown.
+        .btn-view-basket {
+            appearance: none;
+            align-self: center;
+            flex-shrink: 0;
+            background-color: transparent;
+            color: var(--color--brand-2);
+            border: 1px solid var(--color--brand-2);
+            border-radius: 0;
+            padding: #{px-to-rem(16)} #{px-to-rem(28)};
+            font-family: inherit;
+            font-size: #{px-to-rem(13)};
+            font-weight: 700;
+            letter-spacing: var(--mbh-tracking-sub, 0.16em);
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: opacity 0.15s;
+
+            &:hover {
+                opacity: 0.88;
+            }
+
+            &:disabled {
+                // Nothing to look at yet. Hidden rather than faded: an empty basket
+                // has nothing to show, and a dead button beside two zeroes is clutter.
+                display: none;
+            }
+        }
+
+        .basket-dialog {
+            // Native <dialog>: Escape, the backdrop and the focus trap are the
+            // browser's, not ours.
+            width: min(#{px-to-rem(720)}, calc(100vw - #{px-to-rem(32)}));
+            max-height: calc(100vh - #{px-to-rem(64)});
+
+            // A modal <dialog> centres itself on `margin: auto`, and the
+            // package's own `.mb-sof *` reset zeroes it, which parks the
+            // dialog in the top-left corner. Put it back.
+            margin: auto;
+
+            overflow: auto;
+            padding: #{px-to-rem(24)};
+            border: 0;
+            border-radius: 0;
+            background-color: var(--color--background, #fff);
+            color: var(--color--foreground);
+
+            &::backdrop {
+                background-color: rgba(0, 0, 0, 0.55);
+            }
+        }
+
+        .basket-dialog-head {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: #{px-to-rem(16)};
+        }
+
+        .basket-dialog-title {
+            margin: 0;
+        }
+
+        .basket-dialog-close {
+            appearance: none;
+            background: none;
+            border: 0;
+            padding: 0;
+            font-size: #{px-to-rem(26)};
+            line-height: 1;
+            color: inherit;
+            cursor: pointer;
+        }
+
+        .basket-dialog-hint {
+            margin: #{px-to-rem(4)} 0 #{px-to-rem(20)};
+            font-size: #{px-to-rem(13)};
+            opacity: 0.75;
+        }
+
+        .basket-group + .basket-group {
+            margin-top: #{px-to-rem(24)};
+        }
+
+        .basket-group-title {
+            margin: 0 0 #{px-to-rem(4)};
+            font-size: #{px-to-rem(12)};
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .basket-dialog-empty {
+            margin: 0;
+            opacity: 0.75;
+        }
+
+        .basket-dialog-foot {
+            // Long baskets scroll; the totals and the way out should not scroll away.
+            position: sticky;
+
+            // Flush with the bottom of the scrollport. A negative `bottom` would park
+            // the bar that far BELOW the dialog's edge, where it is simply clipped.
+            bottom: 0;
+
+            // Pulled out into the dialog's own padding and given it back as the bar's
+            // padding, so the bar is full-bleed and no row shows through beside or
+            // beneath it while the list scrolls under.
+            margin: #{px-to-rem(24)} #{px-to-rem(-24)} #{px-to-rem(-24)};
+            padding: #{px-to-rem(16)} #{px-to-rem(24)};
+
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: #{px-to-rem(12)};
+            background-color: var(--color--background, #fff);
+            border-top: 1px solid var(--color--border, rgba(47, 41, 46, 0.14));
+        }
+
+        .basket-dialog-totals {
+            font-size: #{px-to-rem(12)};
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+
+            strong {
+                font-size: #{px-to-rem(18)};
+                font-weight: 300;
+                letter-spacing: 0;
+            }
+        }
     }
 }
 
@@ -513,153 +683,3 @@
     margin-top: #{px-to-rem(20)};
 }
 
-// ── The live basket, on the catalogue step ───────────────────────────────────
-// Sales pick in large quantities and the sticky bar only gives them two
-// numbers. This is the list behind them, editable in place: the rows ARE the
-// catalogue's rows, so a change here is a change to the order.
-
-// Both buttons together on the right, so the bar reads stats on one side and
-// what you can do on the other. The bar is already space-between, so grouping
-// them is all it takes.
-.order-bar-actions {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: flex-end;
-    gap: #{px-to-rem(12)};
-    flex-shrink: 0;
-}
-
-// Continue's twin, outlined: same box and same lettering, but drawn in Spring
-// Wood on the bar's Sustainable Green instead of filled, so the two read as a
-// pair without this one competing for the press. Spring Wood on Sustainable
-// Green measures 10.3:1.
-//
-// Nothing else in the panel targets this class, so it carries the whole box
-// itself rather than borrowing .btn-primary, which the bar fills in solid as
-// soon as there is an order -- which is the only time this button is shown.
-.btn-view-basket {
-    appearance: none;
-    align-self: center;
-    flex-shrink: 0;
-    background-color: transparent;
-    color: var(--color--brand-2);
-    border: 1px solid var(--color--brand-2);
-    border-radius: 0;
-    padding: #{px-to-rem(16)} #{px-to-rem(28)};
-    font-family: inherit;
-    font-size: #{px-to-rem(13)};
-    font-weight: 700;
-    letter-spacing: var(--mbh-tracking-sub, 0.16em);
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: opacity 0.15s;
-
-    &:hover {
-        opacity: 0.88;
-    }
-
-    &:disabled {
-        // Nothing to look at yet. Hidden rather than faded: an empty basket
-        // has nothing to show, and a dead button beside two zeroes is clutter.
-        display: none;
-    }
-}
-
-.basket-dialog {
-    // Native <dialog>: Escape, the backdrop and the focus trap are the
-    // browser's, not ours.
-    width: min(#{px-to-rem(720)}, calc(100vw - #{px-to-rem(32)}));
-    max-height: calc(100vh - #{px-to-rem(64)});
-    overflow: auto;
-    padding: #{px-to-rem(24)};
-    border: 0;
-    border-radius: 0;
-    background-color: var(--color--background, #fff);
-    color: var(--color--foreground);
-
-    &::backdrop {
-        background-color: rgba(0, 0, 0, 0.55);
-    }
-}
-
-.basket-dialog-head {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: #{px-to-rem(16)};
-}
-
-.basket-dialog-title {
-    margin: 0;
-}
-
-.basket-dialog-close {
-    appearance: none;
-    background: none;
-    border: 0;
-    padding: 0;
-    font-size: #{px-to-rem(26)};
-    line-height: 1;
-    color: inherit;
-    cursor: pointer;
-}
-
-.basket-dialog-hint {
-    margin: #{px-to-rem(4)} 0 #{px-to-rem(20)};
-    font-size: #{px-to-rem(13)};
-    opacity: 0.75;
-}
-
-.basket-group + .basket-group {
-    margin-top: #{px-to-rem(24)};
-}
-
-.basket-group-title {
-    margin: 0 0 #{px-to-rem(4)};
-    font-size: #{px-to-rem(12)};
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-}
-
-.basket-dialog-empty {
-    margin: 0;
-    opacity: 0.75;
-}
-
-.basket-dialog-foot {
-    // Long baskets scroll; the totals and the way out should not scroll away.
-    position: sticky;
-
-    // Flush with the bottom of the scrollport. A negative `bottom` would park
-    // the bar that far BELOW the dialog's edge, where it is simply clipped.
-    bottom: 0;
-
-    // Pulled out into the dialog's own padding and given it back as the bar's
-    // padding, so the bar is full-bleed and no row shows through beside or
-    // beneath it while the list scrolls under.
-    margin: #{px-to-rem(24)} #{px-to-rem(-24)} #{px-to-rem(-24)};
-    padding: #{px-to-rem(16)} #{px-to-rem(24)};
-
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: #{px-to-rem(12)};
-    background-color: var(--color--background, #fff);
-    border-top: 1px solid var(--color--border, rgba(47, 41, 46, 0.14));
-}
-
-.basket-dialog-totals {
-    font-size: #{px-to-rem(12)};
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-
-    strong {
-        font-size: #{px-to-rem(18)};
-        font-weight: 300;
-        letter-spacing: 0;
-    }
-}
