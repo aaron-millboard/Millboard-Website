@@ -50,7 +50,7 @@
             "label": "Lightbeans texture slug",
             "name": "lightbeans_slug",
             "type": "text",
-            "instructions": "Optional. The product slug from the Lightbeans CMS, for example enhanced-grain-antique-oak. When set, a 'Download 3D texture' button shows under the product description. Lowercase letters, numbers and hyphens only."
+            "instructions": "Optional. The product slug from the Lightbeans CMS, for example enhanced-grain-antique-oak. When set, a 'Download 3D texture' button shows in the Specifications block, under the NBS Source button. Lowercase letters, numbers and hyphens only."
         },
         {
             "key": "cpt_product_tab_product_description",

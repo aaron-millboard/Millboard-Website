@@ -37,10 +37,6 @@
                 margin: 0;
             }
 
-            #{$this}__lightbeans {
-                margin-top: var(--space--xs);
-            }
-
             #{$this}__header-cta {
                 margin-top: var(--space--2xs);
 
@@ -250,6 +246,10 @@
 // NBS Source button, shown in the Specifications block under its heading (see list-specifications).
 // Lives in this stylesheet on purpose: it is excluded from Perfmatters' unused-CSS removal, whereas the
 // site-wide main.css is filtered against a shared product snapshot that would strip these rules.
+.list-specifications .list-specifications__lightbeans {
+    margin-top: var(--space--xs);
+}
+
 .list-specifications .list-specifications__nbs-source {
     margin-top: var(--space--xs);
 
