@@ -86,12 +86,26 @@ do_action('woocommerce_before_account_payment_methods', $has_methods);
 
 <?php else : ?>
 
-    <div class="mb-account-empty">
-        <span class="mb-account-empty__rule" aria-hidden="true"></span>
-        <h3 class="mb-account-empty__title"><?php esc_html_e('No saved methods', 'granola'); ?></h3>
-        <p class="mb-account-empty__body">
-            <?php esc_html_e('Nothing saved yet. Add a card now, or save one at checkout the next time you order.', 'granola'); ?>
-        </p>
+    <?php
+    // The one empty state the design gives a photograph to. Assets and sample
+    // ordering keep the plain centred block: this panel is the only one a
+    // customer is likely to meet while nothing has gone wrong.
+    ?>
+    <div class="mb-account-empty mb-account-empty--figured">
+        <figure class="mb-account-figure mb-account-empty__figure" aria-hidden="true">
+            <?php
+            // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside account_image().
+            echo \Granola\Components\WC_Account\account_image('pay-empty', 'Lifestyle photograph: a quiet terrace, morning light');
+            ?>
+        </figure>
+
+        <div class="mb-account-empty__body-wrap">
+            <span class="mb-account-empty__rule" aria-hidden="true"></span>
+            <h3 class="mb-account-empty__title"><?php esc_html_e('No saved methods', 'granola'); ?></h3>
+            <p class="mb-account-empty__body">
+                <?php esc_html_e('Nothing saved yet. Add a card now, or save one at checkout the next time you order.', 'granola'); ?>
+            </p>
+        </div>
     </div>
 
 <?php endif; ?>
