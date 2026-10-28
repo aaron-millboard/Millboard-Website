@@ -512,3 +512,119 @@
     gap: #{px-to-rem(12)};
     margin-top: #{px-to-rem(20)};
 }
+
+// ── The live basket, on the catalogue step ───────────────────────────────────
+// Sales pick in large quantities and the sticky bar only gives them two
+// numbers. This is the list behind them, editable in place: the rows ARE the
+// catalogue's rows, so a change here is a change to the order.
+
+// Sits in the green bar beside the two stats, so it reads as part of them
+// rather than competing with Continue. Spring Wood on Sustainable Green.
+.btn-view-basket {
+    appearance: none;
+    background: none;
+    border: 0;
+    padding: 0;
+    font: inherit;
+    font-size: #{px-to-rem(13)};
+    color: var(--color--brand-2);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    cursor: pointer;
+
+    &:disabled {
+        // Nothing to look at yet. Hidden rather than faded: a disabled link in
+        // a bar of two zeroes is just clutter.
+        display: none;
+    }
+}
+
+.basket-dialog {
+    // Native <dialog>: Escape, the backdrop and the focus trap are the
+    // browser's, not ours.
+    width: min(#{px-to-rem(720)}, calc(100vw - #{px-to-rem(32)}));
+    max-height: calc(100vh - #{px-to-rem(64)});
+    overflow: auto;
+    padding: #{px-to-rem(24)};
+    border: 0;
+    border-radius: 0;
+    background-color: var(--color--background, #fff);
+    color: var(--color--foreground);
+
+    &::backdrop {
+        background-color: rgba(0, 0, 0, 0.55);
+    }
+}
+
+.basket-dialog-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: #{px-to-rem(16)};
+}
+
+.basket-dialog-title {
+    margin: 0;
+}
+
+.basket-dialog-close {
+    appearance: none;
+    background: none;
+    border: 0;
+    padding: 0;
+    font-size: #{px-to-rem(26)};
+    line-height: 1;
+    color: inherit;
+    cursor: pointer;
+}
+
+.basket-dialog-hint {
+    margin: #{px-to-rem(4)} 0 #{px-to-rem(20)};
+    font-size: #{px-to-rem(13)};
+    opacity: 0.75;
+}
+
+.basket-group + .basket-group {
+    margin-top: #{px-to-rem(24)};
+}
+
+.basket-group-title {
+    margin: 0 0 #{px-to-rem(4)};
+    font-size: #{px-to-rem(12)};
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.basket-dialog-empty {
+    margin: 0;
+    opacity: 0.75;
+}
+
+.basket-dialog-foot {
+    position: sticky;
+    bottom: #{px-to-rem(-24)};
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: #{px-to-rem(12)};
+    margin-top: #{px-to-rem(24)};
+    padding: #{px-to-rem(16)} 0;
+    // Long baskets scroll; the totals and the way out should not scroll away.
+    background-color: var(--color--background, #fff);
+    border-top: 1px solid var(--color--border, rgba(47, 41, 46, 0.14));
+}
+
+.basket-dialog-totals {
+    font-size: #{px-to-rem(12)};
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+
+    strong {
+        font-size: #{px-to-rem(18)};
+        font-weight: 300;
+        letter-spacing: 0;
+    }
+}
