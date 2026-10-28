@@ -12,6 +12,17 @@
                     <?= wp_kses_post($args['heading']); ?>
                 </h2>
             <?php } ?>
+
+            <?php if (!empty($args['nbs_source_url'])) { ?>
+                <div class="list-specifications__nbs-source">
+                    <?= \Granola\Component::get('link', [
+                        'url' => $args['nbs_source_url'],
+                        'content' => \Granola\SVG::get('icons-custom/nbs-source.svg') . '<span>' . esc_html__('View on NBS Source', 'granola') . '</span>',
+                        'target' => '_blank',
+                        'classes' => ['g-button'],
+                    ]); ?>
+                </div>
+            <?php } ?>
         </div>
 
         <?php if (!empty($args['specifications']) && is_array($args['specifications'])) { ?>

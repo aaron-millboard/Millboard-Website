@@ -37,33 +37,6 @@
                 margin: 0;
             }
 
-            // NBS Source button: their teal, white text, their logo mark.
-            #{$this}__nbs-source {
-                margin-top: var(--space--xs);
-
-                a {
-                    display: inline-flex;
-                    align-items: center;
-                    gap: var(--space--2xs);
-                    background-color: #007d9e;
-                    border-color: #007d9e;
-                    color: #fff;
-
-                    svg {
-                        flex: none;
-                        width: auto;
-                        height: 1.25rem;
-                    }
-
-                    &:hover,
-                    &:focus-visible {
-                        background-color: #006580;
-                        border-color: #006580;
-                        color: #fff;
-                    }
-                }
-            }
-
             #{$this}__lightbeans {
                 margin-top: var(--space--xs);
             }
@@ -270,6 +243,35 @@
             @include button;
             @include button--interaction;
             @include button--solid;
+        }
+    }
+}
+
+// NBS Source button, shown in the Specifications block under its heading (see list-specifications).
+// Lives in this stylesheet on purpose: it is excluded from Perfmatters' unused-CSS removal, whereas the
+// site-wide main.css is filtered against a shared product snapshot that would strip these rules.
+.list-specifications .list-specifications__nbs-source {
+    margin-top: var(--space--xs);
+
+    a.g-button {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space--2xs);
+        background-color: #007d9e;
+        border-color: #007d9e;
+        color: #fff;
+
+        svg {
+            flex: none;
+            width: auto;
+            height: 1.25rem;
+        }
+
+        &:hover,
+        &:focus-visible {
+            background-color: #006580;
+            border-color: #006580;
+            color: #fff;
         }
     }
 }

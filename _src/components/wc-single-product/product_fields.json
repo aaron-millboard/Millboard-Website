@@ -43,7 +43,7 @@
             "label": "NBS Source link",
             "name": "nbs_source_url",
             "type": "url",
-            "instructions": "Optional. Link to this product's range on NBS Source. When set, a 'View on NBS Source' button shows under the product description. Must start with https://."
+            "instructions": "Optional. Link to this product's range on NBS Source. When set, a 'View on NBS Source' button shows in the Specifications block, under its heading. Must start with https://."
         },
         {
             "key": "cpt_product_lightbeans_slug",
