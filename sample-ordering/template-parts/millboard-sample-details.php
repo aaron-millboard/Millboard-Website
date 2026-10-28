@@ -154,24 +154,32 @@ $mb_select = static function ( string $key, array $options, bool $required = fal
 			</thead>
 			<tbody>
 				<?php
+				/*
+				 * ⚠️ $mb_basket_line, NOT $mb_row. This template builds its
+				 * form rows with a CLOSURE called $mb_row, defined near the
+				 * top, and a foreach here that binds $mb_row replaces it with
+				 * an array. The next form row then fatals with "Array callback
+				 * must have exactly two elements" and the page stops rendering
+				 * part way down, taking the submit button with it.
+				 */
 				$mb_last_category = null;
 
-				foreach ( $mb_breakdown['rows'] as $mb_row ) :
+				foreach ( $mb_breakdown['rows'] as $mb_basket_line ) :
 					// A heading row each time the category changes, so a long
 					// basket is scannable by range rather than one flat list.
-					if ( '' !== $mb_row['category'] && $mb_row['category'] !== $mb_last_category ) :
-						$mb_last_category = $mb_row['category'];
+					if ( '' !== $mb_basket_line['category'] && $mb_basket_line['category'] !== $mb_last_category ) :
+						$mb_last_category = $mb_basket_line['category'];
 						?>
 						<tr class="mb-sof-basket__group">
-							<th scope="colgroup" colspan="3"><?php echo esc_html( $mb_row['category'] ); ?></th>
+							<th scope="colgroup" colspan="3"><?php echo esc_html( $mb_basket_line['category'] ); ?></th>
 						</tr>
 						<?php
 					endif;
 					?>
 					<tr>
-						<td><?php echo esc_html( $mb_row['name'] ); ?></td>
-						<td class="mb-sof-basket__sku"><?php echo esc_html( $mb_row['sku'] ); ?></td>
-						<td class="mb-sof-basket__qty"><?php echo esc_html( number_format_i18n( $mb_row['qty'] ) ); ?></td>
+						<td><?php echo esc_html( $mb_basket_line['name'] ); ?></td>
+						<td class="mb-sof-basket__sku"><?php echo esc_html( $mb_basket_line['sku'] ); ?></td>
+						<td class="mb-sof-basket__qty"><?php echo esc_html( number_format_i18n( $mb_basket_line['qty'] ) ); ?></td>
 					</tr>
 				<?php endforeach; ?>
 			</tbody>
