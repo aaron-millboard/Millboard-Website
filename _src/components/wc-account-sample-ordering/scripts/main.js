@@ -43,8 +43,111 @@ function init(root) {
     });
 }
 
+/**
+ * A rep can collapse every section and still see where their order is.
+ *
+ * The widget only ever shows a section's total item count, so once the
+ * accordions are shut there is nothing to say which of the twenty-one holds
+ * the four boards already chosen. This writes an "n selected" tag beside that
+ * count.
+ *
+ * Bound to the ROOT, never to a stepper. The widget re-renders every accordion
+ * body on each keystroke of its search, so a listener on a stepper would be
+ * destroyed with it; the root survives and delegation still reaches them. The
+ * observer is for that re-render, the input and click listeners are for value
+ * changes, which mutate no attribute and so raise no mutation at all.
+ */
+const SELECTED_CLASS = 'mb-sof-selected';
+
+function tagSelected(root, template) {
+    root.querySelectorAll('.accordion').forEach((accordion) => {
+        let total = 0;
+
+        accordion.querySelectorAll('.stepper-qty').forEach((input) => {
+            const qty = parseInt(input.value, 10);
+
+            if (Number.isFinite(qty) && qty > 0) {
+                total += qty;
+            }
+        });
+
+        const meta = accordion.querySelector('.accordion-meta');
+
+        if (!meta) {
+            return;
+        }
+
+        let tag = meta.querySelector(`.${SELECTED_CLASS}`);
+
+        if (!total) {
+            if (tag) {
+                tag.remove();
+            }
+
+            return;
+        }
+
+        if (!tag) {
+            tag = document.createElement('span');
+            tag.className = SELECTED_CLASS;
+            // Before the toggle, so it reads "22 items  4 selected  +".
+            meta.insertBefore(tag, meta.firstChild);
+        }
+
+        const next = template.replace('%d', String(total));
+
+        // ⚠️ Only write when it actually changes. Assigning textContent always
+        // replaces the child text node, which the observer below sees as a
+        // mutation, which calls this again: an unconditional write here is an
+        // infinite loop that pegs a core for as long as the tab is open.
+        if (tag.textContent !== next) {
+            tag.textContent = next;
+        }
+    });
+}
+
+/**
+ * Say why Continue is disabled, rather than leaving a dead button.
+ */
+function placeEmptyNote(root, text) {
+    const bar = root.querySelector('.order-bar');
+
+    if (!bar || !text || bar.querySelector('.mb-sof-note')) {
+        return;
+    }
+
+    const note = document.createElement('span');
+
+    note.className = 'mb-sof-note';
+    note.textContent = text;
+    bar.appendChild(note);
+}
+
+function initExtras(widget) {
+    const root = widget.querySelector(ROOT);
+
+    if (!root) {
+        return;
+    }
+
+    const selectedTemplate = widget.dataset.selectedNote || '%d selected';
+    const recount = () => tagSelected(root, selectedTemplate);
+
+    placeEmptyNote(root, widget.dataset.emptyNote);
+    recount();
+
+    root.addEventListener('input', recount);
+    root.addEventListener('click', recount);
+
+    new MutationObserver(() => {
+        placeEmptyNote(root, widget.dataset.emptyNote);
+        recount();
+    }).observe(root, { childList: true, subtree: true });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll(ROOT).forEach(init);
+    document.querySelectorAll('.mb-account-samples__widget').forEach(initExtras);
 });
 
 // ---------------------------------------------------------------------------

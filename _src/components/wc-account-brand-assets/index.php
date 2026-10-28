@@ -18,6 +18,12 @@
 
 use Theme\Canto\Client;
 
+use function Granola\Components\WC_Account_Brand_Assets\ancestors;
+use function Granola\Components\WC_Account_Brand_Assets\fetch_page;
+use function Granola\Components\WC_Account_Brand_Assets\render_items;
+
+use const Granola\Components\WC_Account_Brand_Assets\AJAX_ACTION;
+
 $library_url = Client::is_configured() ? Client::library_url() : 'https://millboard.canto.global/';
 
 // phpcs:disable WordPress.Security.NonceVerification.Recommended -- read-only navigation.
@@ -25,42 +31,60 @@ $query = isset($_GET['mbcq']) ? sanitize_text_field(wp_unslash($_GET['mbcq'])) :
 $node_id = isset($_GET['mbca']) ? sanitize_text_field(wp_unslash($_GET['mbca'])) : '';
 $scheme = isset($_GET['mbcs']) ? sanitize_key(wp_unslash($_GET['mbcs'])) : '';
 $node_name = isset($_GET['mbcn']) ? sanitize_text_field(wp_unslash($_GET['mbcn'])) : '';
+// mbcx carries Canto's own opaque cursor, so paging works as plain links
+// before any JavaScript does. The script then takes the same link over.
+$start = isset($_GET['mbcx']) ? absint($_GET['mbcx']) : 0;
 // phpcs:enable
 
 $panel_url = wc_get_account_endpoint_url('brand-assets');
 
-$items = [];
-$found = 0;
-$more = false;
-$failed = false;
+$page = fetch_page($query, $node_id, $scheme, $start);
 
-if (Client::is_configured()) {
-    // Both calls already drop every asset this user may not see (see
-    // Theme\Canto\Access), so `found` counts visible assets only.
-    if ('' !== $query) {
-        $result = Client::search($query, 60);
-        $items = $result['results'];
-        $found = $result['found'];
-        $more = $result['more'];
-    } elseif ('' !== $node_id) {
-        $result = Client::contents($scheme ?: 'album', $node_id, 60);
-        $items = $result['results'];
-        $found = $result['found'];
-        $more = $result['more'];
-    } else {
-        $items = Client::tree();
-        $found = count($items);
+$items = $page['results'];
+$found = $page['found'];
+$more = $page['more'];
+$next_start = $page['next_start'];
+$failed = $page['failed'];
+
+// What a "show more" has to carry to land on the same listing, one page on.
+$more_args = ['mbcx' => $next_start];
+
+foreach (['mbcq' => $query, 'mbca' => $node_id, 'mbcs' => $scheme, 'mbcn' => $node_name] as $key => $value) {
+    if ('' !== $value) {
+        $more_args[$key] = $value;
     }
-
-    $failed = ('' === Client::token());
 }
 
 ?>
 
-<div class="mb-account-assets">
+<div
+    class="mb-account-assets"
+    data-mb-assets
+    data-endpoint="<?php echo esc_url(admin_url('admin-ajax.php')); ?>"
+    data-action="<?php echo esc_attr(AJAX_ACTION); ?>"
+    data-nonce="<?php echo esc_attr(wp_create_nonce(AJAX_ACTION)); ?>"
+    data-query="<?php echo esc_attr($query); ?>"
+    data-node="<?php echo esc_attr($node_id); ?>"
+    data-scheme="<?php echo esc_attr($scheme); ?>"
+    data-next="<?php echo esc_attr((string) $next_start); ?>"
+    data-more="<?php echo $more ? '1' : '0'; ?>"
+    <?php
+    // Every string the script shows comes from here, so it reaches Loco. A
+    // string built in the JS bundle never does, and this panel ships in six
+    // locales.
+    ?>
+    data-searching="<?php esc_attr_e('Searching…', 'granola'); ?>"
+    data-next-label="<?php esc_attr_e('Next', 'granola'); ?>"
+    data-failed="<?php esc_attr_e('We could not load those assets. Try again in a moment.', 'granola'); ?>"
+    <?php
+    /* translators: %1$d: page number. %2$d: number of assets on this page. %3$s: the search term. */
+    $count_template = __('Page %1$d &middot; %2$d shown for &ldquo;%3$s&rdquo;', 'granola');
+    ?>
+    data-count-template="<?php echo esc_attr($count_template); ?>"
+>
 
     <div class="mb-account-panel__head">
-        <h2 class="mb-account-panel__title"><?php esc_html_e('Brand assets', 'granola'); ?></h2>
+        <h2 class="mb-account-panel__title"><?php esc_html_e('Resources', 'granola'); ?></h2>
         <?php
         // The badge says who the panel is for. On a distributor's or
         // installer's screen "Millboard team" is simply wrong, so staff see
@@ -81,19 +105,33 @@ if (Client::is_configured()) {
 
     <?php if (!Client::is_configured() || $failed) : ?>
 
+        <?php
+        // "Open it directly" is only advice a member of staff can act on, so
+        // the wording and the button both follow who is looking. Telling a
+        // distributor to go to Canto when we cannot reach it sends them to a
+        // sign-in wall they have no account for, which reads as a second
+        // fault rather than a way round the first.
+        $staff = \Granola\Components\WC_Account\is_staff();
+        ?>
         <div class="mb-account-empty">
             <span class="mb-account-empty__rule" aria-hidden="true"></span>
-            <h3 class="mb-account-empty__title"><?php esc_html_e('Brand library unavailable', 'granola'); ?></h3>
+            <h3 class="mb-account-empty__title"><?php esc_html_e('Resources unavailable', 'granola'); ?></h3>
             <p class="mb-account-empty__body">
                 <?php
-                echo Client::is_configured()
-                    ? esc_html__('We could not reach Canto just now. The library itself is fine, so it is worth opening it directly.', 'granola')
-                    : esc_html__('The connection to Canto is not set up on this site yet.', 'granola');
+                if (!Client::is_configured()) {
+                    esc_html_e('The connection to Canto is not set up on this site yet.', 'granola');
+                } elseif ($staff) {
+                    esc_html_e('We could not reach Canto just now. The library itself is fine, so it is worth opening it directly.', 'granola');
+                } else {
+                    esc_html_e('We could not load the assets just now. Please try again shortly.', 'granola');
+                }
                 ?>
             </p>
-            <a class="mb-account-btn" href="<?php echo esc_url($library_url); ?>" target="_blank" rel="noopener">
-                <?php esc_html_e('Open the brand library', 'granola'); ?>
-            </a>
+            <?php if ($staff) : ?>
+                <a class="mb-account-btn" href="<?php echo esc_url($library_url); ?>" target="_blank" rel="noopener">
+                    <?php esc_html_e('Open the brand library', 'granola'); ?>
+                </a>
+            <?php endif; ?>
         </div>
 
     <?php else : ?>
@@ -113,21 +151,83 @@ if (Client::is_configured()) {
         </form>
 
         <div class="mb-assets__bar">
-            <p class="mb-assets__crumb">
+            <?php
+            /*
+             * The full path rather than a single way out. Going back one level
+             * from a four-deep album used to mean starting at the top and
+             * clicking down again, which is three clicks to undo one.
+             *
+             * A search has no place in the tree, so it keeps the plain link
+             * back to the top.
+             */
+            $crumbs = '' === $query ? ancestors($node_id) : [];
+            ?>
+            <nav class="mb-assets__crumb" aria-label="<?php esc_attr_e('Library path', 'granola'); ?>">
                 <?php if ('' !== $query || '' !== $node_id) : ?>
                     <a class="mb-account-back" href="<?php echo esc_url($panel_url); ?>">
                         <span aria-hidden="true">&lsaquo;</span>
                         <?php esc_html_e('All folders', 'granola'); ?>
                     </a>
-                <?php endif; ?>
-            </p>
 
-            <p class="mb-assets__count">
+                    <?php foreach ($crumbs as $crumb) : ?>
+                        <span class="mb-assets__crumb-sep" aria-hidden="true">/</span>
+                        <a
+                            class="mb-assets__crumb-link"
+                            href="<?php echo esc_url(add_query_arg([
+                                'mbca' => $crumb['id'],
+                                'mbcs' => 'folder',
+                                'mbcn' => $crumb['name'],
+                            ], $panel_url)); ?>"
+                        >
+                            <?php echo esc_html($crumb['name']); ?>
+                        </a>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </nav>
+
+            <?php
+            /*
+             * Grid or list. The choice is remembered per browser in the script,
+             * not stored against the account: it is a viewing preference, not
+             * data, and it should not follow someone onto a shared machine.
+             */
+            ?>
+            <div class="mb-assets__views" role="group" aria-label="<?php esc_attr_e('Layout', 'granola'); ?>">
+                <button
+                    type="button"
+                    class="mb-assets__view-toggle is-current"
+                    data-mb-layout="grid"
+                    aria-pressed="true"
+                >
+                    <?php esc_html_e('Grid', 'granola'); ?>
+                </button>
+                <button
+                    type="button"
+                    class="mb-assets__view-toggle"
+                    data-mb-layout="list"
+                    aria-pressed="false"
+                >
+                    <?php esc_html_e('List', 'granola'); ?>
+                </button>
+            </div>
+
+            <p class="mb-assets__count" data-mb-assets-count>
                 <?php
                 if ('' !== $query) {
-                    printf(
+                    // A page is a page, not a total: saying "24 results" when
+                    // Canto holds hundreds more would be a plain lie, and the
+                    // real total cannot be shown anyway (it counts assets this
+                    // person may not see, so it leaks how many there are).
+                    if ($more) {
+                        /* translators: %1$s: number of results shown so far, %2$s: the search term. */
+                        $count_text = esc_html__('Showing the first %1$s for &ldquo;%2$s&rdquo;', 'granola');
+                    } else {
                         /* translators: %1$s: number of results, %2$s: the search term. */
-                        esc_html__('%1$s results for &ldquo;%2$s&rdquo;', 'granola'),
+                        $count_text = esc_html__('%1$s results for &ldquo;%2$s&rdquo;', 'granola');
+                    }
+
+                    printf(
+                        $count_text, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- both branches are esc_html__().
                         esc_html(number_format_i18n($found)),
                         esc_html($query)
                     );
@@ -138,121 +238,66 @@ if (Client::is_configured()) {
             </p>
         </div>
 
-        <?php if (!$items) : ?>
+        <?php
+        // The empty state and the grid are BOTH always rendered, the empty one
+        // hidden when there is something to show. They used to be either/or,
+        // which meant a page that first loaded with no results carried no grid
+        // for the script to attach to, so live search was dead on exactly the
+        // screen you most want to search again from -- a shared or bookmarked
+        // URL for a term that no longer matches.
+        ?>
+        <div class="mb-account-empty" data-mb-assets-empty<?php echo $items ? ' hidden' : ''; ?>>
+            <span class="mb-account-empty__rule" aria-hidden="true"></span>
+            <h3 class="mb-account-empty__title"><?php esc_html_e('Nothing here', 'granola'); ?></h3>
+            <p class="mb-account-empty__body">
+                <?php esc_html_e('No assets matched. Try a different word, or browse the folders.', 'granola'); ?>
+            </p>
+        </div>
 
-            <div class="mb-account-empty">
-                <span class="mb-account-empty__rule" aria-hidden="true"></span>
-                <h3 class="mb-account-empty__title"><?php esc_html_e('Nothing here', 'granola'); ?></h3>
-                <p class="mb-account-empty__body">
-                    <?php esc_html_e('No assets matched. Try a different word, or browse the folders.', 'granola'); ?>
-                </p>
-            </div>
-
-        <?php else : ?>
-
-            <ul class="mb-assets__grid">
-                <?php foreach ($items as $item) :
-                    $item_scheme = (string) ($item['scheme'] ?? '');
-                    $name = (string) ($item['name'] ?? '');
-                    $id = (string) ($item['id'] ?? '');
-                    $is_container = in_array($item_scheme, ['folder', 'album'], true);
-                    $thumb = (string) ($item['url']['previewURI240'] ?? '');
-                    $original = (string) ($item['url']['directUrlOriginal'] ?? '');
-                    $detail = (string) ($item['url']['detail'] ?? '');
-                    ?>
-                    <li class="mb-assets__item<?php echo $is_container ? ' mb-assets__item--folder' : ''; ?>">
-                        <?php if ($is_container) : ?>
-
-                            <a class="mb-assets__link" href="<?php echo esc_url(add_query_arg([
-                                'mbca' => $id,
-                                'mbcs' => $item_scheme,
-                                'mbcn' => $name,
-                            ], $panel_url)); ?>">
-                                <span class="mb-assets__folder-mark" aria-hidden="true"></span>
-                                <span class="mb-assets__name"><?php echo esc_html($name); ?></span>
-                                <span class="mb-assets__meta">
-                                    <?php
-                                    echo 'folder' === $item_scheme
-                                        ? esc_html__('Folder', 'granola')
-                                        : esc_html__('Album', 'granola');
-                                    ?>
-                                </span>
-                            </a>
-
-                        <?php else : ?>
-
-                            <figure class="mb-assets__asset">
-                                <span class="mb-assets__thumb">
-                                    <?php if ($thumb) : ?>
-                                        <?php
-                                        // data-spai-excluded (past tense: that
-                                        // is the attribute ShortPixel's parser
-                                        // actually tests for) keeps these off
-                                        // its CDN. They are already optimised
-                                        // 240px thumbnails on a signed Canto
-                                        // URL, so re-proxying them adds a hop
-                                        // and caches a signature Canto can
-                                        // rotate, which would break them later.
-                                        ?>
-                                        <img
-                                            src="<?php echo esc_url($thumb); ?>"
-                                            alt=""
-                                            loading="lazy"
-                                            width="240"
-                                            height="160"
-                                            data-spai-excluded="true"
-                                        />
-                                    <?php endif; ?>
-                                </span>
-
-                                <figcaption class="mb-assets__caption">
-                                    <span class="mb-assets__name"><?php echo esc_html($name); ?></span>
-
-                                    <span class="mb-assets__actions">
-                                        <?php if ($original) : ?>
-                                            <a class="mb-account-link" href="<?php echo esc_url($original); ?>" download>
-                                                <?php esc_html_e('Download', 'granola'); ?>
-                                            </a>
-                                        <?php endif; ?>
-
-                                        <?php if ($detail) : ?>
-                                            <a class="mb-account-link" href="<?php echo esc_url($detail); ?>" target="_blank" rel="noopener">
-                                                <?php esc_html_e('In Canto', 'granola'); ?>
-                                            </a>
-                                        <?php endif; ?>
-                                    </span>
-                                </figcaption>
-                            </figure>
-
-                        <?php endif; ?>
-                    </li>
-                <?php endforeach; ?>
+        <ul class="mb-assets__grid" data-mb-assets-grid>
+                <?php
+                // Escaped field by field inside render_items(); the panel and
+                // the endpoint share it so a live result is the same markup.
+                // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+                echo render_items($items, $panel_url);
+                ?>
             </ul>
 
             <?php if ($more) : ?>
                 <p class="mb-assets__more">
                     <?php
-                    printf(
-                        /* translators: %s: number of assets shown. */
-                        esc_html__('Showing the first %s. Open the library for the rest.', 'granola'),
-                        esc_html(number_format_i18n(count($items)))
-                    );
+                    // A plain link, so paging works with no JavaScript at all.
+                    // The script binds to data-mb-assets-more and fetches the
+                    // same page instead of following it.
                     ?>
+                    <a
+                        class="mb-account-btn mb-account-btn--ghost"
+                        data-mb-assets-more
+                        href="<?php echo esc_url(add_query_arg($more_args, $panel_url)); ?>"
+                    >
+                        <?php esc_html_e('Show more', 'granola'); ?>
+                    </a>
                 </p>
-            <?php endif; ?>
-
         <?php endif; ?>
 
-        <p class="mb-account-embed-note">
-            <?php
-            printf(
-                /* translators: %1$s: opening link tag, %2$s: closing link tag. */
-                esc_html__('Looking for something not here? %1$sOpen the full library in Canto%2$s.', 'granola'),
-                '<a href="' . esc_url($library_url) . '" target="_blank" rel="noopener">',
-                '</a>'
-            );
-            ?>
-        </p>
+        <?php
+        // Staff only, for the same reason as the per-asset "In Canto" link:
+        // Canto's own interface needs a Canto login, which a distributor or
+        // installer does not have. Pointing them at it would only produce a
+        // sign-in wall and a support call.
+        ?>
+        <?php if (\Granola\Components\WC_Account\is_staff()) : ?>
+            <p class="mb-account-embed-note">
+                <?php
+                printf(
+                    /* translators: %1$s: opening link tag, %2$s: closing link tag. */
+                    esc_html__('Looking for something not here? %1$sOpen the full library in Canto%2$s.', 'granola'),
+                    '<a href="' . esc_url($library_url) . '" target="_blank" rel="noopener">',
+                    '</a>'
+                );
+                ?>
+            </p>
+        <?php endif; ?>
 
     <?php endif; ?>
 

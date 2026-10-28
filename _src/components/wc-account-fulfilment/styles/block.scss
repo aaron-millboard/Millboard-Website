@@ -1,0 +1,224 @@
+// =============================================================================
+// Sample fulfilment -- the queue, in My Account
+// =============================================================================
+// A working screen, not a brochure page. The agency reads down it all day, so
+// it is dense on purpose: small type, tight rows, and the three editable
+// fields visibly different from everything that is only there to be read.
+
+.mb-fulfilment {
+    /*
+     * Visually-hidden text, hidden.
+     *
+     * WooCommerce's own `.screen-reader-text` rule does not reach this markup,
+     * so all 76 of them rendered as visible text: the search label above the
+     * field, and "Empty, click to edit" printed in every one of the 75 cells.
+     * The cell copy comes from SampleFulfilment::column(), which is shared
+     * with wp-admin where wp-admin's stylesheet hides it -- so the fix belongs
+     * here rather than in the class.
+     */
+    .screen-reader-text {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        padding: 0;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        clip-path: inset(50%);
+        white-space: nowrap;
+        border: 0;
+    }
+
+    &__filters {
+        display: flex;
+        flex-wrap: wrap;
+
+        // NOT `stretch`. The hidden label makes this line taller than its
+        // visible contents, and a stretched button grew to 71px against a
+        // 51px field. Centring leaves the button its own 49px.
+        align-items: center;
+
+        gap: #{px-to-rem(12)};
+        margin-bottom: #{px-to-rem(16)};
+    }
+
+    &__search {
+        flex: 1 1 #{px-to-rem(240)};
+        display: flex;
+
+        // The theme gives every label `margin-bottom: 20px`. Centred against
+        // the button, that margin is still part of the box being centred, so
+        // it pushed the button exactly 10px below the field it sits beside.
+        margin: 0;
+
+        // Matched to .mb-account-btn: same 13px, same padding, and the same
+        // 1.15 line-height the button inherits, so both land on 49px and
+        // their tops agree.
+        input {
+            width: 100%;
+            padding: #{px-to-rem(16)};
+            font-family: inherit;
+            font-size: #{px-to-rem(13)};
+            line-height: 1.15;
+            color: var(--color--foreground);
+            background-color: transparent;
+            border: 1px solid var(--mbh-rule, rgba(47, 41, 46, 0.3));
+            border-radius: 0;
+
+            &:focus-visible {
+                outline: none;
+                border-color: var(--color--foreground);
+            }
+        }
+    }
+
+    &__toggle {
+        flex-basis: 100%;
+        font-size: #{px-to-rem(13)};
+    }
+
+    &__count {
+        margin: 0 0 #{px-to-rem(16)};
+        font-size: #{px-to-rem(13)};
+        opacity: 0.75;
+    }
+
+    // 1,387 orders at six columns. Let it scroll sideways on a narrow screen
+    // rather than crushing the address into one word per line.
+    &__scroll {
+        overflow-x: auto;
+    }
+
+    &__table {
+        width: 100%;
+        min-width: #{px-to-rem(900)};
+        border-collapse: collapse;
+        font-size: #{px-to-rem(13)};
+
+        th,
+        td {
+            text-align: left;
+            vertical-align: top;
+            padding: #{px-to-rem(10)} #{px-to-rem(8)};
+            border-bottom: 1px solid var(--color--border, rgba(47, 41, 46, 0.14));
+        }
+
+        thead th {
+            font-size: #{px-to-rem(11)};
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+    }
+
+    &__order {
+        white-space: nowrap;
+    }
+
+    &__number,
+    &__date,
+    &__status,
+    &__name,
+    &__address,
+    &__phone {
+        display: block;
+    }
+
+    &__number {
+        font-weight: 700;
+    }
+
+    &__date,
+    &__phone {
+        opacity: 0.7;
+    }
+
+    &__status {
+        margin-top: #{px-to-rem(4)};
+        font-size: #{px-to-rem(11)};
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    // Completed means the parcel has gone. Worth seeing at a glance when the
+    // dispatched orders are shown as well.
+    &__status--completed {
+        color: var(--color--brand-6, #34401a);
+        font-weight: 700;
+    }
+
+    &__address {
+        max-width: #{px-to-rem(260)};
+        white-space: normal;
+    }
+
+    &__items {
+        ul {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        li + li {
+            margin-top: #{px-to-rem(2)};
+        }
+    }
+
+    &__field {
+        min-width: #{px-to-rem(130)};
+    }
+
+    &__pages {
+        display: flex;
+        align-items: center;
+        gap: #{px-to-rem(16)};
+        margin-top: #{px-to-rem(16)};
+        font-size: #{px-to-rem(13)};
+    }
+
+    &__empty {
+        margin: #{px-to-rem(24)} 0;
+    }
+}
+
+// The editable cells.
+//
+// Shared markup with the admin list, which brings its own wp-admin-coloured
+// styles. These are the account's, and they have to say "you can type here"
+// without a permanent input in every cell, because a table of 75 live inputs
+// is slow to render and impossible to read.
+.mb-fulfilment .mb-fulfil-cell {
+    appearance: none;
+    width: 100%;
+    min-height: #{px-to-rem(32)};
+    padding: #{px-to-rem(4)} #{px-to-rem(8)};
+    font: inherit;
+    color: inherit;
+    text-align: left;
+    background-color: var(--color--brand-2, #f8f4f0);
+    border: 1px dashed var(--color--border, rgba(47, 41, 46, 0.3));
+    border-radius: 0;
+    cursor: text;
+
+    &:hover,
+    &:focus-visible {
+        border-style: solid;
+        border-color: var(--color--foreground);
+    }
+}
+
+.mb-fulfilment .mb-fulfil-empty {
+    opacity: 0.4;
+}
+
+.mb-fulfilment .mb-fulfil-input {
+    width: 100%;
+    min-height: #{px-to-rem(32)};
+    padding: #{px-to-rem(4)} #{px-to-rem(8)};
+    font: inherit;
+}
+
+.mb-fulfilment .mb-fulfil-busy {
+    opacity: 0.5;
+}

@@ -242,6 +242,17 @@ function mb_sof_render() {
 				'i18n'      => array(
 					'itemsOne'  => __( '%d item', 'granola' ),
 					'itemsMany' => __( '%d items', 'granola' ),
+					/*
+					 * MILLBOARD EDIT - the rest of the script's own copy.
+					 * Same reason as the count above: these are written by
+					 * JavaScript, so handing them over is the only way they
+					 * can be translated. Germany reads this tab, and
+					 * "Adding to basket…" in the middle of a German page is
+					 * the one a user sees at the moment they commit.
+					 */
+					'emptyCategory' => __( 'No products in this category yet.', 'granola' ),
+					'emptyBasket'   => __( 'Nothing selected yet.', 'granola' ),
+					'adding'        => __( 'Adding to basket…', 'granola' ),
 				),
 			)
 		) . ';',
