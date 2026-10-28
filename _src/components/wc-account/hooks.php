@@ -10,6 +10,17 @@
 
 namespace Granola\Components\WC_Account;
 
+use function Granola\Components\WC_Account_Fulfilment\can_work_fulfilment;
+
+/*
+ * The fulfilment panel owns its own endpoint slug. Aliased rather than
+ * redeclared, so the two components cannot drift to different URLs.
+ *
+ * Safe as a `use const`: every component's functions.php is required before
+ * any hooks.php runs, so the constant exists by the time this file is read.
+ */
+use const Granola\Components\WC_Account_Fulfilment\ENDPOINT as FULFILMENT_ENDPOINT;
+
 /**
  * Register the custom endpoints so /my-account/brand-assets/ resolves.
  *
@@ -18,7 +29,7 @@ namespace Granola\Components\WC_Account;
  * a panel. Flushing on every load would rewrite the option on all 13,000 hits.
  */
 \add_action('init', function (): void {
-    $endpoints = [ENDPOINT_BRAND_ASSETS, get_sample_endpoint()];
+    $endpoints = [ENDPOINT_BRAND_ASSETS, get_sample_endpoint(), FULFILMENT_ENDPOINT];
 
     foreach ($endpoints as $endpoint) {
         \add_rewrite_endpoint($endpoint, EP_PAGES);
@@ -64,6 +75,7 @@ namespace Granola\Components\WC_Account;
 \add_filter('woocommerce_get_query_vars', function (array $vars): array {
     $vars[ENDPOINT_BRAND_ASSETS] = ENDPOINT_BRAND_ASSETS;
     $vars[get_sample_endpoint()] = get_sample_endpoint();
+    $vars[FULFILMENT_ENDPOINT] = FULFILMENT_ENDPOINT;
 
     return $vars;
 });
@@ -159,6 +171,19 @@ namespace Granola\Components\WC_Account;
     }
 
     /*
+     * The German dispatch queue.
+     *
+     * German, in German, because the people reading it are German staff and a
+     * German fulfilment agency, and every field in it is already named after
+     * the spreadsheet column it replaces.
+     */
+    if (can_work_fulfilment()) {
+        $items[FULFILMENT_ENDPOINT] = \__('Musterversand', 'granola');
+    } else {
+        unset($items[FULFILMENT_ENDPOINT]);
+    }
+
+    /*
      * Aaron's order, 23 Oct 2026. Every item is named here rather than left
      * to fall through the merge below, because the merge keeps insertion
      * order and insertion order is an accident of how this function reads.
@@ -177,6 +202,7 @@ namespace Granola\Components\WC_Account;
         'deckplanner',
         'calculator',
         $sample,
+        FULFILMENT_ENDPOINT,
         ENDPOINT_BRAND_ASSETS,
     ];
 
@@ -210,6 +236,21 @@ namespace Granola\Components\WC_Account;
 \add_action('woocommerce_account_' . ENDPOINT_BRAND_ASSETS . '_endpoint', function (): void {
     echo can_view_brand_assets()
         ? \Granola\Component::get('wc-account-brand-assets')
+        : render_no_access();
+});
+
+/**
+ * The German dispatch queue.
+ *
+ * ⚠️ The capability check is the one that matters on this panel. It renders
+ * customer names, addresses and phone numbers to a third-party agency, so an
+ * account that reaches this URL without `edit_shop_orders` must see nothing at
+ * all -- and the menu hiding the link is not a gate, because a URL can be
+ * typed.
+ */
+\add_action('woocommerce_account_' . FULFILMENT_ENDPOINT . '_endpoint', function (): void {
+    echo can_work_fulfilment()
+        ? \Granola\Component::get('wc-account-fulfilment')
         : render_no_access();
 });
 
@@ -258,6 +299,7 @@ namespace Granola\Components\WC_Account;
  */
 \add_filter('woocommerce_endpoint_' . ENDPOINT_BRAND_ASSETS . '_title', fn(): string => \__('Resources', 'granola'));
 \add_filter('woocommerce_endpoint_' . ENDPOINT_SAMPLE_ORDERING . '_title', fn(): string => \__('Sample ordering', 'granola'));
+\add_filter('woocommerce_endpoint_' . FULFILMENT_ENDPOINT . '_title', fn(): string => \__('Musterversand', 'granola'));
 
 /**
  * Filter the orders list to the chosen tab.

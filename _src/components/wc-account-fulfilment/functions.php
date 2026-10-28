@@ -1,0 +1,243 @@
+<?php
+
+/**
+ * Sample fulfilment -- the queue, in My Account.
+ *
+ * The same three fields Theme\WooCommerce\SampleFulfilment puts on the orders
+ * list, rendered where the agency can reach them without a wp-admin login.
+ * That is the whole reason this exists: the agency is a supplier under an NDA,
+ * not a member of staff, and nobody wants them behind the dashboard.
+ *
+ * ⚠️ This does NOT re-implement saving. Every edit posts to the SAME
+ * `mb_fulfil_inline` action the admin screen uses, so the rule that entering a
+ * dispatch date completes the order -- and the guard that stops 1,387
+ * retrospective e-mails -- lives in one place and cannot drift. Read
+ * SampleFulfilment::apply() before changing anything here.
+ */
+
+namespace Granola\Components\WC_Account_Fulfilment;
+
+use Theme\WooCommerce\SampleFulfilment;
+
+/** The account endpoint, so /my-account/fulfilment/ resolves. */
+const ENDPOINT = 'fulfilment';
+
+/**
+ * Rows per page.
+ *
+ * 774 German orders on staging, 1,387 on production. The admin list this
+ * replaces had WooCommerce's own paging; a bespoke table has to bring its own
+ * or it is unusable on day one.
+ */
+const PER_PAGE = 25;
+
+/**
+ * Where the queue exists at all.
+ *
+ * Germany, because Germany sells samples only, has no Saltbox key and has
+ * always been fulfilled off a spreadsheet. Everywhere else an order reaches
+ * SAP and this panel would be noise.
+ */
+const SITES = ['/de-de/'];
+
+/** Switch another market on without a deploy. */
+const OPTION = 'millboard_fulfilment_enabled';
+
+/**
+ * Query arguments, read off the URL.
+ *
+ * Plain `$_GET`, so paging and searching work as links before any JavaScript
+ * does, exactly as the Resources panel does it.
+ *
+ * @return array{search:string,outstanding:bool,page:int}
+ */
+function request(): array
+{
+    // phpcs:disable WordPress.Security.NonceVerification.Recommended -- read-only navigation.
+    return [
+        'search' => isset($_GET['mbfq']) ? \sanitize_text_field(\wp_unslash($_GET['mbfq'])) : '',
+        // Outstanding-only is the DEFAULT, and `mbfall=1` turns it off. A
+        // fulfilment queue whose first page is three years of completed
+        // parcels is not a queue.
+        'outstanding' => empty($_GET['mbfall']),
+        'page' => \max(1, isset($_GET['mbfp']) ? \absint($_GET['mbfp']) : 1),
+    ];
+    // phpcs:enable
+}
+
+/**
+ * Is this a market with a fulfilment queue?
+ */
+function is_fulfilment_site(): bool
+{
+    if (!\is_multisite()) {
+        return true;
+    }
+
+    $site = \get_blog_details(\get_current_blog_id());
+    $path = $site ? \trailingslashit((string) $site->path) : '/';
+
+    $sites = SITES;
+
+    if ('yes' === \get_option(OPTION)) {
+        $sites[] = $path;
+    }
+
+    return \in_array($path, \apply_filters('millboard_fulfilment_sites', $sites), true);
+}
+
+/**
+ * May this user work the queue?
+ *
+ * `edit_shop_orders` and nothing new, deliberately. It is the capability the
+ * agency's role was given, the one German staff already hold, and the one
+ * `mb_fulfil_inline` checks before it writes. Inventing a second capability
+ * here would mean the panel and the save path could disagree about who is
+ * allowed, and the way they would disagree is the panel showing someone a
+ * table of customer addresses they cannot actually use.
+ */
+function can_work_fulfilment(?int $user_id = null): bool
+{
+    if (!is_fulfilment_site()) {
+        return false;
+    }
+
+    return null === $user_id
+        ? \current_user_can('edit_shop_orders')
+        : \user_can($user_id, 'edit_shop_orders');
+}
+
+/**
+ * One page of the queue.
+ *
+ * @param array{search:string,outstanding:bool,page:int} $request
+ * @return array{orders:array<int,\WC_Order>,total:int,pages:int}
+ */
+function page_of_orders(array $request): array
+{
+    $args = [
+        'limit' => PER_PAGE,
+        'paged' => $request['page'],
+        'paginate' => true,
+        'status' => \array_keys(\wc_get_order_statuses()),
+        'orderby' => 'date',
+        'order' => 'DESC',
+    ];
+
+    if ('' !== $request['search']) {
+        $args['s'] = $request['search'];
+    }
+
+    if ($request['outstanding']) {
+        /*
+         * Not yet dispatched: no date, or a date that was cleared.
+         *
+         * Both halves are needed. An order that has never been touched has no
+         * meta row at all, and one whose date was deleted has an empty one,
+         * and only testing for the second would hide every order nobody has
+         * opened yet -- which is the entire queue.
+         */
+        $args['meta_query'] = [
+            'relation' => 'OR',
+            [
+                'key' => SampleFulfilment::META_DISPATCHED_ON,
+                'compare' => 'NOT EXISTS',
+            ],
+            [
+                'key' => SampleFulfilment::META_DISPATCHED_ON,
+                'value' => '',
+                'compare' => '=',
+            ],
+        ];
+    }
+
+    $result = \wc_get_orders($args);
+
+    // `paginate` gives an object; anything else means the query fell back, and
+    // an empty table beats a fatal.
+    if (!\is_object($result) || !isset($result->orders)) {
+        return ['orders' => [], 'total' => 0, 'pages' => 0];
+    }
+
+    return [
+        'orders' => \array_filter((array) $result->orders, static fn($o): bool => $o instanceof \WC_Order),
+        'total' => (int) ($result->total ?? 0),
+        'pages' => (int) ($result->max_num_pages ?? 0),
+    ];
+}
+
+/**
+ * The panel's own URL with one argument changed.
+ *
+ * Keeps the search term while paging, and the page while searching, without
+ * every link in the template rebuilding the whole query string.
+ *
+ * @param array<string,string|int|null> $args
+ */
+function panel_url(array $args = []): string
+{
+    $base = \wc_get_account_endpoint_url(ENDPOINT);
+    $current = request();
+
+    $query = \array_filter(
+        \array_merge(
+            [
+                'mbfq' => $current['search'],
+                'mbfall' => $current['outstanding'] ? null : 1,
+                'mbfp' => $current['page'] > 1 ? $current['page'] : null,
+            ],
+            $args
+        ),
+        static fn($v): bool => null !== $v && '' !== $v
+    );
+
+    return $query ? \add_query_arg($query, $base) : $base;
+}
+
+/**
+ * The customer, as one line.
+ *
+ * ⚠️ German customer data, shown to an external agency. That is covered by the
+ * DPIA and NDA already in place for them, and it is the minimum the job needs:
+ * you cannot post a parcel without a name and an address.
+ */
+function customer_line(\WC_Order $order): string
+{
+    $name = \trim($order->get_formatted_billing_full_name());
+
+    if ('' === $name) {
+        $name = \trim((string) $order->get_billing_company());
+    }
+
+    return '' !== $name ? $name : \__('No name on the order', 'granola');
+}
+
+/**
+ * The shipping address, flattened for a table cell.
+ */
+function address_line(\WC_Order $order): string
+{
+    $address = $order->get_formatted_shipping_address();
+
+    if ('' === (string) $address) {
+        $address = $order->get_formatted_billing_address();
+    }
+
+    return \trim(\preg_replace('/\s*<br\s*\/?>\s*/i', ', ', (string) $address) ?? '');
+}
+
+/**
+ * What was ordered, as "3 x Enhanced Grain …" lines.
+ *
+ * @return array<int,string>
+ */
+function item_lines(\WC_Order $order): array
+{
+    $lines = [];
+
+    foreach ($order->get_items() as $item) {
+        $lines[] = \sprintf('%d &times; %s', (int) $item->get_quantity(), $item->get_name());
+    }
+
+    return $lines;
+}
