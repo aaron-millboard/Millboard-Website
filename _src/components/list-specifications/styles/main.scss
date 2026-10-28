@@ -35,6 +35,8 @@
         margin: 0;
     }
 
+    // (The NBS Source button's styles live in wc-single-product/styles, which is excluded from unused-CSS removal.)
+
     &__specifications {
         display: grid;
         column-gap: var(--space--xl);
