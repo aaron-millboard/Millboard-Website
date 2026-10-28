@@ -518,6 +518,18 @@
 // numbers. This is the list behind them, editable in place: the rows ARE the
 // catalogue's rows, so a change here is a change to the order.
 
+// Both buttons together on the right, so the bar reads stats on one side and
+// what you can do on the other. The bar is already space-between, so grouping
+// them is all it takes.
+.order-bar-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: #{px-to-rem(12)};
+    flex-shrink: 0;
+}
+
 // Continue's twin, outlined: same box and same lettering, but drawn in Spring
 // Wood on the bar's Sustainable Green instead of filled, so the two read as a
 // pair without this one competing for the press. Spring Wood on Sustainable
