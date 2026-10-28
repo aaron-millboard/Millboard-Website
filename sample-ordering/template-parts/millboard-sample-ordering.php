@@ -129,13 +129,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 						<strong id="bar-lines">0</strong>
 						<?php esc_html_e( 'Product lines', 'granola' ); ?>
 					</div>
+				</div>
+				<div class="order-bar-actions">
 					<button type="button" class="btn-view-basket" id="btn-view-basket" disabled>
 						<?php esc_html_e( 'View full basket', 'granola' ); ?>
 					</button>
+					<button type="submit" class="btn-primary" id="btn-submit" disabled>
+						<?php esc_html_e( 'Continue to delivery details', 'granola' ); ?>
+					</button>
 				</div>
-				<button type="submit" class="btn-primary" id="btn-submit" disabled>
-					<?php esc_html_e( 'Continue to delivery details', 'granola' ); ?>
-				</button>
 			</div>
 
 		</form>
