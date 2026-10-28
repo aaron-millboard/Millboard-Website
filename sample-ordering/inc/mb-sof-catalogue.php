@@ -775,3 +775,73 @@ function mb_sof_coverage() {
 		'by_category' => $by_category,
 	);
 }
+
+/**
+ * A sample selection, line by line, for someone to check before they commit.
+ *
+ * Sales order in large quantities and the step-two summary only told them
+ * "12 product lines, 340 units", which is a number to trust rather than a list
+ * to check. This turns the validated basket into the rows behind that number.
+ *
+ * Built from the cached catalogue rather than wc_get_product() per line: a
+ * fifty-line basket would otherwise be fifty product objects hydrated to read
+ * two fields off each.
+ *
+ * An id with no catalogue row still gets a row, labelled by its id. Those
+ * should not happen, since the basket is validated against the catalogue
+ * before it reaches here, but silently dropping a line from a list whose whole
+ * job is "check what you ordered" would be the worst possible failure.
+ *
+ * @param array<int,int> $lines product/variation id => quantity.
+ * @return array{rows: array<int,array{name: string, sku: string, category: string, qty: int}>, units: int, lines: int}
+ */
+function mb_sof_basket_breakdown( array $lines ) {
+	$catalogue = array();
+
+	foreach ( mb_sof_get_catalogue() as $row ) {
+		$catalogue[ (int) $row['id'] ] = $row;
+	}
+
+	$rows  = array();
+	$units = 0;
+
+	foreach ( $lines as $id => $qty ) {
+		$id  = (int) $id;
+		$qty = (int) $qty;
+
+		if ( $qty < 1 ) {
+			continue;
+		}
+
+		$item = isset( $catalogue[ $id ] ) ? $catalogue[ $id ] : null;
+
+		$rows[] = array(
+			'name'     => $item
+				? (string) $item['name']
+				/* translators: %d: the product id of a sample line that is no longer in the catalogue. */
+				: sprintf( __( 'Product #%d', 'granola' ), $id ),
+			'sku'      => $item ? (string) $item['sku'] : '',
+			'category' => $item && ! empty( $item['category'] ) ? (string) $item['category'] : '',
+			'qty'      => $qty,
+		);
+
+		$units += $qty;
+	}
+
+	// Grouped by category, then by name, so a long basket reads like the
+	// catalogue it was picked from rather than in id order.
+	usort(
+		$rows,
+		static function ( $a, $b ) {
+			$cat = strcasecmp( $a['category'], $b['category'] );
+
+			return 0 !== $cat ? $cat : strcasecmp( $a['name'], $b['name'] );
+		}
+	);
+
+	return array(
+		'rows'  => $rows,
+		'units' => $units,
+		'lines' => count( $rows ),
+	);
+}

@@ -415,3 +415,100 @@
         max-width: none;
     }
 }
+
+// ---- full basket dialog ----------------------------------------
+// Sales order in large quantities and the summary only gave them a count.
+// This is the list behind it, so they can check before committing.
+.mb-sof-basket__open {
+    appearance: none;
+    background: none;
+    border: 0;
+    padding: 0;
+    font: inherit;
+    cursor: pointer;
+}
+
+.mb-sof-basket {
+    // A native <dialog>, so Escape, the backdrop and focus trapping are the
+    // browser's job rather than ours.
+    width: min(#{px-to-rem(760)}, calc(100vw - #{px-to-rem(32)}));
+    max-height: calc(100vh - #{px-to-rem(64)});
+    overflow: auto;
+    padding: #{px-to-rem(24)};
+    border: 0;
+    background: var(--mba-paper, #fff);
+
+    &::backdrop {
+        background: rgba(0, 0, 0, 0.55);
+    }
+}
+
+.mb-sof-basket__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: #{px-to-rem(16)};
+    margin-bottom: #{px-to-rem(16)};
+}
+
+.mb-sof-basket__title {
+    margin: 0;
+}
+
+.mb-sof-basket__close {
+    appearance: none;
+    background: none;
+    border: 0;
+    font-size: #{px-to-rem(26)};
+    line-height: 1;
+    cursor: pointer;
+}
+
+.mb-sof-basket__table {
+    width: 100%;
+    border-collapse: collapse;
+
+    th,
+    td {
+        text-align: left;
+        padding: #{px-to-rem(8)} #{px-to-rem(4)};
+        border-bottom: 1px solid var(--mba-rule, rgba(47, 41, 46, 0.14));
+    }
+
+    tfoot th,
+    tfoot td {
+        border-bottom: 0;
+        border-top: 2px solid var(--mba-rule, rgba(47, 41, 46, 0.14));
+    }
+}
+
+// A category heading inside the table, so a long basket reads by range.
+.mb-sof-basket__group th {
+    padding-top: #{px-to-rem(18)};
+    font-size: var(--mba-fs-micro);
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--mba-muted, #5a5458);
+    border-bottom: 0;
+}
+
+.mb-sof-basket__sku {
+    font-variant-numeric: tabular-nums;
+    color: var(--mba-muted, #5a5458);
+}
+
+// Right-aligned and tabular so quantities line up and can be read down the
+// column, which is the whole point of showing them.
+.mb-sof-basket__qty {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.mb-sof-basket__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: #{px-to-rem(12)};
+    margin-top: #{px-to-rem(20)};
+}
