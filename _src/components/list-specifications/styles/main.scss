@@ -35,32 +35,7 @@
         margin: 0;
     }
 
-    // NBS Source button: their teal, white text, their logo mark.
-    &__nbs-source {
-        margin-top: var(--space--xs);
-
-        a {
-            display: inline-flex;
-            align-items: center;
-            gap: var(--space--2xs);
-            background-color: #007d9e;
-            border-color: #007d9e;
-            color: #fff;
-
-            svg {
-                flex: none;
-                width: auto;
-                height: 1.25rem;
-            }
-
-            &:hover,
-            &:focus-visible {
-                background-color: #006580;
-                border-color: #006580;
-                color: #fff;
-            }
-        }
-    }
+    // (The NBS Source button's styles live in wc-single-product/styles, which is excluded from unused-CSS removal.)
 
     &__specifications {
         display: grid;
