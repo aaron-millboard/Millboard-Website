@@ -14,12 +14,14 @@
 
 defined('ABSPATH') || exit;
 
+use function Granola\Components\WC_Account\account_image;
 use function Granola\Components\WC_Account\can_order_samples;
 use function Granola\Components\WC_Account\get_order_steps;
 use function Granola\Components\WC_Account\get_order_summary;
 use function Granola\Components\WC_Account\get_trackable_order;
 use function Granola\Components\WC_Account\get_visible_statuses;
 use function Granola\Components\WC_Account\is_closed;
+use function Granola\Components\WC_Account\order_shade_chips;
 
 $user_id = get_current_user_id();
 $customer = new WC_Customer($user_id);
@@ -93,16 +95,34 @@ $quick_actions = [
 
 <div class="mb-account-dash">
 
-    <h2 class="mb-account-dash__greeting">
-        <?php
-        /* translators: %s: the customer's first name. */
-        printf(esc_html__('Hello, %s', 'granola'), esc_html($customer->get_first_name() ?: $customer->get_display_name()));
-        ?>
-    </h2>
+    <div class="mb-account-dash__welcome">
 
-    <p class="mb-account-dash__intro">
-        <?php esc_html_e('Everything for your Millboard projects in one place: recent orders, the addresses we deliver to, and the details we hold for you.', 'granola'); ?>
-    </p>
+        <div class="mb-account-dash__welcome-text">
+            <h2 class="mb-account-dash__greeting">
+                <?php
+                /* translators: %s: the customer's first name. */
+                printf(esc_html__('Hello, %s', 'granola'), esc_html($customer->get_first_name() ?: $customer->get_display_name()));
+                ?>
+            </h2>
+
+            <p class="mb-account-dash__intro">
+                <?php esc_html_e('Everything for your Millboard projects in one place: recent orders, the addresses we deliver to, and the details we hold for you.', 'granola'); ?>
+            </p>
+        </div>
+
+        <?php
+        // 4:3, beside the greeting. Decorative, so it is hidden from assistive
+        // technology entirely rather than described: the heading next to it
+        // already says whose account this is.
+        ?>
+        <figure class="mb-account-figure mb-account-dash__hero" aria-hidden="true">
+            <?php
+            // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside account_image().
+            echo account_image('dash-hero', 'Lifestyle photograph: a finished Millboard deck in warm evening light');
+            ?>
+        </figure>
+
+    </div>
 
     <div class="mb-account-dash__actions">
         <?php foreach ($quick_actions as $action) : ?>
@@ -170,9 +190,14 @@ $quick_actions = [
             <div class="mb-account-orders__list">
                 <?php foreach ($recent_orders as $order) : ?>
                     <a class="mb-account-orders__row" href="<?php echo esc_url($order->get_view_order_url()); ?>">
-                        <span class="mb-account-orders__id">#<?php echo esc_html($order->get_order_number()); ?></span>
-                        <span class="mb-account-orders__date"><?php echo esc_html(wc_format_datetime($order->get_date_created(), 'j F Y')); ?></span>
-                        <span class="mb-account-orders__summary"><?php echo wp_kses_post(get_order_summary($order)); ?></span>
+                        <?php echo wp_kses_post(order_shade_chips($order)); ?>
+                        <span class="mb-account-orders__meta">
+                            <span class="mb-account-orders__line">
+                                <span class="mb-account-orders__id">#<?php echo esc_html($order->get_order_number()); ?></span>
+                                <span class="mb-account-orders__date"><?php echo esc_html(wc_format_datetime($order->get_date_created(), 'j F Y')); ?></span>
+                            </span>
+                            <span class="mb-account-orders__summary"><?php echo wp_kses_post(get_order_summary($order)); ?></span>
+                        </span>
                         <span class="mb-account-orders__status">
                             <span class="mb-account-pill<?php echo is_closed($order) ? ' mb-account-pill--closed' : ''; ?>">
                                 <?php echo esc_html(wc_get_order_status_name($order->get_status())); ?>
