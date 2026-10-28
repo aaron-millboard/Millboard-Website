@@ -381,7 +381,21 @@ function nav_groups(array $endpoints): array
         $endpoints,
         \array_flip([
             ENDPOINT_BRAND_ASSETS,
-            ENDPOINT_SAMPLE_ORDERING,
+
+            /*
+             * get_sample_endpoint(), not the constant.
+             *
+             * The slug is per site so France can have a French URL, and the
+             * menu is keyed by whatever that slug is. Naming the English
+             * constant here would drop Sample ordering out of Tools and into
+             * "Your account" on any market that translated its slug.
+             */
+            get_sample_endpoint(),
+
+            // The German dispatch queue. A working tool, and it belongs
+            // beside the one that creates the orders it works.
+            \Granola\Components\WC_Account_Fulfilment\ENDPOINT,
+
             'projects',
             'calculator',
             'visualiser',
