@@ -40,6 +40,21 @@ function filter_args(array $args): ?array
     }
 
     // -------------------------------------------------------------------------
+    // NBS Source link for the product this page is about (UK products carry the field).
+    // Shown once, under the heading of the first specifications block. Only a plain https URL is accepted.
+    // -------------------------------------------------------------------------
+    static $nbs_shown = false;
+
+    if (!$nbs_shown && \is_singular('product')) {
+        $nbs_source_url = \get_field('nbs_source_url', \get_queried_object_id());
+
+        if (is_string($nbs_source_url) && str_starts_with($nbs_source_url, 'https://')) {
+            $args['nbs_source_url'] = \esc_url_raw($nbs_source_url);
+            $nbs_shown = true;
+        }
+    }
+
+    // -------------------------------------------------------------------------
     // Return the filtered args.
     // -------------------------------------------------------------------------
     return $args;
