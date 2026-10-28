@@ -63,6 +63,13 @@
     return escapeHtml(text).replace(new RegExp('(' + safe + ')', 'gi'), '<em>$1</em>');
   }
 
+  // MILLBOARD EDIT - the script's own copy, translated server-side and handed
+  // over in MB_SOF_DATA.i18n, the same way the accordion count already was.
+  // Falls back to the English so a missing key cannot render blank.
+  function t(key, fallback) {
+    return (DATA.i18n || {})[key] || fallback;
+  }
+
   function productsIn(category) {
     return CATALOGUE.filter(function (p) { return p.category === category; });
   }
@@ -106,7 +113,9 @@
 
   function bodyHtml(products, query) {
     if (products.length === 0) {
-      return '<div class="empty-category">No products in this category yet.</div>';
+      return '<div class="empty-category">'
+        + escapeHtml(t('emptyCategory', 'No products in this category yet.'))
+        + '</div>';
     }
     return products.map(function (p) { return productRowHtml(p, query); }).join('');
   }
@@ -257,7 +266,9 @@
 
     if (chosen.length === 0) {
       byId('basket-dialog-body').innerHTML =
-        '<p class="basket-dialog-empty">Nothing selected yet.</p>';
+        '<p class="basket-dialog-empty">'
+          + escapeHtml(t('emptyBasket', 'Nothing selected yet.'))
+          + '</p>';
       return;
     }
 
@@ -398,7 +409,7 @@
     submitting = true;
     var btn = byId('btn-submit');
     btn.disabled = true;
-    btn.textContent = 'Adding to basket…';
+    btn.textContent = t('adding', 'Adding to basket…');
   });
 
   // ── Init ───────────────────────────────────────────────────────────────────
