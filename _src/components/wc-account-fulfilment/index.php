@@ -7,6 +7,17 @@
  * agency fills in. The three cells are rendered by SampleFulfilment::column(),
  * the same call the admin list makes, so both screens produce identical markup
  * and the one editor script drives both.
+ *
+ * ⚠️ The copy is written in German, not English awaiting a translation.
+ * Everyone who can open this panel is German -- Millboard's own staff on
+ * de-de and the fulfilment agency -- and every field in it is already named
+ * after the spreadsheet column it replaces. A single-market screen does not
+ * need a translation round-trip to be readable by the only people allowed in.
+ *
+ * The consequence, so nobody is surprised by it: switching another market on
+ * through `millboard_fulfilment_enabled` or the `millboard_fulfilment_sites`
+ * filter would show that market German. If a second market ever wants this,
+ * these strings move to English source and go through Loco.
  */
 
 use Theme\WooCommerce\SampleFulfilment;
@@ -46,31 +57,31 @@ SampleFulfilment::enqueue_editor();
 		<?php endif; ?>
 
 		<label class="mb-fulfilment__search">
-			<span class="screen-reader-text"><?php esc_html_e('Search orders', 'granola'); ?></span>
+			<span class="screen-reader-text"><?php esc_html_e('Bestellungen durchsuchen', 'granola'); ?></span>
 			<input
 				type="search"
 				name="mbfq"
 				value="<?php echo esc_attr($mb_request['search']); ?>"
-				placeholder="<?php esc_attr_e('Name, e-mail, town or order number', 'granola'); ?>"
+				placeholder="<?php esc_attr_e('Name, E-Mail, Ort oder Bestellnummer', 'granola'); ?>"
 			>
 		</label>
 
-		<button type="submit" class="mb-fulfilment__go"><?php esc_html_e('Search', 'granola'); ?></button>
+		<button type="submit" class="mb-account-btn"><?php esc_html_e('Suchen', 'granola'); ?></button>
 
 		<?php if ('' !== $mb_request['search']) : ?>
-			<a class="mb-fulfilment__clear" href="<?php echo esc_url(panel_url(['mbfq' => null, 'mbfp' => null])); ?>">
-				<?php esc_html_e('Clear', 'granola'); ?>
+			<a class="mb-account-btn mb-account-btn--ghost" href="<?php echo esc_url(panel_url(['mbfq' => null, 'mbfp' => null])); ?>">
+				<?php esc_html_e('Zurücksetzen', 'granola'); ?>
 			</a>
 		<?php endif; ?>
 
 		<span class="mb-fulfilment__toggle">
 			<?php if ($mb_request['outstanding']) : ?>
-				<a href="<?php echo esc_url(panel_url(['mbfall' => 1, 'mbfp' => null])); ?>">
-					<?php esc_html_e('Show dispatched as well', 'granola'); ?>
+				<a class="mb-account-link" href="<?php echo esc_url(panel_url(['mbfall' => 1, 'mbfp' => null])); ?>">
+					<?php esc_html_e('Versendete ebenfalls anzeigen', 'granola'); ?>
 				</a>
 			<?php else : ?>
-				<a href="<?php echo esc_url(panel_url(['mbfall' => null, 'mbfp' => null])); ?>">
-					<?php esc_html_e('Show only what still needs sending', 'granola'); ?>
+				<a class="mb-account-link" href="<?php echo esc_url(panel_url(['mbfall' => null, 'mbfp' => null])); ?>">
+					<?php esc_html_e('Nur offene Bestellungen anzeigen', 'granola'); ?>
 				</a>
 			<?php endif; ?>
 		</span>
@@ -78,15 +89,18 @@ SampleFulfilment::enqueue_editor();
 
 	<p class="mb-fulfilment__count">
 		<?php
-		printf(
-			/* translators: %s: a number of orders. */
-			esc_html(_n('%s order', '%s orders', $mb_page['total'], 'granola')),
-			esc_html(number_format_i18n($mb_page['total']))
-		);
-
 		if ($mb_request['outstanding']) {
-			echo ' ';
-			esc_html_e('still to send.', 'granola');
+			printf(
+				/* translators: %s: a number of orders. */
+				esc_html(_n('%s Bestellung noch zu versenden.', '%s Bestellungen noch zu versenden.', $mb_page['total'], 'granola')),
+				esc_html(number_format_i18n($mb_page['total']))
+			);
+		} else {
+			printf(
+				/* translators: %s: a number of orders. */
+				esc_html(_n('%s Bestellung.', '%s Bestellungen.', $mb_page['total'], 'granola')),
+				esc_html(number_format_i18n($mb_page['total']))
+			);
 		}
 		?>
 	</p>
@@ -96,11 +110,11 @@ SampleFulfilment::enqueue_editor();
 		<p class="mb-fulfilment__empty">
 			<?php
 			if ('' !== $mb_request['search']) {
-				esc_html_e('Nothing matches that search.', 'granola');
+				esc_html_e('Keine Treffer für diese Suche.', 'granola');
 			} elseif ($mb_request['outstanding']) {
-				esc_html_e('Nothing waiting. Every order has a dispatch date.', 'granola');
+				esc_html_e('Nichts offen. Alle Bestellungen haben ein Versanddatum.', 'granola');
 			} else {
-				esc_html_e('No orders yet.', 'granola');
+				esc_html_e('Noch keine Bestellungen.', 'granola');
 			}
 			?>
 		</p>
@@ -168,10 +182,10 @@ SampleFulfilment::enqueue_editor();
 		</div>
 
 		<?php if ($mb_page['pages'] > 1) : ?>
-			<nav class="mb-fulfilment__pages" aria-label="<?php esc_attr_e('Order pages', 'granola'); ?>">
+			<nav class="mb-fulfilment__pages" aria-label="<?php esc_attr_e('Seiten', 'granola'); ?>">
 				<?php if ($mb_request['page'] > 1) : ?>
-					<a href="<?php echo esc_url(panel_url(['mbfp' => $mb_request['page'] - 1])); ?>">
-						<?php esc_html_e('Previous', 'granola'); ?>
+					<a class="mb-account-link" href="<?php echo esc_url(panel_url(['mbfp' => $mb_request['page'] - 1])); ?>">
+						<?php esc_html_e('Zurück', 'granola'); ?>
 					</a>
 				<?php endif; ?>
 
@@ -179,7 +193,7 @@ SampleFulfilment::enqueue_editor();
 					<?php
 					printf(
 						/* translators: 1: current page number, 2: total pages. */
-						esc_html__('Page %1$s of %2$s', 'granola'),
+						esc_html__('Seite %1$s von %2$s', 'granola'),
 						esc_html(number_format_i18n($mb_request['page'])),
 						esc_html(number_format_i18n($mb_page['pages']))
 					);
@@ -187,8 +201,8 @@ SampleFulfilment::enqueue_editor();
 				</span>
 
 				<?php if ($mb_request['page'] < $mb_page['pages']) : ?>
-					<a href="<?php echo esc_url(panel_url(['mbfp' => $mb_request['page'] + 1])); ?>">
-						<?php esc_html_e('Next', 'granola'); ?>
+					<a class="mb-account-link" href="<?php echo esc_url(panel_url(['mbfp' => $mb_request['page'] + 1])); ?>">
+						<?php esc_html_e('Weiter', 'granola'); ?>
 					</a>
 				<?php endif; ?>
 			</nav>

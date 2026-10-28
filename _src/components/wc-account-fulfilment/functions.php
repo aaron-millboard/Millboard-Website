@@ -209,7 +209,7 @@ function customer_line(\WC_Order $order): string
         $name = \trim((string) $order->get_billing_company());
     }
 
-    return '' !== $name ? $name : \__('No name on the order', 'granola');
+    return '' !== $name ? $name : \__('Kein Name auf der Bestellung', 'granola');
 }
 
 /**
