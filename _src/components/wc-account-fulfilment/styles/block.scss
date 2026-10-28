@@ -32,7 +32,12 @@
     &__filters {
         display: flex;
         flex-wrap: wrap;
-        align-items: stretch;
+
+        // NOT `stretch`. The hidden label makes this line taller than its
+        // visible contents, and a stretched button grew to 71px against a
+        // 51px field. Centring leaves the button its own 49px.
+        align-items: center;
+
         gap: #{px-to-rem(12)};
         margin-bottom: #{px-to-rem(16)};
     }
@@ -41,15 +46,20 @@
         flex: 1 1 #{px-to-rem(240)};
         display: flex;
 
-        // Matched to .mb-account-btn beside it: same 13px, same box, so the
-        // field and the button line up instead of the button towering over a
-        // default-height input.
+        // The theme gives every label `margin-bottom: 20px`. Centred against
+        // the button, that margin is still part of the box being centred, so
+        // it pushed the button exactly 10px below the field it sits beside.
+        margin: 0;
+
+        // Matched to .mb-account-btn: same 13px, same padding, and the same
+        // 1.15 line-height the button inherits, so both land on 49px and
+        // their tops agree.
         input {
             width: 100%;
-            padding: #{px-to-rem(16)} #{px-to-rem(16)};
+            padding: #{px-to-rem(16)};
             font-family: inherit;
             font-size: #{px-to-rem(13)};
-            line-height: 1;
+            line-height: 1.15;
             color: var(--color--foreground);
             background-color: transparent;
             border: 1px solid var(--mbh-rule, rgba(47, 41, 46, 0.3));
