@@ -39,10 +39,28 @@
     // rather than restated, so a change to the shared vocabulary reaches here.
     // ---------------------------------------------------------------------
     --mba-ink: var(--color--foreground);
-    --mba-muted: #6e6a6c;
+    // Darkened from #6e6a6c on the redesign's instruction, and it is a WCAG
+    // fix rather than a preference. Measured against this component's two
+    // surfaces: #6e6a6c is 4.87:1 on Spring Wood #F8F4F0 but only 3.86:1 on
+    // Mist #DEDBD2, which every card and panel header uses, so muted copy on
+    // a card was failing AA. #5a5458 is 6.75:1 and 5.35:1, passing on both.
+    --mba-muted: #5a5458;
     --mba-rule: var(--mbh-rule, #{rgba(#2f292e, 0.18)});
     --mba-accent: var(--color--brand-4);
     --mba-wash: var(--color--brand-1);
+
+    // Surfaces the redesign names explicitly. Mist carries cards and panel
+    // headers, Wenge the order tracker, Apple the steps it has reached.
+    --mba-mist: var(--color--brand-1, #dedbd2);
+    --mba-mist-hover: #d3cfc5;
+    --mba-paper: var(--color--brand-2, #f8f4f0);
+    --mba-wenge: var(--color--brand-5, #625249);
+    --mba-apple: var(--color--apple, #a0cd4f);
+
+    // 3.4:1 on Spring Wood, which is what WCAG 1.4.11 asks of a control's
+    // own boundary. Not a text colour: do not reuse it for copy.
+    --mba-field-border: #858083;
+    --mba-error: #9b2c2c;
     --mba-ease: var(--mbh-ease, cubic-bezier(0.22, 0.61, 0.36, 1));
     --mba-dur: var(--mbh-dur-ui, 240ms);
 
@@ -142,16 +160,58 @@
         }
     }
 
+    &__nav-group {
+        // The hairline belongs to the group that follows it, never to the
+        // first. Above the first list the masthead's own rule already closes
+        // the column, and two hairlines a gap apart look like a slip.
+        + .mb-account__nav-group {
+            margin-top: #{px-to-rem(32)};
+            padding-top: #{px-to-rem(32)};
+            border-top: 1px solid var(--mba-rule);
+        }
+
+        // ...and the same slip was still happening between groups. Every item
+        // closes with a hairline, then the next group opens with one of its
+        // own, so above a group label you got two full-width rules a gap apart
+        // plus the accent mark: three lines to separate two things.
+        //
+        // The item's goes, not the group's, because the group's is what sets
+        // the spacing. `:last-of-type` rather than `:last-child`: the Log out
+        // link is the nav's real last child, so the final GROUP never matches
+        // that, and it has to keep its hairline or the column ends unclosed.
+        &:not(:last-of-type) {
+            .mb-account__nav-item:last-child {
+                border-bottom: 0;
+            }
+        }
+    }
+
+    &__nav-group-head {
+        display: flex;
+        flex-direction: column;
+        gap: #{px-to-rem(10)};
+        padding: 0 #{px-to-rem(16)} #{px-to-rem(12)};
+    }
+
+    &__nav-group-rule {
+        display: block;
+        width: #{px-to-rem(24)};
+        height: #{px-to-rem(2)};
+        background-color: var(--mba-accent);
+    }
+
+    &__nav-group-label {
+        font-size: var(--mba-fs-micro);
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--mba-muted);
+    }
+
     &__nav-list {
         list-style: none;
         margin: 0;
         padding: 0;
-
-        // Stacked under the masthead, the masthead's own rule already closes
-        // the top of the list. Two hairlines a gap apart look like a slip.
-        @include mq('large') {
-            border-top: 1px solid var(--mba-rule);
-        }
     }
 
     &__nav-item {
@@ -244,14 +304,41 @@
 // descendants of the same wrapper (the auth screen uses them too).
 // =============================================================================
 
+// The olive rule above every panel heading.
+//
+// Drawn with a pseudo-element rather than added to each template: nine panels
+// print a heading, three inside components and six inside WooCommerce
+// overrides, so one rule keeps them identical and a tenth gets it for free.
+//
+// ⚠️ Two selectors, because the dashboard does NOT use .mb-account-panel__title
+// -- its greeting is its own element. Shipping this on the title alone left the
+// dashboard as the single panel in the section with no rule above its heading,
+// which is exactly the kind of miss a single shared selector prevents. A new
+// heading joins by being added here.
+.mb-account-panel__title,
+.mb-account-dash__greeting {
+    &::before {
+        content: '';
+        display: block;
+        width: #{px-to-rem(48)};
+        height: #{px-to-rem(2)};
+        margin-bottom: #{px-to-rem(16)};
+        background-color: var(--mba-accent);
+    }
+}
+
 .mb-account-panel {
     &__title {
         margin: 0 0 #{px-to-rem(16)};
         font-weight: 300;
-        font-size: clamp(#{px-to-rem(24)}, 2.6vw, #{px-to-rem(32)});
+        font-size: clamp(#{px-to-rem(28)}, 3.2vw, #{px-to-rem(40)});
         line-height: 1.15;
         letter-spacing: var(--mbh-tracking-heading, 0.2em);
         text-transform: uppercase;
+
+        // Holds the hairline weight of a 300 at display size, which otherwise
+        // thins out to nearly nothing on the lighter surfaces.
+        -webkit-text-stroke: 0.2px currentColor;
     }
 
     &__intro {
@@ -259,7 +346,7 @@
         max-width: 60ch;
         font-size: #{px-to-rem(16)};
         line-height: 1.7;
-        color: #6e6a6c;
+        color: var(--mba-muted);
 
         a {
             color: var(--color--foreground);
@@ -275,11 +362,20 @@
 
     &__head {
         display: flex;
-        align-items: baseline;
+        // flex-start, not baseline: the badge has to sit level with the top of
+        // the title and drop below it when the row wraps. On baseline a long
+        // German title dragged the badge down with it.
+        align-items: flex-start;
         justify-content: space-between;
-        gap: var(--space--2xs);
+        gap: #{px-to-rem(16)} #{px-to-rem(24)};
         flex-wrap: wrap;
         margin-bottom: #{px-to-rem(20)};
+
+        // The title stops squeezing the badge and wraps instead.
+        .mb-account-panel__title {
+            flex: 1 1 #{px-to-rem(320)};
+            margin-bottom: 0;
+        }
     }
 
     &__badge {
@@ -290,6 +386,8 @@
         text-transform: uppercase;
         padding: #{px-to-rem(6)} #{px-to-rem(12)};
         border: 1px solid var(--color--brand-4);
+        color: var(--mba-ink);
+        white-space: nowrap;
     }
 }
 
@@ -325,13 +423,92 @@
 
     &--closed {
         border-color: var(--mbh-rule, #{rgba(#2f292e, 0.18)});
-        color: #6e6a6c;
+        color: var(--mba-muted);
     }
 }
 
 // Empty states: centred, hairline box, olive tick above the heading.
+// =============================================================================
+// Photographs, and the placeholders standing in for them
+// =============================================================================
+
+.mb-account-figure {
+    margin: 0;
+    aspect-ratio: 4 / 3;
+    background-color: var(--mba-mist);
+    overflow: hidden;
+
+    &__image {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    // Deliberately conspicuous. A tasteful grey rectangle is the version
+    // somebody ships by accident; a dashed box that says what is missing is
+    // not. Goes the moment a real image id is set on the option.
+    &__placeholder {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: #{px-to-rem(10)};
+        width: 100%;
+        height: 100%;
+        padding: #{px-to-rem(16)};
+
+        // ⚠️ This is supposed to be hard to miss, and the first version was
+        // not: a 1px hairline at 30% opacity on Mist read as a finished grey
+        // panel with a caption under it, which is exactly the thing somebody
+        // ships without noticing. 2px at full strength, and the word
+        // "Placeholder" above the description, so nobody has to infer it.
+        border: #{px-to-rem(2)} dashed rgba(47, 41, 46, 0.55);
+    }
+
+    &__flag {
+        font-size: #{px-to-rem(11)};
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        padding: #{px-to-rem(4)} #{px-to-rem(10)};
+        background-color: var(--mba-ink);
+        color: var(--mba-paper);
+    }
+
+    &__note {
+        max-width: 30ch;
+        text-align: center;
+        font-size: #{px-to-rem(13)};
+        line-height: 1.5;
+        color: var(--mba-muted);
+    }
+}
+
+.mb-account-dash__welcome {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: #{px-to-rem(32)} #{px-to-rem(48)};
+    margin-bottom: clamp(#{px-to-rem(40)}, 5vw, #{px-to-rem(56)});
+}
+
+.mb-account-dash__welcome-text {
+    flex: 1 1 #{px-to-rem(300)};
+    min-width: 0;
+}
+
+.mb-account-dash__hero {
+    flex: 1 1 #{px-to-rem(300)};
+    min-width: 0;
+}
+
 .mb-account-empty {
-    border: 1px solid var(--mbh-rule, #{rgba(#2f292e, 0.18)});
+    // The imageless variant: a centred Mist block, which is what Assets,
+    // Sample ordering and Payment methods all use. A hairline box around
+    // nothing reads as a failure; a filled panel reads as a state.
+    background-color: var(--mba-mist);
+    border: 0;
     padding: clamp(#{px-to-rem(40)}, 6vw, #{px-to-rem(72)}) clamp(#{px-to-rem(28)}, 4vw, #{px-to-rem(48)});
     text-align: center;
 
@@ -345,10 +522,43 @@
 
     &__title {
         margin: 0 0 #{px-to-rem(14)};
-        font-size: #{px-to-rem(14)};
-        font-weight: 700;
-        letter-spacing: var(--mbh-tracking-sub, 0.16em);
+        // Light caps at 22px, matching the panel titles rather than the small
+        // bold section headings. An empty state is a statement, not a label.
+        font-size: #{px-to-rem(22)};
+        font-weight: 300;
+        letter-spacing: 0.14em;
         text-transform: uppercase;
+    }
+
+    // The variant with a photograph beside it: image and words share the Mist
+    // panel rather than the words sitting centred in it alone.
+    &--figured {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: stretch;
+        padding: 0;
+        text-align: left;
+
+        .mb-account-empty__figure {
+            flex: 1 1 #{px-to-rem(260)};
+        }
+
+        .mb-account-empty__body-wrap {
+            flex: 1 1 #{px-to-rem(260)};
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: center;
+            gap: #{px-to-rem(16)};
+            padding: clamp(#{px-to-rem(28)}, 4vw, #{px-to-rem(40)});
+        }
+
+        .mb-account-empty__rule,
+        .mb-account-empty__title,
+        .mb-account-empty__body {
+            margin: 0;
+            max-width: none;
+        }
     }
 
     &__body {
@@ -356,7 +566,7 @@
         max-width: 44ch;
         font-size: #{px-to-rem(15)};
         line-height: 1.7;
-        color: #6e6a6c;
+        color: var(--mba-muted);
 
         &:last-child {
             margin-bottom: 0;
@@ -414,6 +624,12 @@
     &:focus-visible {
         color: var(--color--foreground);
         border-bottom-color: var(--color--brand-4);
+        // Re-asserted, not redundant. The underline here is the border above,
+        // which turns olive on hover. The theme also underlines any <a> on
+        // hover, and `text-decoration: none` on the resting state does not
+        // carry into it, so the two stacked: a dark text-decoration line under
+        // the olive border. Measured on staging before fixing.
+        text-decoration: none;
     }
 }
 
@@ -426,7 +642,7 @@
     font-weight: 700;
     letter-spacing: 0.2em;
     text-transform: uppercase;
-    color: #6e6a6c;
+    color: var(--mba-muted);
     text-decoration: none;
 
     &:hover,
@@ -445,8 +661,12 @@
 
 .mb-account-fields {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(#{px-to-rem(220)}, 1fr));
-    gap: #{px-to-rem(32)} #{px-to-rem(40)};
+    // min() so a single column never overflows its container: below 230px the
+    // track collapses to 100% instead of forcing a horizontal scroll. Three
+    // columns at desktop, falling to two then one on its own. Nothing here is
+    // sized to English string length.
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, #{px-to-rem(230)}), 1fr));
+    gap: #{px-to-rem(28)} #{px-to-rem(24)};
 
     &--tight {
         gap: #{px-to-rem(28)} #{px-to-rem(32)};
@@ -499,24 +719,40 @@
     select,
     textarea,
     .select2-container .select2-selection--single {
+        // Boxed, not underlined.
+        //
+        // This panel was the only place on the site using an underline, which
+        // made an account form look like a different product from the
+        // checkout. 48px tall and 16px type, so iOS does not zoom the page on
+        // focus, and every field is its own 44px target.
+        box-sizing: border-box;
         width: 100%;
+        min-height: #{px-to-rem(48)};
         font-family: inherit;
-        font-size: #{px-to-rem(15)};
+        font-size: #{px-to-rem(16)};
         font-weight: 300;
         line-height: 1.5;
-        padding: #{px-to-rem(10)} 0;
+        padding: #{px-to-rem(10)} #{px-to-rem(14)};
         background-color: transparent;
-        border: 0;
-        border-bottom: 1px solid var(--mbh-rule, #{rgba(#2f292e, 0.18)});
-        border-radius: 0;
+        border: 1px solid var(--mba-field-border);
+        border-radius: #{px-to-rem(2)};
         color: var(--color--foreground);
         outline: none;
         box-shadow: none;
 
+        // A 2px ring in the body ink rather than a colour shift. Olive on
+        // Spring Wood is too close in value to read as focus on its own, and
+        // focus must not rely on hue.
         &:focus,
         &:focus-visible {
-            border-bottom-color: var(--color--brand-4);
-            outline: none;
+            border-color: var(--mba-ink);
+            outline: #{px-to-rem(2)} solid var(--mba-ink);
+            outline-offset: 0;
+        }
+
+        &[aria-invalid='true'],
+        &.has-error {
+            border: #{px-to-rem(2)} solid var(--mba-error);
         }
 
         &::placeholder {
@@ -524,11 +760,12 @@
         }
     }
 
-    // Select2 is what WooCommerce uses for country and state. Strip its chrome
-    // back to the same underline rather than leaving a rounded grey box in the
-    // middle of a row of hairlines.
+    // Select2 is what WooCommerce uses for country and state. It gets the same
+    // box as every other field, so a country picker does not sit in a row of
+    // boxes wearing its own rounded grey chrome.
     .select2-container .select2-selection--single {
         height: auto;
+        min-height: #{px-to-rem(48)};
         display: flex;
         align-items: center;
 
@@ -540,40 +777,48 @@
 
         .select2-selection__arrow {
             height: 100%;
-            right: 0;
+            right: #{px-to-rem(10)};
         }
     }
 
     &__note {
         font-size: #{px-to-rem(13)};
         line-height: 1.5;
-        color: #6e6a6c;
+        color: var(--mba-muted);
     }
 
     // WooCommerce's own inline validation message.
     em {
         font-size: #{px-to-rem(13)};
         font-style: normal;
-        color: #6e6a6c;
+        color: var(--mba-muted);
     }
 }
 
+// Consent, and only consent.
+//
+// ⚠️ Always a real checkbox on its own Mist plate: never a switch, never
+// pre-ticked, and the wording is WooCommerce's word for word. If preference
+// toggles arrive later they should be switches with no plate, so that the
+// thing carrying a lawful basis never looks like the thing that does not.
 .mb-account-check {
     display: flex;
     align-items: flex-start;
-    gap: #{px-to-rem(12)};
-    font-size: #{px-to-rem(15)};
-    line-height: 1.7;
-    color: #6e6a6c;
+    gap: #{px-to-rem(16)};
+    padding: #{px-to-rem(20)} #{px-to-rem(24)};
+    background-color: var(--mba-mist);
+    font-size: #{px-to-rem(16)};
+    line-height: 1.6;
+    color: var(--mba-ink);
     cursor: pointer;
-    max-width: 60ch;
+    max-width: #{px-to-rem(640)};
 
     input[type='checkbox'] {
         flex: 0 0 auto;
-        width: #{px-to-rem(15)};
-        height: #{px-to-rem(15)};
-        margin-top: #{px-to-rem(5)};
-        accent-color: var(--color--brand-4);
+        width: #{px-to-rem(24)};
+        height: #{px-to-rem(24)};
+        margin-top: #{px-to-rem(1)};
+        accent-color: var(--mba-ink);
     }
 }
 
@@ -592,7 +837,7 @@
 
     &__note {
         font-size: #{px-to-rem(13)};
-        color: #6e6a6c;
+        color: var(--mba-muted);
     }
 }
 
@@ -601,7 +846,7 @@
     font-weight: 700;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: #6e6a6c;
+    color: var(--mba-muted);
     text-decoration: none;
     border-bottom: 1px solid transparent;
 
@@ -631,7 +876,7 @@
         max-width: 60ch;
         font-size: #{px-to-rem(18)};
         line-height: 1.7;
-        color: #6e6a6c;
+        color: var(--mba-muted);
     }
 
     &__actions {
@@ -642,17 +887,24 @@
     }
 
     &__action {
-        display: block;
-        background-color: var(--color--brand-2);
-        border: 1px solid var(--mbh-rule, #{rgba(#2f292e, 0.18)});
-        padding: #{px-to-rem(28)} #{px-to-rem(24)} #{px-to-rem(26)};
+        // Mist with no border. The hairline was doing the work the fill now
+        // does, and the two together read as a form control rather than a
+        // card you can press.
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: #{px-to-rem(32)};
+        min-height: #{px-to-rem(156)};
+        background-color: var(--mba-mist);
+        border: 0;
+        padding: #{px-to-rem(28)} #{px-to-rem(24)} #{px-to-rem(24)};
         text-decoration: none;
         color: var(--color--foreground);
         transition: background-color var(--mbh-dur-ui, 240ms) var(--mbh-ease, ease);
 
         &:hover,
         &:focus-visible {
-            background-color: var(--color--brand-1);
+            background-color: var(--mba-mist-hover);
             color: var(--color--foreground);
         }
     }
@@ -681,13 +933,30 @@
         margin: 0;
         font-size: #{px-to-rem(14)};
         line-height: 1.6;
-        color: #6e6a6c;
+        // Mist, not the page, so this needs the darker muted value. See the
+        // --mba-muted note: the old #6e6a6c was 3.86:1 here.
+        color: var(--mba-muted);
     }
 
     &__tracker {
-        border: 1px solid var(--mbh-rule, #{rgba(#2f292e, 0.18)});
+        // Wenge, so the one order in flight is the darkest thing on the page
+        // and reads before anything else. Spring Wood ink on it is 6.9:1.
+        background-color: var(--mba-wenge);
+        color: var(--mba-paper);
+        border: 0;
         padding: clamp(#{px-to-rem(24)}, 3vw, #{px-to-rem(36)});
         margin-bottom: clamp(#{px-to-rem(48)}, 6vw, #{px-to-rem(80)});
+
+        // Links inside a dark panel cannot keep the body ink.
+        .mb-account-link {
+            color: var(--mba-paper);
+            border-bottom-color: rgba(248, 244, 240, 0.4);
+
+            &:hover,
+            &:focus-visible {
+                border-bottom-color: var(--mba-apple);
+            }
+        }
     }
 
     &__tracker-head {
@@ -707,23 +976,31 @@
         text-transform: uppercase;
     }
 
+    // Sits on Wenge, so it cannot keep the muted grey.
+    // Sits on Wenge now, so it cannot keep the muted grey.
     &__tracker-meta {
         margin: 0 0 #{px-to-rem(8)};
         font-size: #{px-to-rem(14)};
-        color: #6e6a6c;
+        color: rgba(248, 244, 240, 0.78);
     }
 
     &__columns {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(#{px-to-rem(260)}, 1fr));
         gap: clamp(#{px-to-rem(32)}, 4vw, #{px-to-rem(56)});
+
+        // "Delivering to" and "Your details" were sitting flush against the
+        // last order row, so the recent orders list appeared to run straight
+        // into an address. Its opposite number on the order detail screen has
+        // always carried this; the dashboard was simply missed.
+        margin-top: clamp(#{px-to-rem(48)}, 6vw, #{px-to-rem(64)});
     }
 
     &__summary {
         margin: 0 0 #{px-to-rem(16)};
         font-size: #{px-to-rem(15)};
         line-height: 1.8;
-        color: #6e6a6c;
+        color: var(--mba-muted);
     }
 }
 
@@ -743,10 +1020,13 @@
         min-width: 0;
     }
 
+    // This component only ever renders inside the Wenge tracker, so it is
+    // styled for that surface directly rather than being given a dark
+    // variant to override a light default nobody uses.
     &__dot {
         display: block;
-        height: #{px-to-rem(2)};
-        background-color: rgba(47, 41, 46, 0.22);
+        height: #{px-to-rem(3)};
+        background-color: rgba(248, 244, 240, 0.28);
         margin-bottom: #{px-to-rem(14)};
     }
 
@@ -756,22 +1036,24 @@
         letter-spacing: 0.12em;
         text-transform: uppercase;
         margin-bottom: #{px-to-rem(6)};
-        color: #6e6a6c;
+        color: rgba(248, 244, 240, 0.78);
     }
 
     &__when {
         font-size: #{px-to-rem(13)};
         line-height: 1.4;
-        color: #6e6a6c;
+        color: rgba(248, 244, 240, 0.78);
     }
 
     &__step.is-reached {
+        // Apple, not olive: olive is a mid green that all but disappears on
+        // Wenge, which is why the reached steps get the brighter one.
         .mb-account-steps__dot {
-            background-color: var(--color--brand-4);
+            background-color: var(--mba-apple);
         }
 
         .mb-account-steps__label {
-            color: var(--color--foreground);
+            color: var(--mba-paper);
         }
     }
 }
@@ -796,7 +1078,7 @@
         font-weight: 700;
         letter-spacing: var(--mbh-tracking-sub, 0.16em);
         text-transform: uppercase;
-        color: #6e6a6c;
+        color: var(--mba-muted);
         text-decoration: none;
         border-bottom: 2px solid transparent;
 
@@ -811,34 +1093,17 @@
         }
     }
 
-    // One grid definition shared by the header row and every order row, so the
-    // columns cannot drift apart.
-    --mba-order-cols: minmax(0, 1fr) auto;
-
-    @include mq('large') {
-        --mba-order-cols: minmax(#{px-to-rem(96)}, #{px-to-rem(108)}) minmax(#{px-to-rem(96)}, #{px-to-rem(120)}) minmax(#{px-to-rem(160)}, 2fr) #{px-to-rem(112)} minmax(#{px-to-rem(64)}, #{px-to-rem(78)});
-    }
-
-    &__head {
-        display: none;
-        grid-template-columns: var(--mba-order-cols);
-        gap: #{px-to-rem(16)};
-        padding: #{px-to-rem(18)} #{px-to-rem(4)} #{px-to-rem(12)};
-        border-bottom: 1px solid var(--mbh-rule, #{rgba(#2f292e, 0.18)});
-
-        @include mq('large') {
-            display: grid;
-        }
-
-        span {
-            font-size: #{px-to-rem(11)};
-            font-weight: 700;
-            letter-spacing: 0.2em;
-            text-transform: uppercase;
-            color: #6e6a6c;
-            min-width: 0;
-        }
-    }
+    // The row is a wrapping flex line, not a table.
+    //
+    // It used to be a five-track grid with hand-placed grid-areas for narrow
+    // screens that were reset at 'large'. Two layouts had to be kept in step
+    // by hand, and adding anything meant editing both. Letting the row wrap
+    // does the same job with one rule and no breakpoint: the shade chips, the
+    // order and its summary, the status and the total each claim what they
+    // need and fall onto the next line when there is no room.
+    //
+    // The column header row went with it. Headings label columns, and these
+    // are no longer columns.
 
     &__list {
         border-top: 1px solid var(--color--brand-4);
@@ -849,11 +1114,11 @@
     }
 
     &__row {
-        display: grid;
-        grid-template-columns: var(--mba-order-cols);
-        gap: #{px-to-rem(12)} #{px-to-rem(16)};
+        display: flex;
+        flex-wrap: wrap;
         align-items: center;
-        padding: #{px-to-rem(22)} #{px-to-rem(4)};
+        gap: #{px-to-rem(12)} #{px-to-rem(24)};
+        padding: #{px-to-rem(20)} #{px-to-rem(4)};
         border-bottom: 1px solid var(--mbh-rule, #{rgba(#2f292e, 0.18)});
         text-decoration: none;
         color: var(--color--foreground);
@@ -866,62 +1131,90 @@
         }
     }
 
-    // Narrow layout: id and total on the first line, date and status on the
-    // second, the item summary spanning the third.
+    // Up to three shades, overlapped, so an order reads as "the grey one"
+    // before any of the words beside it are read.
+    // Reserve room for three, even when an order has one.
+    //
+    // The group is as wide as the number of shades in the order, so without
+    // this the order number starts in a different place on every row and the
+    // column of #UK- references reads as ragged. 44px for the first chip plus
+    // 32px for each of the two that overlap it by 12.
+    //
+    // An order with no shades at all still indents, which is the point: the
+    // numbers line up whatever each row happens to contain.
+    &__chips {
+        display: flex;
+        flex: none;
+        min-width: #{px-to-rem(108)};
+    }
+
+    &__chip {
+        display: block;
+        width: #{px-to-rem(44)};
+        height: #{px-to-rem(44)};
+        border-radius: #{px-to-rem(2)};
+        object-fit: cover;
+
+        // The ring is the page colour, not a hairline: it is what separates
+        // one chip from the one it overlaps, and it has to work on hover when
+        // the row behind it changes.
+        border: #{px-to-rem(2)} solid var(--mba-paper);
+
+        + .mb-account-orders__chip {
+            margin-left: #{px-to-rem(-12)};
+        }
+    }
+
+    &__meta {
+        flex: 1 1 #{px-to-rem(240)};
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: #{px-to-rem(4)};
+    }
+
+    &__line {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: #{px-to-rem(4)} #{px-to-rem(16)};
+    }
+
     &__id {
-        grid-area: 1 / 1 / 2 / 2;
         font-size: #{px-to-rem(14)};
         font-weight: 700;
         letter-spacing: 0.08em;
         min-width: 0;
     }
 
-    &__total {
-        grid-area: 1 / 2 / 2 / 3;
+    &__date {
         font-size: #{px-to-rem(14)};
-        text-align: right;
+        color: var(--mba-muted);
         min-width: 0;
     }
 
-    &__date {
-        grid-area: 2 / 1 / 3 / 2;
-        font-size: #{px-to-rem(14)};
-        color: #6e6a6c;
+    &__summary {
+        font-size: #{px-to-rem(15)};
+        line-height: 1.45;
+        color: var(--mba-muted);
         min-width: 0;
     }
 
     &__status {
-        grid-area: 2 / 2 / 3 / 3;
-        min-width: 0;
-        justify-self: end;
+        flex: none;
     }
 
-    &__summary {
-        grid-area: 3 / 1 / 4 / 3;
-        font-size: #{px-to-rem(14)};
-        line-height: 1.45;
-        color: #6e6a6c;
-        min-width: 0;
-    }
-
-    @include mq('large') {
-        &__id,
-        &__date,
-        &__summary,
-        &__status,
-        &__total {
-            grid-area: auto;
-        }
-
-        &__status {
-            justify-self: start;
-        }
+    &__total {
+        flex: 0 0 #{px-to-rem(96)};
+        margin-left: auto;
+        font-size: #{px-to-rem(15)};
+        text-align: right;
     }
 
     &__count {
         margin: #{px-to-rem(24)} 0 0;
         font-size: #{px-to-rem(13)};
-        color: #6e6a6c;
+        color: var(--mba-muted);
     }
 
     &__pagination {
@@ -958,7 +1251,7 @@
     &__meta {
         margin: 0 0 #{px-to-rem(48)};
         font-size: #{px-to-rem(15)};
-        color: #6e6a6c;
+        color: var(--mba-muted);
     }
 
     &__steps {
@@ -989,12 +1282,12 @@
         letter-spacing: var(--mbh-tracking-sub, 0.16em);
         text-transform: uppercase;
         margin-bottom: #{px-to-rem(6)};
-        color: #6e6a6c;
+        color: var(--mba-muted);
     }
 
     &__step-when {
         font-size: #{px-to-rem(13)};
-        color: #6e6a6c;
+        color: var(--mba-muted);
     }
 
     &__step.is-reached {
@@ -1054,12 +1347,12 @@
     &__item-sub {
         display: block;
         font-size: #{px-to-rem(13)};
-        color: #6e6a6c;
+        color: var(--mba-muted);
     }
 
     &__item-qty {
         font-size: #{px-to-rem(14)};
-        color: #6e6a6c;
+        color: var(--mba-muted);
         min-width: #{px-to-rem(60)};
     }
 
@@ -1112,7 +1405,7 @@
         margin: 0 0 #{px-to-rem(16)};
         font-size: #{px-to-rem(15)};
         line-height: 1.8;
-        color: #6e6a6c;
+        color: var(--mba-muted);
         font-style: normal;
 
         &:last-child {
@@ -1138,14 +1431,14 @@
         font-weight: 700;
         letter-spacing: 0.18em;
         text-transform: uppercase;
-        color: #6e6a6c;
+        color: var(--mba-muted);
         margin-bottom: #{px-to-rem(8)};
     }
 
     &__note-body {
         font-size: #{px-to-rem(15)};
         line-height: 1.7;
-        color: #6e6a6c;
+        color: var(--mba-muted);
 
         p {
             margin: 0;
@@ -1205,7 +1498,7 @@
         margin: 0;
         font-size: #{px-to-rem(15)};
         line-height: 1.9;
-        color: #6e6a6c;
+        color: var(--mba-muted);
         font-style: normal;
     }
 }
@@ -1258,7 +1551,7 @@
 
     &__expiry {
         font-size: #{px-to-rem(14)};
-        color: #6e6a6c;
+        color: var(--mba-muted);
         min-width: #{px-to-rem(110)};
     }
 
@@ -1277,7 +1570,7 @@
         font-weight: 700;
         letter-spacing: 0.12em;
         text-transform: uppercase;
-        color: #6e6a6c;
+        color: var(--mba-muted);
         text-decoration: none;
         background: none;
         border: 0;
@@ -1304,7 +1597,7 @@
 .mb-account-embed-note {
     margin: #{px-to-rem(20)} 0 0;
     font-size: #{px-to-rem(13)};
-    color: #6e6a6c;
+    color: var(--mba-muted);
 
     a {
         color: var(--color--foreground);
@@ -1315,5 +1608,27 @@
         &:focus-visible {
             border-bottom-color: var(--color--brand-4);
         }
+    }
+}
+
+// ---- one underline per link ------------------------------------
+// Throughout My Account the underline on a link IS its bottom border, which
+// changes colour on hover. The theme separately underlines any <a> on hover,
+// and `text-decoration: none` on a resting state does not carry into the hover
+// state, so the two stack: a dark text-decoration line under the coloured
+// border.
+//
+// This was fixed once on .mb-account-link, then reported again on Log out, and
+// there are eleven places in this file using the same border convention. So it
+// is turned off for the whole account rather than chased one class at a time.
+//
+// Scoped to the account's own body class, which beats a bare `a:hover` on
+// specificity. Anything here that genuinely wants a text-decoration underline
+// has to ask for it explicitly, which is the right way round given the design
+// never does.
+.is-mb-account {
+    a:hover,
+    a:focus-visible {
+        text-decoration: none;
     }
 }

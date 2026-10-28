@@ -65,6 +65,11 @@ class SampleFulfilment
         \add_action('admin_enqueue_scripts', [self::class, 'admin_assets']);
         \add_action('wp_ajax_mb_fulfil_inline', [self::class, 'ajax_inline']);
 
+        // The agency works the queue in My Account and has no business behind
+        // the dashboard. See keep_out_of_admin().
+        \add_action('admin_init', [self::class, 'keep_out_of_admin']);
+        \add_filter('show_admin_bar', [self::class, 'hide_admin_bar']);
+
         // ⚠️ The guard. See the class docblock.
         \add_filter('woocommerce_email_enabled_customer_completed_order', [self::class, 'suppress_retrospective_email'], 10, 2);
     }
@@ -187,7 +192,31 @@ class SampleFulfilment
             return;
         }
 
-        \wp_register_script('mb-fulfil-inline', '', ['jquery'], null, true);
+        self::enqueue_editor();
+
+        \wp_register_style('mb-fulfil-inline', false, [], null);
+        \wp_enqueue_style('mb-fulfil-inline');
+        \wp_add_inline_style('mb-fulfil-inline', self::inline_style());
+    }
+
+    /**
+     * The inline editor, for any screen that renders the cells.
+     *
+     * The My Account panel calls this too. The script is vanilla and reads
+     * everything it needs off the cell's own data attributes, so the same copy
+     * drives the admin list and the front-end queue, and there is one place
+     * where "what happens when you type in a cell" is defined.
+     *
+     * No styles here: the admin list wants to look like wp-admin and the
+     * account panel wants to look like the account, so each brings its own.
+     */
+    public static function enqueue_editor(): void
+    {
+        if (\wp_script_is('mb-fulfil-inline', 'enqueued')) {
+            return;
+        }
+
+        \wp_register_script('mb-fulfil-inline', '', [], null, true);
         \wp_enqueue_script('mb-fulfil-inline');
 
         \wp_localize_script('mb-fulfil-inline', 'mbFulfil', [
@@ -198,9 +227,60 @@ class SampleFulfilment
         ]);
 
         \wp_add_inline_script('mb-fulfil-inline', self::inline_script());
-        \wp_register_style('mb-fulfil-inline', false, [], null);
-        \wp_enqueue_style('mb-fulfil-inline');
-        \wp_add_inline_style('mb-fulfil-inline', self::inline_style());
+    }
+
+    /**
+     * Send the agency back to the front end.
+     *
+     * They hold `edit_shop_orders` because that is what working an order
+     * needs, and that capability by itself opens wp-admin. Aaron's condition
+     * for giving an outside supplier accounts at all was that they never get
+     * near the dashboard, so the capability stays and the door closes.
+     *
+     * Staff are untouched: anyone with `manage_woocommerce` -- shop managers
+     * and administrators -- keeps wp-admin exactly as before. Only an account
+     * actually carrying the fulfilment role is redirected.
+     *
+     * ⚠️ `wp_doing_ajax()` first. `admin_init` fires on admin-ajax.php, so
+     * without it this would redirect the agency's own save request and every
+     * edit they made would silently fail.
+     */
+    public static function keep_out_of_admin(): void
+    {
+        if (\wp_doing_ajax() || \wp_doing_cron() || !\is_user_logged_in()) {
+            return;
+        }
+
+        if (!self::is_agency_account() || !\function_exists('wc_get_account_endpoint_url')) {
+            return;
+        }
+
+        \wp_safe_redirect(\wc_get_account_endpoint_url('fulfilment'));
+        exit;
+    }
+
+    /**
+     * Hide the admin bar for the agency, since it only links where they cannot go.
+     *
+     * @param bool $show
+     */
+    public static function hide_admin_bar($show)
+    {
+        return self::is_agency_account() ? false : $show;
+    }
+
+    /**
+     * An account whose job is fulfilment and nothing else.
+     */
+    private static function is_agency_account(): bool
+    {
+        if (!\is_user_logged_in() || \current_user_can('manage_woocommerce')) {
+            return false;
+        }
+
+        $user = \wp_get_current_user();
+
+        return \in_array(self::ROLE, (array) $user->roles, true);
     }
 
     private static function is_orders_screen(string $hook): bool

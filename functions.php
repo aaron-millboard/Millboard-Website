@@ -161,6 +161,14 @@ if (file_exists($autoloader = __DIR__ . '/vendor/autoload.php')) {
 \Theme\Accounts\Roles::init();
 
 // ----------------------------------------------------
+// Canto.
+// ----------------------------------------------------
+// Chosen cover images for the folders and albums in Resources. Admin only:
+// the reading side is static and needs no bootstrapping.
+// ----------------------------------------------------
+\Theme\Canto\Covers::init();
+
+// ----------------------------------------------------
 // Internal sample ordering (IT team's mb-sof package).
 // ----------------------------------------------------
 // Hand-maintained by IT and kept verbatim apart from one asset-path edit,
@@ -168,6 +176,33 @@ if (file_exists($autoloader = __DIR__ . '/vendor/autoload.php')) {
 // wc-account component's; see that component's hooks.php for how the two
 // halves agree on one endpoint, one menu item and one access gate.
 // ----------------------------------------------------
+/*
+ * The account endpoint slug, per site, so France can have a French URL.
+ *
+ * The package defines MB_SOF_ENDPOINT itself behind an `if (!defined())`, and
+ * bakes it into its hook names (`woocommerce_account_{slug}_endpoint`), so it
+ * has to be settled BEFORE the require below or the two halves wire
+ * themselves to different hooks and the panel never renders.
+ *
+ * An option rather than __(): the text domain is not loaded this early, so a
+ * translated slug would silently come back English. It also means adding a
+ * market is a setting, the same as the market switch itself:
+ *
+ *   wp option update millboard_sample_ordering_slug commande-echantillons --url=<site>/fr-fr/
+ *   wp option delete millboard_sample_ordering_slug --url=<site>/fr-fr/
+ *
+ * wc-account/hooks.php fingerprints the registered endpoint list and flushes
+ * the rewrite rules when it changes, so the new URL resolves on the next
+ * request with nothing to run by hand.
+ */
+if (!\defined('MB_SOF_ENDPOINT')) {
+    $mb_sof_slug = \sanitize_title((string) \get_option('millboard_sample_ordering_slug', ''));
+
+    \define('MB_SOF_ENDPOINT', '' !== $mb_sof_slug ? $mb_sof_slug : 'sample-ordering');
+
+    unset($mb_sof_slug);
+}
+
 require_once __DIR__ . '/sample-ordering/inc/millboard-sample-ordering.php';
 
 // ----------------------------------------------------

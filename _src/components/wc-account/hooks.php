@@ -10,6 +10,17 @@
 
 namespace Granola\Components\WC_Account;
 
+use function Granola\Components\WC_Account_Fulfilment\can_work_fulfilment;
+
+/*
+ * The fulfilment panel owns its own endpoint slug. Aliased rather than
+ * redeclared, so the two components cannot drift to different URLs.
+ *
+ * Safe as a `use const`: every component's functions.php is required before
+ * any hooks.php runs, so the constant exists by the time this file is read.
+ */
+use const Granola\Components\WC_Account_Fulfilment\ENDPOINT as FULFILMENT_ENDPOINT;
+
 /**
  * Register the custom endpoints so /my-account/brand-assets/ resolves.
  *
@@ -18,7 +29,7 @@ namespace Granola\Components\WC_Account;
  * a panel. Flushing on every load would rewrite the option on all 13,000 hits.
  */
 \add_action('init', function (): void {
-    $endpoints = [ENDPOINT_BRAND_ASSETS, get_sample_endpoint()];
+    $endpoints = [ENDPOINT_BRAND_ASSETS, get_sample_endpoint(), FULFILMENT_ENDPOINT];
 
     foreach ($endpoints as $endpoint) {
         \add_rewrite_endpoint($endpoint, EP_PAGES);
@@ -33,11 +44,38 @@ namespace Granola\Components\WC_Account;
 });
 
 /**
+ * Send the menu items that are links out to their real URLs.
+ *
+ * WooCommerce builds every account menu link with
+ * wc_get_account_endpoint_url(), which would give /my-account/projects/ or
+ * /my-account/calculator/. Neither endpoint is registered, so without this
+ * both would 404.
+ *
+ * A map rather than a branch per item, because there are two now and the next
+ * one should be a line rather than another copy of this function.
+ */
+\add_filter('woocommerce_get_endpoint_url', function ($url, $endpoint) {
+    $external = [
+        'projects' => projects_url(),
+        'calculator' => CALCULATOR_URL,
+        'visualiser' => VISUALISER_URL,
+        'deckplanner' => DECKPLANNER_URL,
+    ];
+
+    if (!isset($external[$endpoint]) || '' === $external[$endpoint]) {
+        return $url;
+    }
+
+    return $external[$endpoint];
+}, 10, 2);
+
+/**
  * Let WooCommerce treat the custom endpoints as account queries.
  */
 \add_filter('woocommerce_get_query_vars', function (array $vars): array {
     $vars[ENDPOINT_BRAND_ASSETS] = ENDPOINT_BRAND_ASSETS;
     $vars[get_sample_endpoint()] = get_sample_endpoint();
+    $vars[FULFILMENT_ENDPOINT] = FULFILMENT_ENDPOINT;
 
     return $vars;
 });
@@ -69,15 +107,57 @@ namespace Granola\Components\WC_Account;
     $sample = get_sample_endpoint();
 
     /*
-     * Brand assets is gone. Aaron, 20 Oct 2026: the project is being dropped.
+     * Assets, for the people on the list and nobody else.
      *
-     * Always removed rather than left behind a capability, so it cannot come
-     * back by someone configuring Canto. The endpoint, its title filter and
-     * can_view_brand_assets() are left in place for now: they are inert with
-     * no menu item, and tearing out the Canto client is a bigger change than
-     * was asked for.
+     * Dropped on 20 Oct when the project was shelved; back on 23 Oct at Ed
+     * Lumb's request, renamed from "Brand assets" to "Assets", and limited to
+     * `millboard_asset_viewers`.
      */
-    unset($items[ENDPOINT_BRAND_ASSETS]);
+    if (can_view_brand_assets()) {
+        $items[ENDPOINT_BRAND_ASSETS] = \__('Resources', 'granola');
+    } else {
+        unset($items[ENDPOINT_BRAND_ASSETS]);
+    }
+
+    /*
+     * Projects. A link out, so no endpoint is registered and
+     * /my-account/projects/ deliberately does not resolve.
+     */
+    if (can_view_projects()) {
+        $items['projects'] = \__('Projects', 'granola');
+    } else {
+        unset($items['projects']);
+    }
+
+    /*
+     * The decking calculator. Another link out, like Projects.
+     */
+    if (can_view_calculator()) {
+        $items['calculator'] = \__('Calculator', 'granola');
+    } else {
+        unset($items['calculator']);
+    }
+
+    /*
+     * The AI visualiser. The third link out, and the map below is why that
+     * cost one line rather than another copy of a filter.
+     */
+    if (can_view_visualiser()) {
+        $items['visualiser'] = \__('Visualiser', 'granola');
+    } else {
+        unset($items['visualiser']);
+    }
+
+    /*
+     * The deck planner. Aaron's ordering calls this slot "configurator";
+     * the label follows what he called the link when he gave it, and is one
+     * word to change if that was the wrong way round.
+     */
+    if (can_view_deckplanner()) {
+        $items['deckplanner'] = \__('Deckplanner', 'granola');
+    } else {
+        unset($items['deckplanner']);
+    }
 
     if (can_order_samples()) {
         // The widget adds its own item under this same key, labelled from
@@ -90,14 +170,40 @@ namespace Granola\Components\WC_Account;
         unset($items[$sample]);
     }
 
+    /*
+     * The German dispatch queue.
+     *
+     * German, in German, because the people reading it are German staff and a
+     * German fulfilment agency, and every field in it is already named after
+     * the spreadsheet column it replaces.
+     */
+    if (can_work_fulfilment()) {
+        $items[FULFILMENT_ENDPOINT] = \__('Musterversand', 'granola');
+    } else {
+        unset($items[FULFILMENT_ENDPOINT]);
+    }
+
+    /*
+     * Aaron's order, 23 Oct 2026. Every item is named here rather than left
+     * to fall through the merge below, because the merge keeps insertion
+     * order and insertion order is an accident of how this function reads.
+     */
     $order = [
         'dashboard',
         'orders',
         'edit-address',
         'payment-methods',
         'edit-account',
-        ENDPOINT_BRAND_ASSETS,
+
+        // Tools, in this exact sequence: the outward-facing tools first, then
+        // the two that do something to this account.
+        'projects',
+        'visualiser',
+        'deckplanner',
+        'calculator',
         $sample,
+        FULFILMENT_ENDPOINT,
+        ENDPOINT_BRAND_ASSETS,
     ];
 
     $sorted = [];
@@ -130,6 +236,21 @@ namespace Granola\Components\WC_Account;
 \add_action('woocommerce_account_' . ENDPOINT_BRAND_ASSETS . '_endpoint', function (): void {
     echo can_view_brand_assets()
         ? \Granola\Component::get('wc-account-brand-assets')
+        : render_no_access();
+});
+
+/**
+ * The German dispatch queue.
+ *
+ * ⚠️ The capability check is the one that matters on this panel. It renders
+ * customer names, addresses and phone numbers to a third-party agency, so an
+ * account that reaches this URL without `edit_shop_orders` must see nothing at
+ * all -- and the menu hiding the link is not a gate, because a URL can be
+ * typed.
+ */
+\add_action('woocommerce_account_' . FULFILMENT_ENDPOINT . '_endpoint', function (): void {
+    echo can_work_fulfilment()
+        ? \Granola\Component::get('wc-account-fulfilment')
         : render_no_access();
 });
 
@@ -176,8 +297,9 @@ namespace Granola\Components\WC_Account;
  * Give the custom panels a page title, so the browser tab and any breadcrumb
  * read correctly rather than falling back to the bare "My account".
  */
-\add_filter('woocommerce_endpoint_' . ENDPOINT_BRAND_ASSETS . '_title', fn(): string => \__('Brand assets', 'granola'));
+\add_filter('woocommerce_endpoint_' . ENDPOINT_BRAND_ASSETS . '_title', fn(): string => \__('Resources', 'granola'));
 \add_filter('woocommerce_endpoint_' . ENDPOINT_SAMPLE_ORDERING . '_title', fn(): string => \__('Sample ordering', 'granola'));
+\add_filter('woocommerce_endpoint_' . FULFILMENT_ENDPOINT . '_title', fn(): string => \__('Musterversand', 'granola'));
 
 /**
  * Filter the orders list to the chosen tab.
@@ -310,3 +432,38 @@ namespace Granola\Components\WC_Account;
 
     \update_user_meta($customer_id, MARKETING_META_KEY, empty($post['millboard_marketing_opt_in']) ? 'no' : 'yes');
 });
+
+/*
+ * Clear the advanced-installer answer when a profile changes.
+ *
+ * is_advanced_installer() caches for an hour because it runs on every account
+ * page render. Without this, ticking "advanced installer" on a profile would
+ * take up to an hour to give someone the Projects tab, and unticking it would
+ * take an hour to take the tab away -- which is the direction that matters.
+ *
+ * Keyed by the profile's own e-mail, because that address IS the join to the
+ * account.
+ *
+ * ⚠️ One case this cannot cover: if the e-mail ITSELF was what changed, this
+ * clears the new address's user and the previous one keeps a stale answer
+ * until the hour runs out. Reading the old value would mean caching it before
+ * the save, which is more machinery than an hour of staleness is worth on a
+ * flag that changes a handful of times a year.
+ */
+\add_action('save_post_installer', function (int $post_id): void {
+    if (\wp_is_post_revision($post_id) || \wp_is_post_autosave($post_id)) {
+        return;
+    }
+
+    $email = \trim((string) \get_post_meta($post_id, 'email', true));
+
+    if ('' === $email) {
+        return;
+    }
+
+    $user = \get_user_by('email', $email);
+
+    if ($user) {
+        \delete_transient('mb_advanced_installer_' . $user->ID);
+    }
+}, 10, 1);

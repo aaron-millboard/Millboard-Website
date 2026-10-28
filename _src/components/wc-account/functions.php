@@ -19,6 +19,15 @@ const ENDPOINT_BRAND_ASSETS = 'brand-assets';
 const ENDPOINT_SAMPLE_ORDERING = 'sample-ordering';
 
 /**
+ * The attribute holding a board's shade.
+ *
+ * WooCommerce calls it "Colour" and the redesign calls it shade; they are the
+ * same thing. Named here so the order list is not the place someone has to
+ * discover that.
+ */
+const SHADE_TAXONOMY = 'pa_colour';
+
+/**
  * Sites the sample tool runs on, by site path.
  *
  * Aaron, 6 Oct 2026: "this entire sample ordering tab is only for the UK site."
@@ -85,26 +94,323 @@ function is_sample_ordering_site(): bool
  * a millboard.com address, or can edit_posts", which let 22 people in and had
  * no way to describe a distributor or an installer -- both of whom need these
  * tools and are not staff. See Theme\Accounts\Roles for the map.
- *
- * AND CANTO HAS TO BE CONFIGURED. Without the four MB_CANTO_* constants the
- * panel renders an empty library, and an empty "Brand assets" tab is worse
- * than no tab: the launch email tells staff the asset side is still being
- * built and to keep using the old portal, and a tab sitting there saying
- * otherwise contradicts it on the day they first sign in.
- *
- * Keyed on the configuration rather than a flag, so there is nothing to
- * remember to switch. Staging has the constants and is unchanged; production
- * does not and hides the tab; the day production gets them the tab appears by
- * itself. Aaron, 7 Oct 2026: the portal side is not finished with the Canto
- * parts.
  */
 function can_view_brand_assets(?int $user_id = null): bool
 {
-    if (!\Theme\Canto\Client::is_configured()) {
+    if (!user_can_mb(\Theme\Accounts\Roles::CAP_BRAND_ASSETS, $user_id)) {
         return false;
     }
 
-    return user_can_mb(\Theme\Accounts\Roles::CAP_BRAND_ASSETS, $user_id);
+    return user_in_allow_list('millboard_asset_viewers', $user_id, false);
+}
+
+/**
+ * Is this person on a named allow-list?
+ *
+ * Three panels are now gated this way, so the check lives once. Each list is
+ * an option holding e-mail addresses, because that is what whoever maintains
+ * it will recognise, and it can be changed without a deploy:
+ *
+ *   wp option update <option> --format=json '["a@millboard.com"]' --url=<site>/en-gb/
+ *
+ * ⚠ `$when_empty` is NOT the same for every list, on purpose:
+ *
+ *   millboard_pos_orderers    TRUE  - a working feature being narrowed, so an
+ *                                     empty list means everyone and deploying
+ *                                     the gate changed nothing for anyone.
+ *   millboard_asset_viewers   FALSE - switched back on for a named pair while
+ *   millboard_projects_viewers        the thing behind it is unfinished, so a
+ *                                     mistake must hide the tab rather than
+ *                                     show it to all 99 staff.
+ */
+function user_in_allow_list(string $option, ?int $user_id, bool $when_empty): bool
+{
+    $user_id = $user_id ?: \get_current_user_id();
+
+    if (!$user_id) {
+        return false;
+    }
+
+    $allowed = \array_filter(\array_map(
+        static fn($email): string => \strtolower(\trim((string) $email)),
+        (array) \get_option($option, [])
+    ));
+
+    if (!$allowed) {
+        return $when_empty;
+    }
+
+    $user = \get_userdata($user_id);
+
+    return $user instanceof \WP_User
+        && \in_array(\strtolower($user->user_email), $allowed, true);
+}
+
+/**
+ * May this person see the Projects tab?
+ *
+ * It links somewhere outside the site, so there is no capability and no
+ * endpoint to protect: the list IS the permission. It also does not render
+ * at all until `millboard_projects_url` is set, because a menu item that
+ * goes nowhere is worse than no menu item.
+ */
+function can_view_projects(?int $user_id = null): bool
+{
+    if ('' === projects_url()) {
+        return false;
+    }
+
+    // The named list stays. Aaron asked for advanced installers to see
+    // Projects; he did not ask for the people already watching it to lose it,
+    // and silently removing someone's tab is the worse way to be wrong.
+    return user_in_allow_list('millboard_projects_viewers', $user_id, false)
+        || is_advanced_installer($user_id);
+}
+
+/**
+ * Is this an installer Millboard has marked "advanced"?
+ *
+ * ⚠️ The flag does not live on the account. `advanced_installer` is post meta
+ * on the installer PROFILE, and the only thing joining a profile to a login is
+ * the profile's `email` meta matching the user's address. That join is the
+ * weak part, not this function: on 26 Oct, 10 profiles were flagged and only 5
+ * of them reached an account, because three carried no e-mail at all and two
+ * had an address nobody had registered with.
+ *
+ * So a false here can mean "not advanced" OR "advanced, but nothing links them
+ * to this login". Anyone chasing a missing tab should check the profile before
+ * the code.
+ *
+ * UK by site membership: the role is held on en-gb, which is what "UK
+ * installer" means on a multisite where roles are per site.
+ *
+ * Cached per user for an hour. This runs on every account page render, and
+ * without it every installer costs a meta query to draw a menu.
+ */
+function is_advanced_installer(?int $user_id = null): bool
+{
+    $user_id = $user_id ?: \get_current_user_id();
+
+    if (!$user_id) {
+        return false;
+    }
+
+    $user = \get_userdata($user_id);
+
+    // Cheap test first: all but a few hundred people stop here, and never
+    // touch the database for a profile they do not have.
+    if (!$user instanceof \WP_User
+        || !\in_array(\Theme\Accounts\Roles::ROLE_INSTALLER, (array) $user->roles, true)) {
+        return false;
+    }
+
+    $key = 'mb_advanced_installer_' . $user_id;
+    $cached = \get_transient($key);
+
+    if (false !== $cached) {
+        return '1' === $cached;
+    }
+
+    $profiles = \get_posts([
+        'post_type' => 'installer',
+        'post_status' => 'publish',
+        'numberposts' => 1,
+        'fields' => 'ids',
+        'meta_query' => [
+            'relation' => 'AND',
+            ['key' => 'email', 'value' => $user->user_email],
+            ['key' => 'advanced_installer', 'value' => '1'],
+        ],
+    ]);
+
+    $is = !empty($profiles);
+
+    \set_transient($key, $is ? '1' : '0', HOUR_IN_SECONDS);
+
+    return $is;
+}
+
+/**
+ * Where the decking calculator lives.
+ *
+ * A constant rather than an option, unlike `millboard_projects_url`: that one
+ * is configurable because nobody knew the address when it shipped. This one is
+ * known and settled, so a setting would be a knob nobody turns. If the
+ * calculator ever moves, this line moves with it.
+ */
+const CALCULATOR_URL = 'https://calculator.millboard.com/calculator';
+
+/**
+ * Where the AI visualiser lives. Same reasoning as CALCULATOR_URL.
+ */
+const VISUALISER_URL = 'https://ai-visualiser.millboard.com';
+
+/**
+ * Where the deck planner lives.
+ *
+ * The fragment is part of the address, not decoration: the planner is a
+ * single-page app and routes on `#/en`. Dropping it lands on the app's own
+ * default rather than the English entry point.
+ */
+const DECKPLANNER_URL = 'https://deckplanner.millboard.com/en#/en';
+
+/**
+ * May this person see the Calculator tab?
+ *
+ * Everyone with a Millboard account rather than a plain shop customer, which
+ * is the same audience that already has a Tools group to put it in. Gating it
+ * this way keeps a customer's menu exactly as it is: one flat list of five and
+ * no headings, which is what nav_groups() promises.
+ *
+ * See has_account_tools() for why the test is the one it is.
+ */
+function can_view_calculator(?int $user_id = null): bool
+{
+    return has_account_tools($user_id);
+}
+
+/**
+ * May this person see the Visualiser tab?
+ *
+ * The same audience as the Calculator, so the same gate rather than a second
+ * function that merely happens to agree with it today.
+ */
+function can_view_visualiser(?int $user_id = null): bool
+{
+    return has_account_tools($user_id);
+}
+
+/**
+ * May this person see the Deckplanner tab?
+ *
+ * Same audience again. Three link-outs now share one gate, so widening who
+ * gets the Millboard tools is one change rather than three that have to be
+ * kept in agreement.
+ */
+function can_view_deckplanner(?int $user_id = null): bool
+{
+    return has_account_tools($user_id);
+}
+
+/**
+ * Does this person have a Millboard account, as opposed to a plain customer?
+ *
+ * ⚠️ Tested through CAP_BRAND_ASSETS, which reads oddly as a general test and
+ * is deliberate. Every role in Roles::map() holds that capability and a plain
+ * customer holds none of them, so it is the cheapest accurate answer.
+ * Inventing a capability for this would mean a roles install bump across six
+ * sites in order to gate links to public pages.
+ */
+function has_account_tools(?int $user_id = null): bool
+{
+    $user_id = $user_id ?: \get_current_user_id();
+
+    if (!$user_id) {
+        return false;
+    }
+
+    $user = \get_userdata($user_id);
+
+    if (!$user instanceof \WP_User) {
+        return false;
+    }
+
+    return (bool) \array_intersect($user->roles, tool_roles());
+}
+
+/**
+ * Who the Millboard tools are for.
+ *
+ * Aaron, 26 Oct 2026: internal staff, distributors and installers.
+ *
+ * ⚠️ Named roles, NOT a capability. This used to test CAP_BRAND_ASSETS as a
+ * cheap stand-in for "is one of ours", which was fine while the tools and the
+ * asset library went to the same people. They no longer do: architects (145)
+ * and asset viewers (50) hold that capability and are deliberately NOT on this
+ * list, so the proxy would now quietly hand them four tools nobody asked to
+ * give them.
+ *
+ * staff_roles() rather than ROLE_STAFF alone, or every administrator, editor
+ * and shop manager loses the tools on the day this ships.
+ *
+ * @return string[]
+ */
+function tool_roles(): array
+{
+    return (array) \apply_filters('millboard/account/tool_roles', \array_merge(
+        \Theme\Accounts\Roles::staff_roles(),
+        [
+            \Theme\Accounts\Roles::ROLE_DISTRIBUTOR,
+            \Theme\Accounts\Roles::ROLE_INSTALLER,
+        ]
+    ));
+}
+
+/**
+ * Where Projects points. Empty until someone sets it.
+ */
+function projects_url(): string
+{
+    $url = \trim((string) \get_option('millboard_projects_url', ''));
+
+    return \esc_url_raw($url);
+}
+
+/**
+ * The account menu, split into the groups the design asks for.
+ *
+ * "Your account" is whatever WooCommerce offers. "Tools" is the three panels
+ * this theme adds on top. Membership is decided by naming the tools rather
+ * than the account items, so anything WooCommerce introduces later lands in
+ * the first group, which is where an unrecognised endpoint belongs.
+ *
+ * ⚠️ The caller shows the group HEADINGS only when there is more than one
+ * group, and this returns a single unlabelled group when Tools is empty. A
+ * customer therefore sees one plain list of five, exactly as before. That is
+ * not only cosmetic: headings on a one-group menu would advertise that other
+ * groups exist for other people.
+ *
+ * Order within each group is WooCommerce's, which hooks.php has already set.
+ *
+ * @param array<string,string> $endpoints
+ * @return array<int,array{label: string, items: array<string,string>}>
+ */
+function nav_groups(array $endpoints): array
+{
+    $tools = \array_intersect_key(
+        $endpoints,
+        \array_flip([
+            ENDPOINT_BRAND_ASSETS,
+
+            /*
+             * get_sample_endpoint(), not the constant.
+             *
+             * The slug is per site so France can have a French URL, and the
+             * menu is keyed by whatever that slug is. Naming the English
+             * constant here would drop Sample ordering out of Tools and into
+             * "Your account" on any market that translated its slug.
+             */
+            get_sample_endpoint(),
+
+            // The German dispatch queue. A working tool, and it belongs
+            // beside the one that creates the orders it works.
+            \Granola\Components\WC_Account_Fulfilment\ENDPOINT,
+
+            'projects',
+            'calculator',
+            'visualiser',
+            'deckplanner',
+        ])
+    );
+
+    if (!$tools) {
+        return [['label' => '', 'items' => $endpoints]];
+    }
+
+    return [
+        ['label' => \__('Your account', 'granola'), 'items' => \array_diff_key($endpoints, $tools)],
+        ['label' => \__('Tools', 'granola'), 'items' => $tools],
+    ];
 }
 
 /**
@@ -157,19 +463,7 @@ function can_order_pos(?int $user_id = null): bool
         return true;
     }
 
-    $allowed = \array_filter(\array_map(
-        static fn($email): string => \strtolower(\trim((string) $email)),
-        (array) \get_option('millboard_pos_orderers', [])
-    ));
-
-    if (!$allowed) {
-        return true;
-    }
-
-    $user = \get_userdata($user_id);
-
-    return $user instanceof \WP_User
-        && \in_array(\strtolower($user->user_email), $allowed, true);
+    return user_in_allow_list('millboard_pos_orderers', $user_id, true);
 }
 
 /**
@@ -357,6 +651,158 @@ function get_order_summary(\WC_Order $order): string
     }
 
     return $summary;
+}
+
+/**
+ * A photograph the design asks for, or a placeholder standing in its place.
+ *
+ * The redesign names exactly two: the dashboard hero and the one beside the
+ * empty payment-methods panel. Neither photograph has been chosen yet, so both
+ * slots render a marked placeholder until somebody sets one.
+ *
+ * Set a real image without a deploy, the same way `millboard_projects_url`
+ * works:
+ *
+ *   wp option update millboard_account_images --format=json \
+ *     '{"dash-hero":1234,"pay-empty":5678}' --url=<site>/en-gb/
+ *
+ * ⚠️ The placeholder's wording is deliberately NOT translated. It is
+ * scaffolding, so putting it through Loco would add strings in six locales
+ * that exist only to be deleted. It also carries a dashed outline and says
+ * what it is, because the one thing worse than a missing photograph is a
+ * tasteful grey rectangle nobody notices is unfinished.
+ *
+ * @param string $slot        Which image: 'dash-hero' or 'pay-empty'.
+ * @param string $description What the photograph should eventually be.
+ */
+function account_image(string $slot, string $description): string
+{
+    $images = (array) \get_option('millboard_account_images', []);
+    $id = (int) ($images[$slot] ?? 0);
+
+    if ($id && \wp_attachment_is_image($id)) {
+        // Decorative: every one of these sits beside copy that already says
+        // what the panel is for, so a description here is read-out noise.
+        return \wp_get_attachment_image($id, 'large', false, [
+            'class' => 'mb-account-figure__image',
+            'alt' => '',
+            'loading' => 'lazy',
+        ]);
+    }
+
+    return \sprintf(
+        '<span class="mb-account-figure__placeholder">'
+            . '<span class="mb-account-figure__flag">Placeholder</span>'
+            . '<span class="mb-account-figure__note">%s</span>'
+        . '</span>',
+        \esc_html($description)
+    );
+}
+
+/**
+ * The board shades in an order, as swatches, at most three.
+ *
+ * What a customer actually recognises an order by is the colour of the board,
+ * which the one-line summary can only spell out in words. Three chips at the
+ * head of the row say "the grey one" faster than any sentence.
+ *
+ * ⚠️ The swatch is the TERM's own image, not a hex value. The redesign's
+ * prototype used a hand-written table of twelve approximate hex tones, which
+ * would be a second source of truth for product colour and would drift from
+ * the real boards the first time one is retouched. The images are already in
+ * `pa_colour` term meta and are what the shop renders everywhere else.
+ *
+ * A shade with no swatch image is skipped rather than drawn as an empty box.
+ *
+ * @return array<int,array{name: string, src: string}>
+ */
+function order_shade_swatches(\WC_Order $order, int $limit = 3): array
+{
+    $found = [];
+
+    foreach ($order->get_items() as $item) {
+        if (!$item instanceof \WC_Order_Item_Product) {
+            continue;
+        }
+
+        $product = $item->get_product();
+
+        if (!$product instanceof \WC_Product) {
+            continue;
+        }
+
+        $term = null;
+
+        // A variation records the shade it was bought in on itself, as a slug.
+        // Reading the parent's terms instead would give whichever colour
+        // happens to be first, so a Jarrah order could show an Ashwood chip.
+        if ($product instanceof \WC_Product_Variation) {
+            $slug = (string) ($product->get_attributes()[SHADE_TAXONOMY] ?? '');
+            $term = '' !== $slug ? \get_term_by('slug', $slug, SHADE_TAXONOMY) : null;
+        }
+
+        if (!$term instanceof \WP_Term) {
+            $terms = \wc_get_product_terms(
+                $product->get_parent_id() ?: $product->get_id(),
+                SHADE_TAXONOMY,
+                ['fields' => 'all']
+            );
+
+            $term = \is_array($terms) && $terms ? $terms[0] : null;
+        }
+
+        if (!$term instanceof \WP_Term || isset($found[$term->term_id])) {
+            continue;
+        }
+
+        $image = (int) \get_term_meta($term->term_id, 'image', true);
+        $src = $image ? (string) \wp_get_attachment_image_url($image, 'thumbnail') : '';
+
+        if ('' === $src) {
+            continue;
+        }
+
+        $found[$term->term_id] = ['name' => $term->name, 'src' => $src];
+
+        if (\count($found) >= $limit) {
+            break;
+        }
+    }
+
+    return \array_values($found);
+}
+
+/**
+ * Those swatches as markup, so both order lists stay one line each.
+ *
+ * Decorative on purpose. The summary beside it already names the shade in
+ * words ("Enhanced Grain 126mm Antique Oak and more"), so announcing the chips
+ * as well would read the same colour out twice. The title attribute is there
+ * for a sighted pointer user, not for assistive technology.
+ */
+function order_shade_chips(\WC_Order $order, int $limit = 3): string
+{
+    $swatches = order_shade_swatches($order, $limit);
+
+    // The container is rendered even with nothing in it. It reserves the width
+    // of three chips, which is what keeps the column of order numbers aligned
+    // down the page; an order of accessories with no board in it would
+    // otherwise start its number 108px to the left of the row above.
+    $out = '<span class="mb-account-orders__chips" aria-hidden="true">';
+
+    foreach ($swatches as $swatch) {
+        // An <img>, not a background-image. Both templates pass this through
+        // wp_kses_post, which runs inline styles through safecss_filter_attr
+        // and is free to drop a url(), so a background would have risked
+        // rendering three empty boxes. An img needs no inline style at all.
+        $out .= \sprintf(
+            '<img class="mb-account-orders__chip" src="%s" alt="" title="%s" width="44" height="44" loading="lazy" />',
+            \esc_url($swatch['src']),
+            \esc_attr($swatch['name'])
+        );
+    }
+
+    return $out . '</span>';
 }
 
 /**

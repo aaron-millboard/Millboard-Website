@@ -63,7 +63,7 @@
         font-weight: 700;
         letter-spacing: var(--mbh-tracking-sub, 0.16em);
         text-transform: uppercase;
-        color: #6e6a6c;
+        color: var(--mba-muted, #5a5458);
     }
 
     // -------------------------------------------------------------
@@ -74,8 +74,90 @@
         margin: 0;
         padding: 0;
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(#{px-to-rem(180)}, 1fr));
+        // Stretching tracks, which the fixed 240px one used to rule out: a
+        // 240px thumbnail upscales and softens in a wider column. The tile now
+        // loads Canto's 800px `directUrlPreview` instead, so a column of any
+        // reasonable width is downscaling, and the row can fill the panel
+        // rather than leaving a gutter down the right.
+        // auto-FILL, not auto-fit. Both stretch the tracks to fill the row,
+        // but auto-fit collapses the empty ones, so an album holding a single
+        // asset rendered that one tile across the entire panel.
+        grid-template-columns: repeat(auto-fill, minmax(#{px-to-rem(240)}, 1fr));
         gap: #{px-to-rem(20)};
+    }
+
+    // Folders carry no image, so they may fill the row rather than leaving a
+    // gutter of empty space beside them.
+    &__item--folder {
+        grid-column: span 1;
+    }
+
+    // ---- while a page loads -------------------------------------
+    // The grid keeps its shape rather than emptying. Collapsing it throws the
+    // rest of the page up the screen, which on a slow reply reads as the
+    // content having disappeared rather than being on its way.
+    &__item--skeleton {
+        border-color: transparent;
+        background-color: var(--mba-mist, #dedbd2);
+        min-height: #{px-to-rem(220)};
+
+        @media (prefers-reduced-motion: no-preference) {
+            animation: mb-assets-pulse 1.4s ease-in-out infinite;
+        }
+    }
+
+    &__status {
+        margin: 0 0 #{px-to-rem(16)};
+        font-size: #{px-to-rem(13)};
+        color: var(--mba-muted, #5a5458);
+
+        &:empty {
+            display: none;
+        }
+    }
+
+    // ---- the pager ----------------------------------------------
+    // Only the pages reached, plus the next one. There is no total to count
+    // towards: the real one includes assets this person may not see.
+    &__pager {
+        display: flex;
+        flex-wrap: wrap;
+        gap: #{px-to-rem(8)};
+        align-items: center;
+        justify-content: center;
+        margin-top: #{px-to-rem(24)};
+        padding-top: #{px-to-rem(24)};
+        border-top: 1px solid var(--mbh-rule, #{rgba(#2f292e, 0.18)});
+    }
+
+    &__page {
+        min-width: #{px-to-rem(44)};
+        min-height: #{px-to-rem(44)};
+        padding: 0 #{px-to-rem(12)};
+        background: none;
+        border: 1px solid var(--mbh-rule, #{rgba(#2f292e, 0.18)});
+        font-family: inherit;
+        font-size: #{px-to-rem(13)};
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        color: var(--color--foreground);
+        cursor: pointer;
+
+        &:hover:not(:disabled),
+        &:focus-visible {
+            border-color: var(--color--foreground);
+        }
+
+        &.is-current {
+            background-color: var(--color--foreground);
+            border-color: var(--color--foreground);
+            color: var(--color--brand-2);
+        }
+
+        &:disabled {
+            opacity: 0.4;
+            cursor: default;
+        }
     }
 
     &__item {
@@ -126,7 +208,7 @@
         font-weight: 700;
         letter-spacing: 0.18em;
         text-transform: uppercase;
-        color: #6e6a6c;
+        color: var(--mba-muted, #5a5458);
     }
 
     // ---- assets ----
@@ -169,6 +251,211 @@
     &__more {
         margin: #{px-to-rem(24)} 0 0;
         font-size: #{px-to-rem(13)};
-        color: #6e6a6c;
+        color: var(--mba-muted, #5a5458);
     }
+}
+
+@keyframes mb-assets-pulse {
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.55;
+    }
+}
+
+// ---- breadcrumb ------------------------------------------------
+// Written as its own top-level block rather than nested into .mb-assets:
+// splicing into the middle of a nested file is how a brace ends up closing
+// the wrong rule, and a brace count still balances when it does.
+.mb-assets__crumb {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: #{px-to-rem(8)};
+    margin: 0;
+}
+
+.mb-assets__crumb-sep {
+    opacity: 0.4;
+}
+
+.mb-assets__crumb-link {
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+
+    &:hover,
+    &:focus-visible {
+        border-bottom-color: currentColor;
+    }
+}
+
+// ---- the View control ------------------------------------------
+// A button, not a link: it opens an overlay rather than going anywhere, and a
+// link with no href is unreachable by keyboard. It still has to LOOK like the
+// Download and In Canto links beside it, and it carries .mb-account-link to
+// do that.
+//
+// Wrapped in :where() so this whole block has zero specificity. A plain
+// .mb-assets__view ties with .mb-account-link, and whichever stylesheet
+// happens to load second wins -- which is how the button ended up a different
+// colour, weight and underline to its neighbours. At zero specificity the
+// link class always provides colour, font-size and the bottom hairline, and
+// this only strips the chrome a <button> brings with it.
+:where(.mb-assets__view) {
+    appearance: none;
+    background: none;
+    border: 0;
+    padding: 0;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+}
+
+// ---- lightbox --------------------------------------------------
+.mb-assets-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: #{px-to-rem(16)};
+    padding: #{px-to-rem(32)};
+    background: rgba(0, 0, 0, 0.82);
+
+    &[hidden] {
+        display: none;
+    }
+}
+
+.mb-assets-lightbox__image {
+    max-width: 100%;
+    // Leaves room for the caption and close control without either being
+    // pushed off a short viewport.
+    max-height: calc(100vh - #{px-to-rem(160)});
+    object-fit: contain;
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.mb-assets-lightbox__caption {
+    color: #fff;
+    text-align: center;
+    word-break: break-word;
+    max-width: 60ch;
+}
+
+.mb-assets-lightbox__close {
+    position: absolute;
+    top: #{px-to-rem(16)};
+    right: #{px-to-rem(16)};
+    appearance: none;
+    background: none;
+    border: 0;
+    color: #fff;
+    font-size: #{px-to-rem(28)};
+    line-height: 1;
+    padding: #{px-to-rem(8)};
+    cursor: pointer;
+}
+
+// ---- grid / list toggle ----------------------------------------
+.mb-assets__views {
+    display: inline-flex;
+    gap: #{px-to-rem(4)};
+}
+
+.mb-assets__view-toggle {
+    appearance: none;
+    background: none;
+    border: 0;
+    padding: #{px-to-rem(4)} #{px-to-rem(8)};
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+    opacity: 0.55;
+    border-bottom: 2px solid transparent;
+
+    &.is-current {
+        opacity: 1;
+        border-bottom-color: currentColor;
+    }
+}
+
+// ---- list layout -----------------------------------------------
+// One class on the panel re-lays the same markup, so search and paging keep
+// working untouched: they replace the <li> contents, never this wrapper.
+.mb-account-assets.is-list {
+    .mb-assets__grid {
+        display: block;
+    }
+
+    .mb-assets__item {
+        display: block;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    // Two children, not three: the tile is a <figure> holding the thumb and a
+    // <figcaption>, and the caption is what carries the name and the actions.
+    // Laying this out as three columns left the actions stacked under the name.
+    .mb-assets__asset,
+    .mb-assets__link {
+        display: grid;
+        grid-template-columns: #{px-to-rem(56)} 1fr;
+        align-items: center;
+        gap: #{px-to-rem(16)};
+        padding: #{px-to-rem(10)} #{px-to-rem(12)};
+    }
+
+    .mb-assets__thumb {
+        width: #{px-to-rem(56)};
+        aspect-ratio: 1;
+    }
+
+    // The caption becomes the row: name on the left, actions hard right.
+    .mb-assets__caption {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: #{px-to-rem(16)};
+        padding: 0;
+    }
+
+    .mb-assets__name {
+        // Long Canto filenames must not push the actions off the row.
+        overflow-wrap: anywhere;
+    }
+
+    .mb-assets__actions {
+        gap: #{px-to-rem(12)};
+        flex-wrap: nowrap;
+        white-space: nowrap;
+        // Clears the `margin-top: auto` that pins actions to the bottom of a
+        // grid card, which in a row would shove them off centre.
+        margin-top: 0;
+    }
+}
+
+// ---- folder blurb ----------------------------------------------
+// Canto's own folder description, shown under the name on a container tile.
+// Clamped rather than truncated server-side so the full text stays in the
+// markup for anyone reading it with a screen reader or searching the page.
+.mb-assets__blurb {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-size: #{px-to-rem(13)};
+    line-height: 1.45;
+    color: var(--mba-muted, #5a5458);
+}
+
+// In a row there is no height to clamp into, so it sits on one line and the
+// name keeps priority.
+.mb-account-assets.is-list .mb-assets__blurb {
+    -webkit-line-clamp: 1;
 }

@@ -47,7 +47,18 @@ $has_widget = shortcode_exists($shortcode) && has_catalogue();
 
     <?php if ($has_widget) : ?>
 
-        <div class="mb-account-samples__widget">
+        <?php
+        // These two belong to markup the widget owns, so they are handed over
+        // as data attributes and placed by this component's script. Keeping
+        // them in PHP is what makes them translatable: a string built in the
+        // JS bundle never reaches Loco, and this panel already ships in six
+        // locales.
+        ?>
+        <div
+            class="mb-account-samples__widget"
+            data-empty-note="<?php esc_attr_e('Add a sample to continue', 'granola'); ?>"
+            data-selected-note="<?php esc_attr_e('%d selected', 'granola'); ?>"
+        >
             <?php echo do_shortcode('[' . $shortcode . ']'); ?>
         </div>
 

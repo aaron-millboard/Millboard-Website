@@ -121,6 +121,39 @@
         }
 
         // ---- accordions ---------------------------------------------
+        // Mist strips with a gap between them, not boxed hairlines. Twenty-one
+        // stacked outlines read as a wireframe; twenty-one filled strips read
+        // as a list you can run your eye down.
+        .accordion {
+            border: 0;
+            margin-bottom: #{px-to-rem(6)};
+        }
+
+        .accordion-header {
+            background-color: var(--color--brand-1);
+            border: 0;
+            padding: #{px-to-rem(14)} #{px-to-rem(18)};
+            min-height: #{px-to-rem(44)};
+
+            &:hover,
+            &:focus-visible {
+                background-color: #d3cfc5;
+            }
+        }
+
+        // "4 selected", written by this component's script. The widget only
+        // ever shows a section's total item count, so with every accordion
+        // shut there was nothing to say which one held the order.
+        .mb-sof-selected {
+            font-size: #{px-to-rem(11)};
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            padding: #{px-to-rem(4)} #{px-to-rem(8)};
+            border: 1px solid var(--color--foreground);
+            white-space: nowrap;
+        }
+
         .accordion-title {
             font-size: #{px-to-rem(13)};
             font-weight: 700;
@@ -140,7 +173,37 @@
 
         .product-sku {
             font-size: #{px-to-rem(13)};
-            color: #6e6a6c;
+            color: var(--mba-muted, #5a5458);
+        }
+
+        // ---- the stepper --------------------------------------------
+        // Three 44px targets. A rep works down a long list on a tablet, and a
+        // 28px plus sign is the difference between one pass and three.
+        .stepper-btn {
+            min-width: #{px-to-rem(44)};
+            min-height: #{px-to-rem(44)};
+
+            &:disabled {
+                opacity: 0.4;
+                cursor: default;
+            }
+        }
+
+        .stepper-qty {
+            min-height: #{px-to-rem(44)};
+            font-size: #{px-to-rem(16)};
+        }
+
+        // A row holding something says so without relying on colour: fill,
+        // border and weight change together, so it survives a greyscale print
+        // and a red-green deficiency alike.
+        .stepper.has-qty {
+            background-color: var(--color--brand-1);
+            border: 1px solid var(--color--foreground);
+
+            .stepper-qty {
+                font-weight: 700;
+            }
         }
 
         // ---- the primary button -------------------------------------
@@ -167,12 +230,38 @@
         // ---- the sticky basket bar ----------------------------------
         // Sticky works in this column: the account body sets no overflow, and
         // the nav beside it pins from the same ancestry.
+        // Sustainable Green, not Charcoal Black. Charcoal is the type colour,
+        // and a full-width charcoal bar competes with every word above it.
+        // Spring Wood on Sustainable Green measures 10.3:1.
         .order-bar {
-            background-color: var(--color--foreground);
+            background-color: var(--color--brand-6, #34401a);
             color: var(--color--brand-2);
             box-shadow: none;
             border: 0;
             padding: #{px-to-rem(16)} #{px-to-rem(20)};
+            gap: #{px-to-rem(12)} #{px-to-rem(20)};
+
+            // Stays sticky to the content column, as an earlier fix set up on
+            // purpose so it does not weld itself over the theme footer. Only
+            // the offset changes, 12px to the design's 16px.
+            bottom: #{px-to-rem(16)};
+
+            // Square, like everything else in this panel. The widget ships a
+            // radius; the account vocabulary has none.
+            border-radius: 0;
+        }
+
+        // Why Continue is disabled, rather than a dead button and no reason.
+        // Placed by this component's script; the text comes from PHP so it
+        // still reaches Loco.
+        .mb-sof-note {
+            font-size: #{px-to-rem(13)};
+            color: var(--color--brand-2);
+            opacity: 0.85;
+        }
+
+        &.has-order .mb-sof-note {
+            display: none;
         }
 
         .order-bar-stat {
@@ -188,8 +277,24 @@
             letter-spacing: 0;
         }
 
-        // The bar is charcoal, so its button inverts to stay visible.
+        // Outlined while there is nothing to continue with, solid once there
+        // is. The button earns its fill rather than sitting there looking
+        // pressable over an empty order.
         .order-bar .btn-primary {
+            background-color: transparent;
+            color: var(--color--brand-2);
+            border-color: var(--color--brand-2);
+
+            &:disabled {
+                // The outline already says "not yet", and the note beside it
+                // says why, so this does not also need to fade out of
+                // readability. 10.3:1 stays 10.3:1.
+                opacity: 1;
+                cursor: default;
+            }
+        }
+
+        &.has-order .order-bar .btn-primary {
             background-color: var(--color--brand-2);
             color: var(--color--foreground);
             border-color: var(--color--brand-2);
