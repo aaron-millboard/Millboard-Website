@@ -94,13 +94,51 @@ function is_sample_ordering_site(): bool
  * a millboard.com address, or can edit_posts", which let 22 people in and had
  * no way to describe a distributor or an installer -- both of whom need these
  * tools and are not staff. See Theme\Accounts\Roles for the map.
+ *
+ * CAPABILITY **OR** ALLOW-LIST, as of 29 Oct 2026. It used to be capability
+ * AND allow-list, which was deliberate while the asset library was unfinished:
+ * an empty list meant nobody, so a mistake hid the tab rather than showing an
+ * unfinished thing to every member of staff.
+ *
+ * The library is finished, and the AND had become the whole gate rather than a
+ * guard on it. On en-gb all 1,084 partners held the capability and NONE could
+ * open Resources, because the list named three people. Filling the list fixed
+ * that for exactly the accounts that existed that afternoon: eleven
+ * distributors created an hour later inherited nothing, because the list holds
+ * ADDRESSES and a new account is not in it. That is a maintenance trap, not a
+ * control.
+ *
+ * So the capability decides, and the list survives as an EXTRA grant: a way to
+ * let in somebody whose role does not carry the capability, without inventing
+ * a role for them. An empty list now takes nothing away.
+ *
+ * ⚠ THIS DELIBERATELY DOES NOT CHECK `millboard_portal_disabled`.
+ *
+ * That flag marked 30 leavers on 7 Oct 2026, and it gated nothing: grepping
+ * the theme on 29 Oct found it read only by the launch mailer, so all 30 could
+ * still order samples and POS stock months after leaving. Resources was shut
+ * to them only because the allow-list fill happened to skip them, which is
+ * luck rather than a control.
+ *
+ * Aaron's answer was to DELETE leavers rather than flag them, and all 30 were
+ * removed the same day. Checking the flag here would imply it is a live
+ * access control that somebody maintains. It is not, and a gate that looks
+ * like a safeguard but is not one is worse than no gate at all.
+ *
+ * If flagging ever becomes the policy again, the check belongs in
+ * user_can_mb() so it covers samples and POS too, not bolted onto this gate
+ * alone.
  */
 function can_view_brand_assets(?int $user_id = null): bool
 {
-    if (!user_can_mb(\Theme\Accounts\Roles::CAP_BRAND_ASSETS, $user_id)) {
-        return false;
+    if (user_can_mb(\Theme\Accounts\Roles::CAP_BRAND_ASSETS, $user_id)) {
+        return true;
     }
 
+    /*
+     * Named exceptions only. `false` when empty still matters here: it is the
+     * answer for somebody WITHOUT the capability, and it must stay "no".
+     */
     return user_in_allow_list('millboard_asset_viewers', $user_id, false);
 }
 
@@ -118,10 +156,16 @@ function can_view_brand_assets(?int $user_id = null): bool
  *   millboard_pos_orderers    TRUE  - a working feature being narrowed, so an
  *                                     empty list means everyone and deploying
  *                                     the gate changed nothing for anyone.
- *   millboard_asset_viewers   FALSE - switched back on for a named pair while
- *   millboard_projects_viewers        the thing behind it is unfinished, so a
+ *   millboard_projects_viewers FALSE - the thing behind it is unfinished, so a
  *                                     mistake must hide the tab rather than
  *                                     show it to all 99 staff.
+ *   millboard_asset_viewers   FALSE - but it is no longer the whole gate. Since
+ *                                     29 Oct 2026 can_view_brand_assets() asks
+ *                                     capability OR list, so this list only
+ *                                     ever ADDS somebody; `false` is the right
+ *                                     answer for a person without the
+ *                                     capability and an empty list now takes
+ *                                     nothing away from anyone who has it.
  */
 function user_in_allow_list(string $option, ?int $user_id, bool $when_empty): bool
 {
