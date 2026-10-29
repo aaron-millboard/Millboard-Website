@@ -1632,3 +1632,33 @@
         text-decoration: none;
     }
 }
+
+// Dispatch details on a customer's order, where the fulfilment team has filled
+// them in. German sample orders only today, so most orders never show it.
+.mb-account-order__dispatch-list {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: #{px-to-rem(6)} #{px-to-rem(20)};
+    margin: 0;
+
+    dt {
+        font-size: #{px-to-rem(12)};
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        opacity: 0.7;
+    }
+
+    dd {
+        margin: 0;
+        font-size: #{px-to-rem(15)};
+    }
+}
+
+// A tracking number is read aloud, typed into a courier's site and compared
+// character by character, so it gets tabular figures and room to breathe.
+.mb-account-order__tracking {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.04em;
+    word-break: break-all;
+}
