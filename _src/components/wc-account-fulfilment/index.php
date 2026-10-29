@@ -81,11 +81,11 @@ SampleFulfilment::enqueue_editor();
 
 		<span class="mb-fulfilment__toggle">
 			<?php if ($mb_request['outstanding']) : ?>
-				<a class="mb-account-link" href="<?php echo esc_url(panel_url(['mbfall' => 1, 'mbfp' => null])); ?>">
+				<a class="mb-account-btn mb-account-btn--ghost" href="<?php echo esc_url(panel_url(['mbfall' => 1, 'mbfp' => null])); ?>">
 					<?php esc_html_e('Erledigte ebenfalls anzeigen', 'granola'); ?>
 				</a>
 			<?php else : ?>
-				<a class="mb-account-link" href="<?php echo esc_url(panel_url(['mbfall' => null, 'mbfp' => null])); ?>">
+				<a class="mb-account-btn mb-account-btn--ghost" href="<?php echo esc_url(panel_url(['mbfall' => null, 'mbfp' => null])); ?>">
 					<?php esc_html_e('Nur offene Bestellungen anzeigen', 'granola'); ?>
 				</a>
 			<?php endif; ?>
@@ -99,16 +99,21 @@ SampleFulfilment::enqueue_editor();
 			 */
 			if ($mb_request['historic']) :
 				?>
-				<a class="mb-account-link" href="<?php echo esc_url(panel_url(['mbfold' => null, 'mbfp' => null])); ?>">
+				<a class="mb-account-btn mb-account-btn--ghost" href="<?php echo esc_url(panel_url(['mbfold' => null, 'mbfp' => null])); ?>">
 					<?php esc_html_e('Ältere Bestellungen ausblenden', 'granola'); ?>
 				</a>
 			<?php else : ?>
-				<a class="mb-account-link" href="<?php echo esc_url(panel_url(['mbfold' => 1, 'mbfp' => null])); ?>">
+				<a class="mb-account-btn mb-account-btn--ghost" href="<?php echo esc_url(panel_url(['mbfold' => 1, 'mbfp' => null])); ?>">
 					<?php
 					printf(
 						/* translators: %s: the date this flow went live, e.g. 26.10.2026. */
 						esc_html__('Auch Bestellungen vor dem %s anzeigen', 'granola'),
-						esc_html(date_i18n(get_option('date_format'), (int) strtotime(SampleFulfilment::LIVE_FROM)))
+						/*
+						 * 'j. F Y', not the site's date_format. German puts a full stop
+						 * after the day, and this panel is German by definition. The site
+						 * format is j F Y, which rendered "26 Oktober 2026".
+						 */
+						esc_html(date_i18n('j. F Y', (int) strtotime(SampleFulfilment::LIVE_FROM)))
 					);
 					?>
 				</a>
