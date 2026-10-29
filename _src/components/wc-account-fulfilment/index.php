@@ -56,6 +56,10 @@ SampleFulfilment::enqueue_editor();
 			<input type="hidden" name="mbfall" value="1">
 		<?php endif; ?>
 
+		<?php if ($mb_request['historic']) : ?>
+			<input type="hidden" name="mbfold" value="1">
+		<?php endif; ?>
+
 		<label class="mb-fulfilment__search">
 			<span class="screen-reader-text"><?php esc_html_e('Bestellungen durchsuchen', 'granola'); ?></span>
 			<input
@@ -82,6 +86,30 @@ SampleFulfilment::enqueue_editor();
 			<?php else : ?>
 				<a class="mb-account-link" href="<?php echo esc_url(panel_url(['mbfall' => null, 'mbfp' => null])); ?>">
 					<?php esc_html_e('Nur offene Bestellungen anzeigen', 'granola'); ?>
+				</a>
+			<?php endif; ?>
+
+			<?php
+			/*
+			 * The older orders are one link away rather than gone. They were
+			 * fulfilled from the spreadsheet and are here for reference, so
+			 * hiding them by default is what makes this a queue -- but the
+			 * agency still needs to be able to look one up.
+			 */
+			if ($mb_request['historic']) :
+				?>
+				<a class="mb-account-link" href="<?php echo esc_url(panel_url(['mbfold' => null, 'mbfp' => null])); ?>">
+					<?php esc_html_e('Ältere Bestellungen ausblenden', 'granola'); ?>
+				</a>
+			<?php else : ?>
+				<a class="mb-account-link" href="<?php echo esc_url(panel_url(['mbfold' => 1, 'mbfp' => null])); ?>">
+					<?php
+					printf(
+						/* translators: %s: the date this flow went live, e.g. 26.10.2026. */
+						esc_html__('Auch Bestellungen vor dem %s anzeigen', 'granola'),
+						esc_html(date_i18n(get_option('date_format'), (int) strtotime(SampleFulfilment::LIVE_FROM)))
+					);
+					?>
 				</a>
 			<?php endif; ?>
 		</span>
