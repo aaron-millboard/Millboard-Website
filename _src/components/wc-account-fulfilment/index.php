@@ -82,7 +82,7 @@ SampleFulfilment::enqueue_editor();
 		<span class="mb-fulfilment__toggle">
 			<?php if ($mb_request['outstanding']) : ?>
 				<a class="mb-account-link" href="<?php echo esc_url(panel_url(['mbfall' => 1, 'mbfp' => null])); ?>">
-					<?php esc_html_e('Versendete ebenfalls anzeigen', 'granola'); ?>
+					<?php esc_html_e('Erledigte ebenfalls anzeigen', 'granola'); ?>
 				</a>
 			<?php else : ?>
 				<a class="mb-account-link" href="<?php echo esc_url(panel_url(['mbfall' => null, 'mbfp' => null])); ?>">
@@ -121,7 +121,7 @@ SampleFulfilment::enqueue_editor();
 		if ($mb_request['outstanding']) {
 			printf(
 				/* translators: %s: a number of orders. */
-				esc_html(_n('%s Bestellung noch zu versenden.', '%s Bestellungen noch zu versenden.', $mb_page['total'], 'granola')),
+				esc_html(_n('%s Bestellung noch offen.', '%s Bestellungen noch offen.', $mb_page['total'], 'granola')),
 				esc_html(number_format_i18n($mb_page['total']))
 			);
 		} else {
@@ -141,7 +141,7 @@ SampleFulfilment::enqueue_editor();
 			if ('' !== $mb_request['search']) {
 				esc_html_e('Keine Treffer für diese Suche.', 'granola');
 			} elseif ($mb_request['outstanding']) {
-				esc_html_e('Nichts offen. Alle Bestellungen haben ein Versanddatum.', 'granola');
+				esc_html_e('Nichts offen. Alle Bestellungen sind erledigt.', 'granola');
 			} else {
 				esc_html_e('Noch keine Bestellungen.', 'granola');
 			}
@@ -160,11 +160,17 @@ SampleFulfilment::enqueue_editor();
 						<th scope="col"><?php esc_html_e('Versanddatum', 'granola'); ?></th>
 						<th scope="col"><?php esc_html_e('Sendungsnummer', 'granola'); ?></th>
 						<th scope="col"><?php esc_html_e('Anmerkungen', 'granola'); ?></th>
+						<th scope="col"><?php esc_html_e('Erledigt', 'granola'); ?></th>
 					</tr>
 				</thead>
 				<tbody>
-					<?php foreach ($mb_orders as $mb_order) : ?>
-						<tr>
+					<?php
+					foreach ($mb_orders as $mb_order) :
+						// Greyed once it has been ticked off, which is only ever visible
+						// in the "show everything" view -- the queue itself has none.
+						$mb_done = '' !== (string) $mb_order->get_meta(SampleFulfilment::META_DONE);
+						?>
+						<tr<?php echo $mb_done ? ' class="is-done"' : ''; ?>>
 							<th scope="row" class="mb-fulfilment__order">
 								<span class="mb-fulfilment__number">#<?php echo esc_html($mb_order->get_order_number()); ?></span>
 								<span class="mb-fulfilment__date">
@@ -224,6 +230,19 @@ SampleFulfilment::enqueue_editor();
 									<?php SampleFulfilment::column($mb_field, $mb_order); ?>
 								</td>
 							<?php endforeach; ?>
+
+							<?php
+							/*
+							 * The tick, and the only way a line leaves this list.
+							 *
+							 * Deliberately separate from the dispatch date. Most orders are
+							 * posted and get a date; some end without a parcel and get only
+							 * a note, and both need a way out of the queue.
+							 */
+							?>
+							<td class="mb-fulfilment__tick">
+								<?php SampleFulfilment::done_button($mb_order); ?>
+							</td>
 						</tr>
 					<?php endforeach; ?>
 				</tbody>

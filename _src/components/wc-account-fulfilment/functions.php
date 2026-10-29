@@ -155,21 +155,33 @@ function page_of_orders(array $request): array
 
     if ($request['outstanding']) {
         /*
-         * Not yet dispatched: no date, or a date that was cleared.
+         * Not finished with: nobody has ticked it off.
          *
-         * Both halves are needed. An order that has never been touched has no
-         * meta row at all, and one whose date was deleted has an empty one,
-         * and only testing for the second would hide every order nobody has
-         * opened yet -- which is the entire queue.
+         * This used to key on the dispatch date, which made posting the parcel
+         * the only way a line could leave -- and some orders end without a
+         * parcel. A return, a bad address, a duplicate: the agency writes a
+         * note and that is the end of it, and under the old rule the row stayed
+         * in the queue forever.
+         *
+         * So the tick is now the only exit, and the date is just data. Typing a
+         * date still completes the order and mails the customer their tracking,
+         * exactly as before; it simply no longer decides what the queue shows.
+         * That also gives the agency as long as it likes to type the tracking
+         * number and a note, instead of racing a row that vanished when the
+         * date went in.
+         *
+         * Both halves are needed. An order nobody has touched has no meta row
+         * at all, and one that was unticked has an empty one; testing only for
+         * the second would hide the entire queue.
          */
         $args['meta_query'] = [
             'relation' => 'OR',
             [
-                'key' => SampleFulfilment::META_DISPATCHED_ON,
+                'key' => SampleFulfilment::META_DONE,
                 'compare' => 'NOT EXISTS',
             ],
             [
-                'key' => SampleFulfilment::META_DISPATCHED_ON,
+                'key' => SampleFulfilment::META_DONE,
                 'value' => '',
                 'compare' => '=',
             ],

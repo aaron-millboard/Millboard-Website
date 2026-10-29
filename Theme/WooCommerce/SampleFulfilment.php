@@ -40,6 +40,25 @@ class SampleFulfilment
     public const META_NOTES = '_mb_anmerkungen';
 
     /**
+     * "I have finished with this line."
+     *
+     * The queue's ONLY exit, and deliberately a separate thing from the
+     * dispatch date.
+     *
+     * The two used to be the same, which meant a line could leave only by
+     * being posted -- and the spreadsheet this flow replaces has 63 rows
+     * carrying a note and no dispatch date: returns, bad addresses,
+     * duplicates, orders that ended without a parcel ever going out. There
+     * was no way to close one of those, so it would have sat in the queue
+     * until the agency learned to ignore the count.
+     *
+     * It is a queue flag and nothing more. It does not touch the order's
+     * status and it never mails anybody. Only a dispatch date does that,
+     * through apply(), which this does not go near.
+     */
+    public const META_DONE = '_mb_erledigt';
+
+    /**
      * Orders created before this never trigger a dispatch e-mail.
      *
      * Everything older is history the agency already has, imported for
@@ -64,6 +83,7 @@ class SampleFulfilment
         // Editing in the list itself, which is the point of the feature.
         \add_action('admin_enqueue_scripts', [self::class, 'admin_assets']);
         \add_action('wp_ajax_mb_fulfil_inline', [self::class, 'ajax_inline']);
+        \add_action('wp_ajax_mb_fulfil_done', [self::class, 'ajax_done']);
 
         // The agency works the queue in My Account and has no business behind
         // the dashboard. See keep_out_of_admin().
@@ -188,6 +208,75 @@ class SampleFulfilment
     }
 
     /**
+     * The "done" control for one row.
+     *
+     * Rendered by the class that owns the meta, as column() is, so the markup
+     * the editor script looks for is defined in exactly one place.
+     */
+    public static function done_button(\WC_Order $order): void
+    {
+        $done = '' !== (string) $order->get_meta(self::META_DONE);
+
+        \printf(
+            '<button type="button" class="mb-fulfil-done%s" data-order="%d" data-done="%s" title="%s">%s</button>',
+            $done ? ' is-done' : '',
+            $order->get_id(),
+            $done ? '1' : '',
+            $done
+                ? \esc_attr__('Wieder in die Liste aufnehmen', 'granola')
+                : \esc_attr__('Aus der Liste entfernen', 'granola'),
+            $done
+                ? \esc_html__('Erledigt', 'granola')
+                : \esc_html__('Erledigen', 'granola')
+        );
+    }
+
+    /**
+     * Tick or untick one row.
+     *
+     * Its own handler rather than a fourth field on ajax_inline(), because
+     * ajax_inline() routes everything through apply() -- the method that
+     * decides whether completing an order mails a customer. This writes one
+     * flag and touches nothing else, and keeping the two apart is what
+     * guarantees that ticking a row can never send an e-mail.
+     */
+    public static function ajax_done(): void
+    {
+        if (!\check_ajax_referer('mb_fulfil_inline', 'nonce', false)) {
+            \wp_send_json_error(['message' => 'bad nonce'], 403);
+        }
+
+        if (!\current_user_can('edit_shop_orders')) {
+            \wp_send_json_error(['message' => 'not permitted'], 403);
+        }
+
+        $order = \wc_get_order(isset($_POST['order']) ? \absint($_POST['order']) : 0);
+
+        if (!$order instanceof \WC_Order) {
+            \wp_send_json_error(['message' => 'unknown order'], 400);
+        }
+
+        $want = !empty($_POST['done']);
+
+        if ($want) {
+            $order->update_meta_data(self::META_DONE, \current_time('mysql'));
+            $order->add_order_note(
+                \sprintf(
+                    /* translators: %s: the name of the person who ticked it off. */
+                    \__('Musterversand abgeschlossen von %s.', 'granola'),
+                    \wp_get_current_user()->display_name
+                )
+            );
+        } else {
+            $order->delete_meta_data(self::META_DONE);
+        }
+
+        $order->save();
+
+        \wp_send_json_success(['done' => $want]);
+    }
+
+    /**
      * The inline editor: the whole point of this feature.
      *
      * The agency's job is a list of parcels, not 200 order screens. Opening an
@@ -237,6 +326,13 @@ class SampleFulfilment
             'nonce' => \wp_create_nonce('mb_fulfil_inline'),
             'saving' => \__('Saving…', 'granola'),
             'failed' => \__('Could not save. Reload and try again.', 'granola'),
+
+            // The tick's two states, so the button can relabel itself
+            // without a round trip to the server for its own caption.
+            'doIt' => \__('Erledigen', 'granola'),
+            'done' => \__('Erledigt', 'granola'),
+            'doneHint' => \__('Aus der Liste entfernen', 'granola'),
+            'undoHint' => \__('Wieder in die Liste aufnehmen', 'granola'),
         ]);
 
         \wp_add_inline_script('mb-fulfil-inline', self::inline_script());
@@ -318,6 +414,50 @@ class SampleFulfilment
         return <<<'JS'
 (function () {
     document.addEventListener('click', function (e) {
+        var tick = e.target.closest ? e.target.closest('.mb-fulfil-done') : null;
+
+        if (tick) {
+            e.preventDefault();
+            if (tick.disabled) { return; }
+
+            var want = tick.dataset.done === '1' ? '' : '1';
+            tick.disabled = true;
+            tick.classList.add('mb-fulfil-busy');
+
+            fetch(mbFulfil.ajax, {
+                method: 'POST',
+                credentials: 'same-origin',
+                body: new URLSearchParams({
+                    action: 'mb_fulfil_done',
+                    nonce: mbFulfil.nonce,
+                    order: tick.dataset.order,
+                    done: want
+                })
+            })
+                .then(function (r) { return r.json(); })
+                .then(function (p) {
+                    if (!p || !p.success) { throw new Error('failed'); }
+
+                    tick.dataset.done = p.data.done ? '1' : '';
+                    tick.textContent = p.data.done ? mbFulfil.done : mbFulfil.doIt;
+                    tick.title = p.data.done ? mbFulfil.undoHint : mbFulfil.doneHint;
+                    tick.classList.toggle('is-done', !!p.data.done);
+
+                    // The row stays put, greyed, so a misclick can be undone
+                    // and a half-typed note is not thrown away. It leaves the
+                    // queue on the next load, which is when the filter runs.
+                    var row = tick.closest('tr');
+                    if (row) { row.classList.toggle('is-done', !!p.data.done); }
+                })
+                .catch(function () { window.alert(mbFulfil.failed); })
+                .then(function () {
+                    tick.disabled = false;
+                    tick.classList.remove('mb-fulfil-busy');
+                });
+
+            return;
+        }
+
         var cell = e.target.closest ? e.target.closest('.mb-fulfil-cell') : null;
         if (!cell || cell.dataset.editing === '1') { return; }
         e.preventDefault();
@@ -359,16 +499,17 @@ class SampleFulfilment
 
                     // Entering a date completes the order, so the row's status
                     // is now stale. Correct it IN PLACE: a reload here would
-                    // throw the row out of the queue mid-job, before the
-                    // tracking number or a note had been typed.
+                    // throw away whatever is half-typed in the other rows.
+                    //
+                    // The row is NOT greyed. A date no longer finishes a line
+                    // -- only the tick does -- so greying here would say "done"
+                    // about a row still waiting to be ticked off.
                     if (p.data.status_changed) {
                         var badge = document.querySelector('[data-mb-status="' + cell.dataset.order + '"]');
 
                         if (badge) {
                             badge.textContent = p.data.status_label;
                             badge.className = badge.className.replace(/is-[a-z-]+/g, '') + ' is-' + p.data.status_slug;
-                            var row = badge.closest('tr');
-                            if (row) { row.classList.add('is-done'); }
                         } else {
                             // The admin orders list has no badge of ours, and
                             // its own status column really is stale.
