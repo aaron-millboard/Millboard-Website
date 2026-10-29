@@ -241,6 +241,63 @@ function is_advanced_installer(?int $user_id = null): bool
 const CALCULATOR_URL = 'https://calculator.millboard.com/calculator';
 
 /**
+ * Markets the calculator is offered in, by site path.
+ *
+ * Aaron, 29 Oct 2026: the calculator is not available internationally, so hide
+ * it everywhere except the UK. It was offered on every market because the gate
+ * was `has_account_tools()` alone, which asks WHO you are and never WHERE you
+ * are, so a German distributor saw a tab that leads to a tool that cannot
+ * serve them.
+ *
+ * `/en-gb/commercial/` is deliberately absent, for the same reason it is
+ * absent from SAMPLE_ORDERING_SITES: it is a separate site with its own path,
+ * and matching the full path rather than a prefix keeps the clone out without
+ * a second condition. Turn it on with the option below if it is wanted there.
+ *
+ * en-ie is NOT the UK for this purpose. Ireland is one of the markets this was
+ * asked to be hidden from.
+ */
+const CALCULATOR_SITES = ['/en-gb/'];
+
+/**
+ * The per-site switch, so another market is added without a deploy.
+ *
+ * Same shape as SAMPLE_ORDERING_OPTION, and for the same reason: when the
+ * calculator does support another market, that should be one command rather
+ * than a production release for one `'/xx-xx/'` string.
+ *
+ *   wp option update millboard_calculator_enabled yes --url=<site>/fr-fr/
+ *   wp option delete millboard_calculator_enabled --url=<site>/fr-fr/
+ */
+const CALCULATOR_OPTION = 'millboard_calculator_enabled';
+
+/**
+ * Is the current site one the calculator is offered in?
+ *
+ * The constant is the floor and the option only ever ADDS a market, so the UK
+ * cannot be switched off by a stray option write.
+ */
+function is_calculator_site(): bool
+{
+    // A single-site install has nothing to gate against, and the tests and any
+    // local non-multisite copy should not silently lose the tab.
+    if (!\is_multisite()) {
+        return true;
+    }
+
+    $site = \get_blog_details(\get_current_blog_id());
+    $path = $site ? \trailingslashit((string) $site->path) : '/';
+
+    $sites = CALCULATOR_SITES;
+
+    if ('yes' === \get_option(CALCULATOR_OPTION)) {
+        $sites[] = $path;
+    }
+
+    return \in_array($path, \apply_filters('millboard_calculator_sites', $sites), true);
+}
+
+/**
  * Where the AI visualiser lives. Same reasoning as CALCULATOR_URL.
  */
 const VISUALISER_URL = 'https://ai-visualiser.millboard.com';
@@ -257,16 +314,22 @@ const DECKPLANNER_URL = 'https://deckplanner.millboard.com/en#/en';
 /**
  * May this person see the Calculator tab?
  *
- * Everyone with a Millboard account rather than a plain shop customer, which
- * is the same audience that already has a Tools group to put it in. Gating it
- * this way keeps a customer's menu exactly as it is: one flat list of five and
- * no headings, which is what nav_groups() promises.
+ * TWO tests, and they ask different questions. has_account_tools() asks who
+ * you are: everyone with a Millboard account rather than a plain shop
+ * customer, which is the same audience that already has a Tools group to put
+ * it in. is_calculator_site() asks where you are, because the calculator is a
+ * UK tool and showing it to a German distributor only leads them somewhere
+ * that cannot help them.
  *
- * See has_account_tools() for why the test is the one it is.
+ * Gating on the audience this way keeps a customer's menu exactly as it is:
+ * one flat list of five and no headings, which is what nav_groups() promises.
+ *
+ * See has_account_tools() for why that test is the one it is, and
+ * CALCULATOR_SITES for how to add a market.
  */
 function can_view_calculator(?int $user_id = null): bool
 {
-    return has_account_tools($user_id);
+    return is_calculator_site() && has_account_tools($user_id);
 }
 
 /**
