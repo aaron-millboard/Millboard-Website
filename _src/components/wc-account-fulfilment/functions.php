@@ -49,7 +49,7 @@ const OPTION = 'millboard_fulfilment_enabled';
  * Plain `$_GET`, so paging and searching work as links before any JavaScript
  * does, exactly as the Resources panel does it.
  *
- * @return array{search:string,outstanding:bool,page:int}
+ * @return array{search:string,outstanding:bool,historic:bool,page:int}
  */
 function request(): array
 {
@@ -60,6 +60,17 @@ function request(): array
         // fulfilment queue whose first page is three years of completed
         // parcels is not a queue.
         'outstanding' => empty($_GET['mbfall']),
+        /*
+         * Orders from BEFORE this flow existed are hidden by default, and
+         * `mbfold=1` brings them back.
+         *
+         * 1,414 German orders sit in the queue, and all but a handful were
+         * fulfilled from the Google Sheet months ago. They were imported for
+         * reference, not to be worked, so a queue that opens on three years of
+         * finished parcels is one nobody can use. They are still one link
+         * away, and nothing about the orders themselves is changed.
+         */
+        'historic' => !empty($_GET['mbfold']),
         'page' => \max(1, isset($_GET['mbfp']) ? \absint($_GET['mbfp']) : 1),
     ];
     // phpcs:enable
@@ -124,6 +135,20 @@ function page_of_orders(array $request): array
         'order' => 'DESC',
     ];
 
+    if (!$request['historic']) {
+        /*
+         * SampleFulfilment::LIVE_FROM, not a date of its own.
+         *
+         * That constant already defines the line between "we started doing
+         * this here" and "this was fulfilled from the sheet months ago", and
+         * it is what suppress_retrospective_email() uses to decide whether
+         * completing an order may mail the customer. Using the same date in
+         * both places means the queue shows exactly the orders it is safe to
+         * work, and one edit moves both.
+         */
+        $args['date_created'] = '>=' . SampleFulfilment::LIVE_FROM;
+    }
+
     if ('' !== $request['search']) {
         $args['s'] = $request['search'];
     }
@@ -184,6 +209,7 @@ function panel_url(array $args = []): string
             [
                 'mbfq' => $current['search'],
                 'mbfall' => $current['outstanding'] ? null : 1,
+                'mbfold' => $current['historic'] ? 1 : null,
                 'mbfp' => $current['page'] > 1 ? $current['page'] : null,
             ],
             $args
