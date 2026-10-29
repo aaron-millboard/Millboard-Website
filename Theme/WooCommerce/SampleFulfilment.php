@@ -153,6 +153,19 @@ class SampleFulfilment
         [$meta_key, $type] = $map[$column];
         $raw = (string) $order->get_meta($meta_key);
 
+        /*
+         * Notes start from what the rep wrote at checkout.
+         *
+         * An internal sample order carries the rep's own Comments field, and
+         * it is almost always what the agency would otherwise retype: "leave
+         * with neighbour", "for the Tuesday site visit". Offering it as the
+         * starting value means they edit rather than transcribe, and nothing
+         * is stored until they save.
+         */
+        if (self::META_NOTES === $meta_key && '' === $raw) {
+            $raw = \trim((string) $order->get_meta('_millboard_sample_sales_comments'));
+        }
+
         // Shown formatted, edited raw. A German rep reading the list wants
         // 26.10.2026; the input underneath has to be the ISO value or the
         // browser's date control refuses it.
@@ -343,9 +356,25 @@ class SampleFulfilment
                     cell.innerHTML = p.data.html;
                     input.replaceWith(cell);
                     cell.dataset.editing = '';
+
                     // Entering a date completes the order, so the row's status
-                    // is now stale. Saying so beats showing a lie.
-                    if (p.data.status_changed) { location.reload(); }
+                    // is now stale. Correct it IN PLACE: a reload here would
+                    // throw the row out of the queue mid-job, before the
+                    // tracking number or a note had been typed.
+                    if (p.data.status_changed) {
+                        var badge = document.querySelector('[data-mb-status="' + cell.dataset.order + '"]');
+
+                        if (badge) {
+                            badge.textContent = p.data.status_label;
+                            badge.className = badge.className.replace(/is-[a-z-]+/g, '') + ' is-' + p.data.status_slug;
+                            var row = badge.closest('tr');
+                            if (row) { row.classList.add('is-done'); }
+                        } else {
+                            // The admin orders list has no badge of ours, and
+                            // its own status column really is stale.
+                            location.reload();
+                        }
+                    }
                 })
                 .catch(function () {
                     window.alert(mbFulfil.failed);
@@ -419,6 +448,18 @@ JS;
                 ? \esc_html($shown)
                 : '<span class="mb-fulfil-empty" aria-hidden="true">&mdash;</span>',
             'status_changed' => $fresh instanceof \WC_Order && $fresh->get_status() !== $before,
+
+            /*
+             * The new status, so the page can correct itself WITHOUT reloading.
+             *
+             * It used to reload, which on the My Account queue threw the row
+             * away mid-job: entering a date completes the order, the order no
+             * longer matches the outstanding filter, and the line vanished
+             * before anyone could type the tracking number or a note. It also
+             * discarded whatever was half-typed in other rows.
+             */
+            'status_slug' => $fresh instanceof \WC_Order ? $fresh->get_status() : '',
+            'status_label' => $fresh instanceof \WC_Order ? \wc_get_order_status_name($fresh->get_status()) : '',
         ]);
     }
 

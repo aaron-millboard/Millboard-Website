@@ -23,6 +23,7 @@
 use Theme\WooCommerce\SampleFulfilment;
 
 use function Granola\Components\WC_Account_Fulfilment\address_line;
+use function Granola\Components\WC_Account_Fulfilment\company_line;
 use function Granola\Components\WC_Account_Fulfilment\customer_line;
 use function Granola\Components\WC_Account_Fulfilment\item_lines;
 use function Granola\Components\WC_Account_Fulfilment\page_of_orders;
@@ -169,14 +170,34 @@ SampleFulfilment::enqueue_editor();
 								<span class="mb-fulfilment__date">
 									<?php echo esc_html(wc_format_datetime($mb_order->get_date_created())); ?>
 								</span>
-								<span class="mb-fulfilment__status mb-fulfilment__status--<?php echo esc_attr($mb_order->get_status()); ?>">
+								<span class="mb-fulfilment__status mb-fulfilment__status--<?php echo esc_attr($mb_order->get_status()); ?>" data-mb-status="<?php echo esc_attr($mb_order->get_id()); ?>">
 									<?php echo esc_html(wc_get_order_status_name($mb_order->get_status())); ?>
 								</span>
 							</th>
 
+							<?php
+							/*
+							 * Read in the order a parcel label is written:
+							 * salutation and name, company, street, then the
+							 * ways to reach them. The e-mail is here so the
+							 * search box can find an order by it, which is how
+							 * the agency is asked for one.
+							 */
+							$mb_company = company_line($mb_order);
+							?>
 							<td class="mb-fulfilment__who">
 								<span class="mb-fulfilment__name"><?php echo esc_html(customer_line($mb_order)); ?></span>
+
+								<?php if ('' !== $mb_company) : ?>
+									<span class="mb-fulfilment__company"><?php echo esc_html($mb_company); ?></span>
+								<?php endif; ?>
+
 								<span class="mb-fulfilment__address"><?php echo esc_html(address_line($mb_order)); ?></span>
+
+								<?php if ($mb_order->get_billing_email()) : ?>
+									<span class="mb-fulfilment__email"><?php echo esc_html($mb_order->get_billing_email()); ?></span>
+								<?php endif; ?>
+
 								<?php if ($mb_order->get_billing_phone()) : ?>
 									<span class="mb-fulfilment__phone"><?php echo esc_html($mb_order->get_billing_phone()); ?></span>
 								<?php endif; ?>

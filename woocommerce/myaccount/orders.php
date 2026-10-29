@@ -56,10 +56,31 @@ $shown = $has_orders ? count($customer_orders->orders) : 0;
                 <?php esc_html_e('Your orders will gather here. Start with a few samples: the grain and the weight tell you more than any photograph can.', 'granola'); ?>
             </p>
             <?php
-            $samples_link = get_field('header_call_to_action_1', 'option');
-            $samples_url = is_array($samples_link) && !empty($samples_link['url'])
-                ? $samples_link['url']
-                : wc_get_page_permalink('shop');
+            /*
+             * Same rule as the dashboard tile, which was fixed on 7 Oct and
+             * this was not: anyone who can order samples internally has the
+             * Sample ordering panel in this very menu, so sending them out to
+             * the public samples page is a dead end. It caps at a handful of
+             * samples and knows nothing about ordering for a customer.
+             *
+             * Everyone else has no such panel, so the public page is right.
+             */
+            $samples_is_internal = function_exists('Granola\Components\WC_Account\can_order_samples')
+                && Granola\Components\WC_Account\can_order_samples();
+
+            if ($samples_is_internal) {
+                $samples_url = wc_get_endpoint_url(
+                    Granola\Components\WC_Account\get_sample_endpoint(),
+                    '',
+                    wc_get_page_permalink('myaccount')
+                );
+            } else {
+                // Reuse the header's own samples link so the two never drift.
+                $samples_link = get_field('header_call_to_action_1', 'option');
+                $samples_url = is_array($samples_link) && !empty($samples_link['url'])
+                    ? $samples_link['url']
+                    : wc_get_page_permalink('shop');
+            }
             ?>
             <a class="mb-account-btn mb-account-btn--ghost" href="<?php echo esc_url($samples_url); ?>">
                 <?php esc_html_e('Order samples', 'granola'); ?>

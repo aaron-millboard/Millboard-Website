@@ -222,3 +222,44 @@
 .mb-fulfilment .mb-fulfil-busy {
     opacity: 0.5;
 }
+
+// ── Amends, 29 Oct 2026 ──────────────────────────────────────────────────────
+
+.mb-fulfilment {
+    // `word-break: break-all` is inherited into this table from further up and
+    // splits product names mid-word -- "Ashwood" came out as "As / hwood",
+    // which is unreadable in a column the agency scans. Break at word
+    // boundaries, and only inside a word when there is genuinely no other
+    // option (a long tracking number or an address with no spaces).
+    &__table {
+        td,
+        th,
+        li {
+            word-break: normal;
+            overflow-wrap: break-word;
+            hyphens: none;
+        }
+    }
+
+    // The recipient block reads in the order a label is written: salutation
+    // and name, company, street, then the ways to reach them.
+    &__company {
+        display: block;
+        font-weight: 700;
+    }
+
+    &__email {
+        display: block;
+        opacity: 0.7;
+        // Addresses are long and have no spaces, so this is the one line that
+        // may break anywhere rather than push the column wider.
+        overflow-wrap: anywhere;
+    }
+
+    // A row whose dispatch date has just been entered. It stays put so the
+    // tracking number and a note can still be typed; it leaves the queue on
+    // the next load, which is when the filter runs again.
+    tr.is-done {
+        opacity: 0.55;
+    }
+}

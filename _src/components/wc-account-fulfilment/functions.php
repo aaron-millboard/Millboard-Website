@@ -229,13 +229,36 @@ function panel_url(array $args = []): string
  */
 function customer_line(\WC_Order $order): string
 {
+    /*
+     * The German checkout asks for a salutation and stores it as `anrede`,
+     * populated on every order. The agency writes it on the parcel, so it
+     * belongs at the front of the name rather than nowhere.
+     */
+    $title = \trim((string) $order->get_meta('anrede'));
     $name = \trim($order->get_formatted_billing_full_name());
 
     if ('' === $name) {
         $name = \trim((string) $order->get_billing_company());
     }
 
-    return '' !== $name ? $name : \__('Kein Name auf der Bestellung', 'granola');
+    if ('' === $name) {
+        return \__('Kein Name auf der Bestellung', 'granola');
+    }
+
+    return '' !== $title ? $title . ' ' . $name : $name;
+}
+
+/**
+ * The company, where there is one.
+ *
+ * Its own line between the person and the street, which is how a German
+ * address is written and how the label will be printed.
+ */
+function company_line(\WC_Order $order): string
+{
+    $company = \trim((string) $order->get_shipping_company());
+
+    return '' !== $company ? $company : \trim((string) $order->get_billing_company());
 }
 
 /**
@@ -249,7 +272,32 @@ function address_line(\WC_Order $order): string
         $address = $order->get_formatted_billing_address();
     }
 
-    return \trim(\preg_replace('/\s*<br\s*\/?>\s*/i', ', ', (string) $address) ?? '');
+    $parts = \preg_split('/\s*<br\s*\/?>\s*/i', (string) $address) ?: [];
+    $parts = \array_values(\array_filter(\array_map('trim', $parts)));
+
+    /*
+     * Drop the name and company lines.
+     *
+     * WooCommerce's formatted address opens with the recipient and their
+     * company, and this column already prints both above. Leaving them here
+     * showed every name twice, which the agency reads past rather than
+     * through.
+     */
+    $drop = [
+        \trim($order->get_formatted_shipping_full_name()),
+        \trim($order->get_formatted_billing_full_name()),
+        \trim((string) $order->get_shipping_company()),
+        \trim((string) $order->get_billing_company()),
+    ];
+
+    $drop = \array_filter($drop);
+
+    $parts = \array_values(\array_filter(
+        $parts,
+        static fn(string $line): bool => !\in_array($line, $drop, true)
+    ));
+
+    return \implode(', ', $parts);
 }
 
 /**
