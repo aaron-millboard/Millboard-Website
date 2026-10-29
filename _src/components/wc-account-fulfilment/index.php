@@ -108,10 +108,12 @@ SampleFulfilment::enqueue_editor();
 					printf(
 						/* translators: %s: the date this flow went live, e.g. 26.10.2026. */
 						esc_html__('Auch Bestellungen vor dem %s anzeigen', 'granola'),
-						/* 'j. F Y', not the site's date_format: German puts a full stop
-					   after the day, and this panel is German by definition. The
-					   site format is j F Y, which rendered "26 Oktober 2026". */
-					esc_html(date_i18n('j. F Y', (int) strtotime(SampleFulfilment::LIVE_FROM)))
+						/*
+						 * 'j. F Y', not the site's date_format. German puts a full stop
+						 * after the day, and this panel is German by definition. The site
+						 * format is j F Y, which rendered "26 Oktober 2026".
+						 */
+						esc_html(date_i18n('j. F Y', (int) strtotime(SampleFulfilment::LIVE_FROM)))
 					);
 					?>
 				</a>
