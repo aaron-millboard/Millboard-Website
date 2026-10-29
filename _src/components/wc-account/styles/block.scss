@@ -734,7 +734,7 @@
         line-height: 1.5;
         padding: #{px-to-rem(10)} #{px-to-rem(14)};
         background-color: transparent;
-        border: 1px solid var(--mba-field-border);
+        border: 1px solid var(--mba-field-border, #858083);
         border-radius: #{px-to-rem(2)};
         color: var(--color--foreground);
         outline: none;
@@ -745,14 +745,14 @@
         // focus must not rely on hue.
         &:focus,
         &:focus-visible {
-            border-color: var(--mba-ink);
-            outline: #{px-to-rem(2)} solid var(--mba-ink);
+            border-color: var(--mba-ink, #2f292e);
+            outline: #{px-to-rem(2)} solid var(--mba-ink, #2f292e);
             outline-offset: 0;
         }
 
         &[aria-invalid='true'],
         &.has-error {
-            border: #{px-to-rem(2)} solid var(--mba-error);
+            border: #{px-to-rem(2)} solid var(--mba-error, #9b2c2c);
         }
 
         &::placeholder {
@@ -784,14 +784,14 @@
     &__note {
         font-size: #{px-to-rem(13)};
         line-height: 1.5;
-        color: var(--mba-muted);
+        color: var(--mba-muted, #5a5458);
     }
 
     // WooCommerce's own inline validation message.
     em {
         font-size: #{px-to-rem(13)};
         font-style: normal;
-        color: var(--mba-muted);
+        color: var(--mba-muted, #5a5458);
     }
 }
 
