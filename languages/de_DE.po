@@ -3047,3 +3047,174 @@ msgstr "{Gramm}g CO%1$s2%2$s"
 #, php-format
 msgid "· %s reviews"
 msgstr "· %s Bewertungen"
+
+# My Account: Resources panel and account details, added 29 Oct 2026.
+# Formal Sie, matching the rest of this file. For Henrik to review.
+
+#: _src/components/wc-account-brand-assets/functions.php:257
+msgid "Folder"
+msgstr "Ordner"
+
+#: _src/components/wc-account-brand-assets/functions.php:258
+msgid "Album"
+msgstr "Album"
+
+#: _src/components/wc-account-brand-assets/functions.php:305
+msgid "Download"
+msgstr "Herunterladen"
+
+#: _src/components/wc-account-brand-assets/functions.php:311
+msgid "In Canto"
+msgstr "In Canto"
+
+#: _src/components/wc-account-brand-assets/functions.php:401
+msgid "That page has been open a while. Reload it and try again."
+msgstr "Diese Seite ist schon länger geöffnet. Bitte laden Sie sie neu und versuchen Sie es erneut."
+
+#: _src/components/wc-account-brand-assets/functions.php:408
+msgid "You do not have access to the resource library."
+msgstr "Sie haben keinen Zugriff auf die Mediathek."
+
+#: _src/components/wc-account-brand-assets/functions.php:424
+msgid "We could not reach Canto just now. The library itself is fine, so it is worth opening it directly."
+msgstr "Canto ist im Moment nicht erreichbar. Die Mediathek selbst funktioniert, öffnen Sie sie am besten direkt."
+
+#: _src/components/wc-account-brand-assets/index.php:103
+msgid "Photography, logos, brochures and product imagery, straight from Canto. You are signed in already, so there is no second login."
+msgstr "Fotos, Logos, Broschüren und Produktbilder, direkt aus Canto. Sie sind bereits angemeldet, eine zweite Anmeldung ist nicht nötig."
+
+#: _src/components/wc-account-brand-assets/index.php:118
+msgid "Resources unavailable"
+msgstr "Ressourcen nicht verfügbar"
+
+#: _src/components/wc-account-brand-assets/index.php:122
+msgid "The connection to Canto is not set up on this site yet."
+msgstr "Die Verbindung zu Canto ist auf dieser Website noch nicht eingerichtet."
+
+#: _src/components/wc-account-brand-assets/index.php:126
+msgid "We could not load the assets just now. Please try again shortly."
+msgstr "Die Dateien konnten gerade nicht geladen werden. Bitte versuchen Sie es in Kürze erneut."
+
+#: _src/components/wc-account-brand-assets/index.php:132
+msgid "Open the brand library"
+msgstr "Markenbibliothek öffnen"
+
+#: _src/components/wc-account-brand-assets/index.php:140
+msgid "Search the brand library"
+msgstr "Markenbibliothek durchsuchen"
+
+#: _src/components/wc-account-brand-assets/index.php:146
+msgid "Search photography, logos, brochures…"
+msgstr "Fotos, Logos, Broschüren durchsuchen…"
+
+#: _src/components/wc-account-brand-assets/index.php:165
+msgid "Library path"
+msgstr "Bibliothekspfad"
+
+#: _src/components/wc-account-brand-assets/index.php:169
+msgid "All folders"
+msgstr "Alle Ordner"
+
+#: _src/components/wc-account-brand-assets/index.php:195
+msgid "Layout"
+msgstr "Ansicht"
+
+#: _src/components/wc-account-brand-assets/index.php:202
+msgid "Grid"
+msgstr "Raster"
+
+#: _src/components/wc-account-brand-assets/index.php:223
+msgid "Showing the first %1$s for &ldquo;%2$s&rdquo;"
+msgstr "Die ersten %1$s für &bdquo;%2$s&ldquo;"
+
+#: _src/components/wc-account-brand-assets/index.php:226
+msgid "%1$s results for &ldquo;%2$s&rdquo;"
+msgstr "%1$s Treffer für &bdquo;%2$s&ldquo;"
+
+#: _src/components/wc-account-brand-assets/index.php:251
+msgid "Nothing here"
+msgstr "Nichts gefunden"
+
+#: _src/components/wc-account-brand-assets/index.php:253
+msgid "No assets matched. Try a different word, or browse the folders."
+msgstr "Keine Treffer. Versuchen Sie ein anderes Wort oder durchsuchen Sie die Ordner."
+
+#: _src/components/wc-account-brand-assets/index.php:278
+msgid "Show more"
+msgstr "Mehr anzeigen"
+
+#: _src/components/wc-account-brand-assets/index.php:294
+msgid "Looking for something not here? %1$sOpen the full library in Canto%2$s."
+msgstr "Nicht gefunden, wonach Sie suchen? %1$sVollständige Bibliothek in Canto öffnen%2$s."
+
+#: _src/components/wc-account-brand-assets/index.php:76
+msgid "Searching…"
+msgstr "Suche läuft…"
+
+#: _src/components/wc-account-brand-assets/index.php:78
+msgid "We could not load those assets. Try again in a moment."
+msgstr "Die Dateien konnten nicht geladen werden. Bitte versuchen Sie es gleich noch einmal."
+
+#: _src/components/wc-account-brand-assets/index.php:81
+msgid "Page %1$d &middot; %2$d shown for &ldquo;%3$s&rdquo;"
+msgstr "Seite %1$d &middot; %2$d Treffer für &bdquo;%3$s&ldquo;"
+
+#: _src/components/wc-account-brand-assets/index.php:87
+msgid "Resources"
+msgstr "Ressourcen"
+
+#: _src/components/wc-account-brand-assets/index.php:96
+msgid "Millboard team"
+msgstr "Millboard Team"
+
+#: _src/components/wc-account-brand-assets/index.php:97
+msgid "Trade account"
+msgstr "Händlerkonto"
+
+#: woocommerce/myaccount/form-edit-account.php:101
+msgid "Confirm new password"
+msgstr "Neues Passwort bestätigen"
+
+#: woocommerce/myaccount/form-edit-account.php:106
+msgid "Keeping in touch"
+msgstr "Kontakt halten"
+
+#: woocommerce/myaccount/form-edit-account.php:116
+msgid "Send me occasional inspiration, new shades and project stories. No more than once a month."
+msgstr "Schicken Sie mir gelegentlich Inspiration, neue Farbtöne und Projektgeschichten. Höchstens einmal im Monat."
+
+#: woocommerce/myaccount/form-edit-account.php:139
+msgid "Last updated %s"
+msgstr "Zuletzt aktualisiert: %s"
+
+#: woocommerce/myaccount/form-edit-account.php:29
+msgid "Account details"
+msgstr "Kontodaten"
+
+#: woocommerce/myaccount/form-edit-account.php:32
+msgid "The details we hold for you, and how your name appears on reviews and in your account."
+msgstr "Die bei uns hinterlegten Daten und wie Ihr Name in Ihrem Konto und bei Bewertungen erscheint."
+
+#: woocommerce/myaccount/form-edit-account.php:39
+msgid "Your details"
+msgstr "Ihre Daten"
+
+#: woocommerce/myaccount/form-edit-account.php:65
+msgid "How your name appears in your account and on reviews."
+msgstr "Wie Ihr Name in Ihrem Konto und bei Bewertungen erscheint."
+
+#: woocommerce/myaccount/form-edit-account.php:87
+msgid "Password"
+msgstr "Passwort"
+
+#: woocommerce/myaccount/form-edit-account.php:91
+msgid "Current password"
+msgstr "Aktuelles Passwort"
+
+#: woocommerce/myaccount/form-edit-account.php:92
+msgid "Leave blank to keep it"
+msgstr "Leer lassen, um es beizubehalten"
+
+#: woocommerce/myaccount/form-edit-account.php:96
+msgid "New password"
+msgstr "Neues Passwort"
