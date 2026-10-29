@@ -72,9 +72,30 @@
         }
     }
 
+    // The two view toggles.
+    //
+    // They were quiet inline links sitting flush against each other, which
+    // read as one run-on sentence: "Erledigte ebenfalls anzeigen Auch
+    // Bestellungen vor dem 26. Oktober 2026 anzeigen". They are two separate
+    // controls that change what the table shows, so they look like controls.
     &__toggle {
         flex-basis: 100%;
-        font-size: #{px-to-rem(13)};
+        display: flex;
+        flex-wrap: wrap;
+        gap: #{px-to-rem(10)};
+        margin-top: #{px-to-rem(4)};
+
+        // .mb-account-btn is sized for a one-word action. These labels are
+        // sentences, so the same box at 28px of side padding and 0.16em of
+        // tracking runs most of the width of the screen. Smaller and tighter,
+        // still unmistakably a button.
+        .mb-account-btn {
+            padding: #{px-to-rem(10)} #{px-to-rem(14)};
+            font-size: #{px-to-rem(11)};
+            letter-spacing: 0.08em;
+            line-height: 1.2;
+            text-align: center;
+        }
     }
 
     &__count {
