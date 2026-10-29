@@ -2,6 +2,83 @@
 
 namespace Granola\Components\SiteHeader;
 
+/**
+ * The residential site behind a /commercial/ one, or 0 when this IS residential.
+ *
+ * Every commercial site is `/<locale>/commercial/` and clones `/<locale>/`, so
+ * dropping the last segment names its parent. Confirmed against all six on
+ * 29 Oct 2026: en-gb, en-us, de-de, fr-fr, en-ie and en-au.
+ *
+ * WARNING: deliberately NOT reusing Granola\Components\Map\get_directory_source_blog(),
+ * which applies the same rule. That one carries a `granola/map/
+ * directory_source_blog` filter, so anyone retargeting the MAP would silently
+ * move this header link too. Same rule, separate decision.
+ */
+function residential_blog_id(): int
+{
+    if (!\is_multisite()) {
+        return 0;
+    }
+
+    $home = \rtrim((string) \wp_parse_url(\home_url(), PHP_URL_PATH), '/');
+
+    if (!\str_ends_with($home, '/commercial')) {
+        return 0;
+    }
+
+    $blog = (int) \get_blog_id_from_url(
+        (string) \wp_parse_url(\home_url(), PHP_URL_HOST),
+        \substr($home, 0, -\strlen('/commercial')) . '/'
+    );
+
+    // get_blog_id_from_url() gives 0 for a path that is not a site, and
+    // pointing at ourselves would be a pointless switch_to_blog().
+    return $blog !== \get_current_blog_id() ? $blog : 0;
+}
+
+/**
+ * Where the header account icon should go.
+ *
+ * Aaron, 29 Oct 2026: on a commercial site it should land on the residential
+ * equivalent, in every region. The commercial sites are clones and nobody
+ * holds an account on one, so the icon led to a sign-in for a site with
+ * nothing behind it.
+ *
+ * The URL is read from the TARGET site rather than assembled here, because the
+ * account slug is per site: fr-fr may call it `mon-compte`, and a string built
+ * from `/my-account/` would 404 there.
+ *
+ * Falls back to this site own account page whenever the parent cannot be
+ * resolved or has no account page, which is the behaviour before this existed.
+ */
+function account_url(): string
+{
+    if (!\function_exists('wc_get_page_id')) {
+        return (string) \home_url('/');
+    }
+
+    $own = static function (): string {
+        $id = (int) \wc_get_page_id('myaccount');
+
+        return $id > 0 ? (string) \get_the_permalink($id) : (string) \home_url('/');
+    };
+
+    $residential = residential_blog_id();
+
+    if (!$residential) {
+        return $own();
+    }
+
+    \switch_to_blog($residential);
+
+    $id = (int) \wc_get_page_id('myaccount');
+    $url = $id > 0 ? (string) \get_the_permalink($id) : '';
+
+    \restore_current_blog();
+
+    return '' !== $url ? $url : $own();
+}
+
 function filter_args(array $args): ?array
 {
     // ---------------------------------------

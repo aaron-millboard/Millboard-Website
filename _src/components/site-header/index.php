@@ -172,7 +172,7 @@
                 </button>
 
                 <?= \Granola\Component::get('link', [
-                    'url' => get_the_permalink(wc_get_page_id('myaccount')),
+                    'url' => \Granola\Components\SiteHeader\account_url(),
                     'classes' => ['site-header__account-link'],
                     'content' => '<span class="visually-hidden">' . esc_html__('My account', 'granola') . '</span>',
                 ]); ?>
@@ -197,7 +197,7 @@
     ?>
     <div class="site-header__mobile-links">
         <?= \Granola\Component::get('link', [
-            'url' => get_the_permalink(wc_get_page_id('myaccount')),
+            'url' => \Granola\Components\SiteHeader\account_url(),
             'classes' => ['site-header__mobile-links__account'],
             'content' => esc_html__('Your account', 'granola'),
         ]); ?>
