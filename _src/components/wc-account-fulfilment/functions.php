@@ -155,21 +155,33 @@ function page_of_orders(array $request): array
 
     if ($request['outstanding']) {
         /*
-         * Not yet dispatched: no date, or a date that was cleared.
+         * Not finished with: nobody has ticked it off.
          *
-         * Both halves are needed. An order that has never been touched has no
-         * meta row at all, and one whose date was deleted has an empty one,
-         * and only testing for the second would hide every order nobody has
-         * opened yet -- which is the entire queue.
+         * This used to key on the dispatch date, which made posting the parcel
+         * the only way a line could leave -- and some orders end without a
+         * parcel. A return, a bad address, a duplicate: the agency writes a
+         * note and that is the end of it, and under the old rule the row stayed
+         * in the queue forever.
+         *
+         * So the tick is now the only exit, and the date is just data. Typing a
+         * date still completes the order and mails the customer their tracking,
+         * exactly as before; it simply no longer decides what the queue shows.
+         * That also gives the agency as long as it likes to type the tracking
+         * number and a note, instead of racing a row that vanished when the
+         * date went in.
+         *
+         * Both halves are needed. An order nobody has touched has no meta row
+         * at all, and one that was unticked has an empty one; testing only for
+         * the second would hide the entire queue.
          */
         $args['meta_query'] = [
             'relation' => 'OR',
             [
-                'key' => SampleFulfilment::META_DISPATCHED_ON,
+                'key' => SampleFulfilment::META_DONE,
                 'compare' => 'NOT EXISTS',
             ],
             [
-                'key' => SampleFulfilment::META_DISPATCHED_ON,
+                'key' => SampleFulfilment::META_DONE,
                 'value' => '',
                 'compare' => '=',
             ],
@@ -229,13 +241,36 @@ function panel_url(array $args = []): string
  */
 function customer_line(\WC_Order $order): string
 {
+    /*
+     * The German checkout asks for a salutation and stores it as `anrede`,
+     * populated on every order. The agency writes it on the parcel, so it
+     * belongs at the front of the name rather than nowhere.
+     */
+    $title = \trim((string) $order->get_meta('anrede'));
     $name = \trim($order->get_formatted_billing_full_name());
 
     if ('' === $name) {
         $name = \trim((string) $order->get_billing_company());
     }
 
-    return '' !== $name ? $name : \__('Kein Name auf der Bestellung', 'granola');
+    if ('' === $name) {
+        return \__('Kein Name auf der Bestellung', 'granola');
+    }
+
+    return '' !== $title ? $title . ' ' . $name : $name;
+}
+
+/**
+ * The company, where there is one.
+ *
+ * Its own line between the person and the street, which is how a German
+ * address is written and how the label will be printed.
+ */
+function company_line(\WC_Order $order): string
+{
+    $company = \trim((string) $order->get_shipping_company());
+
+    return '' !== $company ? $company : \trim((string) $order->get_billing_company());
 }
 
 /**
@@ -249,7 +284,32 @@ function address_line(\WC_Order $order): string
         $address = $order->get_formatted_billing_address();
     }
 
-    return \trim(\preg_replace('/\s*<br\s*\/?>\s*/i', ', ', (string) $address) ?? '');
+    $parts = \preg_split('/\s*<br\s*\/?>\s*/i', (string) $address) ?: [];
+    $parts = \array_values(\array_filter(\array_map('trim', $parts)));
+
+    /*
+     * Drop the name and company lines.
+     *
+     * WooCommerce's formatted address opens with the recipient and their
+     * company, and this column already prints both above. Leaving them here
+     * showed every name twice, which the agency reads past rather than
+     * through.
+     */
+    $drop = [
+        \trim($order->get_formatted_shipping_full_name()),
+        \trim($order->get_formatted_billing_full_name()),
+        \trim((string) $order->get_shipping_company()),
+        \trim((string) $order->get_billing_company()),
+    ];
+
+    $drop = \array_filter($drop);
+
+    $parts = \array_values(\array_filter(
+        $parts,
+        static fn(string $line): bool => !\in_array($line, $drop, true)
+    ));
+
+    return \implode(', ', $parts);
 }
 
 /**
