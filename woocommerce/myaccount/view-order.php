@@ -67,6 +67,45 @@ $contact = get_page_by_path('contact-us');
         </div>
     <?php endif; ?>
 
+    <?php
+    /*
+     * Dispatch details, where the fulfilment team has filled them in.
+     *
+     * Only German sample orders carry this meta today, so on every other
+     * market the block simply does not render. It sits under the progress
+     * steps because "where is my parcel" is the question it answers.
+     *
+     * ⚠️ Anmerkungen is deliberately NOT shown. That field is the agency's
+     * own working notes about a dispatch, written for colleagues rather than
+     * for the customer, and nothing validates what goes in it.
+     */
+    $mb_dispatched = (string) $order->get_meta(\Theme\WooCommerce\SampleFulfilment::META_DISPATCHED_ON);
+    $mb_tracking = (string) $order->get_meta(\Theme\WooCommerce\SampleFulfilment::META_TRACKING);
+
+    if ('' !== $mb_dispatched || '' !== $mb_tracking) :
+        ?>
+        <div class="mb-account-order__dispatch">
+            <h3 class="mb-account-section"><?php esc_html_e('Dispatch', 'granola'); ?></h3>
+
+            <dl class="mb-account-order__dispatch-list">
+                <?php if ('' !== $mb_dispatched) : ?>
+                    <dt><?php esc_html_e('Sent', 'granola'); ?></dt>
+                    <dd>
+                        <?php
+                        $mb_when = strtotime($mb_dispatched);
+                        echo esc_html($mb_when ? date_i18n(get_option('date_format'), $mb_when) : $mb_dispatched);
+                        ?>
+                    </dd>
+                <?php endif; ?>
+
+                <?php if ('' !== $mb_tracking) : ?>
+                    <dt><?php esc_html_e('Tracking number', 'granola'); ?></dt>
+                    <dd class="mb-account-order__tracking"><?php echo esc_html($mb_tracking); ?></dd>
+                <?php endif; ?>
+            </dl>
+        </div>
+    <?php endif; ?>
+
     <h3 class="mb-account-section"><?php esc_html_e('Items', 'granola'); ?></h3>
 
     <?php
