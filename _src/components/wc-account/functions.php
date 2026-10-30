@@ -454,6 +454,74 @@ function tool_roles(): array
 }
 
 /**
+ * The portal's own word for a partner in a market with no Millboard site.
+ *
+ * It is `field_userType` from the old portal, carried across by
+ * Theme\Accounts\PortalImport, so this reuses a classification the business
+ * already maintains rather than inventing a second one that would drift.
+ */
+const PORTAL_TYPE_EXPORT = 'export';
+
+/**
+ * Is this an international partner?
+ *
+ * Sam, through Aaron on 30 Oct 2026: international partners should not be
+ * shown things that are not available to them.
+ *
+ * They hold accounts on en-gb because their own markets have no Millboard
+ * site, which means every UK account surface is offered to them by default.
+ * Orders is the clearest example: they buy through export, not through this
+ * store, so the tab has never had anything in it. At the time of writing all
+ * 87 of them had placed nought orders and nought sample orders between them.
+ *
+ * ⚠️ This is about WHERE SOMEONE TRADES, not what they are allowed to do, so
+ * it is user meta and not a capability. An export distributor and a UK
+ * distributor hold exactly the same role; what differs is that one of them
+ * cannot buy here. Making it a capability would mean a roles install bump
+ * across six sites to express a fact the portal already records.
+ *
+ * ⚠️ STAFF ARE NOT PARTNERS, however they are tagged. Four Millboard people
+ * carry `export` because export is the desk they work on, not because they
+ * trade from abroad: chantelle.mcghee, export@, henrik.lidbeck and
+ * sebastian.lauber. Henrik had already placed a sample order on de-de when
+ * this was written, so reading the meta alone would have taken a working tool
+ * off the person who runs the German distributor relationship. Each of them
+ * holds a staff role on every site they have a role on at all, so is_staff()
+ * catches them wherever the question gets asked.
+ *
+ * ⚠️ NEITHER IS THE FULFILMENT DESK. Thorsten Lutz, Tobias Jentschke and the
+ * two people at WABE who run the German dispatch queue are tagged `employee`
+ * or nothing at all, so the meta would not catch them today. The two at WABE
+ * hold the fulfilment role and NO staff role, so is_staff() would not catch
+ * them either: re-tag one of them `export` by hand and they would quietly
+ * lose Sample ordering. Aaron named them on 30 Oct 2026 as people who keep
+ * their tabs, so that is written down here rather than left to a tag nobody
+ * is watching.
+ */
+function is_international_partner(?int $user_id = null): bool
+{
+    $user_id = $user_id ?: \get_current_user_id();
+
+    if (!$user_id) {
+        return false;
+    }
+
+    if (\Theme\Accounts\Roles::is_staff($user_id)) {
+        return false;
+    }
+
+    $user = \get_userdata($user_id);
+
+    if ($user instanceof \WP_User && \in_array(\Theme\WooCommerce\SampleFulfilment::ROLE, (array) $user->roles, true)) {
+        return false;
+    }
+
+    $type = (string) \get_user_meta($user_id, \Theme\Accounts\PortalImport::META_TYPE, true);
+
+    return PORTAL_TYPE_EXPORT === $type;
+}
+
+/**
  * Where Projects points. Empty until someone sets it.
  */
 function projects_url(): string
@@ -531,6 +599,10 @@ function nav_groups(array $endpoints): array
  */
 function can_order_samples(?int $user_id = null): bool
 {
+    if (is_international_partner($user_id)) {
+        return false;
+    }
+
     return is_sample_ordering_site() && user_can_mb(\Theme\Accounts\Roles::CAP_ORDER_SAMPLES, $user_id);
 }
 
