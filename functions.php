@@ -100,6 +100,9 @@ if (file_exists($autoloader = __DIR__ . '/vendor/autoload.php')) {
 \Theme\Plugins\ACF::init();
 \Theme\Plugins\YoastSEO::init();
 \Theme\Plugins\YoastRedirectQueryString::init();
+// Loqate maps the company box as a search box. It is the customer's company,
+// not somewhere to look up, so only address line 1 searches.
+\Theme\Plugins\AddressLookupFields::init();
 
 // ----------------------------------------------------
 // WooCommerce functionality.
