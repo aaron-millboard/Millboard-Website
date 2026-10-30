@@ -107,6 +107,19 @@ use const Granola\Components\WC_Account_Fulfilment\ENDPOINT as FULFILMENT_ENDPOI
     $sample = get_sample_endpoint();
 
     /*
+     * Orders, for everyone except an international partner.
+     *
+     * They are on en-gb only because their own market has no Millboard site.
+     * They buy through export rather than through this store, so the tab has
+     * never held anything: all 87 of them had nought orders between them on
+     * the day this shipped, and Sample ordering above is removed for the same
+     * reason. An empty panel is the thing Sam asked not to show them.
+     */
+    if (is_international_partner()) {
+        unset($items['orders']);
+    }
+
+    /*
      * Assets, for the people on the list and nobody else.
      *
      * Dropped on 20 Oct when the project was shelved; back on 23 Oct at Ed
@@ -225,6 +238,25 @@ use const Granola\Components\WC_Account_Fulfilment\ENDPOINT as FULFILMENT_ENDPOI
 
     return $sorted;
 }, 20);
+
+/**
+ * Orders is a link AND a URL, so the link going is not enough.
+ *
+ * Sends an international partner to the dashboard rather than leaving them on
+ * a list the menu no longer offers. Only the LIST: `view-order` is deliberately
+ * left alone, so if one of them ever does place an order the link in their
+ * confirmation e-mail still opens it.
+ */
+\add_action('template_redirect', function (): void {
+    global $wp;
+
+    if (!isset($wp->query_vars['orders']) || !\is_user_logged_in() || !is_international_partner()) {
+        return;
+    }
+
+    \wp_safe_redirect(\wc_get_page_permalink('myaccount'));
+    exit;
+});
 
 /**
  * Render the custom panels.
