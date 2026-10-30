@@ -19,6 +19,7 @@ use function Granola\Components\WC_Account\can_order_samples;
 use function Granola\Components\WC_Account\get_order_steps;
 use function Granola\Components\WC_Account\get_order_summary;
 use function Granola\Components\WC_Account\get_trackable_order;
+use function Granola\Components\WC_Account\is_international_partner;
 use function Granola\Components\WC_Account\get_visible_statuses;
 use function Granola\Components\WC_Account\is_closed;
 use function Granola\Components\WC_Account\order_shade_chips;
@@ -79,16 +80,29 @@ $quick_actions = [
             : __('Feel the grain before you commit.', 'granola'),
         'url' => $samples_url,
     ],
-    [
+];
+
+/*
+ * Track an order, for everyone it is true for.
+ *
+ * An international partner buys through export rather than through this store,
+ * so the Orders tab is hidden from them and this tile would be the last way
+ * in: a promise of tracking on an account that has never had an order to
+ * track. Added rather than filtered out, so the array only ever holds tiles
+ * that are really shown. The grid is auto-fit, so two of them fill the row.
+ */
+if (!is_international_partner()) {
+    $quick_actions[] = [
         'label' => __('Track an order', 'granola'),
         'note' => __('See where your boards are today.', 'granola'),
         'url' => $orders_url,
-    ],
-    [
-        'label' => __('Account details', 'granola'),
-        'note' => __('Name, email and password.', 'granola'),
-        'url' => $details_url,
-    ],
+    ];
+}
+
+$quick_actions[] = [
+    'label' => __('Account details', 'granola'),
+    'note' => __('Name, email and password.', 'granola'),
+    'url' => $details_url,
 ];
 
 ?>
