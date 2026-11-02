@@ -106,6 +106,10 @@ if (file_exists($autoloader = __DIR__ . '/vendor/autoload.php')) {
 // ----------------------------------------------------
 
 \Theme\WooCommerce\SampleShipping::init();
+// Which countries THIS site sells to, and what to do with an order going
+// somewhere else. Read it before touching order routing: three things used
+// to decide this and they disagreed.
+\Theme\WooCommerce\Territory::init();
 \Theme\WooCommerce\ConsentFields::init();
 \Theme\WooCommerce\OrderAttribution::init();
 \Theme\WooCommerce\StripePaymentGuard::init();
