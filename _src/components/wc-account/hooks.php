@@ -120,6 +120,33 @@ use const Granola\Components\WC_Account_Fulfilment\ENDPOINT as FULFILMENT_ENDPOI
     }
 
     /*
+     * Orders keeps WooCommerce's own label unless this theme has one.
+     *
+     * Aaron, 2 Nov 2026: the German tab should read "Ihre Bestellungen", not
+     * "Bestellungen".
+     *
+     * That word is WooCommerce's, from its official de_DE language pack, and
+     * retranslating `Orders` in the `woocommerce` textdomain would rename
+     * Orders EVERYWHERE WooCommerce says it, wp-admin included. So the label
+     * is taken from this theme's own string instead -- but only when the
+     * locale actually has a translation for it.
+     *
+     * An untranslated __() hands back the msgid, so "Orders" === the msgid
+     * means no translation exists here and WooCommerce's word stands. That
+     * keeps en-* on "Orders" and fr-fr on "Commandes" exactly as they are
+     * today: this is a German relabel, and no other market may move.
+     *
+     * The same granola string is the Orders PANEL HEADING in
+     * woocommerce/myaccount/orders.php, so the tab and the heading agree
+     * rather than being two strings that have to be kept in step.
+     */
+    $orders_label = \__('Orders', 'granola');
+
+    if (isset($items['orders']) && 'Orders' !== $orders_label) {
+        $items['orders'] = $orders_label;
+    }
+
+    /*
      * Assets, for the people on the list and nobody else.
      *
      * Dropped on 20 Oct when the project was shelved; back on 23 Oct at Ed
