@@ -160,7 +160,12 @@ const CART_FLAG = 'millboard_sample_order';
 
 \add_action('woocommerce_checkout_create_order_line_item', function ($item, $key, $values): void {
     if (!empty($values[CART_FLAG]) && \is_object($item) && \method_exists($item, 'add_meta_data')) {
-        $item->add_meta_data(\__('Sample order', 'granola'), \__('Sent by the Millboard team', 'granola'));
+        // English literals, translated on display. See the constants'
+        // docblock in SampleOrderCheckout for why this is not __() here.
+        $item->add_meta_data(
+            \Theme\WooCommerce\SampleOrderCheckout::SAMPLE_MARKER_KEY,
+            \Theme\WooCommerce\SampleOrderCheckout::SAMPLE_MARKER_VALUE
+        );
     }
 }, 10, 3);
 
