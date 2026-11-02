@@ -188,7 +188,61 @@ function page_of_orders(array $request): array
         ];
     }
 
+    /*
+     * ONLY ORDERS THIS SITE ACTUALLY SELLS TO.
+     *
+     * Aaron, 2 Nov 2026: a Swiss customer ordered a free sample on the German
+     * site and appeared on this sheet. The e-mail had already been rerouted
+     * correctly by the routing plugin; this query was the part with no
+     * country rule at all, so it showed every order on the site.
+     *
+     * ⚠️ NOT `wc_get_orders(['shipping_country' => ...])`, which does work on
+     * HPOS and would have been the obvious thing. 369 of the 774 German
+     * orders carry NO shipping address, only billing, so filtering on
+     * shipping alone would have hidden nearly half the queue. The rule has to
+     * be "shipping if there is one, billing otherwise", and that cannot be
+     * said in one query argument.
+     *
+     * Correlated subqueries rather than a JOIN, so nothing can collide with
+     * the aliases HPOS generates for its own clauses. An order with no
+     * country at all stays VISIBLE: a parcel in the wrong queue is a
+     * nuisance, one that disappears from it is a lost customer.
+     *
+     * Added and removed around this one call. Left on globally it would
+     * quietly filter every order query on the site, the admin list included.
+     */
+    $mb_sells_to = \Theme\WooCommerce\Territory::sells_to();
+    $mb_clause = null;
+
+    if ($mb_sells_to) {
+        $mb_clause = static function (array $clauses) use ($mb_sells_to): array {
+            global $wpdb;
+
+            $addresses = $wpdb->prefix . 'wc_order_addresses';
+            $orders = $wpdb->prefix . 'wc_orders';
+
+            $in = \implode(',', \array_fill(0, \count($mb_sells_to), '%s'));
+
+            $clauses['where'] .= $wpdb->prepare(
+                " AND COALESCE("
+                . "NULLIF((SELECT s.country FROM {$addresses} s WHERE s.order_id = {$orders}.id AND s.address_type = 'shipping'), ''),"
+                . "NULLIF((SELECT b.country FROM {$addresses} b WHERE b.order_id = {$orders}.id AND b.address_type = 'billing'), ''),"
+                . "''"
+                . ") IN ({$in}, '') ",
+                $mb_sells_to
+            );
+
+            return $clauses;
+        };
+
+        \add_filter('woocommerce_orders_table_query_clauses', $mb_clause);
+    }
+
     $result = \wc_get_orders($args);
+
+    if (null !== $mb_clause) {
+        \remove_filter('woocommerce_orders_table_query_clauses', $mb_clause);
+    }
 
     // `paginate` gives an object; anything else means the query fell back, and
     // an empty table beats a fatal.
