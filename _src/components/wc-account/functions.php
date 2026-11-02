@@ -358,12 +358,25 @@ const DECKPLANNER_URL = 'https://deckplanner.millboard.com/en#/en';
 /**
  * May this person see the Calculator tab?
  *
- * TWO tests, and they ask different questions. has_account_tools() asks who
+ * THREE tests, and they ask different questions. has_account_tools() asks who
  * you are: everyone with a Millboard account rather than a plain shop
  * customer, which is the same audience that already has a Tools group to put
  * it in. is_calculator_site() asks where you are, because the calculator is a
  * UK tool and showing it to a German distributor only leads them somewhere
  * that cannot help them.
+ *
+ * ⚠️ is_calculator_site() ALONE DID NOT DO THAT. It asks which site the
+ * browser is on, and international partners hold accounts on en-gb precisely
+ * because their own markets have no Millboard site. They were therefore on the
+ * one site the calculator is offered in, and saw it. That is the same
+ * complaint the Orders tab answered, one tab over, so it is answered the same
+ * way: Aaron, 2 Nov 2026, "the visualiser and deckplanner are fine they can
+ * see and use them but we need to hide the calculator".
+ *
+ * ⚠️ VISUALISER AND DECKPLANNER ARE DELIBERATELY NOT GATED THIS WAY. They
+ * share has_account_tools() with this function and it would have been one
+ * line to put all three behind the same test. Aaron named the calculator
+ * alone, so only the calculator moves.
  *
  * Gating on the audience this way keeps a customer's menu exactly as it is:
  * one flat list of five and no headings, which is what nav_groups() promises.
@@ -373,6 +386,10 @@ const DECKPLANNER_URL = 'https://deckplanner.millboard.com/en#/en';
  */
 function can_view_calculator(?int $user_id = null): bool
 {
+    if (is_international_partner($user_id)) {
+        return false;
+    }
+
     return is_calculator_site() && has_account_tools($user_id);
 }
 
