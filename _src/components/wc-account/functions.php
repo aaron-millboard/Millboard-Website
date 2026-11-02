@@ -449,7 +449,54 @@ function can_view_deckplanner(?int $user_id = null): bool
  */
 function can_view_elearning(?int $user_id = null): bool
 {
+    if (is_international_partner($user_id)) {
+        return false;
+    }
+
     return has_account_tools($user_id);
+}
+
+/**
+ * The tabs an international partner does not get.
+ *
+ * Aaron, 2 Nov 2026: hide Orders, Addresses, Payment methods, Account
+ * details, Calculator, E-Learning and Sample ordering from them.
+ *
+ * What is left is Dashboard, Visualiser, Deckplanner, Resources and Log out:
+ * a tools account rather than a shop account, which is what these people
+ * actually use it for. They buy through export, not through this store, so
+ * everything removed here is either a record they will never have or a
+ * setting for a purchase they cannot make.
+ *
+ * ⚠️ ONE LIST, read by the navigation AND the dashboard. The two drifting
+ * apart is how you end up hiding a tab and leaving the panel that links to
+ * it, so neither names these endpoints itself.
+ *
+ * ⚠️ `edit-account` is in here, which is also the only place a password is
+ * changed. The tab goes but the URL is deliberately NOT redirected, so
+ * "Forgotten password" still lands somewhere that works. See the redirect in
+ * hooks.php.
+ *
+ * ⚠️ E-LEARNING IS A REVERSAL. It was added for international partners on
+ * this same day at Aaron's request, then removed again at his request a few
+ * hours later. Written down because the two instructions read as a
+ * contradiction unless you know the second one came last.
+ *
+ * @return string[]
+ */
+function international_hidden_endpoints(): array
+{
+    return (array) \apply_filters('millboard/account/international_hidden', [
+        'orders',
+        'edit-address',
+        'payment-methods',
+        'edit-account',
+        'calculator',
+        'elearning',
+
+        // The slug is per site, so France can have a French URL.
+        get_sample_endpoint(),
+    ]);
 }
 
 /**
