@@ -58,6 +58,27 @@ a { color: #151716; text-decoration: underline; }
 table.td { width: 100%; border-collapse: collapse; margin: 0 0 8px 0; }
 table.td thead th { padding: 0 0 10px 0; text-align: left; font-weight: 700; font-size: 11px; line-height: 16px; letter-spacing: 1.5px; text-transform: uppercase; color: #151716; border-bottom: 1px solid #151716; }
 table.td tbody td { padding: 16px 0; vertical-align: top; font-weight: 300; font-size: 15px; line-height: 22px; color: #151716; border-bottom: 1px solid #dedcd2; }
+/*
+ * THE QUANTITY AND PRICE COLUMNS MUST NOT TOUCH.
+ *
+ * Aaron, 2 Nov 2026: "the spacing on the X1 and the price is too close so it
+ * looks like its cost 10, euros". It did: the cells render "&times;1" and
+ * "0,00 &euro;" with no gap, so a FREE sample read as "x10,00 EUR". The header
+ * row said "ANZAHLPREIS" for the same reason.
+ *
+ * Cause: the item rows come from wc_get_email_order_items(), which resolves
+ * WooCommerce's own email-order-item.php, and that emits
+ * `class="td font-family text-align-right"` on both cells. The .td-qty and
+ * .td-price widths below are from the design handoff and match NOTHING, so the
+ * only padding in play was `16px 0` -- zero of it horizontal.
+ *
+ * Padding rather than width, because it is the one thing that survives the CSS
+ * inliner and every mail client, and it holds whatever the two columns end up
+ * containing.
+ */
+table.td thead th.text-align-right,
+table.td tbody td.text-align-right { padding-left: 20px; }
+
 table.td .td-qty { width: 56px; text-align: center; }
 table.td .td-price { width: 96px; text-align: right; }
 /* WooCommerce 10.9 renders the totals as a SEPARATE table, not a tfoot, and
