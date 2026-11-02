@@ -628,6 +628,22 @@ function nav_groups(array $endpoints): array
             'calculator',
             'visualiser',
             'deckplanner',
+
+            /*
+             * ⚠️ ADDING A TOOL TAKES TWO EDITS, NOT ONE.
+             *
+             * E-Learning shipped on 2 Nov 2026 with the menu item, the
+             * ordering and the URL mapping all in place, and still rendered
+             * under "Your account", because membership of the Tools group is
+             * decided HERE by an explicit list and nothing warns you that a
+             * new endpoint is missing from it.
+             *
+             * The list is explicit on purpose: anything a plugin introduces
+             * later should land in "Your account", which is where an
+             * unrecognised endpoint belongs. The cost is that our own
+             * additions have to be named twice.
+             */
+            'elearning',
         ])
     );
 
