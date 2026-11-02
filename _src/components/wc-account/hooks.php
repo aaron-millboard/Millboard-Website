@@ -108,16 +108,26 @@ use const Granola\Components\WC_Account_Fulfilment\ENDPOINT as FULFILMENT_ENDPOI
     $sample = get_sample_endpoint();
 
     /*
-     * Orders, for everyone except an international partner.
+     * An international partner gets a tools account, not a shop account.
      *
-     * They are on en-gb only because their own market has no Millboard site.
-     * They buy through export rather than through this store, so the tab has
-     * never held anything: all 87 of them had nought orders between them on
-     * the day this shipped, and Sample ordering above is removed for the same
-     * reason. An empty panel is the thing Sam asked not to show them.
+     * They hold an en-gb account only because their own market has no
+     * Millboard site, and they buy through export rather than through this
+     * store. Orders went first, in October, because the tab had never held
+     * anything: all 87 of them had nought orders between them. Aaron widened
+     * it on 2 Nov to Addresses, Payment methods, Account details, Calculator,
+     * E-Learning and Sample ordering, leaving Dashboard, Visualiser,
+     * Deckplanner, Resources and Log out.
+     *
+     * The list lives in international_hidden_endpoints() because the
+     * dashboard reads it too. Calculator and Sample ordering are ALSO gated
+     * by can_view_calculator() and can_order_samples(), and that stays: those
+     * guard the panel and the submit handler, not just the link. This only
+     * removes menu items.
      */
     if (is_international_partner()) {
-        unset($items['orders']);
+        foreach (international_hidden_endpoints() as $mb_hidden) {
+            unset($items[$mb_hidden]);
+        }
     }
 
     /*
@@ -283,22 +293,39 @@ use const Granola\Components\WC_Account_Fulfilment\ENDPOINT as FULFILMENT_ENDPOI
 }, 20);
 
 /**
- * Orders is a link AND a URL, so the link going is not enough.
+ * A hidden tab is still a URL, so removing the link is not enough.
  *
  * Sends an international partner to the dashboard rather than leaving them on
- * a list the menu no longer offers. Only the LIST: `view-order` is deliberately
- * left alone, so if one of them ever does place an order the link in their
- * confirmation e-mail still opens it.
+ * a panel the menu no longer offers.
+ *
+ * ⚠️ TWO DELIBERATE EXCEPTIONS.
+ *
+ * `edit-account` is hidden but NOT redirected. It is the only screen where a
+ * password is changed, and "Forgotten password" sends people straight to it,
+ * so bouncing it would lock an international partner out of their own
+ * account with no way back. The tab is gone; the door is not bolted.
+ *
+ * `view-order` is left alone for the same shape of reason: if one of them
+ * ever does place an order, the link in their confirmation e-mail has to
+ * open.
  */
 \add_action('template_redirect', function (): void {
     global $wp;
 
-    if (!isset($wp->query_vars['orders']) || !\is_user_logged_in() || !is_international_partner()) {
+    if (!\is_user_logged_in() || !is_international_partner()) {
         return;
     }
 
-    \wp_safe_redirect(\wc_get_page_permalink('myaccount'));
-    exit;
+    foreach (international_hidden_endpoints() as $hidden) {
+        if ('edit-account' === $hidden) {
+            continue;
+        }
+
+        if (isset($wp->query_vars[$hidden])) {
+            \wp_safe_redirect(\wc_get_page_permalink('myaccount'));
+            exit;
+        }
+    }
 });
 
 /**

@@ -20,6 +20,9 @@ use function Granola\Components\WC_Account\get_order_steps;
 use function Granola\Components\WC_Account\get_order_summary;
 use function Granola\Components\WC_Account\get_trackable_order;
 use function Granola\Components\WC_Account\is_international_partner;
+use const Granola\Components\WC_Account\DECKPLANNER_URL;
+use const Granola\Components\WC_Account\ENDPOINT_BRAND_ASSETS;
+use const Granola\Components\WC_Account\VISUALISER_URL;
 use function Granola\Components\WC_Account\get_visible_statuses;
 use function Granola\Components\WC_Account\is_closed;
 use function Granola\Components\WC_Account\order_shade_chips;
@@ -72,15 +75,49 @@ $recent_orders = wc_get_orders([
 
 $tracked = get_trackable_order($user_id);
 
-$quick_actions = [
-    [
-        'label' => __('Order samples', 'granola'),
-        'note' => $samples_is_internal
-            ? __('Send samples to a customer.', 'granola')
-            : __('Feel the grain before you commit.', 'granola'),
-        'url' => $samples_url,
-    ],
-];
+/*
+ * An international partner gets a different three.
+ *
+ * Aaron, 2 Nov 2026: Visualiser, Deckplanner and Resources, instead of Order
+ * samples, Track an order and Account details. All three of those lead
+ * somewhere their account no longer goes, so the boxes now point at the only
+ * three things it does.
+ *
+ * Returned early rather than unpicked below, because the two sets share
+ * nothing: a filter over the default three would be three removals and three
+ * additions dressed up as one list.
+ */
+$mb_international = is_international_partner();
+
+if ($mb_international) {
+    $quick_actions = [
+        [
+            'label' => __('Visualiser', 'granola'),
+            'note' => __('See a Millboard finish on your own photo.', 'granola'),
+            'url' => VISUALISER_URL,
+        ],
+        [
+            'label' => __('Deckplanner', 'granola'),
+            'note' => __('Plan a deck, board by board.', 'granola'),
+            'url' => DECKPLANNER_URL,
+        ],
+        [
+            'label' => __('Resources', 'granola'),
+            'note' => __('Images, brochures and artwork.', 'granola'),
+            'url' => wc_get_endpoint_url(ENDPOINT_BRAND_ASSETS, '', wc_get_page_permalink('myaccount')),
+        ],
+    ];
+} else {
+    $quick_actions = [
+        [
+            'label' => __('Order samples', 'granola'),
+            'note' => $samples_is_internal
+                ? __('Send samples to a customer.', 'granola')
+                : __('Feel the grain before you commit.', 'granola'),
+            'url' => $samples_url,
+        ],
+    ];
+}
 
 /*
  * Track an order, for everyone it is true for.
@@ -91,19 +128,19 @@ $quick_actions = [
  * track. Added rather than filtered out, so the array only ever holds tiles
  * that are really shown. The grid is auto-fit, so two of them fill the row.
  */
-if (!is_international_partner()) {
+if (!$mb_international) {
     $quick_actions[] = [
         'label' => __('Track an order', 'granola'),
         'note' => __('See where your boards are today.', 'granola'),
         'url' => $orders_url,
     ];
-}
 
-$quick_actions[] = [
-    'label' => __('Account details', 'granola'),
-    'note' => __('Name, email and password.', 'granola'),
-    'url' => $details_url,
-];
+    $quick_actions[] = [
+        'label' => __('Account details', 'granola'),
+        'note' => __('Name, email and password.', 'granola'),
+        'url' => $details_url,
+    ];
+}
 
 ?>
 
@@ -192,7 +229,20 @@ $quick_actions[] = [
         </section>
     <?php endif; ?>
 
-    <?php if ($recent_orders) : ?>
+    <?php
+    /*
+     * Recent orders, and below it the two summary columns.
+     *
+     * Aaron, 2 Nov 2026: hide "recent orders", "delivering to" and "your
+     * details" from international partners.
+     *
+     * $recent_orders is empty for them anyway, so this block would already
+     * have stayed away. Saying so explicitly rather than leaning on that:
+     * the day one of them does place an order, the intent should not quietly
+     * reverse itself.
+     */
+    ?>
+    <?php if ($recent_orders && !$mb_international) : ?>
         <div class="mb-account-panel__head">
             <h3 class="mb-account-dash__tracker-title"><?php esc_html_e('Recent orders', 'granola'); ?></h3>
             <a class="mb-account-link" href="<?php echo esc_url($orders_url); ?>">
@@ -224,6 +274,18 @@ $quick_actions[] = [
         </div>
     <?php endif; ?>
 
+    <?php
+    /*
+     * Delivering to, and Your details.
+     *
+     * Both go for an international partner, and the wrapper goes with them
+     * rather than being left to render an empty grid. Each is a summary of
+     * something they can no longer open: the addresses and account details
+     * tabs are gone, so a panel whose only purpose is to link to them is
+     * furniture.
+     */
+    ?>
+    <?php if (!$mb_international) : ?>
     <div class="mb-account-dash__columns">
         <div>
             <h3 class="mb-account-section"><?php esc_html_e('Delivering to', 'granola'); ?></h3>
@@ -263,6 +325,7 @@ $quick_actions[] = [
             </a>
         </div>
     </div>
+    <?php endif; ?>
 
 </div>
 
