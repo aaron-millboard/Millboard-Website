@@ -60,6 +60,7 @@ use const Granola\Components\WC_Account_Fulfilment\ENDPOINT as FULFILMENT_ENDPOI
         'calculator' => CALCULATOR_URL,
         'visualiser' => VISUALISER_URL,
         'deckplanner' => DECKPLANNER_URL,
+        'elearning' => ELEARNING_URL,
     ];
 
     if (!isset($external[$endpoint]) || '' === $external[$endpoint]) {
@@ -199,6 +200,20 @@ use const Granola\Components\WC_Account_Fulfilment\ENDPOINT as FULFILMENT_ENDPOI
         unset($items['deckplanner']);
     }
 
+    /*
+     * Partner training. The fourth link out, same shape as the three above.
+     *
+     * Translated, unlike Visualiser and Deckplanner: those are product names
+     * and stay English everywhere, this is a plain description of what the
+     * tab does. Aaron, 2 Nov 2026: "on the other countries translate
+     * e-learning please".
+     */
+    if (can_view_elearning()) {
+        $items['elearning'] = \__('E-Learning', 'granola');
+    } else {
+        unset($items['elearning']);
+    }
+
     if (can_order_samples()) {
         // The widget adds its own item under this same key, labelled from
         // MB_SOF_LABEL ("Sample Ordering"). Setting it here rather than only
@@ -241,6 +256,7 @@ use const Granola\Components\WC_Account_Fulfilment\ENDPOINT as FULFILMENT_ENDPOI
         'visualiser',
         'deckplanner',
         'calculator',
+        'elearning',
         $sample,
         FULFILMENT_ENDPOINT,
         ENDPOINT_BRAND_ASSETS,
