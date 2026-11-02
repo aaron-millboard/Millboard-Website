@@ -356,6 +356,17 @@ const VISUALISER_URL = 'https://ai-visualiser.millboard.com';
 const DECKPLANNER_URL = 'https://deckplanner.millboard.com/en#/en';
 
 /**
+ * Where the partner training lives.
+ *
+ * Aaron, 2 Nov 2026, gave this address. It is the Moodle, which already has
+ * German and French language packs installed (de_wp and fr_wp), so a partner
+ * who switches language there stays switched. No `?lang=` is forced on the
+ * link: that would override a choice the learner has already made, and Moodle
+ * remembers it per account.
+ */
+const ELEARNING_URL = 'https://learn.millboard.com';
+
+/**
  * May this person see the Calculator tab?
  *
  * THREE tests, and they ask different questions. has_account_tools() asks who
@@ -412,6 +423,31 @@ function can_view_visualiser(?int $user_id = null): bool
  * kept in agreement.
  */
 function can_view_deckplanner(?int $user_id = null): bool
+{
+    return has_account_tools($user_id);
+}
+
+/**
+ * May this person see the E-Learning tab?
+ *
+ * Aaron, 2 Nov 2026: "add another tab to all installers, distributors,
+ * international partners accounts ... called E-Learning".
+ *
+ * Those three are exactly what has_account_tools() already answers, because
+ * an international partner holds the distributor role like any other: the
+ * export tag says where they trade, not what they are. Architects and asset
+ * viewers are NOT in tool_roles() and so do not get it, which matches the
+ * three groups named.
+ *
+ * ⚠️ NO is_international_partner() TEST HERE, unlike the Calculator. That one
+ * is hidden from export partners because it is a UK tool; training is the
+ * opposite, and they were named first.
+ *
+ * Millboard staff come with has_account_tools() and were not named. They are
+ * left in: seeing a link to their own training portal costs nothing, and the
+ * alternative is a fourth audience to keep in agreement with the other three.
+ */
+function can_view_elearning(?int $user_id = null): bool
 {
     return has_account_tools($user_id);
 }
