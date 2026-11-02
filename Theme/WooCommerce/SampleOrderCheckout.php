@@ -50,6 +50,25 @@ class SampleOrderCheckout
     /** Checkout fields reused verbatim, so the options cannot drift. */
     public const REUSED = ['website_persona', 'project-size', 'project-start-time'];
 
+    /**
+     * The sample marker, stored in ENGLISH and translated on display.
+     *
+     * It used to be written as __('Sample order') => __('Sent by the Millboard
+     * team'), which froze whatever locale the rep happened to be in INTO the
+     * order record. A German customer then read English in their confirmation
+     * because the rep placing it was on en-gb, and no later translation could
+     * reach it: the words were data by then, not a string.
+     *
+     * Stored flat and translated by the display filters in init() instead, so
+     * the 821 orders already carrying the English literal come out in the
+     * reader's language too. Checked 2 Nov 2026: every stored row is this
+     * literal, 818 on en-gb and 3 on de-de, so nothing is left behind.
+     *
+     * ⚠️ DO NOT wrap these in __() at the point of writing. That is the bug.
+     */
+    public const SAMPLE_MARKER_KEY = 'Sample order';
+    public const SAMPLE_MARKER_VALUE = 'Sent by the Millboard team';
+
     /** Who actually placed it. Not billing, because billing is the customer. */
     public const META_PLACED_BY = '_millboard_sample_placed_by';
     public const META_PLACED_BY_EMAIL = '_millboard_sample_placed_by_email';
@@ -93,6 +112,52 @@ class SampleOrderCheckout
          * across with two lines instead of a second Loqate integration.
          */
         \add_filter('wc_address_validation_validation_required', [__CLASS__, 'enable_address_lookup']);
+
+        /*
+         * Translate the sample marker when it is SHOWN, not when it is stored.
+         *
+         * Aaron, 2 Nov 2026: "sample order send by the millboard team needs
+         * fixing too", on a German order confirmation.
+         *
+         * Display-time is what makes this reach orders already placed. The
+         * words sit in wc_order_itemmeta as a key and a value, so an order
+         * written last month cannot be re-translated at the source; it can
+         * only be re-read.
+         */
+        \add_filter('woocommerce_order_item_display_meta_key', [__CLASS__, 'translate_marker_key'], 10, 2);
+        \add_filter('woocommerce_order_item_display_meta_value', [__CLASS__, 'translate_marker_value'], 10, 2);
+    }
+
+    /**
+     * @param mixed $display_key
+     * @param mixed $meta
+     * @return mixed
+     */
+    public static function translate_marker_key($display_key, $meta = null)
+    {
+        return self::SAMPLE_MARKER_KEY === $display_key
+            ? \__('Sample order', 'granola')
+            : $display_key;
+    }
+
+    /**
+     * @param mixed $display_value
+     * @param mixed $meta
+     * @return mixed
+     */
+    public static function translate_marker_value($display_value, $meta = null)
+    {
+        /*
+         * wc_display_item_meta runs the value through wpautop, so by the time
+         * it reaches here it can be wrapped in a paragraph. Compare on the
+         * trimmed, tag-stripped text and hand back a bare string, which is
+         * what the unwrapped value was anyway.
+         */
+        $plain = \trim(\wp_strip_all_tags((string) $display_value));
+
+        return self::SAMPLE_MARKER_VALUE === $plain
+            ? \__('Sent by the Millboard team', 'granola')
+            : $display_value;
     }
 
     /**
@@ -267,7 +332,7 @@ class SampleOrderCheckout
             if ($item) {
                 // The same markers the basket route wrote, so the Analytics
                 // report and anything else counting samples sees these too.
-                $item->add_meta_data(\__('Sample order', 'granola'), \__('Sent by the Millboard team', 'granola'));
+                $item->add_meta_data(self::SAMPLE_MARKER_KEY, self::SAMPLE_MARKER_VALUE);
                 $item->add_meta_data('_millboard_sample_order', 'yes', true);
                 $item->save();
             }

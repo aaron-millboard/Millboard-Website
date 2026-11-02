@@ -31,8 +31,24 @@ if ( ! $mb_email instanceof WC_Email && class_exists( 'Theme\WooCommerce\EmailUn
 	$mb_email = Theme\WooCommerce\EmailUnsubscribe::current_email();
 }
 
-// Contact line first; the legal links and the unsubscribe come from the filter.
-$mb_phone = apply_filters( 'millboard_email_footer_phone', '+44 (0) 24 7643 9943' );
+/*
+ * Contact line first; the legal links and the unsubscribe come from the filter.
+ *
+ * PER MARKET, VIA AN OPTION. Aaron, 2 Nov 2026: the German e-mails were
+ * telling German customers to ring Coventry. These are per-site options rather
+ * than a constant, so adding or correcting a market is one command instead of
+ * a release:
+ *
+ *   wp option update millboard_email_phone '+49 69 967 55 020' --url=<site>
+ *   wp option update millboard_email_inbox 'info.de@millboard.com' --url=<site>
+ *
+ * An unset option falls back to the UK details, which is exactly what every
+ * market sent before this, so no market changes until it is given its own.
+ */
+$mb_phone = apply_filters(
+	'millboard_email_footer_phone',
+	(string) ( get_option( 'millboard_email_phone' ) ?: '+44 (0) 24 7643 9943' )
+);
 /*
  * enquiries@, not the WooCommerce from-address.
  *
@@ -42,7 +58,10 @@ $mb_phone = apply_filters( 'millboard_email_footer_phone', '+44 (0) 24 7643 9943
  * look up. The design handoff specified enquiries@ throughout and that is what
  * this should always have been.
  */
-$mb_inbox = apply_filters( 'millboard_email_footer_email', 'enquiries@millboard.com' );
+$mb_inbox = apply_filters(
+	'millboard_email_footer_email',
+	(string) ( get_option( 'millboard_email_inbox' ) ?: 'enquiries@millboard.com' )
+);
 
 /*
  * (0) IS A TRUNK PREFIX AND HAS TO GO BEFORE THE DIGITS ARE COLLAPSED.
