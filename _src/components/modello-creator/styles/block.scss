@@ -1,0 +1,290 @@
+@import '../../../core';
+
+// =============================================================================
+// Modello Creator
+// Interactive laying-pattern tool: rule, heading and intro, two selects, a
+// stack of draggable boards and a strip of preset thumbnails.
+// =============================================================================
+
+.modello-creator {
+    --mc--accent: var(--color--olivegreen);
+    --mc--ink: #151716;
+    --mc--muted: #{rgba(#151716, 0.66)};
+
+    padding: clamp(32px, 5vw, 64px) 0;
+    // The theme gives every block a vertical margin. These sections carry
+    // their own padding, so that margin shows as a stripe of page colour.
+    margin-block: 0;
+
+    // Everything is centred, to sit with the boards beneath it.
+    &__inner {
+        max-width: var(--width--responsive--l);
+        margin: 0 auto;
+        text-align: center;
+    }
+
+    // ---- Rule, heading and intro ---------------------------------------------
+    &__rule {
+        display: block;
+        width: px-to-rem(48);
+        height: 2px;
+        margin: 0 auto px-to-rem(22);
+        border: 0;
+        background: var(--mc--accent);
+    }
+
+    // Inherits the site h2 hierarchy.
+    &__heading {
+        margin: 0;
+    }
+
+    &__copy {
+        max-width: 34em;
+        margin-inline: auto;
+
+        p {
+            margin: px-to-rem(20) 0 0;
+            line-height: 1.7;
+            text-wrap: pretty;
+        }
+    }
+
+    // ---- Selects -------------------------------------------------------------
+    &__controls {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: px-to-rem(16) px-to-rem(40);
+        margin-top: px-to-rem(32);
+    }
+
+    &__field {
+        display: flex;
+        align-items: center;
+        gap: px-to-rem(14);
+    }
+
+    &__label {
+        font-size: px-to-rem(12);
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--mc--muted);
+    }
+
+    &__select {
+        min-width: px-to-rem(160);
+        padding: px-to-rem(10) px-to-rem(36) px-to-rem(10) 0;
+        font: inherit;
+        color: var(--mc--ink);
+        background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMjAgNTEyIj48cGF0aCBkPSJNMTM3LjQgMzc0LjZjMTIuNSAxMi41IDMyLjggMTIuNSA0NS4zIDBsMTI4LTEyOGM5LjItOS4yIDExLjktMjIuOSA2LjktMzQuOXMtMTYuNi0xOS44LTI5LjYtMTkuOEwzMiAxOTJjLTEyLjkgMC0yNC42IDcuOC0yOS42IDE5LjhzLTIuMiAyNS43IDYuOSAzNC45bDEyOCAxMjh6IiBmaWxsPSIjMTUxNzE2IiAvPjwvc3ZnPgo=') right center / px-to-rem(12) no-repeat;
+        border: 0;
+        border-bottom: 1px solid var(--mc--ink);
+        border-radius: 0;
+        appearance: none;
+        cursor: pointer;
+
+        &:focus-visible {
+            outline: 2px solid var(--mc--accent);
+            outline-offset: 2px;
+        }
+    }
+
+    // ---- Instruction ---------------------------------------------------------
+    &__instruction {
+        margin: px-to-rem(40) auto px-to-rem(16);
+        line-height: 1.7;
+        color: var(--mc--muted);
+    }
+
+    // ---- Boards --------------------------------------------------------------
+    // Twelve rows, 18 steps wide. The row ends are clipped; each row tiles
+    // itself either side so an offset board never shows a gap.
+    &__board {
+        max-width: px-to-rem(840);
+        margin: 0 auto;
+        overflow: hidden;
+        user-select: none;
+        touch-action: pan-y;
+    }
+
+    &__row {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 18 / 1;
+        background-size: 100% 100%;
+        cursor: grab;
+        will-change: transform;
+
+        // Overlap by a pixel so fractional row heights never show a seam.
+        & + & {
+            margin-top: -1px;
+        }
+
+        &::before,
+        &::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: inherit;
+            background-size: 100% 100%;
+        }
+
+        &::before {
+            right: 100%;
+        }
+
+        &::after {
+            left: 100%;
+        }
+
+        &.is-dragging {
+            z-index: 2;
+            cursor: grabbing;
+        }
+
+        &.is-settling {
+            transition: transform 0.5s ease;
+        }
+
+        &:focus-visible {
+            outline: 2px solid var(--mc--accent);
+            outline-offset: -2px;
+            z-index: 3;
+        }
+    }
+
+    // ---- Presets -------------------------------------------------------------
+    &__presets {
+        display: flex;
+        align-items: center;
+        gap: px-to-rem(8);
+        max-width: px-to-rem(700);
+        margin: px-to-rem(32) auto 0;
+    }
+
+    &__track {
+        display: flex;
+        flex: 1;
+        gap: px-to-rem(20);
+        padding: px-to-rem(6) px-to-rem(4) px-to-rem(44);
+        overflow-x: auto;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: none;
+
+        &::-webkit-scrollbar {
+            display: none;
+        }
+    }
+
+    &__preset {
+        position: relative;
+        flex: 0 0 px-to-rem(110);
+        width: px-to-rem(110);
+        height: px-to-rem(110);
+        padding: px-to-rem(5);
+        font: inherit;
+        background: none;
+        border: 2px solid transparent;
+        cursor: pointer;
+        scroll-snap-align: start;
+        transition: border-color var(--transition--duration) var(--transition--ease);
+
+        &:hover,
+        &:focus-visible,
+        &.is-active {
+            border-color: var(--mc--accent);
+        }
+
+        &:focus-visible {
+            outline: 2px solid var(--mc--accent);
+            outline-offset: 2px;
+        }
+    }
+
+    &__thumb {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    &__preset-label {
+        position: absolute;
+        top: calc(100% + #{px-to-rem(10)});
+        left: 50%;
+        width: 100%;
+        font-size: px-to-rem(12);
+        line-height: 1.2;
+        text-align: center;
+        color: var(--mc--muted);
+        transform: translateX(-50%);
+    }
+
+    &__preset.is-active &__preset-label {
+        color: var(--mc--ink);
+    }
+
+    &__nav {
+        flex: 0 0 px-to-rem(18);
+        width: px-to-rem(18);
+        height: px-to-rem(18);
+        margin-bottom: px-to-rem(40);
+        padding: 0;
+        border: 0;
+        background: center / contain no-repeat;
+        cursor: pointer;
+
+        &--prev {
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0NDggNTEyIj48cGF0aCBkPSJNOS40IDIzMy40Yy0xMi41IDEyLjUtMTIuNSAzMi44IDAgNDUuM2wxNjAgMTYwYzEyLjUgMTIuNSAzMi44IDEyLjUgNDUuMyAwczEyLjUtMzIuOCAwLTQ1LjNMMTA5LjIgMjg4IDQxNiAyODhjMTcuNyAwIDMyLTE0LjMgMzItMzJzLTE0LjMtMzItMzItMzJsLTMwNi43IDBMMjE0LjYgMTE4LjZjMTIuNS0xMi41IDEyLjUtMzIuOCAwLTQ1LjNzLTMyLjgtMTIuNS00NS4zIDBsLTE2MCAxNjB6IiBmaWxsPSIjMTUxNzE2IiAvPjwvc3ZnPgo=');
+        }
+
+        &--next {
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0NDggNTEyIj48cGF0aCBkPSJNNDM4LjYgMjc4LjZjMTIuNS0xMi41IDEyLjUtMzIuOCAwLTQ1LjNsLTE2MC0xNjBjLTEyLjUtMTIuNS0zMi44LTEyLjUtNDUuMyAwcy0xMi41IDMyLjggMCA0NS4zTDMzOC44IDIyNCAzMiAyMjRjLTE3LjcgMC0zMiAxNC4zLTMyIDMyczE0LjMgMzIgMzIgMzJsMzA2LjcgMEwyMzMuNCAzOTMuNGMtMTIuNSAxMi41LTEyLjUgMzIuOCAwIDQ1LjNzMzIuOCAxMi41IDQ1LjMgMGwxNjAtMTYweiIgZmlsbD0iIzE1MTcxNiIgLz48L3N2Zz4K');
+        }
+
+        &:focus-visible {
+            outline: 2px solid var(--mc--accent);
+            outline-offset: 4px;
+        }
+    }
+
+    // ---- Reset ---------------------------------------------------------------
+    &__actions {
+        display: flex;
+        justify-content: center;
+    }
+
+    // The theme's outlined button, as the shop category band uses it.
+    &__reset {
+        display: inline-flex;
+        align-items: center;
+        padding: px-to-rem(16) px-to-rem(28);
+        font: inherit;
+        font-size: px-to-rem(12);
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--mc--ink);
+        background: none;
+        border: 1px solid var(--mc--ink);
+        cursor: pointer;
+        transition:
+            background-color var(--transition--duration) var(--transition--ease),
+            color var(--transition--duration) var(--transition--ease);
+
+        &:hover,
+        &:focus-visible {
+            background: var(--mc--ink);
+            color: var(--color--white, #fff);
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        &__row.is-settling {
+            transition: none;
+        }
+    }
+}
