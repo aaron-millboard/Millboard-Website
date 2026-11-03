@@ -24,6 +24,7 @@ function filter_args(array $args): ?array
         'audience' => 'UK',
         'agenda_url' => '',
         'logo_url' => '',
+        'hide_travel' => 0,
     ], $args);
 
     $args['classes'] = array_merge(['summit-review', 'wp-block'], $args['classes']);

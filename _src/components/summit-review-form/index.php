@@ -71,6 +71,9 @@ $is_wd = !empty($args['is_wd']); // Wooddeck guests: the INT form without Open D
 $is_int = !empty($args['is_int']) || $is_wd;
 $is_us = !empty($args['is_us']); // US is the UK form plus the agenda link
 $is_travel = $is_int || $is_fr; // INT and FR delegates both give arrival flights
+$hide_travel = !empty($args['hide_travel']); // for delegates who are already here: no flights section, mobile stays
+$show_travel = $is_travel && !$hide_travel;
+$has_deadline = trim((string) ($args['deadline'] ?? '')) !== '';
 $audience = $is_fr ? 'FR' : ($is_wd ? 'WD' : ($is_int ? 'INT' : ($is_us ? 'US' : 'UK')));
 $flights_contact = $is_fr ? 'luderic.geminard@millboard.com' : ($is_wd ? 'sadie.haughton@millboard.com' : 'sam.cockeram@millboard.com');
 $agenda = (string) ($args['agenda_url'] ?? '');
@@ -121,6 +124,7 @@ $travel_fields = [
               data-portal="<?= esc_attr($args['hubspot_portal_id']); ?>"
               data-form="<?= esc_attr($args['hubspot_form_guid']); ?>"
               data-audience="<?= esc_attr($audience); ?>"
+              data-travel="<?= $show_travel ? '1' : '0'; ?>"
               data-i18n="<?= esc_attr(wp_json_encode([
                   'sending' => __('Sending…', 'granola'),
                   'thanks' => __('Thank you, ', 'granola'),
@@ -135,9 +139,13 @@ $travel_fields = [
             <header class="summit-review__intro">
                 <div class="summit-review__rule"></div>
                 <p class="summit-review__lead">
-                    <?= esc_html__('Six short steps, all on this page. Please complete them by no later than', 'granola'); ?><br>
-                    <strong><?= esc_html($args['deadline']); ?></strong>
-                    <?= esc_html__('so we can have everything ready for you.', 'granola'); ?>
+                    <?php if ($has_deadline) { ?>
+                        <?= esc_html__('Six short steps, all on this page. Please complete them by no later than', 'granola'); ?><br>
+                        <strong><?= esc_html($args['deadline']); ?></strong>
+                        <?= esc_html__('so we can have everything ready for you.', 'granola'); ?>
+                    <?php } else { ?>
+                        <?= esc_html__('Six short steps, all on this page.', 'granola'); ?>
+                    <?php } ?>
                 </p>
                 <?php if ($is_travel || $is_us) { $doc_link($agenda, 'View the high level agenda (PDF)'); } ?>
             </header>
@@ -165,7 +173,7 @@ $travel_fields = [
                 </div>
             </section>
 
-            <?php if ($is_travel) { ?>
+            <?php if ($show_travel) { ?>
             <section class="summit-review__travel">
                 <div class="summit-review__step-head">
                     <h2 class="summit-review__step-title"><?= esc_html__('Your travel', 'granola'); ?></h2>
