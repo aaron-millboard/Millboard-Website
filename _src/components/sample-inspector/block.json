@@ -1,0 +1,46 @@
+{
+    "$schema": "https://raw.githubusercontent.com/AdvancedCustomFields/schemas/main/json/block.json",
+    "apiVersion": 3,
+    "name": "acf/sample-inspector",
+    "title": "Sample Inspector (3D)",
+    "category": "granola-blocks",
+    "description": "A 3D sample board visitors can spin and tilt, with hotspots for the top, side and underside of the board. Carried over from the original site's Decking Sample Inspector.",
+    "icon": "image-rotate",
+    "keywords": [
+        "3d",
+        "sample",
+        "board",
+        "inspector",
+        "render",
+        "hotspot"
+    ],
+    "acf": {
+        "mode": "auto",
+        "blockVersion": 3,
+        "autoInlineEditing": false,
+        "hideFieldsInSidebar": true,
+        "renderCallback": "\\Granola\\Component::acf_render_callback",
+        "postTypes": [
+            "granola-template",
+            "page"
+        ]
+    },
+    "supports": {
+        "align": [
+            "wide",
+            "full",
+            "center"
+        ],
+        "anchor": true,
+        "color": {
+            "text": false
+        },
+        "mode": false
+    },
+    "attributes": {
+        "align": {
+            "type": "string",
+            "default": "wide"
+        }
+    }
+}
