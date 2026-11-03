@@ -102,6 +102,16 @@
             "instructions": "Optional. Media library URL of the Millboard Summit logo, shown at the top of the form. Leave blank for no logo.",
             "required": 0,
             "default_value": ""
+        },
+        {
+            "key": "field_68e7a1c00011",
+            "label": "Hide the travel section",
+            "name": "hide_travel",
+            "type": "true_false",
+            "instructions": "INT, FR and WD. Tick for delegates who are already here: the arrival flights section is removed and nothing about travel is asked or required. Mobile number stays.",
+            "required": 0,
+            "default_value": 0,
+            "ui": 1
         }
     ],
     "location": [

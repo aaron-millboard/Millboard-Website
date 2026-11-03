@@ -51,8 +51,9 @@ if (form) {
         const details = detailKeys.every((k) => val(k) !== '') && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val('email'));
         // INT only: either flights are given, or the delegate says they are not booked yet.
         const notBooked = checked('summit_flights_not_booked');
-        const travel = !travelOn || notBooked || FLIGHT_REQUIRED.every((k) => val(k) !== '');
-        return { diet, access, needs, done, details, int, travelOn, notBooked, travel };
+        const travelShown = form.dataset.travel !== '0'; // off for delegates who are already here
+        const travel = !travelOn || !travelShown || notBooked || FLIGHT_REQUIRED.every((k) => val(k) !== '');
+        return { diet, access, needs, done, details, int, travelOn, travelShown, notBooked, travel };
     };
 
     const FLIGHT_REQUIRED = ['summit_arrival_airline', 'summit_arrival_flight', 'summit_arrival_airport', 'summit_arrival_date', 'summit_arrival_time'];
@@ -78,7 +79,7 @@ if (form) {
             if (badge) badge.hidden = !s.done[k];
         });
 
-        if (s.travelOn) {
+        if (s.travelOn && s.travelShown) {
             form.querySelector('[data-flights]').hidden = s.notBooked;
             form.querySelector('[data-done="travel"]').hidden = !s.travel;
         }
@@ -137,9 +138,9 @@ if (form) {
         if (s.needs) f.summit_health_data_consent = 'true';
         if (s.travelOn) {
             f.summit_mobile = val('summit_mobile');
-            if (s.notBooked) {
+            if (s.travelShown && s.notBooked) {
                 f.summit_flights_not_booked = 'true';
-            } else {
+            } else if (s.travelShown) {
                 FLIGHT_REQUIRED.concat(['summit_arrival_from']).forEach((k) => { f[k] = val(k); });
             }
         }
