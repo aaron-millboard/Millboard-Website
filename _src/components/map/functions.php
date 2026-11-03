@@ -258,7 +258,7 @@ function get_type_label(\WP_Post $wp_post, bool $is_advanced_installer = false):
             if (!empty($terms) && !\is_wp_error($terms)) {
                 return $terms[0]->name;
             }
-            return \_x('Stockist', 'Map listing type label', 'granola');
+            return \_x('Dealer', 'Map listing type label', 'granola');
 
         case 'installer':
             $terms = \get_the_terms($wp_post->ID, 'installer_type');
