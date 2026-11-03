@@ -69,7 +69,7 @@ function filter_args(array $args): ?array
     if ($args['show_badges']) {
         if (\get_field('preferred_stockist', $post_id)) {
             $args['badges'][] = [
-                'label' => \__('Stockist', 'granola'),
+                'label' => \__('Dealer', 'granola'),
                 'modifier' => 'stockist',
                 'icon' => '',
                 'dot' => false,
