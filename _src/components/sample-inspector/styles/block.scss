@@ -1,0 +1,61 @@
+@import '../../../core';
+
+// =============================================================================
+// Sample Inspector
+// Rule, heading and intro above the original 3D viewer. The viewer's own
+// stylesheet is scoped to its <application> element and is loaded on demand.
+// =============================================================================
+
+.sample-inspector {
+    --si--accent: var(--color--olivegreen);
+
+    padding: clamp(32px, 5vw, 64px) 0;
+    // The theme gives every block a vertical margin. This section carries its
+    // own padding, so that margin would show as a stripe of page colour.
+    margin-block: 0;
+
+    &__inner {
+        max-width: var(--width--responsive--l);
+        margin: 0 auto;
+        text-align: center;
+    }
+
+    &__rule {
+        display: block;
+        width: px-to-rem(48);
+        height: 2px;
+        margin: 0 auto px-to-rem(16);
+        border: 0;
+        background: var(--si--accent);
+    }
+
+    &__heading {
+        margin: 0 0 px-to-rem(12);
+    }
+
+    &__copy {
+        max-width: 60ch;
+        margin: 0 auto px-to-rem(24);
+    }
+
+    &__stage {
+        position: relative;
+        min-height: px-to-rem(360);
+        overflow: hidden;
+        border-radius: px-to-rem(4);
+        background: #e0e0e0;
+
+        // The viewer defaults to the whole viewport; fit it to the column.
+        application {
+            width: 100%;
+            height: clamp(520px, 80vh, 760px);
+            font-family: inherit;
+        }
+    }
+
+    &__loading,
+    &__noscript {
+        margin: 0;
+        padding: px-to-rem(48) px-to-rem(16);
+    }
+}
