@@ -16,9 +16,11 @@
     // their own padding, so that margin shows as a stripe of page colour.
     margin-block: 0;
 
+    // Everything is centred, to sit with the boards beneath it.
     &__inner {
         max-width: var(--width--responsive--l);
         margin: 0 auto;
+        text-align: center;
     }
 
     // ---- Rule, heading and intro ---------------------------------------------
@@ -26,7 +28,7 @@
         display: block;
         width: px-to-rem(48);
         height: 2px;
-        margin: 0 0 px-to-rem(22);
+        margin: 0 auto px-to-rem(22);
         border: 0;
         background: var(--mc--accent);
     }
@@ -38,6 +40,7 @@
 
     &__copy {
         max-width: 34em;
+        margin-inline: auto;
 
         p {
             margin: px-to-rem(20) 0 0;
@@ -50,6 +53,7 @@
     &__controls {
         display: flex;
         flex-wrap: wrap;
+        justify-content: center;
         gap: px-to-rem(16) px-to-rem(40);
         margin-top: px-to-rem(32);
     }
@@ -88,7 +92,7 @@
 
     // ---- Instruction ---------------------------------------------------------
     &__instruction {
-        margin: px-to-rem(40) 0 px-to-rem(16);
+        margin: px-to-rem(40) auto px-to-rem(16);
         line-height: 1.7;
         color: var(--mc--muted);
     }
