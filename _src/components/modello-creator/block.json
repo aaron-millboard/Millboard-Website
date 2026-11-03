@@ -1,0 +1,45 @@
+{
+    "$schema": "https://raw.githubusercontent.com/AdvancedCustomFields/schemas/main/json/block.json",
+    "apiVersion": 3,
+    "name": "acf/modello-creator",
+    "title": "Modello Pattern Creator",
+    "category": "granola-blocks",
+    "description": "Interactive Modello laying-pattern tool. Visitors drag boards left and right, click them to flip them, or pick a preset pattern.",
+    "icon": "grid-view",
+    "keywords": [
+        "modello",
+        "pattern",
+        "laying",
+        "decking",
+        "configurator"
+    ],
+    "acf": {
+        "mode": "auto",
+        "blockVersion": 3,
+        "autoInlineEditing": false,
+        "hideFieldsInSidebar": true,
+        "renderCallback": "\\Granola\\Component::acf_render_callback",
+        "postTypes": [
+            "granola-template",
+            "page"
+        ]
+    },
+    "supports": {
+        "align": [
+            "wide",
+            "full",
+            "center"
+        ],
+        "anchor": true,
+        "color": {
+            "text": false
+        },
+        "mode": false
+    },
+    "attributes": {
+        "align": {
+            "type": "string",
+            "default": "wide"
+        }
+    }
+}
