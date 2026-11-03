@@ -2125,7 +2125,7 @@ let markerHtml = `
 
         heading.textContent = category === 'experience_centre'
             ? 'Experience Centres'
-            : 'Stockists & showspaces';
+            : 'Dealers & showspaces';
 
         return heading;
     }

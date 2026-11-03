@@ -149,7 +149,7 @@
             </p>
 
             <p class="map__territory-banner__text">
-                <?= esc_html_x('Our appointed distributor for this country is listed below. Contact them for details of local stockists.', 'Map territory banner', 'granola'); ?>
+                <?= esc_html_x('Our appointed distributor for this country is listed below. Contact them for details of local dealers.', 'Map territory banner', 'granola'); ?>
             </p>
         </div>
 
@@ -272,7 +272,7 @@
                     <p
                         class="map__territory-note__text"
                         data-map-territory-note-text
-                        data-template="<?= esc_attr_x('We supply %s through appointed distributors, so only they are listed. They will point you to your nearest stockist and advise on availability and lead times.', 'Map territory note', 'granola'); ?>"
+                        data-template="<?= esc_attr_x('We supply %s through appointed distributors, so only they are listed. They will point you to your nearest dealer and advise on availability and lead times.', 'Map territory note', 'granola'); ?>"
                     ></p>
 
                     <p class="map__territory-note__small">
