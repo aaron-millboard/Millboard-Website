@@ -120,10 +120,10 @@
     // its last crumb (the article's own title, which the H1 repeats).
     // -------------------------------------------------------------------------
     // The trail runs through the article's category now, which can make it
-    // long; held to 34em it wraps inside the darkened copy column instead of
+    // long; held to 50em it wraps inside the darkened copy column instead of
     // running out over the brightest part of the picture.
     &__breadcrumbs {
-        max-width: 34em;
+        max-width: 50em;
         margin-bottom: #{px-to-rem(48)};
 
         .breadcrumbs {
