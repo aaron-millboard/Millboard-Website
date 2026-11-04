@@ -128,10 +128,6 @@
 
         .breadcrumbs {
             text-shadow: 0 1px 3px #{rgba(#2f292e, 0.6)};
-            font-size: #{px-to-rem(15)};
-            line-height: 1.55;
-            letter-spacing: var(--mbh-tracking-sub);
-            text-transform: uppercase;
             color: var(--color--springwood);
 
             a {

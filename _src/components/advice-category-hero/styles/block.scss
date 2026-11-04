@@ -14,20 +14,16 @@
     &__inner {
         max-width: var(--mbh-container);
         margin: 0 auto;
-        padding: #{px-to-rem(96)} var(--mbh-section-x) clamp(#{px-to-rem(48)}, 7vw, #{px-to-rem(96)});
+        padding: #{px-to-rem(48)} var(--mbh-section-x) clamp(#{px-to-rem(48)}, 7vw, #{px-to-rem(96)});
     }
 
     // -------------------------------------------------------------------------
-    // Breadcrumbs. The shared component, set small and spaced like the design.
+    // Breadcrumbs. The shared component, at its default size and case like the rest of the site.
     // -------------------------------------------------------------------------
     &__breadcrumbs {
         margin-bottom: #{px-to-rem(48)};
 
         .breadcrumbs {
-            font-size: #{px-to-rem(15)};
-            line-height: 1.55;
-            letter-spacing: var(--mbh-tracking-sub);
-            text-transform: uppercase;
             // Muted, but held to AA: 4.87:1 on Spring Wood.
             color: #6e6a6c;
 
@@ -39,8 +35,6 @@
             }
 
             .breadcrumb_last {
-                font-weight: 300;
-                text-decoration: none;
                 color: var(--color--foreground);
             }
         }

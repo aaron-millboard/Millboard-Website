@@ -76,9 +76,6 @@
             // The trail sits highest on the photograph, where the scrim is
             // lightest, so a soft shadow keeps it off a pale sky.
             text-shadow: 0 1px 3px #{rgba(#2f292e, 0.6)};
-            font-size: #{px-to-rem(13)};
-            letter-spacing: var(--mbh-tracking-sub);
-            text-transform: uppercase;
             color: #{rgba(#f8f4f0, 0.9)};
 
             a {
@@ -89,8 +86,6 @@
             }
 
             .breadcrumb_last {
-                font-weight: 300;
-                text-decoration: none;
                 color: var(--color--springwood);
             }
         }
