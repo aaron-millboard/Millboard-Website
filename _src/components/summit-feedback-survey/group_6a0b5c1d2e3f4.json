@@ -1,0 +1,67 @@
+{
+    "key": "group_6a0b5c1d2e3f4",
+    "title": "Block - Summit Feedback Survey",
+    "fields": [
+        {
+            "key": "field_6a0b5c1d2e301",
+            "label": "Audience",
+            "name": "audience",
+            "type": "select",
+            "instructions": "UK shows the survey in English. FR shows it in French. Answers from both are stored in English in the same place (Summit > Feedback survey).",
+            "required": 0,
+            "choices": {
+                "UK": "UK (English)",
+                "FR": "FR (French)"
+            },
+            "default_value": "UK",
+            "allow_null": 0,
+            "multiple": 0,
+            "ui": 0,
+            "return_format": "value"
+        },
+        {
+            "key": "field_6a0b5c1d2e302",
+            "label": "Closing date",
+            "name": "closing_date",
+            "type": "text",
+            "instructions": "Shown in the introduction, in the page's language, e.g. \"Friday 13 November 2026\" or \"vendredi 13 novembre 2026\". Leave empty to hide the sentence.",
+            "required": 0,
+            "default_value": ""
+        },
+        {
+            "key": "field_6a0b5c1d2e303",
+            "label": "Privacy policy URL",
+            "name": "privacy_url",
+            "type": "url",
+            "instructions": "PDF linked beside the optional name and email fields. Leave empty to hide the link.",
+            "required": 0
+        },
+        {
+            "key": "field_6a0b5c1d2e304",
+            "label": "Summit logo URL",
+            "name": "logo_url",
+            "type": "url",
+            "instructions": "Optional. Shown at the top of the survey. The dark Summit logo, since it sits on the light background.",
+            "required": 0
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "block",
+                "operator": "==",
+                "value": "acf/summit-feedback-survey"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "Language, closing date and links for the Summit feedback survey. The questions themselves are fixed in the theme.",
+    "show_in_rest": 0,
+    "modified": 1793000000
+}

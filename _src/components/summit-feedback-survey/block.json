@@ -1,0 +1,34 @@
+{
+    "$schema": "https://raw.githubusercontent.com/AdvancedCustomFields/schemas/main/json/block.json",
+    "apiVersion": 3,
+    "name": "acf/summit-feedback-survey",
+    "title": "Summit Feedback Survey",
+    "description": "Eight-question post-event feedback survey for Millboard Summit delegates. Answers are stored in WordPress (Summit > Feedback survey), not HubSpot. Audience UK shows English, FR shows French.",
+    "category": "granola-blocks",
+    "icon": "yes-alt",
+    "keywords": [ "summit", "event", "survey", "feedback", "delegate" ],
+    "acf": {
+        "mode": "auto",
+        "blockVersion": 3,
+        "autoInlineEditing": false,
+        "hideFieldsInSidebar": true,
+        "renderCallback": "\\Granola\\Component::acf_render_callback",
+        "postTypes": [
+            "page"
+        ]
+    },
+    "supports": {
+        "anchor": true,
+        "align": false,
+        "color": {
+            "text": false
+        },
+        "mode": false
+    },
+    "attributes": {
+        "align": {
+            "type": "string",
+            "default": "full"
+        }
+    }
+}

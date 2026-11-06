@@ -1,0 +1,520 @@
+// =============================================================================
+// Summit Feedback Survey
+// Eight-question post-event survey, from the "Summit Feedback Survey" design.
+// Same look as the pre-arrival form. The site header, hero image and footer come
+// from the page, not this block.
+// =============================================================================
+
+.summit-feedback {
+    --sf--ink: #2f292e;
+    --sf--paper: #f8f4f0;
+    --sf--accent: #78953c;
+    --sf--line: #8e878b;
+    --sf--rule: #dedbd2;
+    --sf--error: #b3261e;
+    --sf--ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+
+    background: var(--sf--paper);
+    color: var(--sf--ink);
+    font-weight: 300;
+
+    &__inner {
+        max-width: 760px;
+        margin: 0 auto;
+        padding: px-to-rem(72) clamp(20px, 5vw, 40px) px-to-rem(96);
+    }
+
+    &__logo {
+        display: block;
+        width: 92px;
+        height: auto;
+        margin: 0 0 px-to-rem(40);
+    }
+
+    &__form,
+    &__thanks {
+        display: flex;
+        flex-direction: column;
+    }
+
+    &__thanks {
+        align-items: center;
+        gap: px-to-rem(24);
+        padding: px-to-rem(48) 0;
+        text-align: center;
+
+        &:focus {
+            outline: none;
+        }
+    }
+
+    &__rule {
+        width: 60px;
+        height: 2px;
+        background: var(--sf--accent);
+    }
+
+    &__intro {
+        display: flex;
+        flex-direction: column;
+        gap: px-to-rem(20);
+        padding-bottom: px-to-rem(48);
+    }
+
+    &__title {
+        margin: 0;
+        font-weight: 300;
+        font-size: clamp(28px, 4vw, 40px);
+        line-height: 1.2;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+    }
+
+    &__lead {
+        margin: 0;
+        max-width: 600px;
+        font-size: px-to-rem(17);
+        line-height: 1.65;
+        text-wrap: pretty;
+
+        strong {
+            font-weight: 700;
+        }
+    }
+
+    &__small {
+        margin: 0;
+        font-size: px-to-rem(13);
+        line-height: 1.55;
+        text-wrap: pretty;
+    }
+
+    // Sticky so progress stays in view while scrolling the eight steps.
+    &__progress {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
+        gap: px-to-rem(10);
+        padding: px-to-rem(16) 0;
+        background: var(--sf--paper);
+        border-bottom: 1px solid var(--sf--rule);
+    }
+
+    &__progress-text {
+        display: flex;
+        justify-content: space-between;
+        gap: px-to-rem(16);
+        font-size: px-to-rem(12);
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+    }
+
+    &__bar {
+        height: 2px;
+        background: var(--sf--rule);
+    }
+
+    &__bar-fill {
+        width: 0;
+        height: 2px;
+        background: var(--sf--ink);
+        transition: width 360ms var(--sf--ease);
+    }
+
+    &__step {
+        display: grid;
+        grid-template-columns: 56px minmax(0, 1fr);
+        gap: px-to-rem(8) px-to-rem(16);
+        padding: px-to-rem(40) 0;
+        border-top: 1px solid var(--sf--ink);
+
+        &--last {
+            border-bottom: 1px solid var(--sf--ink);
+        }
+    }
+
+    &__num {
+        font-size: px-to-rem(28);
+        line-height: 32px;
+    }
+
+    &__body {
+        display: flex;
+        flex-direction: column;
+        gap: px-to-rem(16);
+
+        :where(p) {
+            margin: 0;
+            font-size: px-to-rem(16);
+            line-height: 1.6;
+            text-wrap: pretty;
+        }
+    }
+
+    &__step-title {
+        margin: 0;
+        font-weight: 700;
+        font-size: px-to-rem(12);
+        line-height: 32px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+    }
+
+    &__req {
+        font-weight: 700;
+    }
+
+    &__hint {
+        margin-top: -8px;
+        font-size: px-to-rem(13);
+        line-height: 1.55;
+    }
+
+    &__split {
+        margin-top: px-to-rem(16);
+        padding-top: px-to-rem(24);
+        border-top: 1px solid var(--sf--rule);
+    }
+
+    // ---- 0 to 10 scales, agreement rows and rating pills. Real radio buttons,
+    // visually hidden but still focusable, with the label drawn as the button.
+    &__scale {
+        display: grid;
+        grid-template-columns: repeat(11, minmax(0, 1fr));
+        gap: 6px;
+    }
+
+    &__ends {
+        display: flex;
+        justify-content: space-between;
+        gap: px-to-rem(16);
+        font-size: px-to-rem(12);
+        letter-spacing: 1px;
+        text-transform: uppercase;
+
+        &--small {
+            font-size: px-to-rem(10);
+            line-height: 14px;
+        }
+    }
+
+    &__pill {
+        position: relative;
+        display: block;
+        cursor: pointer;
+
+        input {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        span {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 44px;
+            padding: 0 4px;
+            border: 1px solid var(--sf--line);
+            border-radius: 2px;
+            font-size: px-to-rem(15);
+            text-align: center;
+            transition: all 200ms var(--sf--ease);
+        }
+
+        input:checked + span {
+            border-color: var(--sf--ink);
+            background: var(--sf--ink);
+            color: var(--sf--paper);
+        }
+
+        input:focus-visible + span {
+            outline: 2px solid var(--sf--accent);
+            outline-offset: 2px;
+        }
+
+        &--wide span {
+            min-height: 48px;
+            padding: 6px 4px;
+            font-size: px-to-rem(12);
+            line-height: 1.25;
+        }
+
+        &--round {
+            span {
+                width: 36px;
+                min-height: 36px;
+                padding: 0;
+                border-radius: 50%;
+                font-size: px-to-rem(14);
+            }
+        }
+
+        // "Didn't see": plain underlined text until chosen.
+        &--skip {
+            margin-left: 6px;
+
+            span {
+                min-height: 36px;
+                padding: 0 12px;
+                border-color: transparent;
+                border-radius: 18px;
+                font-size: px-to-rem(12);
+                text-decoration: underline;
+                white-space: nowrap;
+            }
+
+            input:checked + span {
+                text-decoration: none;
+            }
+        }
+    }
+
+    &__rows,
+    &__products {
+        display: flex;
+        flex-direction: column;
+    }
+
+    &__rows {
+        .summit-feedback__row {
+            display: flex;
+            flex-direction: column;
+            gap: px-to-rem(12);
+            padding: px-to-rem(20) 0;
+            border-top: 1px solid var(--sf--rule);
+
+            :where(p) {
+                font-size: px-to-rem(15);
+                line-height: 1.55;
+            }
+        }
+    }
+
+    &__agree {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 6px;
+    }
+
+    &__products {
+        border-bottom: 1px solid var(--sf--rule);
+    }
+
+    &__product {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: px-to-rem(10) px-to-rem(16);
+        padding: px-to-rem(14) 0;
+        border-top: 1px solid var(--sf--rule);
+    }
+
+    &__product-name {
+        display: flex;
+        flex: 1 1 200px;
+        flex-direction: column;
+        gap: 2px;
+
+        :where(p) {
+            font-size: px-to-rem(15);
+            line-height: 1.55;
+        }
+    }
+
+    &__note {
+        font-size: px-to-rem(12);
+        line-height: 1.5;
+        color: #625249;
+    }
+
+    &__product-rate {
+        display: flex;
+        flex: none;
+        align-items: flex-start;
+        gap: 6px;
+    }
+
+    &__rate {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    &__rate-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    // ---- product interest chips (checkboxes drawn as buttons)
+    &__chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: px-to-rem(8);
+    }
+
+    &__chip {
+        position: relative;
+        flex: none;
+        cursor: pointer;
+
+        input {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        span {
+            display: block;
+            padding: px-to-rem(10) px-to-rem(16);
+            border: 1px solid var(--sf--line);
+            border-radius: 2px;
+            font-size: px-to-rem(14);
+            white-space: nowrap;
+            transition: all 200ms var(--sf--ease);
+        }
+
+        input:checked + span {
+            border-color: var(--sf--ink);
+            background: var(--sf--ink);
+            color: var(--sf--paper);
+        }
+
+        input:focus-visible + span {
+            outline: 2px solid var(--sf--accent);
+            outline-offset: 2px;
+        }
+    }
+
+    // ---- text fields
+    &__field {
+        display: flex;
+        flex-direction: column;
+        gap: px-to-rem(8);
+        font-size: px-to-rem(13);
+
+        &--lg {
+            gap: px-to-rem(12);
+            font-size: px-to-rem(16);
+            line-height: 1.55;
+        }
+    }
+
+    &__other {
+        max-width: 480px;
+    }
+
+    &__grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: px-to-rem(16);
+    }
+
+    &__follow {
+        margin-top: px-to-rem(8);
+    }
+
+    &__input {
+        padding: px-to-rem(14) px-to-rem(16);
+        border: 1px solid var(--sf--line);
+        border-radius: 2px;
+        background: var(--sf--paper);
+        color: var(--sf--ink);
+        font: inherit;
+        font-size: px-to-rem(15);
+        line-height: 1.5;
+        outline-color: var(--sf--accent);
+
+        &--select {
+            max-width: 480px;
+        }
+    }
+
+    textarea.summit-feedback__input {
+        resize: vertical;
+    }
+
+    // ---- submit
+    &__actions {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: px-to-rem(16);
+        padding-top: px-to-rem(40);
+
+        .summit-feedback__small {
+            font-size: px-to-rem(14);
+        }
+    }
+
+    &__submit {
+        min-width: 160px;
+        height: 48px;
+        padding: 0 px-to-rem(32);
+        border: 1px solid var(--sf--ink);
+        border-radius: 2px;
+        background: var(--sf--ink);
+        color: var(--sf--paper);
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+
+        &:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+    }
+
+    &__error {
+        margin: 0;
+        color: var(--sf--error);
+        font-size: px-to-rem(14);
+    }
+
+    a {
+        color: var(--sf--ink);
+        text-decoration: underline;
+        text-decoration-color: var(--sf--ink);
+
+        &:hover {
+            text-decoration-color: var(--sf--accent);
+        }
+    }
+
+    // Phones: number above the question, scales in two rows, agreement stacked,
+    // so every tap target stays comfortably large.
+    @media (max-width: 520px) {
+        &__step {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        &__scale {
+            grid-template-columns: repeat(6, minmax(0, 1fr));
+        }
+
+        &__agree {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        &__product-rate {
+            flex-wrap: wrap;
+        }
+    }
+
+    // The hidden attribute must win over the display set above.
+    [hidden] {
+        display: none !important;
+    }
+}
