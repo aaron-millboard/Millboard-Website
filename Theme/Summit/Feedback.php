@@ -44,12 +44,12 @@ final class Feedback
         'heard' => ['I felt my views and feedback were heard.', 'J’ai eu le sentiment que mon avis et mes retours ont été entendus.'],
     ];
 
-    /** Question 4 products: key => [stored name, English label, French label, English note, French note]. */
+    /** Question 4 products: key => [stored name, English label, French label, English note, French note, optional French chip label]. */
     public const PRODUCTS = [
         'lapheritage' => ['Envello LapBoard Heritage', 'Envello LapBoard Heritage', 'Envello LapBoard Heritage', 'Weathered Oak style finish', 'Finition de style Weathered Oak'],
         'lapclassic' => ['Envello LapBoard Classic', 'Envello LapBoard Classic', 'Envello LapBoard Classic', 'Enhanced Grain style finish', 'Finition de style Enhanced Grain'],
         'ribboard' => ['Envello RibBoard', 'Envello RibBoard', 'Envello RibBoard', '', ''],
-        'autumnoak' => ['Autumn Oak', 'Autumn Oak (new colour)', 'Autumn Oak (nouveau coloris)', '', ''],
+        'autumnoak' => ['Autumn Oak', 'Autumn Oak (new colour)', 'Chêne Automnal (nouveau coloris)', '', '', 'Chêne Automnal'],
     ];
 
     /** Question 4 "most likely to sell, specify or recommend" chips (the four products, then the exclusive option). */
