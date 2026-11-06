@@ -177,7 +177,7 @@ $prod_scale = $fr
                         <?php foreach (Feedback::PRODUCTS as $p) { ?>
                             <label class="summit-feedback__chip">
                                 <input type="checkbox" name="interest" value="<?= esc_attr($p[0]); ?>">
-                                <span><?= esc_html($p[0]); ?></span>
+                                <span><?= esc_html($fr && isset($p[5]) ? $p[5] : $p[0]); ?></span>
                             </label>
                         <?php } ?>
                         <label class="summit-feedback__chip">
