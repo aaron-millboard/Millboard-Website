@@ -224,3 +224,4 @@ require_once __DIR__ . '/sample-ordering/inc/millboard-sample-ordering.php';
 \Theme\Summit\Cli::init();
 \Theme\Summit\ReviewLog::init();
 \Theme\Summit\Feedback::init();
+\Theme\Summit\ColleagueFeedback::init();
