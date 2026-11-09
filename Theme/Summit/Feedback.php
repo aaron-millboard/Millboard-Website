@@ -160,12 +160,12 @@ final class Feedback
      * @param mixed  $v
      * @param array<int,array<int,string>> $options
      */
-    private static function pick($v, array $options): ?string
+    public static function pick($v, array $options): ?string
     {
         return is_string($v) && in_array($v, array_column($options, 0), true) ? $v : null;
     }
 
-    private static function text($v, int $max = self::MAX_TEXT): string
+    public static function text($v, int $max = self::MAX_TEXT): string
     {
         return mb_substr(trim(\sanitize_textarea_field(is_string($v) ? $v : '')), 0, $max);
     }
@@ -354,7 +354,7 @@ final class Feedback
     }
 
     /** Stops a spreadsheet running free text that starts with = + - or @ as a formula. */
-    private static function csv_safe(string $v): string
+    public static function csv_safe(string $v): string
     {
         return $v !== '' && strpbrk($v[0], "=+-@\t\r") !== false ? "'" . $v : $v;
     }
