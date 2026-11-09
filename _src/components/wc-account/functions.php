@@ -457,6 +457,55 @@ function can_view_elearning(?int $user_id = null): bool
 }
 
 /**
+ * Per-site switch for order tracking, OFF by default.
+ *
+ * Aaron, 9 Nov 2026: "can we hide the tracking for orders for all customer
+ * types in the portal please until we do the work to get it working for all
+ * countries live".
+ *
+ *   wp option update millboard_order_tracking_enabled yes --url=<site>
+ *   wp option delete millboard_order_tracking_enabled --url=<site>
+ */
+const TRACKING_OPTION = 'millboard_order_tracking_enabled';
+
+/**
+ * Should the portal show anything about where an order has got to?
+ *
+ * ⚠️ DELIBERATELY OFF EVERYWHERE. This is a curtain over a half-finished
+ * feature, not a decision about who deserves it, so it takes no user and has
+ * no audience: "all customer types" was the ask.
+ *
+ * WHAT IT COVERS. Four places, and all four have to go together or the
+ * curtain has a hole in it:
+ *   - the "Track an order" tile on the dashboard
+ *   - the progress bar on the dashboard
+ *   - the progress bar on an order's own page
+ *   - the Dispatch block on that page, which carries the tracking number
+ *
+ * WHY IT IS OFF. The four steps are Placed, Processing, Dispatched and
+ * Delivered, and the last two both hang off the `completed` status because
+ * WooCommerce has no dispatch state. Orders on most markets never leave
+ * `processing` at all, so the bar sits half-lit for ever and says nothing
+ * true. Only German sample orders carry a real dispatch date and tracking
+ * number, from the fulfilment queue, so only one market in six can answer the
+ * question the bar asks.
+ *
+ * ⚠️ THE COMPLETED-ORDER E-MAIL IS NOT AFFECTED, on purpose. It still carries
+ * the tracking number and the TNT link for the German orders that have one.
+ * Aaron scoped this to the portal, and that e-mail reports a dispatch that
+ * really happened rather than promising a feature.
+ *
+ * TO TURN IT BACK ON: set the option per site, or filter it. Nothing else
+ * needs editing, which is the point of routing all four through here.
+ */
+function shows_order_tracking(): bool
+{
+    $on = 'yes' === \get_option(TRACKING_OPTION);
+
+    return (bool) \apply_filters('millboard/account/show_order_tracking', $on);
+}
+
+/**
  * The tabs an international partner does not get.
  *
  * Aaron, 2 Nov 2026: hide Orders, Addresses, Payment methods, Account
