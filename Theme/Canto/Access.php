@@ -9,12 +9,13 @@ namespace Theme\Canto;
  * admin-scoped API client, so every asset is readable by the server and the
  * only gate is the one applied here, before anything is rendered.
  *
- * There are TWO gates and an asset must pass both.
+ * There are THREE gates and an asset must pass all of them.
  *
  * 1. Usage rights: is this cleared to leave Millboard at all? See USAGE_FIELD.
  *    Applies to staff as well, because the panel hands out signed links that
  *    work for anyone holding them.
  * 2. Portal access: who may see it. Described below.
+ * 3. Approval status: has Canto released it yet? See STATUS_KEY.
  *
  * The rule is driven by the "Portal Access" multiple-choice field on each asset:
  *
@@ -63,6 +64,35 @@ final class Access
      */
     public const USAGE_FIELD = 'Usage Rights';
     public const OPEN_USAGE = 'Global open usage-all channels';
+
+    /**
+     * The third gate: Canto's own approval status.
+     *
+     * Aaron, 9 Nov 2026: "we have images like this ... which have global
+     * rights but are set to restricted as they cant be used until the product
+     * launch". Measured before adding this: of 9,390 assets, 204 were marked
+     * Restricted and ELEVEN of those were reachable through Resources, nine of
+     * them by partners. Usage rights and portal access both passed; nothing
+     * was reading the status.
+     *
+     * ⚠️ NOT IN `additional`. This one sits at the TOP level of the item, as
+     * `approvalStatus`, with `approvalStatusIcon` beside it.
+     *
+     * ⚠️ NOT THE SAME THING AS Client::restricted(). That reads Canto's
+     * `acl_enabled` flag and returns false immediately for anything that is
+     * not a folder or an album, so it never looks at an asset. Two different
+     * things are called "restricted" and only the container one was checked.
+     *
+     * An ALLOWLIST of the one released value, for the same reason the usage
+     * gate is one: a status Canto adds later reads as not-released until
+     * somebody decides otherwise, instead of leaking on the day it appears.
+     * Costed first -- an allowlist removes 12 visible assets where blocking
+     * "Restricted" alone removes 11, so the stricter form costs one video
+     * sitting at Pending. The ten items with no status at all are FOLDERS AND
+     * ALBUMS, which Canto never gives a status and which pass through above.
+     */
+    public const STATUS_KEY = 'approvalStatus';
+    public const STATUS_APPROVED = 'Approved';
 
     private const CONTAINERS = ['folder', 'album'];
 
@@ -131,6 +161,10 @@ final class Access
             return true;
         }
 
+        if (!self::status_approved($item)) {
+            return false;
+        }
+
         if (!self::usage_cleared($item)) {
             return false;
         }
@@ -164,6 +198,10 @@ final class Access
             return false;
         }
 
+        if (!self::status_approved($item)) {
+            return false;
+        }
+
         if (!self::usage_cleared($item)) {
             return false;
         }
@@ -172,6 +210,21 @@ final class Access
 
         return !\in_array(self::EMBARGOED, $values, true)
             && (bool) \array_intersect($values, [self::DISTRIBUTOR, self::INSTALLER]);
+    }
+
+    /**
+     * Has Canto released this asset at all?
+     *
+     * True only for the exact value STATUS_APPROVED. Anything else, including
+     * an empty status on something that IS an asset, counts as not released.
+     * Containers are handled by the callers, which pass them through before
+     * they get here.
+     *
+     * @param array<string,mixed> $item
+     */
+    public static function status_approved(array $item): bool
+    {
+        return self::STATUS_APPROVED === \trim((string) ($item[self::STATUS_KEY] ?? ''));
     }
 
     /**
@@ -234,6 +287,7 @@ final class Access
             'id' => (string) ($item['id'] ?? ''),
             'scheme' => (string) ($item['scheme'] ?? ''),
             'name' => (string) ($item['name'] ?? ''),
+            self::STATUS_KEY => (string) ($item[self::STATUS_KEY] ?? ''),
             'url' => [
                 'previewURI240' => (string) ($url['previewURI240'] ?? ''),
                 // The tile and the View overlay both prefer this 800px render;
@@ -244,11 +298,16 @@ final class Access
                 'detail' => (string) ($url['detail'] ?? ''),
             ],
             /*
-             * BOTH gating fields, or the record cannot be filtered later.
+             * ⚠️ EVERY GATING FIELD, or the record cannot be filtered later.
              * A compact record is re-checked by visible() when the partner
-             * index is read, so dropping Usage Rights here would make every
-             * indexed asset fail usage_cleared() and the panel would come back
-             * empty for partners. The selfcheck covers exactly that.
+             * index is read, so dropping one of these makes every indexed
+             * asset fail that gate and the panel comes back empty for
+             * partners. The selfcheck covers exactly that, and it caught the
+             * approval status being left out when it was added as the third
+             * gate on 9 Nov 2026.
+             *
+             * STATUS_KEY is top level, not inside `additional`, so it is
+             * carried separately above rather than alongside the other two.
              */
             'additional' => [
                 self::FIELD => (array) ($item['additional'][self::FIELD] ?? []),

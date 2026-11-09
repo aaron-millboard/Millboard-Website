@@ -17,10 +17,16 @@ $staff = Access::audiences(['administrator'], $staff_roles);
 $dist = Access::audiences(['millboard_distributor'], $staff_roles);
 $inst = Access::audiences(['millboard_installer'], $staff_roles);
 
-// Usage rights default to cleared, so these cases keep testing Portal Access
-// alone. The usage gate has its own cases below, which vary the second argument.
-$asset = static fn ($value, $usage = [Access::OPEN_USAGE]) => [
+// Usage rights AND approval status default to cleared, so these cases keep
+// testing Portal Access alone. Each gate has its own cases further down, which
+// vary the argument it owns.
+//
+// ⚠️ The status default matters. It arrived as the third gate on 9 Nov 2026,
+// and without a default every case above would have turned red at once for a
+// reason that had nothing to do with what it was testing.
+$asset = static fn ($value, $usage = [Access::OPEN_USAGE], $status = Access::STATUS_APPROVED) => [
     'scheme' => 'image',
+    Access::STATUS_KEY => $status,
     'additional' => [Access::FIELD => $value, Access::USAGE_FIELD => $usage],
 ];
 
@@ -49,6 +55,25 @@ $cases = [
     ['album always passes', ['scheme' => 'album'], [], true],
     ['document is filtered too', ['scheme' => 'document', 'additional' => ['Portal Access' => ['Embargoed']]], $staff, false],
     ['video is filtered too', ['scheme' => 'video'], $dist, false],
+
+    // ---- approval status: the third gate --------------------------------
+    // An allowlist. Only "Approved" passes, for everyone including staff,
+    // because a Restricted asset is embargoed until launch and a status Canto
+    // invents later should not leak on the day it appears.
+    ['approved visible to staff', $asset(['Internal staff']), $staff, true],
+    ['approved visible to distributor', $asset(['Distributor']), $dist, true],
+    ['restricted hidden from staff', $asset(['Internal staff'], [Access::OPEN_USAGE], 'Restricted'), $staff, false],
+    ['restricted hidden from distributor', $asset(['Distributor'], [Access::OPEN_USAGE], 'Restricted'), $dist, false],
+    ['restricted hidden from installer', $asset(['Installer'], [Access::OPEN_USAGE], 'Restricted'), $inst, false],
+    ['pending hidden from staff', $asset(['Internal staff'], [Access::OPEN_USAGE], 'Pending'), $staff, false],
+    ['empty status hidden from staff', $asset(['Internal staff'], [Access::OPEN_USAGE], ''), $staff, false],
+    ['missing status key hidden', ['scheme' => 'image', 'additional' => [Access::FIELD => ['Internal staff'], Access::USAGE_FIELD => [Access::OPEN_USAGE]]], $staff, false],
+    ['a status Canto adds later is not released', $asset(['Distributor'], [Access::OPEN_USAGE], 'Awaiting legal'), $dist, false],
+    ['status is case and space sensitive, trimmed', $asset(['Distributor'], [Access::OPEN_USAGE], ' Approved '), $dist, true],
+    ['lower case approved does NOT pass', $asset(['Distributor'], [Access::OPEN_USAGE], 'approved'), $dist, false],
+    // A container has no status in Canto, and must still navigate.
+    ['folder with no status still passes', ['scheme' => 'folder'], $dist, true],
+    ['album with no status still passes', ['scheme' => 'album'], $staff, true],
 
     // ---- usage rights: the second gate ----------------------------------
     // Only the single value OPEN_USAGE passes, for everyone including staff.
@@ -128,8 +153,13 @@ foreach ($pv as [$label, $item, $expected]) {
     }
 }
 
+// Carries approvalStatus. Written out in full rather than via $asset(), so
+// when the third gate arrived this fixture silently lacked a status and
+// compact() produced a record that failed it. The FAIL below was the only
+// thing that said so, and it was a real bug rather than a stale test.
 $full = [
     'id' => 'abc', 'scheme' => 'image', 'name' => 'Deck.jpg',
+    Access::STATUS_KEY => Access::STATUS_APPROVED,
     'url' => ['previewURI240' => 'p', 'directUrlOriginal' => 'o', 'detail' => 'd', 'download' => 'secret'],
     'additional' => ['Portal Access' => ['Distributor'], 'Usage Rights' => [Access::OPEN_USAGE], 'SKU' => 'X'],
     'relatedAlbums' => [['idPath' => 'N0G8G/KFTUP'], ['idPath' => '05/12345']],
@@ -148,6 +178,19 @@ if (isset($c['url']['download']) || isset($c['additional']['SKU']) || ['Distribu
 
 if (!Access::visible($c, $dist) || Access::visible($c, $inst)) {
     echo "FAIL: a compact record is filtered exactly like the full one\n";
+    ++$fail;
+}
+
+// And the other direction: a record that should NOT pass must not start
+// passing once it has been through compact(). The partner index is served
+// straight from cache without re-fetching, so a gate compact() forgets is a
+// gate that has gone.
+$restricted_full = $full;
+$restricted_full[Access::STATUS_KEY] = 'Restricted';
+
+if (Access::visible($restricted_full, $dist) || Access::visible(Access::compact($restricted_full), $dist)) {
+    echo "FAIL: a Restricted record passes, compacted or not
+";
     ++$fail;
 }
 
