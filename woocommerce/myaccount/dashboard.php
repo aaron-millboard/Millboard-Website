@@ -20,6 +20,7 @@ use function Granola\Components\WC_Account\get_order_steps;
 use function Granola\Components\WC_Account\get_order_summary;
 use function Granola\Components\WC_Account\get_trackable_order;
 use function Granola\Components\WC_Account\is_international_partner;
+use function Granola\Components\WC_Account\shows_order_tracking;
 use const Granola\Components\WC_Account\DECKPLANNER_URL;
 use const Granola\Components\WC_Account\ENDPOINT_BRAND_ASSETS;
 use const Granola\Components\WC_Account\VISUALISER_URL;
@@ -129,11 +130,19 @@ if ($mb_international) {
  * that are really shown. The grid is auto-fit, so two of them fill the row.
  */
 if (!$mb_international) {
-    $quick_actions[] = [
-        'label' => __('Track an order', 'granola'),
-        'note' => __('See where your boards are today.', 'granola'),
-        'url' => $orders_url,
-    ];
+    /*
+     * The tile goes with the tracker it advertises. Aaron, 9 Nov 2026: hide
+     * order tracking for all customer types until it works in every market.
+     * Leaving the tile would be a box labelled "See where your boards are
+     * today" pointing at a page that no longer says.
+     */
+    if (shows_order_tracking()) {
+        $quick_actions[] = [
+            'label' => __('Track an order', 'granola'),
+            'note' => __('See where your boards are today.', 'granola'),
+            'url' => $orders_url,
+        ];
+    }
 
     $quick_actions[] = [
         'label' => __('Account details', 'granola'),
@@ -190,7 +199,7 @@ if (!$mb_international) {
     <?php
     // The tracker only appears when something is actually in progress. An
     // inert bar on a customer with nothing outstanding is furniture.
-    if ($tracked instanceof WC_Order) :
+    if ($tracked instanceof WC_Order && shows_order_tracking()) :
         $steps = get_order_steps($tracked);
         ?>
         <section class="mb-account-dash__tracker">
