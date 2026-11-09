@@ -19,9 +19,16 @@ defined('ABSPATH') || exit;
 use function Granola\Components\WC_Account\get_order_steps;
 use function Granola\Components\WC_Account\get_order_summary;
 use function Granola\Components\WC_Account\is_closed;
+use function Granola\Components\WC_Account\shows_order_tracking;
 
 $notes = $order->get_customer_order_notes();
-$steps = get_order_steps($order);
+/*
+ * No steps at all while order tracking is hidden.
+ *
+ * Emptied here rather than wrapped below, so there is one place to look and
+ * the `if ($steps)` further down keeps working unchanged. Aaron, 9 Nov 2026.
+ */
+$steps = shows_order_tracking() ? get_order_steps($order) : [];
 $orders_url = wc_get_endpoint_url('orders', '', wc_get_page_permalink('myaccount'));
 $contact = get_page_by_path('contact-us');
 
@@ -79,8 +86,12 @@ $contact = get_page_by_path('contact-us');
      * own working notes about a dispatch, written for colleagues rather than
      * for the customer, and nothing validates what goes in it.
      */
-    $mb_dispatched = (string) $order->get_meta(\Theme\WooCommerce\SampleFulfilment::META_DISPATCHED_ON);
-    $mb_tracking = (string) $order->get_meta(\Theme\WooCommerce\SampleFulfilment::META_TRACKING);
+    $mb_dispatched = shows_order_tracking()
+        ? (string) $order->get_meta(\Theme\WooCommerce\SampleFulfilment::META_DISPATCHED_ON)
+        : '';
+    $mb_tracking = shows_order_tracking()
+        ? (string) $order->get_meta(\Theme\WooCommerce\SampleFulfilment::META_TRACKING)
+        : '';
 
     if ('' !== $mb_dispatched || '' !== $mb_tracking) :
         ?>
