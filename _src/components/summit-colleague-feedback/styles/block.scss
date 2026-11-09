@@ -1,0 +1,458 @@
+// =============================================================================
+// Summit Colleague Feedback ("What did you hear?")
+// Internal form, from the "Colleague Summit Feedback (Internal)" design. Same look as the
+// external survey. The site header, hero image and footer come from the page, not this block.
+// =============================================================================
+
+.summit-colleague {
+    --sc--ink: #2f292e;
+    --sc--paper: #f8f4f0;
+    --sc--accent: #78953c;
+    --sc--line: #8e878b;
+    --sc--rule: #dedbd2;
+    --sc--muted: #625249;
+    --sc--green: #34401a;
+    --sc--card: #ece8e1;
+    --sc--error: #b3261e;
+    --sc--ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+
+    background: var(--sc--paper);
+    color: var(--sc--ink);
+    font-weight: 300;
+
+    &__inner {
+        max-width: 760px;
+        margin: 0 auto;
+        padding: px-to-rem(72) clamp(20px, 5vw, 40px) px-to-rem(96);
+    }
+
+    &__logo {
+        display: block;
+        width: 92px;
+        height: auto;
+        margin: 0 0 px-to-rem(40);
+    }
+
+    &__form,
+    &__thanks {
+        display: flex;
+        flex-direction: column;
+    }
+
+    &__thanks {
+        align-items: center;
+        gap: px-to-rem(24);
+        padding: px-to-rem(48) 0;
+        text-align: center;
+
+        &:focus {
+            outline: none;
+        }
+    }
+
+    &__rule {
+        width: 60px;
+        height: 2px;
+        background: var(--sc--accent);
+    }
+
+    &__intro {
+        display: flex;
+        flex-direction: column;
+        gap: px-to-rem(20);
+        padding-bottom: px-to-rem(48);
+    }
+
+    &__badges {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: px-to-rem(12) px-to-rem(16);
+        margin: 0;
+        font-size: px-to-rem(12);
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+    }
+
+    &__badge {
+        padding: 6px 10px;
+        background: var(--sc--green);
+        color: var(--sc--paper);
+        letter-spacing: 2px;
+    }
+
+    &__title {
+        margin: 0;
+        font-weight: 300;
+        font-size: clamp(28px, 4vw, 40px);
+        line-height: 1.2;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+    }
+
+    &__lead {
+        margin: 0;
+        max-width: 620px;
+        font-size: px-to-rem(17);
+        line-height: 1.65;
+        text-wrap: pretty;
+    }
+
+    &__small {
+        margin: 0;
+        max-width: 620px;
+        font-size: px-to-rem(15);
+        line-height: 1.6;
+        text-wrap: pretty;
+
+        strong {
+            font-weight: 700;
+        }
+    }
+
+    &__link {
+        padding: 0;
+        border: 0;
+        background: none;
+        color: var(--sc--ink);
+        font: inherit;
+        font-size: px-to-rem(15);
+        text-decoration: underline;
+        text-decoration-color: var(--sc--accent);
+        cursor: pointer;
+    }
+
+    // Sticky so progress stays in view while scrolling.
+    &__progress {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
+        gap: px-to-rem(10);
+        padding: px-to-rem(16) 0;
+        background: var(--sc--paper);
+        border-bottom: 1px solid var(--sc--rule);
+    }
+
+    &__progress-text {
+        display: flex;
+        justify-content: space-between;
+        gap: px-to-rem(16);
+        font-size: px-to-rem(12);
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+    }
+
+    &__bar {
+        height: 2px;
+        background: var(--sc--rule);
+    }
+
+    &__bar-fill {
+        width: 0;
+        height: 2px;
+        background: var(--sc--ink);
+        transition: width 360ms var(--sc--ease);
+    }
+
+    // ---- numbered sections
+    &__step {
+        display: grid;
+        grid-template-columns: 56px minmax(0, 1fr);
+        gap: px-to-rem(8) px-to-rem(16);
+        padding: px-to-rem(40) 0;
+        border-top: 1px solid var(--sc--ink);
+
+        &--last {
+            border-bottom: 1px solid var(--sc--ink);
+        }
+    }
+
+    &__num {
+        grid-row: 1 / span 2;
+        font-size: px-to-rem(28);
+        line-height: 32px;
+    }
+
+    &__step-title {
+        margin: 0;
+        font-weight: 700;
+        font-size: px-to-rem(12);
+        line-height: 32px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+    }
+
+    &__body {
+        display: flex;
+        flex-direction: column;
+        gap: px-to-rem(32);
+        grid-column: 2;
+    }
+
+    // Nested bodies (the HubSpot follow-ups) sit in the column already.
+    &__body &__body {
+        grid-column: auto;
+    }
+
+    &__group,
+    &__field {
+        display: flex;
+        flex-direction: column;
+        gap: px-to-rem(14);
+    }
+
+    &__field--small {
+        gap: px-to-rem(8);
+        max-width: 480px;
+        font-size: px-to-rem(13);
+    }
+
+    &__q {
+        display: block;
+        font-size: px-to-rem(16);
+        line-height: 1.6;
+        text-wrap: pretty;
+    }
+
+    &__n,
+    &__req {
+        font-weight: 700;
+    }
+
+    &__hint {
+        display: block;
+        margin-top: -8px;
+        color: var(--sc--muted);
+        font-size: px-to-rem(13);
+        line-height: 1.55;
+    }
+
+    // ---- choice buttons (radio and checkbox, drawn as buttons)
+    &__chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: px-to-rem(8);
+    }
+
+    &__chip {
+        position: relative;
+        flex: 0 1 auto;
+        max-width: 100%;
+        cursor: pointer;
+
+        input {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        span {
+            display: block;
+            padding: px-to-rem(10) px-to-rem(16);
+            border: 1px solid var(--sc--line);
+            border-radius: 2px;
+            font-size: px-to-rem(14);
+            line-height: 20px;
+            text-align: left;
+            transition: all 200ms var(--sc--ease);
+        }
+
+        input:checked + span {
+            border-color: var(--sc--ink);
+            background: var(--sc--ink);
+            color: var(--sc--paper);
+        }
+
+        input:focus-visible + span {
+            outline: 2px solid var(--sc--accent);
+            outline-offset: 2px;
+        }
+
+        &--num {
+            flex: 1 1 0;
+
+            span {
+                min-height: 44px;
+                padding: 11px 0;
+                font-size: px-to-rem(15);
+                text-align: center;
+            }
+        }
+    }
+
+    &__scale {
+        display: flex;
+        gap: 6px;
+        max-width: 420px;
+    }
+
+    &__ends {
+        display: flex;
+        justify-content: space-between;
+        gap: px-to-rem(16);
+        max-width: 420px;
+        font-size: px-to-rem(12);
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+
+    // ---- text fields
+    &__grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: px-to-rem(16);
+    }
+
+    &__input {
+        padding: px-to-rem(14) px-to-rem(16);
+        border: 1px solid var(--sc--line);
+        border-radius: 2px;
+        background: var(--sc--paper);
+        color: var(--sc--ink);
+        font: inherit;
+        font-size: px-to-rem(15);
+        line-height: 1.5;
+        outline-color: var(--sc--accent);
+
+        &--narrow {
+            max-width: 480px;
+        }
+    }
+
+    textarea.summit-colleague__input {
+        resize: vertical;
+    }
+
+    // ---- the GDPR reminder and the attendee note cards
+    &__callout {
+        padding: px-to-rem(20) px-to-rem(24);
+        border-left: 2px solid #9cb45e;
+        background: var(--sc--green);
+        color: var(--sc--paper);
+
+        p {
+            margin: 0;
+            font-size: px-to-rem(15);
+            line-height: 1.6;
+            text-wrap: pretty;
+        }
+
+        strong {
+            font-weight: 700;
+        }
+    }
+
+    &__attendees {
+        display: flex;
+        flex-direction: column;
+        gap: px-to-rem(20);
+    }
+
+    &__card {
+        display: flex;
+        flex-direction: column;
+        gap: px-to-rem(28);
+        padding: px-to-rem(28);
+        border-top: 2px solid var(--sc--accent);
+        background: var(--sc--card);
+    }
+
+    &__card-title {
+        margin: 0;
+        font-size: px-to-rem(12);
+        font-weight: 700;
+        line-height: 20px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+    }
+
+    &__group--more {
+        padding-top: px-to-rem(24);
+        border-top: 1px solid #c9c3b8;
+    }
+
+    // ---- submit
+    &__actions {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: px-to-rem(16);
+        padding-top: px-to-rem(40);
+
+        .summit-colleague__small {
+            font-size: px-to-rem(14);
+        }
+    }
+
+    &__submit {
+        min-width: 160px;
+        height: 48px;
+        padding: 0 px-to-rem(32);
+        border: 1px solid var(--sc--ink);
+        border-radius: 2px;
+        background: var(--sc--ink);
+        color: var(--sc--paper);
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+
+        &:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+    }
+
+    &__error {
+        margin: 0;
+        color: var(--sc--error);
+        font-size: px-to-rem(14);
+    }
+
+    &__foot {
+        margin: px-to-rem(48) 0 0;
+        font-size: px-to-rem(14);
+        color: var(--sc--muted);
+    }
+
+    a {
+        color: var(--sc--ink);
+        text-decoration: underline;
+        text-decoration-color: var(--sc--ink);
+
+        &:hover {
+            text-decoration-color: var(--sc--accent);
+        }
+    }
+
+    // Phones: the section number sits above its questions.
+    @media (max-width: 520px) {
+        &__step {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        &__num {
+            grid-row: auto;
+        }
+
+        &__body {
+            grid-column: auto;
+        }
+
+        &__card {
+            padding: px-to-rem(20);
+        }
+    }
+
+    // The hidden attribute must win over the display set above.
+    [hidden] {
+        display: none !important;
+    }
+}

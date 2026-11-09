@@ -1,0 +1,34 @@
+{
+    "$schema": "https://raw.githubusercontent.com/AdvancedCustomFields/schemas/main/json/block.json",
+    "apiVersion": 3,
+    "name": "acf/summit-colleague-feedback",
+    "title": "Summit Colleague Feedback",
+    "description": "Internal form for colleagues to pass on what Summit attendees told them, including optional notes on named attendees. Answers are stored in WordPress (Summit > Colleague feedback), not HubSpot.",
+    "category": "granola-blocks",
+    "icon": "yes-alt",
+    "keywords": [ "summit", "event", "internal", "colleague", "feedback" ],
+    "acf": {
+        "mode": "auto",
+        "blockVersion": 3,
+        "autoInlineEditing": false,
+        "hideFieldsInSidebar": true,
+        "renderCallback": "\\Granola\\Component::acf_render_callback",
+        "postTypes": [
+            "page"
+        ]
+    },
+    "supports": {
+        "anchor": true,
+        "align": false,
+        "color": {
+            "text": false
+        },
+        "mode": false
+    },
+    "attributes": {
+        "align": {
+            "type": "string",
+            "default": "full"
+        }
+    }
+}

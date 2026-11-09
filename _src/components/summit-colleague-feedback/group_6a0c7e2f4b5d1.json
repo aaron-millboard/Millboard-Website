@@ -1,0 +1,33 @@
+{
+    "key": "group_6a0c7e2f4b5d1",
+    "title": "Block - Summit Colleague Feedback",
+    "fields": [
+        {
+            "key": "field_6a0c7e2f4b501",
+            "label": "Summit logo URL",
+            "name": "logo_url",
+            "type": "url",
+            "instructions": "Optional. Shown at the top of the form. The dark Summit logo, since it sits on the light background.",
+            "required": 0
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "block",
+                "operator": "==",
+                "value": "acf/summit-colleague-feedback"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "The questions are fixed in the theme. Results are under Summit > Colleague feedback in wp-admin.",
+    "show_in_rest": 0,
+    "modified": 1793100000
+}
