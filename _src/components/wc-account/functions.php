@@ -475,12 +475,13 @@ const TRACKING_OPTION = 'millboard_order_tracking_enabled';
  * feature, not a decision about who deserves it, so it takes no user and has
  * no audience: "all customer types" was the ask.
  *
- * WHAT IT COVERS. Four places, and all four have to go together or the
+ * WHAT IT COVERS. Five places, and all five have to go together or the
  * curtain has a hole in it:
  *   - the "Track an order" tile on the dashboard
  *   - the progress bar on the dashboard
  *   - the progress bar on an order's own page
  *   - the Dispatch block on that page, which carries the tracking number
+ *   - the tracking number and TNT link in the completed-order e-mail
  *
  * WHY IT IS OFF. The four steps are Placed, Processing, Dispatched and
  * Delivered, and the last two both hang off the `completed` status because
@@ -490,10 +491,11 @@ const TRACKING_OPTION = 'millboard_order_tracking_enabled';
  * number, from the fulfilment queue, so only one market in six can answer the
  * question the bar asks.
  *
- * ⚠️ THE COMPLETED-ORDER E-MAIL IS NOT AFFECTED, on purpose. It still carries
- * the tracking number and the TNT link for the German orders that have one.
- * Aaron scoped this to the portal, and that e-mail reports a dispatch that
- * really happened rather than promising a feature.
+ * ⚠️ THE E-MAIL CAME SECOND. On 9 Nov this covered the portal only, because
+ * that was the ask, and the completed-order e-mail went on carrying the
+ * tracking number for German orders. Aaron then asked for the e-mail too, in
+ * the same conversation, so it is in. Germany was the only market the e-mail
+ * ever told anything, so nobody else notices.
  *
  * TO TURN IT BACK ON: set the option per site, or filter it. Nothing else
  * needs editing, which is the point of routing all four through here.
