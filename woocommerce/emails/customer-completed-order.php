@@ -59,7 +59,21 @@ $mb_first = $order->get_billing_first_name();
  * Linking the bare tracking page would make the customer copy the number
  * across by hand.
  */
-$mb_tracking = class_exists( 'Theme\WooCommerce\SampleFulfilment' )
+/*
+ * ⚠️ HIDDEN SINCE 9 Nov 2026. Aaron asked for order tracking to be hidden in
+ * the portal, then for the e-mails too. The same switch governs both, so this
+ * block and the four in the portal cannot drift apart.
+ *
+ * FAILS CLOSED. If the account component is not loaded for some reason, the
+ * tracking stays hidden rather than appearing: the point of the switch is that
+ * nothing shows until the feature works in every market.
+ *
+ * To put it back:  wp option update millboard_order_tracking_enabled yes --url=<site>
+ */
+$mb_show_tracking = function_exists( 'Granola\Components\WC_Account\shows_order_tracking' )
+	&& Granola\Components\WC_Account\shows_order_tracking();
+
+$mb_tracking = ( $mb_show_tracking && class_exists( 'Theme\WooCommerce\SampleFulfilment' ) )
 	? trim( (string) $order->get_meta( Theme\WooCommerce\SampleFulfilment::META_TRACKING ) )
 	: '';
 
