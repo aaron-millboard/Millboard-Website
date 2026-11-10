@@ -1,0 +1,31 @@
+{
+    "$schema": "https://raw.githubusercontent.com/AdvancedCustomFields/schemas/main/json/block.json",
+    "apiVersion": 3,
+    "name": "acf/spec-evidence-strip",
+    "title": "Spec Evidence Strip",
+    "description": "Evidence points (label, detail, link) in a ruled strip, for the documents a specifier needs",
+    "category": "granola-blocks",
+    "icon": "editor-ul",
+    "keywords": [
+        "evidence",
+        "trust",
+        "strip",
+        "specifier"
+    ],
+    "acf": {
+        "mode": "auto",
+        "blockVersion": 3,
+        "autoInlineEditing": false,
+        "hideFieldsInSidebar": true,
+        "renderCallback": "\\Granola\\Component::acf_render_callback"
+    },
+    "supports": {
+        "anchor": true,
+        "align": false,
+        "color": {
+            "background": true,
+            "text": false
+        },
+        "mode": false
+    }
+}

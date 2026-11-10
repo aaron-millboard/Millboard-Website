@@ -1,0 +1,45 @@
+// =============================================================================
+// Spec Page Header
+// Everything visual comes from the page-header block's own styles (this block
+// borrows its classes). Only the row of calls to action is new, plus three
+// small corrections for specifier pages.
+// =============================================================================
+
+.spec-page-header {
+    // MB Olive on Spring Wood is 3.1:1, short of the 4.5:1 that small text needs. Darkened for this header only
+    // (the dark-background variants set their own accent and still win).
+    --page-header--accent-color: color-mix(in srgb, var(--color--brand-4) 75%, black);
+
+    &__actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--space--xs) var(--space--s);
+    }
+
+    // Between 992 and 1199 px the text panel is only 320 to 420 px wide, so the large uppercase
+    // heading broke inside a word ("HOSPITALIT" / "Y"). A smaller heading keeps every word whole.
+    @media (min-width: 62em) and (max-width: 74.99em) {
+        .page-header__heading {
+            font-size: clamp(1.75rem, 3.6vw, 2.5rem);
+        }
+    }
+}
+
+// On specifier pages the blocks around each other set their own spacing (padding inside the band),
+// so the theme's large block margin would only add empty stripes between them.
+.has-spec-page {
+    .accordion,
+    .media-content,
+    .navigation-tiles {
+        margin-block: 0;
+    }
+
+    // A tile's list of links is centred like the rest of the tile, so its bullets sat up to 44px away from
+    // their text. The designs show the links with no bullets.
+    .navigation-tiles__tile-description ul {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+}

@@ -1,0 +1,100 @@
+// =============================================================================
+// Spec Contact
+// A text column (5/12) beside the enquiry form (7/12). The form itself is styled
+// by the gravity-forms block's global `.gravity-forms .hbspt-form` rules.
+// =============================================================================
+
+.spec-contact {
+    --scn--muted: #{rgba(#151716, 0.66)};
+
+    margin-block: 0;
+    padding: var(--space--xl) 0;
+
+    @include mq(large) {
+        padding: var(--space--2xl) 0;
+    }
+
+    &__inner {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: var(--space--xl);
+        max-width: var(--width--responsive--l);
+        margin: 0 auto;
+
+        @include mq(large) {
+            grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+            align-items: start;
+        }
+    }
+
+    &__preheading {
+        @include typestyle-h6;
+        margin: 0 0 var(--space--4xs);
+    }
+
+    &__heading {
+        margin: 0;
+        font-size: #{rfs(28, 56)};
+        font-weight: 300;
+        line-height: 1.15;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        overflow-wrap: anywhere;
+    }
+
+    &__text {
+        margin: px-to-rem(34) 0;
+        font-size: px-to-rem(20);
+        line-height: px-to-rem(32);
+
+        > :first-child {
+            margin-top: 0;
+        }
+
+        > :last-child {
+            margin-bottom: 0;
+        }
+    }
+
+    &__person {
+        display: flex;
+        align-items: center;
+        gap: var(--space--s);
+        margin-top: var(--space--l);
+    }
+
+    &__person-photo {
+        flex: 0 0 px-to-rem(88);
+        width: px-to-rem(88);
+        height: px-to-rem(88);
+        overflow: hidden;
+
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    }
+
+    &__person-name {
+        @include typestyle-h6;
+        margin: 0 0 px-to-rem(4);
+    }
+
+    &__person-role {
+        margin: 0;
+        font-size: px-to-rem(14);
+        color: var(--scn--muted);
+    }
+
+    &__note {
+        margin: var(--space--m) 0 0;
+        font-size: px-to-rem(20);
+        line-height: px-to-rem(32);
+    }
+
+    &__placeholder {
+        padding: var(--space--m);
+        border: 1px dashed currentColor;
+    }
+}

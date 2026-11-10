@@ -1,0 +1,15 @@
+// =============================================================================
+// Spec Features
+// The list-features look (its classes are borrowed and its styles are global).
+// Only the link under a feature is new.
+// =============================================================================
+
+.spec-features {
+    &__link {
+        align-self: flex-start;
+        margin-top: var(--space--4xs);
+        font-size: px-to-rem(14);
+        text-decoration: underline;
+        text-underline-offset: 0.14em;
+    }
+}

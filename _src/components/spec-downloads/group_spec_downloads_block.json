@@ -1,0 +1,102 @@
+{
+    "key": "group_spec_downloads_block",
+    "title": "Block - Spec Downloads",
+    "fields": [
+        {
+            "key": "field_spec_downloads_preheading",
+            "type": "text",
+            "name": "preheading",
+            "label": "Pre-heading"
+        },
+        {
+            "key": "field_spec_downloads_heading",
+            "type": "text",
+            "name": "heading",
+            "label": "Heading"
+        },
+        {
+            "key": "field_spec_downloads_cta",
+            "type": "link",
+            "name": "cta",
+            "label": "Header button",
+            "return_format": "array"
+        },
+        {
+            "key": "field_spec_downloads_files",
+            "type": "repeater",
+            "name": "files",
+            "label": "Documents",
+            "layout": "block",
+            "button_label": "Add document",
+            "sub_fields": [
+                {
+                    "key": "field_spec_downloads_files_type",
+                    "type": "select",
+                    "name": "type",
+                    "label": "Type",
+                    "choices": {
+                        "specification-sheet": "Specification sheet",
+                        "technical-sheet": "Technical sheet",
+                        "loading-table": "Loading table",
+                        "test-report": "Test report",
+                        "installation-guide": "Installation guide",
+                        "drawing": "Drawing",
+                        "brochure": "Brochure",
+                        "care-guide": "Care guide",
+                        "warranty": "Warranty",
+                        "certificate": "Certificate"
+                    },
+                    "default_value": "specification-sheet",
+                    "return_format": "value",
+                    "allow_null": 0,
+                    "parent_repeater": "field_spec_downloads_files"
+                },
+                {
+                    "key": "field_spec_downloads_files_title",
+                    "type": "text",
+                    "name": "title",
+                    "label": "Title",
+                    "required": 1,
+                    "parent_repeater": "field_spec_downloads_files"
+                },
+                {
+                    "key": "field_spec_downloads_files_file",
+                    "type": "file",
+                    "name": "file",
+                    "label": "File",
+                    "return_format": "array",
+                    "library": "all",
+                    "instructions": "Format and size are read from the file. A PDF shows View and Download; any other file shows Download only.",
+                    "parent_repeater": "field_spec_downloads_files"
+                },
+                {
+                    "key": "field_spec_downloads_files_link",
+                    "type": "link",
+                    "name": "link",
+                    "label": "Link instead of a file",
+                    "return_format": "array",
+                    "instructions": "For a page rather than a file (for example the warranties page). Shows View only.",
+                    "parent_repeater": "field_spec_downloads_files"
+                },
+                {
+                    "key": "field_spec_downloads_files_edition",
+                    "type": "text",
+                    "name": "edition",
+                    "label": "Edition or test date",
+                    "instructions": "For example \"Edition Feb 2024\" or \"Tested Mar 2020\".",
+                    "parent_repeater": "field_spec_downloads_files"
+                }
+            ],
+            "min": 1
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "block",
+                "operator": "==",
+                "value": "acf/spec-downloads"
+            }
+        ]
+    ]
+}

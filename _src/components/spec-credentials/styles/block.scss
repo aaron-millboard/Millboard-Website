@@ -1,0 +1,87 @@
+// =============================================================================
+// Spec Credentials
+// A ruled strip under the page header: who wrote the page, who checked it and
+// when it was published and last updated. Same rules and spacing as the
+// evidence strip beneath it.
+// =============================================================================
+
+.spec-credentials {
+    --scr--muted: #{rgba(#2f292e, 0.72)};
+    --scr--line: #{rgba(#2f292e, 0.18)};
+
+    margin-block: 0;
+    padding: var(--space--m) 0 var(--space--l);
+
+    &__inner {
+        max-width: var(--width--responsive--l);
+        margin: 0 auto;
+        padding-top: var(--space--s);
+        border-top: 1px solid var(--scr--line);
+    }
+
+    &__row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: var(--space--s) var(--space--xl);
+    }
+
+    &__person {
+        display: flex;
+        align-items: center;
+        gap: var(--space--xs);
+    }
+
+    &__avatar {
+        display: inline-flex;
+        flex: 0 0 auto;
+        align-items: center;
+        justify-content: center;
+        width: px-to-rem(56);
+        height: px-to-rem(56);
+        overflow: hidden;
+        border-radius: 50%;
+        background: var(--color--brand-1);
+        font-size: px-to-rem(16);
+        font-weight: 700;
+        letter-spacing: 0.08em;
+
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    }
+
+    &__text {
+        display: flex;
+        flex-direction: column;
+        gap: px-to-rem(2);
+        line-height: 1.4;
+    }
+
+    &__label {
+        font-size: px-to-rem(14);
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--scr--muted);
+    }
+
+    &__name {
+        font-size: px-to-rem(16);
+        font-weight: 700;
+    }
+
+    &__detail {
+        font-size: px-to-rem(14);
+        color: var(--scr--muted);
+    }
+
+    &__bio {
+        max-width: px-to-rem(760);
+        margin: var(--space--s) 0 0;
+        font-size: px-to-rem(16);
+        line-height: 1.6;
+    }
+}

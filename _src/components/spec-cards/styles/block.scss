@@ -1,0 +1,166 @@
+// =============================================================================
+// Spec Cards
+// Bordered, centred cards: title above the image, description, key facts,
+// document links and a button. Always shows everything (cards-content hides its
+// button until hover).
+// =============================================================================
+
+.spec-cards {
+    --sc--rule: #{rgba(#151716, 0.18)};
+
+    margin-block: 0;
+    padding: var(--space--xl) 0;
+
+    @include mq(large) {
+        padding: var(--space--2xl) 0;
+    }
+
+    &__inner {
+        max-width: var(--width--responsive--l);
+        margin: 0 auto;
+    }
+
+    &__header {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space--3xs);
+        max-width: px-to-rem(880);
+        margin-bottom: var(--space--xl);
+    }
+
+    &__preheading {
+        @include typestyle-h6;
+        margin: 0;
+    }
+
+    &__heading {
+        margin: 0;
+    }
+
+    &__intro {
+        margin: var(--space--3xs) 0 0;
+        font-size: px-to-rem(20);
+        line-height: 1.7;
+    }
+
+    &__cards {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: var(--space--xl);
+
+        @include mq(medium) {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    &--cols-3 &__cards {
+        @include mq(large) {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+    }
+
+    &__card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--space--m);
+        padding: var(--space--xl) var(--space--m);
+        border: 1px solid var(--color--foreground);
+        text-align: center;
+    }
+
+    &__card-title {
+        @include typestyle-h5;
+        font-size: px-to-rem(20);
+        max-width: 75%;
+        margin: 0 auto;
+        text-align: center;
+    }
+
+    &__image {
+        width: 100%;
+        aspect-ratio: 3 / 2;
+        overflow: hidden;
+
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    }
+
+    &--ratio-16-10 &__image {
+        aspect-ratio: 16 / 10;
+    }
+
+    &--ratio-1-1 &__image {
+        aspect-ratio: 1 / 1;
+    }
+
+    &__description {
+        @include typestyle-small;
+        max-width: px-to-rem(440);
+
+        > :first-child {
+            margin-top: 0;
+        }
+
+        > :last-child {
+            margin-bottom: 0;
+        }
+    }
+
+    &__facts {
+        align-self: stretch;
+        margin: 0;
+        text-align: left;
+    }
+
+    &__fact {
+        display: flex;
+        justify-content: space-between;
+        gap: var(--space--xs);
+        padding: px-to-rem(10) 0;
+        border-bottom: 1px solid var(--sc--rule);
+        font-size: px-to-rem(16);
+        line-height: 1.6;
+
+        dt {
+            flex: 0 0 auto;
+            font-weight: 300;
+            white-space: nowrap;
+        }
+
+        dd {
+            margin: 0;
+            font-weight: 700;
+            text-align: right;
+        }
+    }
+
+    &__links {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: var(--space--3xs) var(--space--xs);
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        --list--item--spacing: 0;
+
+        a {
+            font-size: px-to-rem(14);
+            text-decoration: underline;
+            text-underline-offset: 0.14em;
+        }
+    }
+
+    &__footer {
+        margin-top: auto;
+    }
+
+    // Mist and Spring Wood bands swap the border so the cards read on either.
+    &.has-brand-1-background-color &__card {
+        border-color: var(--color--brand-2);
+    }
+}

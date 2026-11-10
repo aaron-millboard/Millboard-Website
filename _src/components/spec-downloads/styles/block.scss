@@ -1,0 +1,106 @@
+// =============================================================================
+// Spec Downloads
+// Header, action buttons and icons use the downloads block's own classes (its
+// styles are global). This file adds the type label, meta line, filter tabs and
+// the four-column row.
+// =============================================================================
+
+.spec-downloads {
+    // The downloads block sets this on its own root, which this block does not carry.
+    --downloads--icon-size: #{px-to-rem(20)};
+    --sd--muted: #{rgba(#151716, 0.66)};
+    --sd--rule: #{rgba(#151716, 0.18)};
+
+    margin-block: 0;
+
+    &__tabs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space--3xs);
+        margin-bottom: var(--space--s);
+
+        &[hidden] {
+            display: none;
+        }
+    }
+
+    &__files {
+        display: flex;
+        flex-direction: column;
+    }
+
+    &__file {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: var(--space--3xs);
+        padding: var(--space--m) 0;
+        border-bottom: 1px solid var(--sd--rule);
+
+        &[hidden] {
+            display: none;
+        }
+
+        // 992 to 1199 px: four fixed columns left the title about 115 px wide, wrapping to 8 lines. Here the type and the
+        // actions flank the title and the meta line sits under it; the four columns start at 1200 px.
+        @include mq(large) {
+            grid-template-columns: px-to-rem(140) minmax(0, 1fr) auto;
+            grid-template-areas:
+                'type title actions'
+                'type meta actions';
+            align-items: start;
+            column-gap: var(--space--l);
+
+            .spec-downloads__type {
+                grid-area: type;
+            }
+
+            .spec-downloads__title {
+                grid-area: title;
+            }
+
+            .spec-downloads__meta {
+                grid-area: meta;
+            }
+
+            .spec-downloads__actions {
+                grid-area: actions;
+            }
+        }
+
+        @include mq(xlarge) {
+            grid-template-columns: px-to-rem(180) minmax(0, 1fr) px-to-rem(260) px-to-rem(240);
+            grid-template-areas: 'type title meta actions';
+            column-gap: var(--space--xl);
+        }
+    }
+
+    &__type {
+        @include typestyle-h6;
+        font-size: px-to-rem(14);
+    }
+
+    &__title {
+        @include typestyle-base;
+        font-family: var(--type--2--font-family);
+        font-weight: 400;
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+
+    &__meta {
+        @include typestyle-small;
+        color: var(--sd--muted);
+    }
+
+    &__actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space--xs);
+        padding-top: var(--space--4xs);
+
+        @include mq(large) {
+            flex-wrap: nowrap;
+            justify-content: flex-end;
+        }
+    }
+}

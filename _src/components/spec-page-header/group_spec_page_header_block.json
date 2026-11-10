@@ -1,0 +1,78 @@
+{
+    "key": "group_spec_page_header_block",
+    "title": "Block - Spec Page Header",
+    "fields": [
+        {
+            "key": "field_spec_page_header_preheading",
+            "type": "text",
+            "name": "preheading",
+            "label": "Pre-heading"
+        },
+        {
+            "key": "field_spec_page_header_heading",
+            "type": "text",
+            "name": "heading",
+            "label": "Heading",
+            "required": 1
+        },
+        {
+            "key": "field_spec_page_header_description",
+            "type": "textarea",
+            "name": "description",
+            "label": "Description",
+            "rows": 4,
+            "new_lines": ""
+        },
+        {
+            "key": "field_spec_page_header_image",
+            "type": "image",
+            "name": "image",
+            "label": "Image",
+            "return_format": "id",
+            "preview_size": "medium",
+            "library": "all",
+            "instructions": "Shown as the plate to the right of the text. Leave empty for a header with no image."
+        },
+        {
+            "key": "field_spec_page_header_cta_primary",
+            "type": "link",
+            "name": "cta_primary",
+            "label": "Primary CTA",
+            "return_format": "array",
+            "instructions": "Solid button."
+        },
+        {
+            "key": "field_spec_page_header_cta_secondary",
+            "type": "link",
+            "name": "cta_secondary",
+            "label": "Secondary CTA",
+            "return_format": "array",
+            "instructions": "Outlined button."
+        },
+        {
+            "key": "field_spec_page_header_cta_text",
+            "type": "link",
+            "name": "cta_text",
+            "label": "Text CTA",
+            "return_format": "array",
+            "instructions": "Text button, last in the row."
+        },
+        {
+            "key": "field_spec_page_header_show_breadcrumbs",
+            "type": "true_false",
+            "name": "show_breadcrumbs",
+            "label": "Show breadcrumbs",
+            "default_value": 1,
+            "ui": 1
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "block",
+                "operator": "==",
+                "value": "acf/spec-page-header"
+            }
+        ]
+    ]
+}
