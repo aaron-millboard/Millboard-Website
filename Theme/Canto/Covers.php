@@ -24,6 +24,20 @@ final class Covers
 {
     public const OPTION = 'millboard_canto_covers';
 
+    /**
+     * Container ids deliberately kept out of My Account.
+     *
+     * Canto's own "Restrict to Admin(s) Only" is the natural way to hide an
+     * album, and it is the wrong tool here: Canto warns that restricting an
+     * album REMOVES its files from every other album they sit in. The Paid
+     * Media albums share their images with live ones, so restricting them
+     * would have pulled those images out of the albums still using them.
+     *
+     * This hides the container on the website only. Canto is untouched, the
+     * images stay where they are, and it is reversible in a click.
+     */
+    public const HIDDEN_OPTION = 'millboard_canto_hidden';
+
     private const MENU_SLUG = 'millboard-canto-covers';
 
     /**
@@ -39,6 +53,7 @@ final class Covers
         \add_action('admin_menu', [self::class, 'register_page']);
         \add_action('admin_post_millboard_canto_cover', [self::class, 'handle_save']);
         \add_action('admin_post_millboard_canto_refresh', [self::class, 'handle_refresh']);
+        \add_action('admin_post_millboard_canto_hide', [self::class, 'handle_hide']);
     }
 
     /**
@@ -74,6 +89,61 @@ final class Covers
     public static function for_container(string $container_id): string
     {
         return self::all()[$container_id] ?? '';
+    }
+
+    /**
+     * Container ids hidden from My Account by hand.
+     *
+     * @return array<string,true>
+     */
+    public static function hidden(): array
+    {
+        $stored = \get_option(self::HIDDEN_OPTION, []);
+
+        if (!\is_array($stored)) {
+            return [];
+        }
+
+        $clean = [];
+
+        foreach ($stored as $id) {
+            $id = (string) $id;
+
+            if ('' !== $id) {
+                $clean[$id] = true;
+            }
+        }
+
+        return $clean;
+    }
+
+    public static function is_hidden(string $container_id): bool
+    {
+        return '' !== $container_id && isset(self::hidden()[$container_id]);
+    }
+
+    /**
+     * Hide or show one container. Returns the list as it now stands.
+     *
+     * @return array<string,true>
+     */
+    public static function set_hidden(string $container_id, bool $hide): array
+    {
+        $list = self::hidden();
+
+        if ('' === $container_id) {
+            return $list;
+        }
+
+        if ($hide) {
+            $list[$container_id] = true;
+        } else {
+            unset($list[$container_id]);
+        }
+
+        \update_option(self::HIDDEN_OPTION, \array_keys($list), false);
+
+        return $list;
     }
 
     /**
@@ -260,6 +330,7 @@ final class Covers
         \submit_button(\__('Refresh from Canto', 'granola'), 'secondary', '', false);
         echo '</form>';
         echo '<p>' . \esc_html__('Each folder and album in My Account shows a cover image. By default it is the first image inside it. Choose one here to pin a specific picture instead.', 'granola') . '</p>';
+        echo '<p>' . \esc_html__('Use "hide it" to keep a folder or album out of My Account altogether. That is a website setting: nothing changes in Canto, and the images stay in every other album they belong to.', 'granola') . '</p>';
 
         self::$pruned = 0;
         $rows = self::flatten(Client::tree());
@@ -269,8 +340,8 @@ final class Covers
             \printf(
                 /* translators: %d: how many folders and albums are not listed. */
                 \esc_html(\_n(
-                    '%d folder or album is not listed, because it is empty or restricted in Canto and so never appears in My Account.',
-                    '%d folders and albums are not listed, because they are empty or restricted in Canto and so never appear in My Account.',
+                    '%d folder or album is not listed, because it is empty, restricted in Canto, or holds nothing anyone is allowed to see, and so never appears in My Account.',
+                    '%d folders and albums are not listed, because they are empty, restricted in Canto, or hold nothing anyone is allowed to see, and so never appear in My Account.',
                     self::$pruned,
                     'granola'
                 )),
@@ -289,12 +360,16 @@ final class Covers
         echo '<th style="width:90px">' . \esc_html__('Cover', 'granola') . '</th>';
         echo '<th>' . \esc_html__('Folder or album', 'granola') . '</th>';
         echo '<th style="width:110px">' . \esc_html__('Source', 'granola') . '</th>';
+        echo '<th style="width:150px">' . \esc_html__('In My Account', 'granola') . '</th>';
         echo '<th style="width:140px"></th>';
         echo '</tr></thead><tbody>';
+
+        $hidden = self::hidden();
 
         foreach ($rows as $row) {
             $id = $row['id'];
             $chosen = $overrides[$id] ?? '';
+            $is_hidden = isset($hidden[$id]);
             $url = Client::cover($row['scheme'], $id);
 
             $link = \add_query_arg(
@@ -327,6 +402,24 @@ final class Covers
                     ? '<span style="color:#135e96">' . \esc_html__('Chosen', 'granola') . '</span>'
                     : ('' !== $url ? \esc_html__('Automatic', 'granola') : \esc_html__('None', 'granola'))
             );
+
+            /*
+             * A toggle rather than a checkbox with a Save: one click, one
+             * effect, and nothing half-applied if the page is left.
+             */
+            echo '<td>';
+            echo '<form method="post" action="' . \esc_url(\admin_url('admin-post.php')) . '">';
+            \wp_nonce_field('millboard_canto_hide');
+            echo '<input type="hidden" name="action" value="millboard_canto_hide" />';
+            \printf('<input type="hidden" name="container" value="%s" />', \esc_attr($id));
+            \printf('<input type="hidden" name="hide" value="%s" />', $is_hidden ? '0' : '1');
+            \printf(
+                '<button type="submit" class="button-link" style="color:%s">%s</button>',
+                $is_hidden ? '#b32d2e' : '#135e96',
+                $is_hidden ? \esc_html__('Hidden — show it', 'granola') : \esc_html__('Shown — hide it', 'granola')
+            );
+            echo '</form>';
+            echo '</td>';
 
             \printf('<td><a class="button" href="%s">%s</a></td>', \esc_url($link), \esc_html__('Choose image', 'granola'));
 
@@ -599,6 +692,33 @@ final class Covers
         exit;
     }
 
+    /**
+     * Hide one folder or album from My Account, or put it back.
+     *
+     * Deliberately a website-only switch. Canto's own restriction would do
+     * the same job and warns that it REMOVES the album's files from every
+     * other album they belong to, which is not acceptable for images that
+     * are live elsewhere.
+     */
+    public static function handle_hide(): void
+    {
+        if (!\current_user_can('manage_options')) {
+            \wp_die(\esc_html__('You cannot change this.', 'granola'));
+        }
+
+        \check_admin_referer('millboard_canto_hide');
+
+        $container = isset($_POST['container']) ? \sanitize_text_field(\wp_unslash($_POST['container'])) : '';
+        $hide = isset($_POST['hide']) && '1' === (string) $_POST['hide'];
+
+        if ('' !== $container) {
+            self::set_hidden($container, $hide);
+        }
+
+        \wp_safe_redirect(\add_query_arg(['page' => self::MENU_SLUG], \admin_url('admin.php')));
+        exit;
+    }
+
     public static function handle_save(): void
     {
         if (!\current_user_can('manage_options')) {
@@ -648,9 +768,13 @@ final class Covers
      * @param array<int,array<string,mixed>> $nodes
      * @return array<int,array{id: string, name: string, scheme: string, depth: int}>
      */
-    private static function flatten(array $nodes, int $depth = 0): array
+    private static function flatten(array $nodes, int $depth = 0, ?array $live = null): array
     {
         $out = [];
+
+        if (0 === $depth) {
+            $live = Client::live_containers();
+        }
 
         foreach ($nodes as $node) {
             if (!\is_array($node)) {
@@ -671,16 +795,15 @@ final class Covers
              * node skipped: a folder nobody can open makes its children
              * unreachable too, whatever their own settings say.
              *
-             * Same two tests the panel applies, in the same order, so the free
-             * one runs first and an empty container never pays for an ACL
-             * lookup it does not need.
+             * Exactly the rule the panel applies, from one place, because the
+             * two drifting apart is how a cover gets chosen for something
+             * nobody can open.
+             *
+             * ⚠️ `false` for $respect_hidden: a container hidden by hand
+             * STAYS on this screen, or the checkbox that hid it could never
+             * be unticked.
              */
-            if (isset($node['size']) && 0 === (int) $node['size']) {
-                self::$pruned++;
-                continue;
-            }
-
-            if (Client::restricted($scheme, $id)) {
+            if (!Client::container_listed($node, $live, false)) {
                 self::$pruned++;
                 continue;
             }
@@ -693,7 +816,7 @@ final class Covers
             ];
 
             if (!empty($node['children'])) {
-                $out = \array_merge($out, self::flatten((array) $node['children'], $depth + 1));
+                $out = \array_merge($out, self::flatten((array) $node['children'], $depth + 1, $live));
             }
         }
 

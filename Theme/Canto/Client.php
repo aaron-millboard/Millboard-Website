@@ -31,6 +31,8 @@ class Client
 
     private const INDEX_TTL = 45 * MINUTE_IN_SECONDS;
 
+    private const LIVE_TRANSIENT = 'mb_canto_live_containers';
+
     /**
      * Shave a day off whatever expiry Canto reports, so a token is never used
      * in the minutes around its own expiry.
@@ -654,10 +656,150 @@ class Client
     /**
      * Drop everything cached. Used by the panel's own refresh control.
      */
+    /**
+     * Container ids holding at least one asset somebody can see.
+     *
+     * The panel and the Covers page both listed a folder or album on Canto's
+     * `size`, which counts assets the gates then hide. An album of 70 images
+     * that are all Internal staff, or whose usage rights are not cleared,
+     * showed as a tile that opened onto nothing. Access::visible() lets a
+     * container through before it reads a single field, deliberately -- every
+     * container has an empty Portal Access, so gating them on the fields
+     * would empty the whole browse tree -- so the emptiness has to be counted
+     * rather than inferred.
+     *
+     * ⚠️ STAFF, not partner. visible() treats staff as the superset, so a
+     * container is "live" if ANYONE can see something in it. Using the
+     * partner index here instead would call every staff-only album dead and
+     * hide it from the staff who use it.
+     *
+     * Costs no more than the partner index: `relatedAlbums[].idPath` carries
+     * every ancestor, so one pass over the search results gives the answer
+     * for a top-level folder and for the album four levels down alike.
+     *
+     * ⚠️ FAILS OPEN. Returns null when the answer is not trustworthy -- a
+     * failed search, or an empty result, either of which would otherwise
+     * prune the entire library. Callers must treat null as "do not prune".
+     *
+     * @return array<string,true>|null
+     */
+    public static function live_containers(bool $force = false): ?array
+    {
+        if (!$force) {
+            $cached = \get_transient(self::LIVE_TRANSIENT);
+
+            if (\is_array($cached)) {
+                return $cached;
+            }
+        }
+
+        $live = [];
+        $seen = [];
+
+        foreach ([Access::DISTRIBUTOR, Access::INSTALLER, Access::STAFF] as $keyword) {
+            for ($start = 0, $i = 0; $i < 10; ++$i) {
+                $body = self::get('search', ['keyword' => $keyword, 'limit' => 1000, 'start' => $start]);
+
+                if (!\is_array($body) || !\is_array($body['results'] ?? null)) {
+                    // A failed page makes the whole set untrustworthy.
+                    return null;
+                }
+
+                foreach ($body['results'] as $item) {
+                    if (!\is_array($item)) {
+                        continue;
+                    }
+
+                    $id = (string) ($item['id'] ?? '');
+
+                    if ('' === $id || isset($seen[$id])) {
+                        continue;
+                    }
+
+                    $seen[$id] = true;
+
+                    if (!Access::visible($item, [Access::STAFF])) {
+                        continue;
+                    }
+
+                    foreach ((array) ($item['relatedAlbums'] ?? []) as $album) {
+                        foreach (\explode('/', (string) ($album['idPath'] ?? '')) as $ancestor) {
+                            if ('' !== $ancestor) {
+                                $live[$ancestor] = true;
+                            }
+                        }
+                    }
+                }
+
+                $start += \count($body['results']);
+
+                if (!$body['results'] || $start >= (int) ($body['found'] ?? 0)) {
+                    break;
+                }
+            }
+        }
+
+        // Nothing at all means the shape of the answer changed, not that the
+        // library emptied. Pruning on it would hide everything.
+        if (!$live) {
+            return null;
+        }
+
+        \set_transient(self::LIVE_TRANSIENT, $live, self::INDEX_TTL);
+
+        return $live;
+    }
+
+    /**
+     * Should this tree node be listed in My Account, and so on the Covers page?
+     *
+     * One rule in one place, because the panel and the admin screen drifting
+     * apart is how a cover gets chosen for something nobody can open. Assets
+     * are not containers and always pass.
+     *
+     * Ordered by cost: the free tests first, the cached set next, and the
+     * per-container ACL lookup -- a request on a cold cache -- only for a
+     * container that has survived everything else.
+     *
+     * ⚠️ $respect_hidden is false on the ADMIN screen on purpose. A hidden
+     * container that disappeared from the page that hides it could never be
+     * un-hidden again.
+     *
+     * @param array<string,mixed>     $node
+     * @param array<string,true>|null $live From live_containers(); null skips that test.
+     */
+    public static function container_listed(array $node, ?array $live, bool $respect_hidden = true): bool
+    {
+        $scheme = (string) ($node['scheme'] ?? '');
+
+        if (!\in_array($scheme, ['folder', 'album'], true)) {
+            return true;
+        }
+
+        $id = (string) ($node['id'] ?? '');
+
+        // Absent rather than zero means Canto did not say, and guessing
+        // "empty" would hide a real folder. Only an explicit zero hides.
+        if (isset($node['size']) && 0 === (int) $node['size']) {
+            return false;
+        }
+
+        if ($respect_hidden && Covers::is_hidden($id)) {
+            return false;
+        }
+
+        if (null !== $live && !isset($live[$id])) {
+            return false;
+        }
+
+        return !self::restricted($scheme, $id);
+    }
+
     public static function flush(): void
     {
         \delete_transient(self::TOKEN_TRANSIENT);
         \delete_transient(self::INDEX_TRANSIENT);
+        \delete_transient(self::LIVE_TRANSIENT);
         \delete_transient('mb_canto_tree');
     }
 
