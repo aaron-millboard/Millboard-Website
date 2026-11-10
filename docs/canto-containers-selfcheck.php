@@ -38,6 +38,25 @@ function update_option($name, $value, $autoload = null)
     return true;
 }
 
+/*
+ * The hide list is a NETWORK option: one Canto library feeds all six locales.
+ * Kept in a separate store here so a case that wrote the per-site option by
+ * mistake would fail rather than quietly pass.
+ */
+$GLOBALS['mb_site_options'] = [];
+
+function get_site_option($name, $default = false)
+{
+    return $GLOBALS['mb_site_options'][$name] ?? $default;
+}
+
+function update_site_option($name, $value)
+{
+    $GLOBALS['mb_site_options'][$name] = $value;
+
+    return true;
+}
+
 function get_transient($key)
 {
     return false;
@@ -195,10 +214,33 @@ if (Client::container_listed($album('LIVE1'), $live) !== true) {
 
 ++$ran;
 
-if ([] !== get_option(Covers::HIDDEN_OPTION, 'missing')) {
+if ([] !== get_site_option(Covers::HIDDEN_OPTION, 'missing')) {
     ++$failed;
     echo "FAIL  un-hiding the last one leaves an empty list, not a stale entry\n";
 }
+
+/*
+ * ⚠️ It must be the NETWORK store, not the per-site one. Hiding an album on
+ * en-gb while it still shows on the other five locales is the bug this
+ * prevents, and nothing else in the suite would notice the difference.
+ */
+Covers::set_hidden('NETWORK', true);
+
+++$ran;
+
+if (!isset($GLOBALS['mb_site_options'][Covers::HIDDEN_OPTION])) {
+    ++$failed;
+    echo "FAIL  the hide list is stored network-wide\n";
+}
+
+++$ran;
+
+if (isset($GLOBALS['mb_options'][Covers::HIDDEN_OPTION])) {
+    ++$failed;
+    echo "FAIL  the hide list must NOT be written to the per-site option\n";
+}
+
+Covers::set_hidden('NETWORK', false);
 
 printf("\n%d checks, %d failed\n", $ran, $failed);
 
