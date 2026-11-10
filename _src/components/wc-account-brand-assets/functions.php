@@ -32,50 +32,34 @@ const PAGE_SIZE = 24;
 /**
  * Drop containers the panel has no business listing.
  *
- * Two reasons a folder or album goes:
+ * The rule itself is Client::container_listed(), shared with the Covers admin
+ * screen so the two cannot drift: a cover offered for a container the panel
+ * will not list is a cover nobody will ever see.
  *
- * 1. It holds nothing. An empty album is a tile that promises assets and opens
- *    onto "nothing here". Canto reports the count on every node in the tree, so
- *    this costs nothing: `size` is the asset count on an album and the child
- *    count on a folder, and zero means empty either way.
- * 2. It is restricted in Canto. See Client::restricted(). The site reads the
- *    library as one admin-scoped client, so Canto's own permission never
- *    filters anything by itself and has to be applied here.
+ * Four reasons a folder or album goes: empty in Canto, hidden by hand on the
+ * Covers screen, nothing inside it that anyone may see, or restricted in
+ * Canto itself.
  *
- * ⚠️ Reason 1 is emptiness in CANTO, not emptiness after filtering. An album
- * whose assets are all hidden by Access (wrong usage rights, wrong audience)
- * still reports a size and still shows. Catching that needs the visible count
- * per container, which means reading every album's contents rather than one
- * cached tree call, so it is deliberately not done here.
+ * The third of those used to be missing, and it was the one that bit. An
+ * album whose assets are all hidden by Access -- wrong usage rights, wrong
+ * audience, not approved -- still reports a `size` and still showed, so
+ * "Paid Media Assets - In progress" offered 70 images and opened onto
+ * nothing. It was left out because counting it looked like reading every
+ * album's contents; it is not. Client::live_containers() gets it from one
+ * cached pass, because each indexed asset already carries every ancestor
+ * container on its idPath.
  *
- * Assets are passed through untouched: only containers carry either signal.
+ * Assets are passed through untouched: only containers carry any of these.
  *
  * @param array<int,array<string,mixed>> $items
  * @return array<int,array<string,mixed>>
  */
 function drop_hidden_containers(array $items): array
 {
-    $kept = \array_filter($items, static function ($item): bool {
-        if (!\is_array($item)) {
-            return false;
-        }
+    $live = Client::live_containers();
 
-        $scheme = (string) ($item['scheme'] ?? '');
-
-        if (!\in_array($scheme, ['folder', 'album'], true)) {
-            return true;
-        }
-
-        // Absent rather than zero means Canto did not say, and guessing
-        // "empty" would hide a real folder. Only an explicit zero hides.
-        if (isset($item['size']) && 0 === (int) $item['size']) {
-            return false;
-        }
-
-        // Restricted in Canto itself. Checked second because it costs a
-        // request on a cold cache and the size test is free, so an empty
-        // container never pays for a lookup it does not need.
-        return !Client::restricted($scheme, (string) ($item['id'] ?? ''));
+    $kept = \array_filter($items, static function ($item) use ($live): bool {
+        return \is_array($item) && Client::container_listed($item, $live);
     });
 
     return \array_values($kept);
