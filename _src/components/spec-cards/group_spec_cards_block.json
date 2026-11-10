@@ -1,0 +1,156 @@
+{
+    "key": "group_spec_cards_block",
+    "title": "Block - Spec Cards",
+    "fields": [
+        {
+            "key": "field_spec_cards_preheading",
+            "type": "text",
+            "name": "preheading",
+            "label": "Pre-heading"
+        },
+        {
+            "key": "field_spec_cards_heading",
+            "type": "text",
+            "name": "heading",
+            "label": "Heading"
+        },
+        {
+            "key": "field_spec_cards_intro",
+            "type": "textarea",
+            "name": "intro",
+            "label": "Intro",
+            "rows": 3,
+            "new_lines": ""
+        },
+        {
+            "key": "field_spec_cards_columns",
+            "type": "select",
+            "name": "columns",
+            "label": "Cards across",
+            "choices": {
+                "2": "Two",
+                "3": "Three"
+            },
+            "default_value": "3",
+            "return_format": "value",
+            "allow_null": 0
+        },
+        {
+            "key": "field_spec_cards_ratio",
+            "type": "select",
+            "name": "ratio",
+            "label": "Image shape",
+            "choices": {
+                "3-2": "Photograph (3:2)",
+                "16-10": "Drawing (16:10)",
+                "1-1": "Square"
+            },
+            "default_value": "3-2",
+            "return_format": "value",
+            "allow_null": 0
+        },
+        {
+            "key": "field_spec_cards_cards",
+            "type": "repeater",
+            "name": "cards",
+            "label": "Cards",
+            "layout": "block",
+            "button_label": "Add card",
+            "sub_fields": [
+                {
+                    "key": "field_spec_cards_cards_title",
+                    "type": "text",
+                    "name": "title",
+                    "label": "Title",
+                    "required": 1,
+                    "parent_repeater": "field_spec_cards_cards"
+                },
+                {
+                    "key": "field_spec_cards_cards_image",
+                    "type": "image",
+                    "name": "image",
+                    "label": "Image",
+                    "return_format": "id",
+                    "preview_size": "medium",
+                    "library": "all",
+                    "parent_repeater": "field_spec_cards_cards"
+                },
+                {
+                    "key": "field_spec_cards_cards_description",
+                    "type": "wysiwyg",
+                    "name": "description",
+                    "label": "Description",
+                    "toolbar": "basic",
+                    "media_upload": 0,
+                    "tabs": "all",
+                    "parent_repeater": "field_spec_cards_cards"
+                },
+                {
+                    "key": "field_spec_cards_cards_facts",
+                    "type": "repeater",
+                    "name": "facts",
+                    "label": "Key facts",
+                    "layout": "block",
+                    "button_label": "Add fact",
+                    "sub_fields": [
+                        {
+                            "key": "field_spec_cards_cards_facts_label",
+                            "type": "text",
+                            "name": "label",
+                            "label": "Label",
+                            "parent_repeater": "field_spec_cards_cards_facts"
+                        },
+                        {
+                            "key": "field_spec_cards_cards_facts_value",
+                            "type": "text",
+                            "name": "value",
+                            "label": "Value",
+                            "parent_repeater": "field_spec_cards_cards_facts"
+                        }
+                    ],
+                    "max": 6,
+                    "parent_repeater": "field_spec_cards_cards"
+                },
+                {
+                    "key": "field_spec_cards_cards_links",
+                    "type": "repeater",
+                    "name": "links",
+                    "label": "Document links",
+                    "layout": "block",
+                    "button_label": "Add link",
+                    "sub_fields": [
+                        {
+                            "key": "field_spec_cards_cards_links_link",
+                            "type": "link",
+                            "name": "link",
+                            "label": "Link",
+                            "return_format": "array",
+                            "parent_repeater": "field_spec_cards_cards_links"
+                        }
+                    ],
+                    "max": 3,
+                    "parent_repeater": "field_spec_cards_cards"
+                },
+                {
+                    "key": "field_spec_cards_cards_cta",
+                    "type": "link",
+                    "name": "cta",
+                    "label": "Button",
+                    "return_format": "array",
+                    "parent_repeater": "field_spec_cards_cards"
+                }
+            ],
+            "min": 1,
+            "max": 6
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "block",
+                "operator": "==",
+                "value": "acf/spec-cards"
+            }
+        ]
+    ]
+}

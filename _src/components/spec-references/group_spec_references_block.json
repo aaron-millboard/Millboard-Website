@@ -1,0 +1,66 @@
+{
+    "key": "group_spec_references_block",
+    "title": "Block - Spec References",
+    "fields": [
+        {
+            "key": "field_spec_references_preheading",
+            "type": "text",
+            "name": "preheading",
+            "label": "Pre-heading"
+        },
+        {
+            "key": "field_spec_references_heading",
+            "type": "text",
+            "name": "heading",
+            "label": "Heading"
+        },
+        {
+            "key": "field_spec_references_intro",
+            "type": "textarea",
+            "name": "intro",
+            "label": "Intro",
+            "rows": 2,
+            "new_lines": ""
+        },
+        {
+            "key": "field_spec_references_items",
+            "type": "repeater",
+            "name": "items",
+            "label": "References",
+            "layout": "block",
+            "button_label": "Add reference",
+            "min": 1,
+            "sub_fields": [
+                {
+                    "key": "field_spec_references_items_link",
+                    "type": "link",
+                    "name": "link",
+                    "label": "Link",
+                    "instructions": "The independent source. The link text is the name of the document or page.",
+                    "required": 1,
+                    "return_format": "array",
+                    "parent_repeater": "field_spec_references_items"
+                },
+                {
+                    "key": "field_spec_references_items_description",
+                    "type": "textarea",
+                    "name": "description",
+                    "label": "What it covers",
+                    "instructions": "One line in the source's own terms: what it covers and, if it applies to only part of the UK, where.",
+                    "rows": 2,
+                    "new_lines": "",
+                    "parent_repeater": "field_spec_references_items"
+                }
+            ]
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "block",
+                "operator": "==",
+                "value": "acf/spec-references"
+            }
+        ]
+    ]
+}

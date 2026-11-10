@@ -1,0 +1,86 @@
+{
+    "key": "group_spec_projects_block",
+    "title": "Block - Spec Projects",
+    "fields": [
+        {
+            "key": "field_spec_projects_preheading",
+            "type": "text",
+            "name": "preheading",
+            "label": "Pre-heading"
+        },
+        {
+            "key": "field_spec_projects_heading",
+            "type": "text",
+            "name": "heading",
+            "label": "Heading"
+        },
+        {
+            "key": "field_spec_projects_link",
+            "type": "link",
+            "name": "link",
+            "label": "Link",
+            "return_format": "array",
+            "instructions": "Sits beside the heading, for example all case studies."
+        },
+        {
+            "key": "field_spec_projects_cards",
+            "type": "repeater",
+            "name": "cards",
+            "label": "Projects",
+            "layout": "block",
+            "button_label": "Add project",
+            "sub_fields": [
+                {
+                    "key": "field_spec_projects_cards_case_study",
+                    "type": "post_object",
+                    "name": "case_study",
+                    "label": "Case study",
+                    "post_type": [
+                        "case-study"
+                    ],
+                    "return_format": "id",
+                    "multiple": 0,
+                    "allow_null": 0,
+                    "ui": 1,
+                    "parent_repeater": "field_spec_projects_cards"
+                },
+                {
+                    "key": "field_spec_projects_cards_details",
+                    "type": "repeater",
+                    "name": "details",
+                    "label": "Detail rows",
+                    "layout": "table",
+                    "button_label": "Add row",
+                    "sub_fields": [
+                        {
+                            "key": "field_spec_projects_cards_details_label",
+                            "type": "text",
+                            "name": "label",
+                            "label": "Label",
+                            "parent_repeater": "field_spec_projects_cards_details"
+                        },
+                        {
+                            "key": "field_spec_projects_cards_details_value",
+                            "type": "text",
+                            "name": "value",
+                            "label": "Value",
+                            "parent_repeater": "field_spec_projects_cards_details"
+                        }
+                    ],
+                    "max": 3,
+                    "parent_repeater": "field_spec_projects_cards"
+                }
+            ],
+            "min": 1
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "block",
+                "operator": "==",
+                "value": "acf/spec-projects"
+            }
+        ]
+    ]
+}

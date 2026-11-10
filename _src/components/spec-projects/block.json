@@ -1,0 +1,31 @@
+{
+    "$schema": "https://raw.githubusercontent.com/AdvancedCustomFields/schemas/main/json/block.json",
+    "apiVersion": 3,
+    "name": "acf/spec-projects",
+    "title": "Spec Projects",
+    "description": "Rail of case studies with a few detail rows under each",
+    "category": "granola-blocks",
+    "icon": "images-alt2",
+    "keywords": [
+        "projects",
+        "case study",
+        "rail",
+        "specifier"
+    ],
+    "acf": {
+        "mode": "auto",
+        "blockVersion": 3,
+        "autoInlineEditing": false,
+        "hideFieldsInSidebar": true,
+        "renderCallback": "\\Granola\\Component::acf_render_callback"
+    },
+    "supports": {
+        "anchor": true,
+        "align": false,
+        "color": {
+            "background": true,
+            "text": false
+        },
+        "mode": false
+    }
+}

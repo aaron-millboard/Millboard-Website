@@ -1,0 +1,32 @@
+{
+    "$schema": "https://raw.githubusercontent.com/AdvancedCustomFields/schemas/main/json/block.json",
+    "apiVersion": 3,
+    "name": "acf/spec-references",
+    "title": "Spec References",
+    "description": "Independent standards and guidance the page refers to, each with a short line and a link",
+    "category": "granola-blocks",
+    "icon": "book-alt",
+    "keywords": [
+        "references",
+        "standards",
+        "guidance",
+        "external",
+        "specifier"
+    ],
+    "acf": {
+        "mode": "auto",
+        "blockVersion": 3,
+        "autoInlineEditing": false,
+        "hideFieldsInSidebar": true,
+        "renderCallback": "\\Granola\\Component::acf_render_callback"
+    },
+    "supports": {
+        "anchor": true,
+        "align": false,
+        "color": {
+            "background": true,
+            "text": false
+        },
+        "mode": false
+    }
+}
