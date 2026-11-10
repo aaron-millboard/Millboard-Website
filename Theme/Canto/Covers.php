@@ -35,6 +35,12 @@ final class Covers
      *
      * This hides the container on the website only. Canto is untouched, the
      * images stay where they are, and it is reversible in a click.
+     *
+     * ⚠️ NETWORK-WIDE, unlike OPTION above. One Canto library feeds all six
+     * locales, so an album that should not be in My Account should not be in
+     * anyone's My Account; per-site would mean hiding the same album six
+     * times and forgetting the sixth. A cover is a presentation choice and
+     * can reasonably differ per locale, which is why that one stays per site.
      */
     public const HIDDEN_OPTION = 'millboard_canto_hidden';
 
@@ -98,7 +104,7 @@ final class Covers
      */
     public static function hidden(): array
     {
-        $stored = \get_option(self::HIDDEN_OPTION, []);
+        $stored = \get_site_option(self::HIDDEN_OPTION, []);
 
         if (!\is_array($stored)) {
             return [];
@@ -141,7 +147,7 @@ final class Covers
             unset($list[$container_id]);
         }
 
-        \update_option(self::HIDDEN_OPTION, \array_keys($list), false);
+        \update_site_option(self::HIDDEN_OPTION, \array_keys($list));
 
         return $list;
     }
@@ -330,7 +336,7 @@ final class Covers
         \submit_button(\__('Refresh from Canto', 'granola'), 'secondary', '', false);
         echo '</form>';
         echo '<p>' . \esc_html__('Each folder and album in My Account shows a cover image. By default it is the first image inside it. Choose one here to pin a specific picture instead.', 'granola') . '</p>';
-        echo '<p>' . \esc_html__('Use "hide it" to keep a folder or album out of My Account altogether. That is a website setting: nothing changes in Canto, and the images stay in every other album they belong to.', 'granola') . '</p>';
+        echo '<p>' . \esc_html__('Use "hide it" to keep a folder or album out of My Account altogether, on every Millboard site at once. That is a website setting: nothing changes in Canto, and the images stay in every other album they belong to.', 'granola') . '</p>';
 
         self::$pruned = 0;
         $rows = self::flatten(Client::tree());
