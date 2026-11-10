@@ -104,6 +104,54 @@ function apply_filters($hook, $value)
     return $value;
 }
 
+/*
+ * A pretend multisite, so a cover stored as wp:<blog>:<id> can be shown to
+ * resolve against the RIGHT blog. Attachment 500 is an image on blog 3 only;
+ * blog 7 has a different picture at the same id, which is the whole hazard.
+ */
+$GLOBALS['mb_blog'] = 7;
+$GLOBALS['mb_switch_depth'] = 0;
+
+$GLOBALS['mb_attachments'] = [
+    3 => [500 => 'https://example.test/uk/summit-header.jpg'],
+    7 => [500 => 'https://example.test/de/something-else.jpg', 600 => null],
+];
+
+function get_current_blog_id()
+{
+    return $GLOBALS['mb_blog'];
+}
+
+function switch_to_blog($blog_id)
+{
+    $GLOBALS['mb_blog'] = (int) $blog_id;
+    ++$GLOBALS['mb_switch_depth'];
+
+    return true;
+}
+
+function restore_current_blog()
+{
+    $GLOBALS['mb_blog'] = 7;
+    --$GLOBALS['mb_switch_depth'];
+
+    return true;
+}
+
+function wp_attachment_is_image($id)
+{
+    $blog = $GLOBALS['mb_blog'];
+
+    return !empty($GLOBALS['mb_attachments'][$blog][$id]);
+}
+
+function wp_get_attachment_image_url($id, $size = 'large')
+{
+    $blog = $GLOBALS['mb_blog'];
+
+    return $GLOBALS['mb_attachments'][$blog][$id] ?? '';
+}
+
 function add_query_arg()
 {
     return '';
@@ -241,6 +289,54 @@ if (isset($GLOBALS['mb_options'][Covers::HIDDEN_OPTION])) {
 }
 
 Covers::set_hidden('NETWORK', false);
+
+/* ---- cover references across sites -------------------------------------- */
+
+/*
+ * ⚠️ The reason this exists. Attachment ids are PER SITE, so the UK's folder
+ * thumbnails could not be copied to the other twelve by number: on blog 7 the
+ * same id is a different picture. A stored blog id makes the reference mean
+ * the same thing everywhere.
+ */
+$resolve_cases = [
+    ['cross-site ref resolves against the NAMED blog, not the current one',
+        Covers::resolve_url('wp:3:500'), 'https://example.test/uk/summit-header.jpg'],
+    ['a bare wp:<id> still means THIS site',
+        Covers::resolve_url('wp:500'), 'https://example.test/de/something-else.jpg'],
+    ['naming the current blog is the same as not naming it',
+        Covers::resolve_url('wp:7:500'), 'https://example.test/de/something-else.jpg'],
+    ['an attachment that is not an image resolves to nothing',
+        Covers::resolve_url('wp:7:600'), ''],
+    ['an id that does not exist on the named blog resolves to nothing',
+        Covers::resolve_url('wp:3:600'), ''],
+    ['a malformed reference resolves to nothing', Covers::resolve_url('wp:'), ''],
+    ['an empty value resolves to nothing', Covers::resolve_url(''), ''],
+];
+
+foreach ($resolve_cases as [$label, $got, $expected]) {
+    ++$ran;
+
+    if ($got !== $expected) {
+        ++$failed;
+        printf("FAIL  %s\n        expected %s, got %s\n", $label, var_export($expected, true), var_export($got, true));
+    }
+}
+
+/*
+ * ⚠️ Every switch_to_blog must be paired. A leaked switch leaves the rest of
+ * the request reading another site's options, which is the kind of fault that
+ * shows up somewhere else entirely.
+ */
+++$ran;
+
+if (0 !== $GLOBALS['mb_switch_depth'] || 7 !== get_current_blog_id()) {
+    ++$failed;
+    printf(
+        "FAIL  resolve_url leaves the blog switched (depth %d, blog %d)\n",
+        $GLOBALS['mb_switch_depth'],
+        get_current_blog_id()
+    );
+}
 
 printf("\n%d checks, %d failed\n", $ran, $failed);
 

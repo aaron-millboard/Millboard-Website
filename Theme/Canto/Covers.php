@@ -172,13 +172,42 @@ final class Covers
         }
 
         if (0 === \strpos($stored, 'wp:')) {
-            $attachment = (int) \substr($stored, 3);
+            /*
+             * `wp:<blog>:<id>` or the older `wp:<id>`, which means this site.
+             *
+             * ⚠️ ATTACHMENT IDS ARE PER SITE. wp:4821 is one picture on en-gb
+             * and a different one, or nothing, on de-de. The UK's folder
+             * thumbnails had to reach every site, and copying the bare number
+             * would have pointed twelve sites at whatever happened to hold
+             * that id. Uploading the same file to all of them would be 144
+             * attachments to keep in step instead of one, so the blog id
+             * travels with the reference and the image is served once from
+             * wherever it lives.
+             */
+            $parts = \explode(':', $stored);
+            $blog = 3 === \count($parts) ? (int) $parts[1] : 0;
+            $attachment = (int) \end($parts);
 
-            if ($attachment <= 0 || !\wp_attachment_is_image($attachment)) {
+            if ($attachment <= 0) {
                 return '';
             }
 
-            return (string) \wp_get_attachment_image_url($attachment, 'large');
+            $switched = false;
+
+            if ($blog > 0 && $blog !== \get_current_blog_id() && \function_exists('switch_to_blog')) {
+                \switch_to_blog($blog);
+                $switched = true;
+            }
+
+            $url = \wp_attachment_is_image($attachment)
+                ? (string) \wp_get_attachment_image_url($attachment, 'large')
+                : '';
+
+            if ($switched) {
+                \restore_current_blog();
+            }
+
+            return $url;
         }
 
         return Client::asset_url($stored);
@@ -747,7 +776,11 @@ final class Covers
 
             // Nothing picked, or not an image: treat as automatic rather than
             // storing a reference to something that cannot render.
-            $asset = ($attachment > 0 && \wp_attachment_is_image($attachment)) ? 'wp:' . $attachment : '';
+            // The blog id is stored with it, so the choice still resolves if
+            // this cover is ever copied to another site.
+            $asset = ($attachment > 0 && \wp_attachment_is_image($attachment))
+                ? 'wp:' . \get_current_blog_id() . ':' . $attachment
+                : '';
         }
 
         if ('' !== $container) {
