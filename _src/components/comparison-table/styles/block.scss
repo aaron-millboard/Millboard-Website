@@ -11,13 +11,16 @@
     --ct--accent: var(--color--olivegreen);
     --ct--muted: #{rgba(#151716, 0.66)};
     --ct--line: #{rgba(#151716, 0.18)};
+    // The block paints its own ground. The row labels reuse it so they can
+    // stay in view over the other columns when the table scrolls sideways.
+    --ct--ground: var(--color--mist);
 
     padding: clamp(48px, 6vw, 72px) 0;
     // The theme gives every block a vertical margin. These sections carry
     // their own padding and several have their own background, so that
     // margin shows as a stripe of page colour between them.
     margin-block: 0;
-    background: var(--color--mist);
+    background: var(--ct--ground);
 
     &__inner {
         max-width: var(--width--responsive--l);
@@ -84,6 +87,12 @@
             vertical-align: top;
             font-size: px-to-rem(14);
             line-height: 1.5;
+            // The theme breaks table text at any character so a wide table
+            // does not overflow a phone. This one scrolls sideways inside its
+            // own region instead, so keep words whole and only break a word
+            // that is wider than its cell.
+            word-break: normal;
+            overflow-wrap: break-word;
         }
 
         thead th {
@@ -94,9 +103,17 @@
             border-bottom-width: 2px;
         }
 
+        // The row labels stay in view when the table scrolls sideways, so a
+        // value can always be read against its row.
         tbody th {
             font-weight: 700;
             white-space: nowrap;
+            position: sticky;
+            // -2px, not 0: at 0 a sliver of the scrolled text shows at the
+            // region's left edge.
+            left: -2px;
+            z-index: 1;
+            background: var(--ct--ground);
         }
 
         // The wood free column is ours. Mark it without shouting.
@@ -108,6 +125,10 @@
 
     &__corner {
         border-bottom: 2px solid var(--ct--line);
+        position: sticky;
+        left: -2px;
+        z-index: 1;
+        background: var(--ct--ground);
     }
 
     &__footnote {
