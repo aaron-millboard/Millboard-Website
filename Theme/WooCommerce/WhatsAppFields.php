@@ -98,6 +98,7 @@ class WhatsAppFields
         // 1001 so the Checkout Field Editor (1000) has already built the array.
         \add_filter('woocommerce_checkout_fields', [__CLASS__, 'add_fields'], 1001);
         \add_filter('woocommerce_form_field_' . self::FIELD_TYPE, [__CLASS__, 'render_question'], 10, 4);
+        \add_filter('woocommerce_form_field_tel', [__CLASS__, 'mark_number_required'], 20, 4);
         \add_filter('woocommerce_checkout_posted_data', [__CLASS__, 'resolve_posted_data']);
         \add_action('woocommerce_after_checkout_validation', [__CLASS__, 'validate'], 10, 2);
         \add_action('woocommerce_checkout_create_order', [__CLASS__, 'record'], 10, 2);
@@ -188,6 +189,29 @@ class WhatsAppFields
         }
 
         return $html . '</fieldset></div>';
+    }
+
+    /**
+     * WooCommerce labels any field whose `required` is false as "(optional)". The number
+     * is required whenever it is shown, so swap that for the asterisk the other required
+     * labels carry.
+     *
+     * @param string $field
+     * @param string $key
+     * @param array<string, mixed> $args
+     * @param string|null $value
+     */
+    public static function mark_number_required($field, $key, $args, $value): string
+    {
+        if ($key !== self::NUMBER_FIELD) {
+            return (string) $field;
+        }
+
+        return (string) preg_replace(
+            '/&nbsp;<span class="optional">.*?<\/span>/s',
+            '&nbsp;<abbr class="required" title="required">*</abbr>',
+            (string) $field
+        );
     }
 
     /**
