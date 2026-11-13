@@ -268,4 +268,13 @@
             margin: 0;
         }
     }
+
+    // The WhatsApp Yes / No sit side by side rather than stacked, which the other
+    // consent questions do not do. The legend is a fieldset legend, so it stays on its
+    // own line above whatever the fieldset's flex direction is.
+    .mb-whatsapp .mb-consent__fieldset {
+        flex-direction: row;
+        flex-wrap: wrap;
+        column-gap: var(--space--l);
+    }
 }
