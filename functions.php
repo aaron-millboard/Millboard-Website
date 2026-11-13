@@ -114,6 +114,7 @@ if (file_exists($autoloader = __DIR__ . '/vendor/autoload.php')) {
 // to decide this and they disagreed.
 \Theme\WooCommerce\Territory::init();
 \Theme\WooCommerce\ConsentFields::init();
+\Theme\WooCommerce\WhatsAppFields::init();
 \Theme\WooCommerce\OrderAttribution::init();
 \Theme\WooCommerce\OrderIdentity::init();
 \Theme\WooCommerce\StripePaymentGuard::init();

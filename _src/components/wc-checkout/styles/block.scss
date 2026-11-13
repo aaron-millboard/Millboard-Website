@@ -143,6 +143,29 @@
             }
         }
 
+        // The WhatsApp question is a Yes / No that should read as the same square box as
+        // every other checkbox on the form, so it takes the checkbox's square and its
+        // tick instead of the round dot above. Must stay AFTER the rule above: equal
+        // specificity, so source order is what makes it win.
+        .mb-whatsapp input[type='radio'] {
+            border-radius: 2px;
+
+            &:checked {
+                background-color: var(--color--foreground);
+            }
+
+            &:checked::after {
+                top: 45%;
+                width: 10px;
+                height: 5px;
+                border-radius: 0;
+                background-color: transparent;
+                border: solid var(--color--background);
+                border-width: 0 0 2px 2px;
+                transform: translate(-50%, -50%) rotate(-45deg);
+            }
+        }
+
         .woocommerce-NoticeGroup {
             ul {
                 margin: 0;
