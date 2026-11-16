@@ -69,9 +69,20 @@ if (!wc_ship_to_billing_address_only() && wc_shipping_enabled()) {
 
             <address class="mb-account-addresses__body">
                 <?php
+                /*
+                 * `granola`, not `woocommerce`, and deliberately so.
+                 *
+                 * WooCommerce's own French pack does NOT carry this string --
+                 * zero matches in woocommerce-fr_FR.mo and .l10n.php -- so on
+                 * the `woocommerce` domain it fell through to English and
+                 * French partners read it that way. Every other string in
+                 * this template is already ours; this one was the odd one
+                 * out, and moving it is what lets Loco translate it with the
+                 * rest rather than waiting on an upstream language pack.
+                 */
                 echo $address
                     ? wp_kses_post($address)
-                    : esc_html__('You have not set up this address yet.', 'woocommerce');
+                    : esc_html__('You have not set up this address yet.', 'granola');
                 ?>
             </address>
         </div>
