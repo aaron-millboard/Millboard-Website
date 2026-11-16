@@ -752,10 +752,12 @@ function get_retired_skus(): array
 /**
  * A sample-size attribute value in mm, or null when it is not a sample.
  *
- * Covers both vocabularies: en-gb slugs (`small`, `large`, `full`) and the
+ * Covers three vocabularies: en-gb slugs (`small`, `large`, `full`), the
  * French ones (`Small`, `Large`, `Full` on the per-product attribute,
- * `enchantillon-std` and `enchantillon-xl` on the global one). `full` is the
- * board itself and is never a sample.
+ * `enchantillon-std` and `enchantillon-xl` on the global one) and the German
+ * ones on de-de's global attribute (`handmuster` = the 105 SKUs, 100mm;
+ * `grosse-muster` = the 305 SKUs, 300mm). `full` is the board itself and is
+ * never a sample.
  */
 function sample_size_mm(string $value): ?int
 {
@@ -765,11 +767,11 @@ function sample_size_mm(string $value): ?int
         return null;
     }
 
-    if (false !== \strpos($value, 'small') || false !== \strpos($value, 'std')) {
+    if (false !== \strpos($value, 'small') || false !== \strpos($value, 'std') || false !== \strpos($value, 'handmuster')) {
         return 100;
     }
 
-    if (false !== \strpos($value, 'large') || false !== \strpos($value, 'xl')) {
+    if (false !== \strpos($value, 'large') || false !== \strpos($value, 'xl') || false !== \strpos($value, 'grosse-muster')) {
         return 300;
     }
 
