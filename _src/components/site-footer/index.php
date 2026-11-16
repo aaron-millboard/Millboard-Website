@@ -18,6 +18,9 @@
                     ],
                     'heading' => true,
                     'heading_button' => true,
+                    // Columns 1 and 2 are the decking and cladding columns, each
+                    // led by its collection page. SEO: the heading carries that link.
+                    'heading_link_first' => in_array($menu, [1, 2], true),
                 ]); ?>
             <?php } ?>
         </div>
