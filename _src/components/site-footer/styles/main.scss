@@ -101,6 +101,22 @@
         letter-spacing: var(--mbh-tracking-eyebrow);
         text-transform: uppercase;
         color: var(--color--springwood);
+
+        // The decking and cladding headings link to their collection page.
+        // Same look as the plain heading, the colour change carries the hover
+        // just as it does for the links below.
+        a {
+            color: inherit;
+            text-decoration: none;
+            --link--text-decoration: none;
+            --link--text-decoration--hover: none;
+            transition: color var(--mbh-dur-ui) var(--mbh-ease);
+
+            &:hover,
+            &:focus-visible {
+                color: var(--color--apple);
+            }
+        }
     }
 
     .menu__heading__button {
