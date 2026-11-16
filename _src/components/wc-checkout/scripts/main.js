@@ -115,11 +115,33 @@ jQuery(document.body).on('change', '#who-am-i, #billing_who-am-i, [name="who-am-
          .prop('required', answered && isConsumer);
    }
 
+   // WhatsApp: the number is only asked for on a Yes (see Theme\WooCommerce\WhatsAppFields).
+   // Presentation only again: the server blanks the number unless the answer is yes.
+   var WHATSAPP_ANSWER = 'input[name="whatsapp-opt-in"]';
+
+   function applyWhatsApp() {
+      var $number = $('.mb-whatsapp-number');
+
+      if (!$number.length) {
+         return;
+      }
+
+      var yes = $(WHATSAPP_ANSWER + ':checked').val() === 'yes';
+
+      setRowState($number, yes);
+      $number.find('input').prop('required', yes);
+   }
+
    $(function () {
       apply();
+      applyWhatsApp();
       $(document.body).on('change', TRIGGER, apply);
+      $(document.body).on('change', WHATSAPP_ANSWER, applyWhatsApp);
       // Billing fields are not replaced by update_checkout, but re-running is cheap
       // and covers any future fragment that does replace them.
-      $(document.body).on('updated_checkout', apply);
+      $(document.body).on('updated_checkout', function () {
+         apply();
+         applyWhatsApp();
+      });
    });
 })(jQuery);
