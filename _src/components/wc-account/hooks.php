@@ -59,7 +59,7 @@ use const Granola\Components\WC_Account_Fulfilment\ENDPOINT as FULFILMENT_ENDPOI
         'projects' => projects_url(),
         'calculator' => CALCULATOR_URL,
         'visualiser' => VISUALISER_URL,
-        'deckplanner' => DECKPLANNER_URL,
+        'deckplanner' => deckplanner_url(),
         'elearning' => ELEARNING_URL,
     ];
 
