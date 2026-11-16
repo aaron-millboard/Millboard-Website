@@ -356,6 +356,44 @@ const VISUALISER_URL = 'https://ai-visualiser.millboard.com';
 const DECKPLANNER_URL = 'https://deckplanner.millboard.com/en#/en';
 
 /**
+ * The languages the planner is actually built in, by WordPress locale.
+ *
+ * Maëlle Haro (Millboard France), 16 Nov 2026: the French site's link opened
+ * the English planner. It is not a redirect problem -- the address simply had
+ * `en` hard-coded in both halves.
+ *
+ * ⚠️ Only locales VERIFIED to load are listed. `/fr#/fr` renders as
+ * "Planificateur de Terrasse" and `/de#/de` as "Terrassenplaner"; both were
+ * opened and read before this map was written. The planner is a single-page
+ * app with a catch-all route, so an unsupported language does NOT 404 -- it
+ * quietly serves English from a URL that looks translated, which is worse
+ * than linking to English honestly. Anything absent here falls back to
+ * English on purpose.
+ *
+ * The same trap is why the Visualiser is not given this treatment:
+ * ai-visualiser.millboard.com/fr-fr serves the identical English page and
+ * still says EN-GB in the corner. There is no French build to point at.
+ */
+const DECKPLANNER_LANGUAGES = [
+    'fr_FR' => 'fr',
+    'de_DE' => 'de',
+];
+
+/**
+ * The deck planner address for whoever is looking at it.
+ */
+function deckplanner_url(): string
+{
+    $lang = DECKPLANNER_LANGUAGES[\determine_locale()] ?? '';
+
+    $url = '' === $lang
+        ? DECKPLANNER_URL
+        : 'https://deckplanner.millboard.com/' . $lang . '#/' . $lang;
+
+    return (string) \apply_filters('millboard/account/deckplanner_url', $url);
+}
+
+/**
  * Where the partner training lives.
  *
  * Aaron, 2 Nov 2026, gave this address. It is the Moodle, which already has
