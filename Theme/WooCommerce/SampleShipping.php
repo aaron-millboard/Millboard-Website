@@ -13,6 +13,9 @@ class SampleShipping
      */
     public const ZERO_COST_RATE_ID = 'millboard_zero_cost_shipping';
 
+    /** UK postcode areas with no online delivery, free samples included. */
+    private const NO_DELIVERY_POSTCODE_AREAS = ['IV', 'KW', 'ZE'];
+
     private const SMALL_SAMPLE_MATCH_TERMS = [
         'small',
         'klein',
@@ -99,6 +102,12 @@ class SampleShipping
             return self::apply_sample_shipping_surcharge($rates);
         }
 
+        // The no-delivery zone for these areas has no methods on purpose. Without this the fallback
+        // below would hand a free-sample basket a free rate and undo that zone.
+        if (self::is_no_delivery_destination($package)) {
+            return $rates;
+        }
+
         $rate_id = self::ZERO_COST_RATE_ID;
 
         $rates[$rate_id] = new \WC_Shipping_Rate(
@@ -110,6 +119,25 @@ class SampleShipping
         );
 
         return self::apply_sample_shipping_surcharge($rates);
+    }
+
+    /**
+     * Whether the package is going to a UK postcode area we do not deliver to online
+     * (IV Inverness, KW Wick and Orkney, ZE Shetland), matching the Woo zone
+     * "No delivery - IV, KW, ZE" on the en-GB site. Free samples go there too.
+     *
+     * @param array<string, mixed> $package
+     */
+    private static function is_no_delivery_destination(array $package): bool
+    {
+        $country = \strtoupper((string) ($package['destination']['country'] ?? ''));
+        $postcode = \strtoupper(\str_replace(' ', '', (string) ($package['destination']['postcode'] ?? '')));
+
+        if ($country !== 'GB' || !\preg_match('/^([A-Z]{1,2})\d/', $postcode, $area)) {
+            return false;
+        }
+
+        return \in_array($area[1], self::NO_DELIVERY_POSTCODE_AREAS, true);
     }
 
     /**
