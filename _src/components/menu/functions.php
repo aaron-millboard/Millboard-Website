@@ -21,6 +21,7 @@ function filter_args(array $args): ?array
         'max_depth' => null,
         'theme_location' => null,
         'heading_button' => false,
+        'heading_link_first' => false,
         'expandable_element_attributes' => [],
         // Render only part of the top-level items, as [offset, length].
         // The redesigned site header sits the wordmark in the middle of the
@@ -139,6 +140,15 @@ function filter_args(array $args): ?array
     // Set menu heading from theme_location.
     if ($args['heading'] === true) {
         $args['heading'] = \wp_get_nav_menu_name($args['theme_location']);
+    }
+
+    // Link the heading to the menu's first item. The footer's product columns
+    // lead with their collection landing page, so the heading ("Composite
+    // Decking") reaches it too. Resolved from the menu so each locale gets its
+    // own URL without anything hardcoded.
+    $args['heading_link'] = null;
+    if ($args['heading_link_first'] && !empty($args['items'][0]->url)) {
+        $args['heading_link'] = $args['items'][0]->url;
     }
 
     // -------------------------------------------------------------------------
