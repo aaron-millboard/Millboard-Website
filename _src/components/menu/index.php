@@ -7,6 +7,7 @@
 
             <?= \Granola\Component::get('heading', [
                 'content' => $args['heading'],
+                'link' => $args['heading_link'],
                 'classes' => ['menu__heading'],
             ]); ?>
 
