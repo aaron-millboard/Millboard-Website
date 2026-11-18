@@ -213,6 +213,9 @@
 
             table {
                 width: 100%;
+                // Below this the figure's overflow-x scrolls the table rather
+                // than crushing the columns together on narrow screens.
+                min-width: #{px-to-rem(480)};
                 margin: 0;
                 border-collapse: collapse;
                 font-weight: 300;
@@ -267,6 +270,15 @@
         > .wp-block-image + *,
         > figure + * {
             margin-top: #{px-to-rem(48)};
+        }
+
+        // ACF image-block: the image rules above only reach core
+        // wp-block-image/figure, so the image-block's image rendered
+        // unconstrained and could overflow the content column on desktop.
+        > .image-block img {
+            display: block;
+            width: 100%;
+            height: auto;
         }
 
         > .wp-block-buttons {
