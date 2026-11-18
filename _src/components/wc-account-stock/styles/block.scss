@@ -98,6 +98,18 @@
         display: block;
     }
 
+    /*
+     * The size is half of what identifies a row -- there is a Handmuster and
+     * a Große Muster line for the same colour -- so it reads as part of the
+     * name rather than as the footnote the SKU is.
+     */
+    &__size {
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 400;
+        color: #555;
+    }
+
     &__sku {
         display: block;
         font-size: 0.6875rem;
