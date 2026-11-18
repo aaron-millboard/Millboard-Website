@@ -316,6 +316,42 @@ const CALCULATOR_SITES = ['/en-gb/'];
 const CALCULATOR_OPTION = 'millboard_calculator_enabled';
 
 /**
+ * Markets where the calculator is an INTERNAL tool, not a partner one.
+ *
+ * Aaron, 16 Nov 2026, after Ludéric asked for the calculator in France:
+ * "its an internal staff only tool in france", then "add it to all internal
+ * staff on the french site".
+ *
+ * A second switch rather than reusing CALCULATOR_OPTION, because the two say
+ * different things: one is "this market has a calculator at all", the other
+ * is "and only our own people may open it". The UK wants the first without
+ * the second.
+ *
+ * ⚠️ WITHOUT THIS, TURNING THE CALCULATOR ON FOR FRANCE WOULD HAVE LEAKED IT
+ * TO PARTNERS LATER. has_account_tools() covers distributors, installers and
+ * architects as well as staff. fr-fr happens to hold no partner accounts
+ * today (6 staff, 6 shop managers, 4 administrators, and 475 plain
+ * customers who have no tools), so enabling it alone would have looked
+ * exactly right. The French partner portal is being built now, and the first
+ * distributor created would have picked the tool up silently.
+ *
+ *   wp option update millboard_calculator_staff_only yes --url=<site>/fr-fr/
+ *   wp option delete millboard_calculator_staff_only --url=<site>/fr-fr/
+ */
+const CALCULATOR_STAFF_ONLY_OPTION = 'millboard_calculator_staff_only';
+
+/**
+ * Is the calculator internal-only on this site?
+ */
+function calculator_is_staff_only(): bool
+{
+    return (bool) \apply_filters(
+        'millboard/account/calculator_staff_only',
+        'yes' === \get_option(CALCULATOR_STAFF_ONLY_OPTION)
+    );
+}
+
+/**
  * Is the current site one the calculator is offered in?
  *
  * The constant is the floor and the option only ever ADDS a market, so the UK
@@ -439,7 +475,24 @@ function can_view_calculator(?int $user_id = null): bool
         return false;
     }
 
-    return is_calculator_site() && has_account_tools($user_id);
+    if (!is_calculator_site() || !has_account_tools($user_id)) {
+        return false;
+    }
+
+    /*
+     * Internal-only markets. France has the calculator as a staff tool, so
+     * the site switch alone is not enough: has_account_tools() lets
+     * distributors and installers through as well.
+     *
+     * The UK is deliberately NOT staff-only. 688 distributors and 220
+     * installers use it there against 117 internal accounts, and hiding it
+     * from them would be a different decision from the one asked for.
+     */
+    if (calculator_is_staff_only() && !\Theme\Accounts\Roles::is_staff($user_id)) {
+        return false;
+    }
+
+    return true;
 }
 
 /**
