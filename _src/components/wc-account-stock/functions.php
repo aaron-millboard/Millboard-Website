@@ -634,16 +634,42 @@ function rows(): array
     $rows = [];
 
     foreach ($samples as $key => $sample) {
-        $have = $stock[$key] ?? 0;
+        $counted = \array_key_exists($key, $stock);
+        $have = $counted ? (int) $stock[$key] : 0;
+
+        $metrics = metrics($have, $recent[$key] ?? 0, $previous[$key] ?? 0, (int) $sample['per_box']);
+
+        /*
+         * ⚠️ NOT COUNTED IS NOT THE SAME AS COUNTED AND FOUND EMPTY.
+         *
+         * Stock is the one figure the site cannot work out, so every row
+         * starts with nothing stored. Feeding that to metrics() as a zero
+         * gives zero weeks of cover and marks the row Dringend, so on the day
+         * this screen opens the agency would see every colour it sells
+         * screaming urgent -- 40 of them on production -- and not one of
+         * those warnings would mean anything. After the first real emergency
+         * is buried in that, nobody reads the column again.
+         *
+         * Demand is still known and still shown. It is the cover, the
+         * reorder quantity and the status that cannot be answered without a
+         * count, so those say so instead of guessing.
+         */
+        if (!$counted && 'none' !== $metrics['status']) {
+            $metrics['status'] = 'uncounted';
+            $metrics['weeks'] = null;
+            $metrics['need'] = 0;
+            $metrics['boxes'] = null;
+        }
 
         $rows[] = \array_merge(
             $sample,
             [
                 'size_label' => (string) ($labels[$sample['size']] ?? $sample['size']),
+                'counted' => $counted,
                 'stock' => $have,
                 'recent' => $recent[$key] ?? 0,
             ],
-            metrics($have, $recent[$key] ?? 0, $previous[$key] ?? 0, (int) $sample['per_box'])
+            $metrics
         );
     }
 
@@ -652,7 +678,7 @@ function rows(): array
      * and a list that opens on everything that is fine buries the four lines
      * that are not.
      */
-    $order = ['emergency' => 0, 'order' => 1, 'ok' => 2, 'none' => 3];
+    $order = ['emergency' => 0, 'order' => 1, 'uncounted' => 2, 'ok' => 3, 'none' => 4];
 
     \usort($rows, static function (array $a, array $b) use ($order): int {
         return [$order[$a['status']] ?? 9, $a['weeks'] ?? PHP_INT_MAX, $a['title'], $a['length']]

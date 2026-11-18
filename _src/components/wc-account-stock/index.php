@@ -19,7 +19,7 @@ use function Granola\Components\WC_Account_Stock\stock_updated;
 
 $mb_rows = rows();
 
-$mb_counts = ['emergency' => 0, 'order' => 0, 'ok' => 0, 'none' => 0];
+$mb_counts = ['emergency' => 0, 'order' => 0, 'uncounted' => 0, 'ok' => 0, 'none' => 0];
 
 foreach ($mb_rows as $mb_row) {
     ++$mb_counts[$mb_row['status']];
@@ -28,6 +28,12 @@ foreach ($mb_rows as $mb_row) {
 $mb_labels = [
     'emergency' => __('Dringend', 'granola'),
     'order' => __('Jetzt bestellen', 'granola'),
+    /*
+     * Not counted is its own answer, not a zero. See the note in rows():
+     * treating an uncounted row as empty marks every colour urgent on the
+     * day this screen opens and the column stops meaning anything.
+     */
+    'uncounted' => __('Nicht gezählt', 'granola'),
     'ok' => __('OK', 'granola'),
     'none' => __('Keine Nachfrage', 'granola'),
 ];
@@ -80,6 +86,22 @@ $mb_updated = stock_updated();
                 esc_html__('%1$d dringend, %2$d jetzt bestellen.', 'granola'),
                 (int) $mb_counts['emergency'],
                 (int) $mb_counts['order']
+            );
+            ?>
+        </p>
+    <?php endif; ?>
+
+    <?php if ($mb_counts['uncounted']) : ?>
+        <p class="mb-stock__note" role="status">
+            <?php
+            printf(
+                /* translators: %d: how many samples have no counted stock figure yet. */
+                esc_html__(
+                    '%d Muster ohne Bestandsangabe. Reichweite und Nachbestellmenge '
+                    . 'lassen sich erst berechnen, wenn der Bestand eingetragen ist.',
+                    'granola'
+                ),
+                (int) $mb_counts['uncounted']
             );
             ?>
         </p>
@@ -150,7 +172,16 @@ $mb_updated = stock_updated();
                                 inputmode="numeric"
                                 id="<?php echo esc_attr($mb_id); ?>"
                                 name="stock[<?php echo esc_attr($mb_row['key']); ?>]"
-                                value="<?php echo esc_attr((string) $mb_row['stock']); ?>"
+                                <?php
+                                /*
+                                 * Empty, not 0, when nobody has counted this
+                                 * one. A 0 in the box reads as "counted, and
+                                 * there are none left", which is a different
+                                 * and much more alarming thing.
+                                 */
+                                ?>
+                                value="<?php echo $mb_row['counted'] ? esc_attr((string) $mb_row['stock']) : ''; ?>"
+                                placeholder="&ndash;"
                                 class="mb-stock__input"
                             />
                         </td>
