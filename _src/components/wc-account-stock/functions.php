@@ -75,6 +75,18 @@ const OPTION = 'millboard_stock_enabled';
 /** row key => units in hand. The only figure a person types. */
 const STOCK_OPTION = 'millboard_sample_stock';
 
+/**
+ * ⚠️ THE CACHE KEYS CARRY A VERSION, AND IT MUST BE BUMPED WHENEVER THE SHAPE
+ * OF A CACHED ROW CHANGES.
+ *
+ * These hold derived structures, not scalars. A deploy that changes the shape
+ * while keeping the key leaves the old shape in the cache for six hours, and
+ * the screen fatals on the first field that moved -- for everyone, with no
+ * way to tell from the error that a stale transient is the cause.
+ */
+const SAMPLES_TRANSIENT = 'millboard_stock_samples_v2';
+const PACKS_TRANSIENT = 'millboard_stock_packs_v2';
+
 /** How many weeks of orders make up "recent" demand. Matches the sheet. */
 const WINDOW_WEEKS = 8;
 
@@ -223,7 +235,7 @@ function match_key(string $text): string
  */
 function pack_sizes(): array
 {
-    $cached = \get_transient('millboard_stock_packs');
+    $cached = \get_transient(PACKS_TRANSIENT);
 
     if (\is_array($cached)) {
         return $cached;
@@ -274,7 +286,7 @@ function pack_sizes(): array
         }
     }
 
-    \set_transient('millboard_stock_packs', $out, 6 * HOUR_IN_SECONDS);
+    \set_transient(PACKS_TRANSIENT, $out, 6 * HOUR_IN_SECONDS);
 
     return $out;
 }
@@ -419,7 +431,7 @@ function row_key(int $parent_id, string $size): string
  */
 function samples(): array
 {
-    $cached = \get_transient('millboard_stock_samples');
+    $cached = \get_transient(SAMPLES_TRANSIENT);
 
     if (\is_array($cached)) {
         return $cached;
@@ -428,13 +440,19 @@ function samples(): array
     global $wpdb;
 
     $rows = $wpdb->get_results($wpdb->prepare(
-        "SELECT DISTINCT v.post_parent AS parent_id,
-                         pm.meta_value AS size,
-                         parent.post_title AS title
+        "SELECT v.post_parent AS parent_id,
+                pm.meta_value AS size,
+                parent.post_title AS title,
+                COALESCE(vsku.meta_value, '') AS vsku,
+                COALESCE(psku.meta_value, '') AS psku
            FROM {$wpdb->posts} v
            JOIN {$wpdb->postmeta} pm ON pm.post_id = v.ID
                                     AND pm.meta_key = %s
            JOIN {$wpdb->posts} parent ON parent.ID = v.post_parent
+      LEFT JOIN {$wpdb->postmeta} vsku ON vsku.post_id = v.ID
+                                      AND vsku.meta_key = '_sku'
+      LEFT JOIN {$wpdb->postmeta} psku ON psku.post_id = v.post_parent
+                                      AND psku.meta_key = '_sku'
           WHERE v.post_type = 'product_variation'
             AND pm.meta_value NOT IN ('', %s)
             AND parent.post_status = 'publish'",
@@ -442,28 +460,52 @@ function samples(): array
         SIZE_FULL
     ));
 
-    $out = [];
+    /*
+     * Gathered first, built second, because a parent carries up to six
+     * duplicate variations of one size and the SKU worth showing may be on
+     * any of them.
+     */
+    $gathered = [];
 
     foreach ((array) $rows as $row) {
         $parent_id = (int) $row->parent_id;
         $size = canonical_size((string) $row->size);
         $key = row_key($parent_id, $size);
+        $vsku = \trim((string) $row->vsku);
 
-        if (isset($out[$key])) {
-            continue;
+        $gathered[$key]['parent'] = $parent_id;
+        $gathered[$key]['size'] = $size;
+        $gathered[$key]['title'] = (string) $row->title;
+        $gathered[$key]['psku'] = \trim((string) $row->psku);
+
+        /*
+         * The sample's OWN SKU is what identifies the piece on the shelf --
+         * AMCBF105X, not the parent's MCBF360X, which the Handmuster and the
+         * Große Muster row would otherwise both show. Variations that just
+         * repeat the parent's SKU carry no extra information, so they are not
+         * candidates.
+         */
+        if ('' !== $vsku && $vsku !== \trim((string) $row->psku)) {
+            $gathered[$key]['candidates'][$vsku] = true;
         }
+    }
 
-        $length = size_length($size);
+    $out = [];
 
-        $categories = \wp_get_post_terms($parent_id, 'product_cat', ['fields' => 'names']);
+    foreach ($gathered as $key => $g) {
+        $candidates = \array_keys($g['candidates'] ?? []);
+        $length = size_length($g['size']);
+
+        $categories = \wp_get_post_terms($g['parent'], 'product_cat', ['fields' => 'names']);
         $categories = \is_wp_error($categories) ? [] : (array) $categories;
 
         $out[$key] = [
             'key' => $key,
-            'parent' => $parent_id,
-            'size' => $size,
-            'sku' => (string) \get_post_meta($parent_id, '_sku', true),
-            'title' => (string) $row->title,
+            'parent' => $g['parent'],
+            'size' => $g['size'],
+            // Two variations disagreeing is not an answer: fall back, never pick.
+            'sku' => 1 === \count($candidates) ? $candidates[0] : $g['psku'],
+            'title' => $g['title'],
             'length' => $length,
             'per_box' => pieces_per_box($categories, $length),
         ];
@@ -471,7 +513,7 @@ function samples(): array
 
     \uasort($out, static fn(array $a, array $b): int => [$a['title'], $a['length']] <=> [$b['title'], $b['length']]);
 
-    \set_transient('millboard_stock_samples', $out, 6 * HOUR_IN_SECONDS);
+    \set_transient(SAMPLES_TRANSIENT, $out, 6 * HOUR_IN_SECONDS);
 
     return $out;
 }
@@ -673,6 +715,6 @@ function stock_updated(): string
  */
 function flush_cache(): void
 {
-    \delete_transient('millboard_stock_samples');
-    \delete_transient('millboard_stock_packs');
+    \delete_transient(SAMPLES_TRANSIENT);
+    \delete_transient(PACKS_TRANSIENT);
 }
