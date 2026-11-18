@@ -35,11 +35,19 @@
     }
 
     &__saved,
-    &__alert {
+    &__alert,
+    &__note {
         margin: 0 0 1rem;
         padding: 0.6rem 0.9rem;
         font-size: 0.875rem;
         border-left: 3px solid currentColor;
+    }
+
+    // Quieter than the alert. It says there is work to do, not that anything
+    // is wrong, and it must not compete with the reorder count above it.
+    &__note {
+        color: #33508a;
+        background: #eff3fa;
     }
 
     &__saved {
@@ -147,6 +155,14 @@
         &--ok {
             color: #2d6a33;
             background: #e8f1e8;
+        }
+
+        // Not counted is a job to do, not a warning. Visibly different from
+        // the red and amber so it never reads as a stock problem, visibly
+        // different from OK so it is not mistaken for a settled row.
+        &--uncounted {
+            color: #33508a;
+            background: #eaeff8;
         }
 
         &--none {
