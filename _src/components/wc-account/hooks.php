@@ -20,6 +20,8 @@ use function Granola\Components\WC_Account_Fulfilment\can_work_fulfilment;
  * any hooks.php runs, so the constant exists by the time this file is read.
  */
 use const Granola\Components\WC_Account_Fulfilment\ENDPOINT as FULFILMENT_ENDPOINT;
+use const Granola\Components\WC_Account_Stock\ENDPOINT as STOCK_ENDPOINT;
+use function Granola\Components\WC_Account_Stock\can_work_stock;
 
 /**
  * Register the custom endpoints so /my-account/brand-assets/ resolves.
@@ -29,7 +31,7 @@ use const Granola\Components\WC_Account_Fulfilment\ENDPOINT as FULFILMENT_ENDPOI
  * a panel. Flushing on every load would rewrite the option on all 13,000 hits.
  */
 \add_action('init', function (): void {
-    $endpoints = [ENDPOINT_BRAND_ASSETS, get_sample_endpoint(), FULFILMENT_ENDPOINT];
+    $endpoints = [ENDPOINT_BRAND_ASSETS, get_sample_endpoint(), FULFILMENT_ENDPOINT, STOCK_ENDPOINT];
 
     foreach ($endpoints as $endpoint) {
         \add_rewrite_endpoint($endpoint, EP_PAGES);
@@ -77,6 +79,7 @@ use const Granola\Components\WC_Account_Fulfilment\ENDPOINT as FULFILMENT_ENDPOI
     $vars[ENDPOINT_BRAND_ASSETS] = ENDPOINT_BRAND_ASSETS;
     $vars[get_sample_endpoint()] = get_sample_endpoint();
     $vars[FULFILMENT_ENDPOINT] = FULFILMENT_ENDPOINT;
+    $vars[STOCK_ENDPOINT] = STOCK_ENDPOINT;
 
     return $vars;
 });
@@ -249,6 +252,16 @@ use const Granola\Components\WC_Account_Fulfilment\ENDPOINT as FULFILMENT_ENDPOI
     }
 
     /*
+     * Musterbestand -- the stock half of the same spreadsheet, for the
+     * same people, in German for the same reason.
+     */
+    if (can_work_stock()) {
+        $items[STOCK_ENDPOINT] = \__('Musterbestand', 'granola');
+    } else {
+        unset($items[STOCK_ENDPOINT]);
+    }
+
+    /*
      * Aaron's order, 23 Oct 2026. Every item is named here rather than left
      * to fall through the merge below, because the merge keeps insertion
      * order and insertion order is an accident of how this function reads.
@@ -269,6 +282,7 @@ use const Granola\Components\WC_Account_Fulfilment\ENDPOINT as FULFILMENT_ENDPOI
         'elearning',
         $sample,
         FULFILMENT_ENDPOINT,
+        STOCK_ENDPOINT,
         ENDPOINT_BRAND_ASSETS,
     ];
 
@@ -356,6 +370,16 @@ use const Granola\Components\WC_Account_Fulfilment\ENDPOINT as FULFILMENT_ENDPOI
         : render_no_access();
 });
 
+/*
+ * The stock screen. Gated the same way and for the same reason: the menu
+ * hiding a link is not a gate, because a URL can be typed.
+ */
+\add_action('woocommerce_account_' . STOCK_ENDPOINT . '_endpoint', function (): void {
+    echo can_work_stock()
+        ? \Granola\Component::get('wc-account-stock')
+        : render_no_access();
+});
+
 /**
  * The sample panel.
  *
@@ -402,6 +426,7 @@ use const Granola\Components\WC_Account_Fulfilment\ENDPOINT as FULFILMENT_ENDPOI
 \add_filter('woocommerce_endpoint_' . ENDPOINT_BRAND_ASSETS . '_title', fn(): string => \__('Resources', 'granola'));
 \add_filter('woocommerce_endpoint_' . ENDPOINT_SAMPLE_ORDERING . '_title', fn(): string => \__('Sample ordering', 'granola'));
 \add_filter('woocommerce_endpoint_' . FULFILMENT_ENDPOINT . '_title', fn(): string => \__('Musterversand', 'granola'));
+\add_filter('woocommerce_endpoint_' . STOCK_ENDPOINT . '_title', fn(): string => \__('Musterbestand', 'granola'));
 
 /**
  * Filter the orders list to the chosen tab.
@@ -569,3 +594,35 @@ use const Granola\Components\WC_Account_Fulfilment\ENDPOINT as FULFILMENT_ENDPOI
         \delete_transient('mb_advanced_installer_' . $user->ID);
     }
 }, 10, 1);
+
+/*
+ * Saving the counted stock.
+ *
+ * Posts to admin-post rather than the account page, so the write happens
+ * before any output and a refresh cannot repeat it.
+ *
+ * Gated on can_work_stock(), the SAME call that decides whether the screen
+ * renders at all. A second, looser answer here (a bare is_user_logged_in,
+ * say) would let anyone with an account post stock figures for a market they
+ * cannot even see.
+ */
+\add_action('admin_post_millboard_stock_save', function (): void {
+    if (!can_work_stock()) {
+        \wp_die(\esc_html__('Sie dürfen das nicht ändern.', 'granola'));
+    }
+
+    \check_admin_referer('millboard_stock_save');
+
+    $posted = isset($_POST['stock']) && \is_array($_POST['stock'])
+        ? \wp_unslash($_POST['stock'])
+        : [];
+
+    $saved = \Granola\Components\WC_Account_Stock\save_stock($posted);
+
+    \wp_safe_redirect(\add_query_arg(
+        'mbstock',
+        $saved > 0 ? 'saved' : 'none',
+        \wc_get_account_endpoint_url(STOCK_ENDPOINT)
+    ));
+    exit;
+});

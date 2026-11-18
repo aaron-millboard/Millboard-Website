@@ -760,6 +760,10 @@ function nav_groups(array $endpoints): array
             // beside the one that creates the orders it works.
             \Granola\Components\WC_Account_Fulfilment\ENDPOINT,
 
+            // And the stock screen, which is the other half of the same
+            // spreadsheet and used by the same agency.
+            \Granola\Components\WC_Account_Stock\ENDPOINT,
+
             'projects',
             'calculator',
             'visualiser',
