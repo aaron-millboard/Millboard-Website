@@ -113,21 +113,33 @@ $mb_updated = stock_updated();
                     </tr>
                 </thead>
                 <tbody>
-                <?php foreach ($mb_rows as $mb_row) : ?>
+                <?php
+                foreach ($mb_rows as $mb_row) :
+                    /*
+                     * The field is keyed on the row key (parent product id and
+                     * sample size), never the SKU: a SKU is editable in admin
+                     * and would orphan the figure somebody typed. The id is
+                     * the same key with the colon swapped out, so it stays a
+                     * sane CSS selector.
+                     */
+                    $mb_id = 'mb-stock-' . str_replace(':', '-', (string) $mb_row['key']);
+                    ?>
                     <tr class="mb-stock__row mb-stock__row--<?php echo esc_attr($mb_row['status']); ?>">
 
                         <th scope="row" class="mb-stock__item">
                             <span class="mb-stock__title"><?php echo esc_html($mb_row['title']); ?></span>
+                            <span class="mb-stock__size"><?php echo esc_html($mb_row['size_label']); ?></span>
                             <span class="mb-stock__sku"><?php echo esc_html($mb_row['sku']); ?></span>
                         </th>
 
                         <td class="mb-stock__num">
-                            <label class="screen-reader-text" for="mb-stock-<?php echo esc_attr($mb_row['sku']); ?>">
+                            <label class="screen-reader-text" for="<?php echo esc_attr($mb_id); ?>">
                                 <?php
                                 printf(
-                                    /* translators: %s: the sample name. */
-                                    esc_html__('Bestand für %s', 'granola'),
-                                    esc_html($mb_row['title'])
+                                    /* translators: 1: the sample name, 2: the sample size. */
+                                    esc_html__('Bestand für %1$s, %2$s', 'granola'),
+                                    esc_html($mb_row['title']),
+                                    esc_html($mb_row['size_label'])
                                 );
                                 ?>
                             </label>
@@ -136,8 +148,8 @@ $mb_updated = stock_updated();
                                 min="0"
                                 step="1"
                                 inputmode="numeric"
-                                id="mb-stock-<?php echo esc_attr($mb_row['sku']); ?>"
-                                name="stock[<?php echo esc_attr($mb_row['sku']); ?>]"
+                                id="<?php echo esc_attr($mb_id); ?>"
+                                name="stock[<?php echo esc_attr($mb_row['key']); ?>]"
                                 value="<?php echo esc_attr((string) $mb_row['stock']); ?>"
                                 class="mb-stock__input"
                             />
