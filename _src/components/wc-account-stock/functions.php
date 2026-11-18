@@ -13,7 +13,7 @@
  * (2).xlsx` row by row:
  *
  *   weekly rate   = requests in the window / WINDOW_WEEKS
- *   weeks left    = stock / weekly rate            (infinite when rate is 0)
+ *   weeks left    = stock / weekly rate            (none when the rate is 0)
  *   need          = (TARGET_WEEKS x weekly rate) - stock, never below 0
  *   boxes         = need / pieces per box
  *
@@ -23,12 +23,32 @@
  * rows, so a change that stops matching the sheet fails rather than quietly
  * reordering the wrong amount.
  *
+ * ⚠️⚠️ THERE ARE TWO SEPARATE SAMPLE PRODUCT SETS ON de-de, AND THE FIRST
+ * VERSION OF THIS FILE COUNTED THE WRONG ONE. Every row read zero demand on
+ * staging, and it was not staging being quiet -- the join could never match:
+ *
+ *   the staff portal catalogue   13258  AA10B    "Enhanced Grain - 10 x 100mm
+ *                                                 Golden Oak"
+ *                                                a BOX OF TEN the agency
+ *                                                REORDERS, 284 products,
+ *                                                carries _millboard_portal_sku
+ *
+ *   what customers actually      4731   MDE176G  "Enhanced Grain 176mm Golden
+ *   order                                         Oak", a variable product
+ *                                                whose `handmuster` VARIATION
+ *                                                is ONE FREE SAMPLE. Carries
+ *                                                no portal SKU at all.
+ *
+ * The agency's shelf holds the second kind and is replenished in boxes of the
+ * first. So demand is counted against the CUSTOMER products, and the portal
+ * catalogue is used for one thing only: how many pieces come in a reorder box.
+ * The spreadsheet's rows name the customer products exactly -- "Enhanced Grain
+ * Golden Oak", "Weathered Oak Vintage", "Board & Batten+ Golden Oak".
+ *
  * ⚠️ ONE DELIBERATE DIFFERENCE FROM THE SHEET. Its "Boxes" column divides by
- * 10, 11 or 17, which are the pack sizes of the 100mm samples, so it only
- * ever tracked those. Aaron, 18 Nov 2026, asked for "one per colour per
- * size", so the 300mm samples get their own rows with their own pack sizes
- * (3 and 5). The pack size is read from the product title rather than a map
- * per range, so a new range needs no code.
+ * 10, 11 or 17, which are the pack sizes of the 100mm samples, so it only ever
+ * tracked those. Aaron, 18 Nov 2026, asked for "one per colour per size", so
+ * the large samples get their own rows with their own pack sizes.
  *
  * ⚠️ Demand is COUNTED FROM REAL ORDERS, not typed in. In the sheet somebody
  * tallied the request column by hand. The German orders are in WordPress now,
@@ -37,8 +57,6 @@
  */
 
 namespace Granola\Components\WC_Account_Stock;
-
-use Theme\WooCommerce\SampleCatalogueImport;
 
 /** The account endpoint, so /mein-konto/bestand/ resolves. */
 const ENDPOINT = 'stock';
@@ -54,7 +72,7 @@ const SITES = ['/de-de/'];
 /** Switch another market on without a deploy. */
 const OPTION = 'millboard_stock_enabled';
 
-/** sku => units in hand. The only figure a person types. */
+/** row key => units in hand. The only figure a person types. */
 const STOCK_OPTION = 'millboard_sample_stock';
 
 /** How many weeks of orders make up "recent" demand. Matches the sheet. */
@@ -71,6 +89,25 @@ const WEEKS_ORDER = 8;
 
 /** Within this proportion of the previous rate, demand counts as steady. */
 const TREND_BAND = 0.10;
+
+/** The product attribute that says which sample something is. */
+const SIZE_ATTRIBUTE = 'pa_sample-size';
+
+/**
+ * The attribute value that means "the actual board", not a sample.
+ *
+ * 266 of the 464 variations on de-de are this. They are the thing the sample
+ * is cut from, so counting them as stock would invent hundreds of empty rows.
+ */
+const SIZE_FULL = 'full';
+
+/**
+ * Order statuses that are not demand.
+ *
+ * A draft checkout is an abandoned basket, not a request, and counting one
+ * would have the agency reorder against samples nobody ever asked for.
+ */
+const DEAD_STATUSES = ['wc-cancelled', 'wc-failed', 'wc-checkout-draft', 'wc-pending', 'trash'];
 
 /**
  * Is the stock screen offered on this site?
@@ -106,35 +143,184 @@ function can_work_stock(?int $user_id = null): bool
 }
 
 /**
- * How many pieces come in one box of this sample, from its title.
+ * One sample size, spelled the one way.
  *
- * Titles read "Enhanced Grain - 10 x 100mm Limed Oak" or "Millboard Envello
- * Shadow Line Sample Box A - 17 x 100mm Antique Oak". The first number is the
- * count, the second the length.
- *
- * ⚠️ Returns 0 when the title does not say, and the caller shows a dash
- * rather than a box figure. Guessing a pack size would have the agency order
- * the wrong quantity, which is worse than not answering.
+ * ⚠️ THE SLUG CHURNED, AND AN ORDER LINE KEEPS WHATEVER WAS CURRENT WHEN IT
+ * WAS PLACED. The German orders carry three spellings of the same thing:
+ * `handmuster` (2020 lines), `hand` (60) and `small` (3). Keying on the raw
+ * value would split one colour into three rows and under-report every one of
+ * them, which is the same class of mistake as matching on the item name.
  */
-function pieces_per_box(string $title): int
+function canonical_size(string $size): string
 {
-    if (\preg_match('/(\d+)\s*x\s*(\d+)\s*mm/i', $title, $m)) {
-        return (int) $m[1];
-    }
+    $size = \strtolower(\trim($size));
 
-    return 0;
+    $aliases = \apply_filters('millboard_stock_size_aliases', [
+        'hand' => 'handmuster',
+        'small' => 'handmuster',
+        'large' => 'grosse-muster',
+        'gross-muster' => 'grosse-muster',
+        'grosse_muster' => 'grosse-muster',
+    ]);
+
+    return (string) ($aliases[$size] ?? $size);
 }
 
 /**
- * The sample length in millimetres, so rows can be grouped by size.
+ * How long a piece of this sample is, in millimetres.
+ *
+ * From the sample SKUs, which encode it: `AME105G` is the 100mm hand sample
+ * of Enhanced Grain Golden Oak, `AME305G` the 300mm one. The slugs are the
+ * German terms for the same two things, `Handmuster` and `Große Muster`.
+ *
+ * ⚠️ Returns 0 for anything else, and a row with no length gets no pack size
+ * and shows a dash. A guessed length picks a guessed pack size, and the
+ * agency orders the wrong quantity.
  */
-function sample_length(string $title): int
+function size_length(string $size): int
 {
-    if (\preg_match('/(\d+)\s*x\s*(\d+)\s*mm/i', $title, $m)) {
-        return (int) $m[2];
+    $lengths = \apply_filters('millboard_stock_size_lengths', [
+        'handmuster' => 100,
+        'grosse-muster' => 300,
+    ]);
+
+    return (int) ($lengths[canonical_size($size)] ?? 0);
+}
+
+/**
+ * A name reduced to the part worth matching on.
+ *
+ * Lower case, entities decoded, everything but letters and digits dropped, so
+ * "Board &amp; Batten+" and "Envello Board & Batten" both become
+ * `boardbatten`. That is what lets a customer product's own category find its
+ * reorder box in the portal catalogue without a hand-written map of ranges.
+ */
+function match_key(string $text): string
+{
+    $text = \html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+    return (string) \preg_replace('/[^a-z0-9]+/', '', \strtolower($text));
+}
+
+/**
+ * Pieces per reorder box, as [match key][length in mm] => pieces.
+ *
+ * ⚠️ DERIVED FROM THE PORTAL CATALOGUE'S OWN TITLES, not written down here,
+ * because the pack size is a commercial fact that belongs to the product and
+ * a copy of it in theme code goes stale silently. Checked on de-de staging,
+ * 18 Nov 2026 -- every range resolves to exactly one pack size per length:
+ *
+ *   Enhanced Grain / Weathered Oak / Lasta-Grip   10 x 100mm   3 x 300mm
+ *   Envello Shadow Line+                          17 x 100mm   5 x 300mm
+ *   Envello Board & Batten+                       11 x 100mm   3 x 300mm
+ *
+ * ⚠️ A leading number above 20 is a BOARD DIMENSION, not a pack: titles like
+ * "100 x 150 x 32mm Bullnosed Board" and "220 x 110mm" are shaped the same.
+ * Reading those as pack sizes is what broke an earlier pass over this
+ * catalogue, so they are dropped rather than parsed.
+ *
+ * @return array<string,array<int,int>>
+ */
+function pack_sizes(): array
+{
+    $cached = \get_transient('millboard_stock_packs');
+
+    if (\is_array($cached)) {
+        return $cached;
     }
 
-    return 0;
+    global $wpdb;
+
+    $titles = $wpdb->get_col(
+        "SELECT DISTINCT COALESCE(parent.post_title, p.post_title)
+           FROM {$wpdb->postmeta} pm
+           JOIN {$wpdb->posts} p ON p.ID = pm.post_id
+      LEFT JOIN {$wpdb->posts} parent ON parent.ID = p.post_parent
+          WHERE pm.meta_key = '_millboard_portal_sku'
+            AND pm.meta_value <> ''"
+    );
+
+    /* key => length => pieces => how many titles said so */
+    $seen = [];
+
+    foreach ((array) $titles as $title) {
+        if (!\preg_match('/(\d+)\s*x\s*(\d+)\s*mm/i', (string) $title, $m)) {
+            continue;
+        }
+
+        $pieces = (int) $m[1];
+        $length = (int) $m[2];
+
+        if ($pieces < 1 || $pieces > 20 || $length < 1) {
+            continue;
+        }
+
+        $seen[match_key((string) $title)][$length][$pieces] = true;
+    }
+
+    /*
+     * Fold the titles into one answer per (range, length). A title is matched
+     * by CONTAINING a range's key, so this stays keyed by the whole title and
+     * the lookup does the containing -- that way a new range needs no code.
+     */
+    $out = [];
+
+    foreach ($seen as $haystack => $lengths) {
+        foreach ($lengths as $length => $counts) {
+            // Two different pack sizes for one title is not an answer.
+            $out[$haystack][$length] = 1 === \count($counts)
+                ? (int) \array_key_first($counts)
+                : 0;
+        }
+    }
+
+    \set_transient('millboard_stock_packs', $out, 6 * HOUR_IN_SECONDS);
+
+    return $out;
+}
+
+/**
+ * How many pieces come in one reorder box of this sample.
+ *
+ * The customer product knows its range through its own categories; the portal
+ * catalogue knows the pack size. This is the join between them, and it is a
+ * substring match on normalised names because the two sets share no key.
+ *
+ * ⚠️ Returns 0 -- a dash on screen -- whenever the answer is not exactly one
+ * number: no length, no matching portal line, or two portal lines that
+ * disagree. Short category names are skipped because "126mm" would match any
+ * title with that board width in it, which is a coincidence, not a range.
+ *
+ * @param string[] $categories
+ */
+function pieces_per_box(array $categories, int $length): int
+{
+    if ($length < 1) {
+        return 0;
+    }
+
+    $packs = pack_sizes();
+    $found = [];
+
+    foreach ($categories as $category) {
+        $key = match_key($category);
+
+        if (\strlen($key) < 6) {
+            continue;
+        }
+
+        foreach ($packs as $haystack => $lengths) {
+            if (!isset($lengths[$length]) || $lengths[$length] < 1) {
+                continue;
+            }
+
+            if (false !== \strpos($haystack, $key)) {
+                $found[$lengths[$length]] = true;
+            }
+        }
+    }
+
+    return 1 === \count($found) ? (int) \array_key_first($found) : 0;
 }
 
 /**
@@ -207,15 +393,29 @@ function metrics(int $stock, int $recent, int $previous, int $per_box): array
 }
 
 /**
- * Every sample product on this site, as sku => title.
+ * The key one row is stored and posted under.
  *
- * ⚠️ Read from the portal-SKU meta, NOT from mb_sof_catalogue_by_id(). That
- * catalogue is built per viewer and cached in a shared transient, so the rows
- * would change depending on who opened the screen and what the POS allow-list
- * says. A stock list has to be the same list for everyone counting the same
- * shelf.
+ * The PARENT product id, not a SKU and not a variation id. A variation id
+ * churns -- two of the variations the German orders point at have already
+ * been deleted and rebuilt -- and a SKU is editable in admin, which would
+ * orphan the stock figure somebody typed. The parent id is the one thing that
+ * survives both.
+ */
+function row_key(int $parent_id, string $size): string
+{
+    return $parent_id . ':' . canonical_size($size);
+}
+
+/**
+ * Every sample a customer can order on this site, as key => details.
  *
- * @return array<string,string>
+ * ⚠️ ONE ROW PER COLOUR PER SIZE, which is what the parent product and the
+ * sample-size attribute are between them: the parent IS the colour, the
+ * attribute IS the size. Built from DISTINCT pairs because a parent carries
+ * up to six duplicate variations of the same size, left behind by repeated
+ * imports, and counting variations would show the same colour six times.
+ *
+ * @return array<string,array<string,mixed>>
  */
 function samples(): array
 {
@@ -228,55 +428,67 @@ function samples(): array
     global $wpdb;
 
     $rows = $wpdb->get_results($wpdb->prepare(
-        "SELECT pm.post_id, pm.meta_value AS sku, p.post_title, p.post_parent
-           FROM {$wpdb->postmeta} pm
-           JOIN {$wpdb->posts} p ON p.ID = pm.post_id
-          WHERE pm.meta_key = %s
-            AND pm.meta_value <> ''
-            AND p.post_status IN ('publish', 'private')",
-        SampleCatalogueImport::META_PORTAL_SKU
+        "SELECT DISTINCT v.post_parent AS parent_id,
+                         pm.meta_value AS size,
+                         parent.post_title AS title
+           FROM {$wpdb->posts} v
+           JOIN {$wpdb->postmeta} pm ON pm.post_id = v.ID
+                                    AND pm.meta_key = %s
+           JOIN {$wpdb->posts} parent ON parent.ID = v.post_parent
+          WHERE v.post_type = 'product_variation'
+            AND pm.meta_value NOT IN ('', %s)
+            AND parent.post_status = 'publish'",
+        'attribute_' . SIZE_ATTRIBUTE,
+        SIZE_FULL
     ));
 
     $out = [];
 
     foreach ((array) $rows as $row) {
-        $sku = \strtoupper(\trim((string) $row->sku));
+        $parent_id = (int) $row->parent_id;
+        $size = canonical_size((string) $row->size);
+        $key = row_key($parent_id, $size);
 
-        if ('' === $sku || isset($out[$sku])) {
+        if (isset($out[$key])) {
             continue;
         }
 
-        $title = (string) $row->post_title;
+        $length = size_length($size);
 
-        // A variation's own title is "Product - Attribute"; the parent's is
-        // the readable one, and the pack size lives there.
-        if ($row->post_parent) {
-            $parent = \get_post((int) $row->post_parent);
+        $categories = \wp_get_post_terms($parent_id, 'product_cat', ['fields' => 'names']);
+        $categories = \is_wp_error($categories) ? [] : (array) $categories;
 
-            if ($parent && \strlen((string) $parent->post_title) > \strlen($title)) {
-                $title = (string) $parent->post_title;
-            }
-        }
-
-        $out[$sku] = $title;
+        $out[$key] = [
+            'key' => $key,
+            'parent' => $parent_id,
+            'size' => $size,
+            'sku' => (string) \get_post_meta($parent_id, '_sku', true),
+            'title' => (string) $row->title,
+            'length' => $length,
+            'per_box' => pieces_per_box($categories, $length),
+        ];
     }
 
-    \ksort($out);
+    \uasort($out, static fn(array $a, array $b): int => [$a['title'], $a['length']] <=> [$b['title'], $b['length']]);
+
     \set_transient('millboard_stock_samples', $out, 6 * HOUR_IN_SECONDS);
 
     return $out;
 }
 
 /**
- * Units ordered per SKU between two dates.
+ * Units ordered per row key between two dates.
  *
- * ⚠️ Orders are HPOS, so the dates come from `wc_orders`, not `posts`. The
- * SKU is matched through the line's product or variation id rather than its
- * name: an item's name is a snapshot of the product title AT THE TIME OF THE
- * ORDER, so a renamed colour would split into two rows and both would be
- * wrong.
+ * ⚠️ Orders are HPOS, so the dates come from `wc_orders`, not `posts`.
  *
- * @return array<string,int> sku => units
+ * ⚠️ Counted from the LINE'S OWN META, not from the variation it points at.
+ * Every German sample line carries `_product_id` and `pa_sample-size`
+ * itself -- 2083 of 2083 -- so a line still counts after its variation has
+ * been deleted. Joining through the variation instead silently lost 22 of the
+ * 43 units of Weathered Oak Embered, which would have halved that colour's
+ * rate and told the agency to order half what it needs.
+ *
+ * @return array<string,int> row key => units
  */
 function demand(string $from, string $to): array
 {
@@ -286,38 +498,49 @@ function demand(string $from, string $to): array
     $items = $wpdb->prefix . 'woocommerce_order_items';
     $itemmeta = $wpdb->prefix . 'woocommerce_order_itemmeta';
 
-    $rows = $wpdb->get_results($wpdb->prepare(
-        "SELECT UPPER(TRIM(sku.meta_value)) AS sku, SUM(qty.meta_value + 0) AS units
+    $dead = \implode(',', \array_fill(0, \count(DEAD_STATUSES), '%s'));
+
+    $sql = $wpdb->prepare(
+        "SELECT pid.meta_value AS parent_id,
+                sz.meta_value AS size,
+                SUM(qty.meta_value + 0) AS units
            FROM {$orders} o
            JOIN {$items} oi ON oi.order_id = o.id AND oi.order_item_type = 'line_item'
-           JOIN {$itemmeta} qty ON qty.order_item_id = oi.order_item_id AND qty.meta_key = '_qty'
+           JOIN {$itemmeta} qty ON qty.order_item_id = oi.order_item_id
+                               AND qty.meta_key = '_qty'
            JOIN {$itemmeta} pid ON pid.order_item_id = oi.order_item_id
-                               AND pid.meta_key IN ('_variation_id', '_product_id')
+                               AND pid.meta_key = '_product_id'
                                AND pid.meta_value <> '0'
-           JOIN {$wpdb->postmeta} sku ON sku.post_id = pid.meta_value
-                                     AND sku.meta_key = %s
-                                     AND sku.meta_value <> ''
+           JOIN {$itemmeta} sz ON sz.order_item_id = oi.order_item_id
+                              AND sz.meta_key = %s
+                              AND sz.meta_value <> ''
           WHERE o.type = 'shop_order'
-            AND o.status NOT IN ('wc-cancelled', 'wc-failed', 'trash')
+            AND o.status NOT IN ({$dead})
             AND o.date_created_gmt >= %s
             AND o.date_created_gmt < %s
-          GROUP BY sku",
-        SampleCatalogueImport::META_PORTAL_SKU,
-        $from,
-        $to
-    ));
+          GROUP BY pid.meta_value, sz.meta_value",
+        \array_merge([SIZE_ATTRIBUTE], DEAD_STATUSES, [$from, $to])
+    );
 
     $out = [];
 
-    foreach ((array) $rows as $row) {
-        $out[(string) $row->sku] = (int) $row->units;
+    foreach ((array) $wpdb->get_results($sql) as $row) {
+        $size = canonical_size((string) $row->size);
+
+        if (SIZE_FULL === $size) {
+            continue;
+        }
+
+        // The three spellings of one size sum into one row, never three.
+        $key = row_key((int) $row->parent_id, $size);
+        $out[$key] = ($out[$key] ?? 0) + (int) $row->units;
     }
 
     return $out;
 }
 
 /**
- * The stock figures somebody has typed, as sku => units.
+ * The stock figures somebody has typed, as row key => units.
  *
  * @return array<string,int>
  */
@@ -331,11 +554,11 @@ function stock_levels(): array
 
     $out = [];
 
-    foreach ($stored as $sku => $units) {
-        $sku = \strtoupper(\trim((string) $sku));
+    foreach ($stored as $key => $units) {
+        $key = \trim((string) $key);
 
-        if ('' !== $sku) {
-            $out[$sku] = (int) $units;
+        if ('' !== $key) {
+            $out[$key] = (int) $units;
         }
     }
 
@@ -361,21 +584,24 @@ function rows(): array
     $recent = demand($recent_from, $now);
     $previous = demand($previous_from, $recent_from);
 
+    $labels = \apply_filters('millboard_stock_size_labels', [
+        'handmuster' => \__('Handmuster', 'granola'),
+        'grosse-muster' => \__('Große Muster', 'granola'),
+    ]);
+
     $rows = [];
 
-    foreach ($samples as $sku => $title) {
-        $per_box = pieces_per_box($title);
+    foreach ($samples as $key => $sample) {
+        $have = $stock[$key] ?? 0;
 
         $rows[] = \array_merge(
+            $sample,
             [
-                'sku' => $sku,
-                'title' => $title,
-                'length' => sample_length($title),
-                'per_box' => $per_box,
-                'stock' => $stock[$sku] ?? 0,
-                'recent' => $recent[$sku] ?? 0,
+                'size_label' => (string) ($labels[$sample['size']] ?? $sample['size']),
+                'stock' => $have,
+                'recent' => $recent[$key] ?? 0,
             ],
-            metrics($stock[$sku] ?? 0, $recent[$sku] ?? 0, $previous[$sku] ?? 0, $per_box)
+            metrics($have, $recent[$key] ?? 0, $previous[$key] ?? 0, (int) $sample['per_box'])
         );
     }
 
@@ -387,8 +613,8 @@ function rows(): array
     $order = ['emergency' => 0, 'order' => 1, 'ok' => 2, 'none' => 3];
 
     \usort($rows, static function (array $a, array $b) use ($order): int {
-        return [$order[$a['status']] ?? 9, $a['weeks'] ?? PHP_INT_MAX, $a['title']]
-            <=> [$order[$b['status']] ?? 9, $b['weeks'] ?? PHP_INT_MAX, $b['title']];
+        return [$order[$a['status']] ?? 9, $a['weeks'] ?? PHP_INT_MAX, $a['title'], $a['length']]
+            <=> [$order[$b['status']] ?? 9, $b['weeks'] ?? PHP_INT_MAX, $b['title'], $b['length']];
     });
 
     return $rows;
@@ -397,7 +623,7 @@ function rows(): array
 /**
  * Save the typed stock figures.
  *
- * Only ever writes SKUs that are actually samples on this site, so a posted
+ * Only ever writes keys that are actually samples on this site, so a posted
  * field for anything else is dropped rather than stored and shown later.
  *
  * @param array<string,mixed> $posted
@@ -408,17 +634,17 @@ function save_stock(array $posted): int
     $current = stock_levels();
     $changed = 0;
 
-    foreach ($posted as $sku => $value) {
-        $sku = \strtoupper(\trim((string) $sku));
+    foreach ($posted as $key => $value) {
+        $key = \trim((string) $key);
 
-        if (!isset($samples[$sku]) || '' === \trim((string) $value)) {
+        if (!isset($samples[$key]) || '' === \trim((string) $value)) {
             continue;
         }
 
         $units = \max(0, (int) $value);
 
-        if (($current[$sku] ?? null) !== $units) {
-            $current[$sku] = $units;
+        if (($current[$key] ?? null) !== $units) {
+            $current[$key] = $units;
             ++$changed;
         }
     }
@@ -437,4 +663,16 @@ function save_stock(array $posted): int
 function stock_updated(): string
 {
     return (string) \get_option(STOCK_OPTION . '_updated', '');
+}
+
+/**
+ * Forget the cached sample list and pack sizes.
+ *
+ * Both are derived from products, so a catalogue change has to be able to
+ * reach them without waiting six hours.
+ */
+function flush_cache(): void
+{
+    \delete_transient('millboard_stock_samples');
+    \delete_transient('millboard_stock_packs');
 }
