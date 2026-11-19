@@ -110,6 +110,8 @@ if (file_exists($autoloader = __DIR__ . '/vendor/autoload.php')) {
 \Theme\WooCommerce\WhatsAppFields::init();
 \Theme\WooCommerce\OrderAttribution::init();
 \Theme\WooCommerce\StripePaymentGuard::init();
+// Stops browsers re-running a stored thank-you page, which resends the GA4 purchase.
+\Theme\WooCommerce\OrderReceivedCache::init();
 \Theme\WooCommerce\QuoteShare::init();
 \Theme\WooCommerce\Settings::init();
 \Theme\WooCommerce\OrderEssentials::init();
