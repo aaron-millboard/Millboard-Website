@@ -82,6 +82,54 @@ class PortalLaunch extends \WC_Email
     }
 
     /**
+     * Where a partner's reply goes.
+     *
+     * ⚠️ THIS IS REPLY-TO AND NOT THE FROM ADDRESS, AND THE REASON IS NOT
+     * PREFERENCE. Post SMTP holds `prevent_sender_email_override = 1`, so it
+     * rewrites whatever From any plugin sets back to its own `sender_email`.
+     * Underneath that it authenticates to smtp.office365.com AS
+     * order.fulfilment.gb@millboard.com, and Exchange Online refuses a From
+     * the authenticated mailbox has no Send As permission for. Setting From
+     * here would therefore either be silently reverted or bounce the send.
+     *
+     * Reply-To is not touched by either, so it is the one header that
+     * actually reaches the recipient's mail client and does what was wanted:
+     * a thousand partners asking about their login reach marketing rather
+     * than the order fulfilment inbox.
+     *
+     * Aaron is raising an IT ticket for Send As on marketing@millboard.com.
+     * Once that is granted, the From can move here properly -- turn off
+     * Post SMTP's override and scope the address to this email id alone, so
+     * order confirmations keep sending as fulfilment.
+     */
+    public const REPLY_TO = 'marketing@millboard.com';
+
+    /**
+     * Add the Reply-To, keeping whatever WooCommerce already set.
+     */
+    public function get_headers(): string
+    {
+        $headers = (string) parent::get_headers();
+
+        /** @var string $reply_to */
+        $reply_to = \apply_filters('millboard_portal_launch_reply_to', self::REPLY_TO, $this);
+        $reply_to = \trim($reply_to);
+
+        // An address that is not one is worse than no header: some servers
+        // reject the whole message rather than ignoring the line.
+        if ('' === $reply_to || !\is_email($reply_to)) {
+            return $headers;
+        }
+
+        // Guard against a double header if WooCommerce ever adds its own.
+        if (false !== \stripos($headers, 'reply-to:')) {
+            return $headers;
+        }
+
+        return \rtrim($headers, "\r\n") . "\r\n" . 'Reply-To: ' . $reply_to . "\r\n";
+    }
+
+    /**
      * Is this an internal Millboard account?
      *
      * Phase one of the launch goes to staff alone, and what staff are being
