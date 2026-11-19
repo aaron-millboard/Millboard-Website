@@ -32,12 +32,16 @@ namespace Theme\Emails;
  * limited, and a run that stalls halfway leaves the cohort part-mailed, which
  * is worse than a slow one. --sleep=2 holds the pace under the limit.
  *
- * ⚠ THE FROM ADDRESS IS NOT OURS TO SET. Post SMTP holds
- * `prevent_sender_email_override = 1` and rewrites any From a plugin sets back
- * to order.fulfilment.gb@millboard.com, which is also the mailbox it
- * authenticates as; Exchange would refuse a From it has no Send As permission
- * for in any case. PortalLaunch therefore sets REPLY-TO instead, which neither
- * of those touches. See Theme\Emails\PortalLaunch::REPLY_TO.
+ * ⚠ THE FROM SAYS FULFILMENT, THE REPLIES GO TO MARKETING. Those are two
+ * different headers and it is worth not confusing them. The From reads
+ * order.fulfilment.gb@millboard.com and is NOT ours to change: Post SMTP holds
+ * `prevent_sender_email_override = 1` and rewrites any From a plugin sets, and
+ * it authenticates to smtp.office365.com as that same mailbox, which Exchange
+ * will not let send as another address without Send As permission. Reply-To is
+ * touched by neither, and PortalLaunch has pointed it at
+ * marketing@millboard.com since it was written -- see its
+ * get_reply_to_address(). So a partner hitting reply already reaches
+ * marketing; only the visible From would need the IT change.
  *
  * ⚠ In `## OPTIONS`, a wrapped description continues with INDENTATION, never
  * with another `: `. WP-CLI parses that block as the command synopsis and reads
