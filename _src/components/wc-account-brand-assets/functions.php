@@ -16,6 +16,7 @@
 namespace Granola\Components\WC_Account_Brand_Assets;
 
 use Theme\Canto\Client;
+use Theme\Canto\Covers;
 
 const AJAX_ACTION = 'granola_brand_assets';
 
@@ -63,6 +64,71 @@ function drop_hidden_containers(array $items): array
     });
 
     return \array_values($kept);
+}
+
+/**
+ * The top level of the panel: Canto's own, plus anything placed there by hand.
+ *
+ * Canto's tree has one top level and it is sorted by name, which is why every
+ * folder in it is called `01 - ...` through `10 - ...`. Those numbers are a
+ * sort key living inside the names. The Covers screen holds the same sort key
+ * where it can be changed without renaming anything in the shared library.
+ *
+ * A container given a position is ALSO LIFTED HERE from wherever it sits in
+ * Canto, because "show it at the top instead of inside Marketing Assets" is
+ * one instruction, not two. folder_children() drops it from its parent so it
+ * appears once rather than twice.
+ *
+ * @return array<int,array<string,mixed>>
+ */
+function top_level_items(): array
+{
+    $items = [];
+
+    foreach (Client::tree() as $node) {
+        if (\is_array($node)) {
+            $items[(string) ($node['id'] ?? '')] = $node;
+        }
+    }
+
+    foreach (\array_keys(Covers::order()) as $id) {
+        $id = (string) $id;
+
+        if ('' === $id || isset($items[$id])) {
+            continue;
+        }
+
+        $node = tree_node($id);
+
+        // A position left behind for a container that no longer exists is
+        // skipped rather than drawn as a tile onto nothing.
+        if (\is_array($node)) {
+            $items[$id] = $node;
+        }
+    }
+
+    return Covers::sort_containers(\array_values($items));
+}
+
+/**
+ * A folder's children, less anything lifted to the top level.
+ *
+ * @param array<int,array<string,mixed>> $children
+ * @return array<int,array<string,mixed>>
+ */
+function folder_children(array $children): array
+{
+    $order = Covers::order();
+
+    if (!$order) {
+        return \array_values($children);
+    }
+
+    return \array_values(\array_filter(
+        $children,
+        static fn ($child): bool => !\is_array($child)
+            || !isset($order[(string) ($child['id'] ?? '')])
+    ));
 }
 
 /**
@@ -339,10 +405,10 @@ function fetch_page(string $query, string $node_id, string $scheme, int $start):
          * album still goes to the API, because that is where its assets live.
          */
         $node = tree_node($node_id);
-        $children = $node['children'] ?? [];
+        $children = folder_children((array) ($node['children'] ?? []));
 
         $result = [
-            'results' => \array_values($children),
+            'results' => $children,
             'found' => \count($children),
             'more' => false,
             'next_start' => 0,
@@ -352,7 +418,7 @@ function fetch_page(string $query, string $node_id, string $scheme, int $start):
     } else {
         // The top level is one cached call covering the whole tree, so it has
         // nothing to page through.
-        $items = Client::tree();
+        $items = top_level_items();
         $result = ['results' => $items, 'found' => \count($items), 'more' => false, 'next_start' => 0];
     }
 

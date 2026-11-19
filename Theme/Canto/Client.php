@@ -778,9 +778,26 @@ class Client
 
         $id = (string) ($node['id'] ?? '');
 
+        /*
+         * ⚠️ A CONTAINER PLACED BY HAND SURVIVES THE EMPTINESS TESTS.
+         *
+         * Both of those tests exist to stop a tile opening onto nothing when
+         * NOBODY MEANT ANYTHING BY IT -- a folder left empty in Canto, an
+         * album whose assets all fail the gates. Giving a container a
+         * position on the Covers screen is the opposite: somebody has said
+         * where they want it. A new folder is empty on the day it is made,
+         * and pruning it then means the person who just placed it sees
+         * nothing and believes the setting is broken.
+         *
+         * Hiding by hand still wins, because that is a later and more
+         * specific instruction from the same person. A Canto permission
+         * still wins, because it is not ours to overrule.
+         */
+        $placed = Covers::is_placed($id);
+
         // Absent rather than zero means Canto did not say, and guessing
         // "empty" would hide a real folder. Only an explicit zero hides.
-        if (isset($node['size']) && 0 === (int) $node['size']) {
+        if (!$placed && isset($node['size']) && 0 === (int) $node['size']) {
             return false;
         }
 
@@ -788,7 +805,7 @@ class Client
             return false;
         }
 
-        if (null !== $live && !isset($live[$id])) {
+        if (!$placed && null !== $live && !isset($live[$id])) {
             return false;
         }
 

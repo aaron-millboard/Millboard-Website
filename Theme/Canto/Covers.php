@@ -44,6 +44,33 @@ final class Covers
      */
     public const HIDDEN_OPTION = 'millboard_canto_hidden';
 
+    /**
+     * Where a folder or album sits in the Resources list, lowest first.
+     *
+     * Canto orders the top level by name, which is why every folder there is
+     * called `01 - ...` to `10 - ...`: the numbers are not part of the names
+     * anybody wanted, they are a sort key smuggled into them. This option is
+     * that sort key kept where it belongs, so a folder can be called what it
+     * is and still sit where it should.
+     *
+     * Container id => position. Anything without a position follows after, in
+     * the order Canto gave.
+     *
+     * ⚠️ A POSITION ALSO PULLS A CONTAINER UP TO THE TOP LEVEL and takes it
+     * out of its parent, which is what "show it here instead" has to mean.
+     * The 2027 New Product Launch album lives inside 05 - Marketing Assets and
+     * is wanted first in the list, and moving it in Canto would change the
+     * library for everyone who uses it, not just My Account.
+     *
+     * ⚠️ A POSITIONED CONTAINER IS LISTED EVEN WHEN EMPTY. Giving one a
+     * position is a deliberate instruction to show it, unlike the empty
+     * folders the panel prunes because nobody meant anything by them. Hiding
+     * it by hand still wins, and so does a Canto permission.
+     *
+     * Network-wide, like the hidden list: the library is one library.
+     */
+    public const ORDER_OPTION = 'millboard_canto_order';
+
     private const MENU_SLUG = 'millboard-canto-covers';
 
     /**
@@ -60,6 +87,7 @@ final class Covers
         \add_action('admin_post_millboard_canto_cover', [self::class, 'handle_save']);
         \add_action('admin_post_millboard_canto_refresh', [self::class, 'handle_refresh']);
         \add_action('admin_post_millboard_canto_hide', [self::class, 'handle_hide']);
+        \add_action('admin_post_millboard_canto_order', [self::class, 'handle_order']);
     }
 
     /**
@@ -150,6 +178,118 @@ final class Covers
         \update_site_option(self::HIDDEN_OPTION, \array_keys($list));
 
         return $list;
+    }
+
+    /**
+     * Container id => position in the Resources list.
+     *
+     * @return array<string,int>
+     */
+    public static function order(): array
+    {
+        $stored = \get_site_option(self::ORDER_OPTION, []);
+
+        if (!\is_array($stored)) {
+            return [];
+        }
+
+        $clean = [];
+
+        foreach ($stored as $id => $position) {
+            $id = (string) $id;
+
+            if ('' !== $id) {
+                $clean[$id] = (int) $position;
+            }
+        }
+
+        return $clean;
+    }
+
+    /**
+     * Where this container sits, or null when it has no position of its own.
+     */
+    public static function position(string $container_id): ?int
+    {
+        if ('' === $container_id) {
+            return null;
+        }
+
+        $order = self::order();
+
+        return \array_key_exists($container_id, $order) ? $order[$container_id] : null;
+    }
+
+    /**
+     * Is this container placed by hand rather than by Canto's name sort?
+     */
+    public static function is_placed(string $container_id): bool
+    {
+        return null !== self::position($container_id);
+    }
+
+    /**
+     * Give a container a position, or hand it back to Canto's own order.
+     *
+     * A null position removes the row rather than storing a zero, so "no
+     * position" and "first" stay different things.
+     */
+    public static function set_position(string $container_id, ?int $position): void
+    {
+        if ('' === $container_id) {
+            return;
+        }
+
+        $order = self::order();
+
+        if (null === $position) {
+            unset($order[$container_id]);
+        } else {
+            $order[$container_id] = $position;
+        }
+
+        \update_site_option(self::ORDER_OPTION, $order);
+    }
+
+    /**
+     * Put a list of containers in the order somebody asked for.
+     *
+     * Positioned ones first, lowest number first; everything else after it in
+     * the order it arrived, which is Canto's. Ties keep their original order,
+     * so two containers both set to 1 do not swap about between page loads.
+     *
+     * PURE when handed an order: no option read, no WordPress. That is what
+     * lets docs/canto-order-selfcheck.php run the rules in plain PHP, which
+     * is the only way the tie and fall-through cases get tested at all.
+     *
+     * @param array<int,array<string,mixed>> $items
+     * @param array<string,int>|null $order Null reads the stored order.
+     * @return array<int,array<string,mixed>>
+     */
+    public static function sort_containers(array $items, ?array $order = null): array
+    {
+        $order = $order ?? self::order();
+
+        if (!$order) {
+            return \array_values($items);
+        }
+
+        $placed = [];
+        $rest = [];
+
+        foreach (\array_values($items) as $i => $item) {
+            $id = \is_array($item) ? (string) ($item['id'] ?? '') : '';
+
+            if ('' !== $id && isset($order[$id])) {
+                $placed[] = [$order[$id], $i, $item];
+            } else {
+                $rest[] = $item;
+            }
+        }
+
+        \usort($placed, static fn (array $a, array $b): int => [$a[0], $a[1]] <=> [$b[0], $b[1]]);
+
+        return \array_merge(\array_column($placed, 2), $rest);
     }
 
     /**
@@ -354,6 +494,18 @@ final class Covers
             echo '</p></div>';
         }
 
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display only.
+        if (isset($_GET['ordered'])) {
+            echo '<div class="notice notice-success is-dismissible"><p>';
+            echo \esc_html__(
+                'Order saved. Lowest number first, then everything without a number in Canto\'s own order. '
+                . 'A folder or album with a number is shown at the top level of Resources even if it sits '
+                . 'inside another folder in Canto, and even while it is still empty.',
+                'granola'
+            );
+            echo '</p></div>';
+        }
+
         /*
          * Everything from Canto is cached for an hour, so a change made there
          * does not show here until it expires. This is the "I have just
@@ -395,6 +547,7 @@ final class Covers
         echo '<th style="width:90px">' . \esc_html__('Cover', 'granola') . '</th>';
         echo '<th>' . \esc_html__('Folder or album', 'granola') . '</th>';
         echo '<th style="width:110px">' . \esc_html__('Source', 'granola') . '</th>';
+        echo '<th style="width:170px">' . \esc_html__('Order', 'granola') . '</th>';
         echo '<th style="width:150px">' . \esc_html__('In My Account', 'granola') . '</th>';
         echo '<th style="width:140px"></th>';
         echo '</tr></thead><tbody>';
@@ -437,6 +590,41 @@ final class Covers
                     ? '<span style="color:#135e96">' . \esc_html__('Chosen', 'granola') . '</span>'
                     : ('' !== $url ? \esc_html__('Automatic', 'granola') : \esc_html__('None', 'granola'))
             );
+
+            /*
+             * Lowest number first, blank for Canto's own order. A number
+             * rather than up/down arrows because the thing people actually
+             * want is "put this one first", which is one keystroke here and
+             * a dozen clicks with arrows.
+             *
+             * Its own form, like the toggle beside it: the table cannot be
+             * one big form, because a form inside a form is not valid HTML
+             * and browsers silently drop the inner one.
+             */
+            $position = self::position($id);
+
+            echo '<td>';
+            echo '<form method="post" action="' . \esc_url(\admin_url('admin-post.php')) . '" style="display:flex;gap:4px;align-items:center">';
+            \wp_nonce_field('millboard_canto_order');
+            echo '<input type="hidden" name="action" value="millboard_canto_order" />';
+            \printf('<input type="hidden" name="container" value="%s" />', \esc_attr($id));
+            \printf(
+                '<input type="number" name="position" value="%s" step="1" style="width:64px" aria-label="%s" />',
+                \esc_attr(null === $position ? '' : (string) $position),
+                \esc_attr(\sprintf(
+                    /* translators: %s: the folder or album name. */
+                    \__('Position of %s in the Resources list', 'granola'),
+                    $row['name']
+                ))
+            );
+            echo '<button type="submit" class="button button-small">' . \esc_html__('Set', 'granola') . '</button>';
+            echo '</form>';
+
+            if (null !== $position && 0 !== (int) $row['depth']) {
+                echo '<span style="color:#135e96;font-size:11px">'
+                    . \esc_html__('shown at the top level', 'granola') . '</span>';
+            }
+            echo '</td>';
 
             /*
              * A toggle rather than a checkbox with a Save: one click, one
@@ -751,6 +939,31 @@ final class Covers
         }
 
         \wp_safe_redirect(\add_query_arg(['page' => self::MENU_SLUG], \admin_url('admin.php')));
+        exit;
+    }
+
+    /**
+     * Set or clear one container's position in the Resources list.
+     *
+     * A blank box means "back to Canto's order", which is why it is not read
+     * as a zero: zero is a real position and would silently pin the row first.
+     */
+    public static function handle_order(): void
+    {
+        if (!\current_user_can('manage_options')) {
+            \wp_die(\esc_html__('You cannot change this.', 'granola'));
+        }
+
+        \check_admin_referer('millboard_canto_order');
+
+        $container = isset($_POST['container']) ? \sanitize_text_field(\wp_unslash($_POST['container'])) : '';
+        $raw = isset($_POST['position']) ? \trim((string) \wp_unslash($_POST['position'])) : '';
+
+        if ('' !== $container) {
+            self::set_position($container, '' === $raw ? null : (int) $raw);
+        }
+
+        \wp_safe_redirect(\add_query_arg(['page' => self::MENU_SLUG, 'ordered' => '1'], \admin_url('admin.php')));
         exit;
     }
 
