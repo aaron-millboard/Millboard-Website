@@ -600,12 +600,20 @@ function range_subgroup(string $parent, string $sku): string
 }, 10, 3);
 
 /**
- * Lines Dan has retired, which must not be orderable at all.
+ * Lines that must not be orderable at all, on this site.
  *
- * Column K of the audit, 1 Oct 2026: 23 marketing/POS lines and one presenter
- * pack. His reason was "not knowing our position on the stands for next year",
- * which is display racks and sample panels, so expect this list to be revisited
- * rather than treated as permanent.
+ * TWO lists, and the difference matters:
+ *
+ *   `retired`          every market. Column K of the audit, 1 Oct 2026: 23
+ *                      marketing/POS lines and one presenter pack. Dan's
+ *                      reason was "not knowing our position on the stands for
+ *                      next year", so expect it to be revisited rather than
+ *                      treated as permanent.
+ *
+ *   `retired_by_site`  one market. Pierre's French list, 149 lines, relayed
+ *                      by Maelle 17 and 19 Nov 2026. France sells a narrower
+ *                      set than the UK, and most of these SKUs are the SAME
+ *                      PRODUCTS the UK still sells.
  *
  * Held as code rather than unpublishing the products, for two reasons: it
  * travels with the deploy instead of needing the same manual step repeating in
@@ -616,10 +624,19 @@ function range_subgroup(string $parent, string $sku): string
  */
 function get_retired_skus(): array
 {
-    static $skus = null;
+    /*
+     * ⚠️ KEYED BY BLOG, because the answer now differs per site. A single
+     * static would hand whichever site asked first its list to every other
+     * site in the same process -- harmless in a web request, which only ever
+     * touches one, but wrong in any WP-CLI loop over the network, which is
+     * exactly how this data gets checked.
+     */
+    static $cache = [];
 
-    if (\is_array($skus)) {
-        return $skus;
+    $blog = \get_current_blog_id();
+
+    if (isset($cache[$blog])) {
+        return $cache[$blog];
     }
 
     $skus = [];
@@ -628,12 +645,42 @@ function get_retired_skus(): array
     if (\is_readable($file)) {
         $json = \json_decode((string) \file_get_contents($file), true);
 
+        $lists = [];
+
+        // Retired everywhere: Dan's POS lines.
         if (isset($json['retired']) && \is_array($json['retired'])) {
-            foreach ($json['retired'] as $sku) {
-                $skus[\strtoupper(\trim((string) $sku))] = true;
+            $lists[] = $json['retired'];
+        }
+
+        /*
+         * Retired in ONE MARKET only.
+         *
+         * ⚠️ THE LISTS CANNOT BE MERGED INTO ONE. France and the UK share
+         * most of these SKUs, so Pierre's 149 French removals would take the
+         * same products away from en-gb, en-ie and en-us if they went in the
+         * network-wide list. Keyed on the site path for the same reason the
+         * stock screen is: it survives a blog being re-created, which an id
+         * does not.
+         */
+        $site = \get_blog_details($blog);
+        $path = $site ? \trailingslashit((string) $site->path) : '/';
+
+        if (isset($json['retired_by_site'][$path]) && \is_array($json['retired_by_site'][$path])) {
+            $lists[] = $json['retired_by_site'][$path];
+        }
+
+        foreach ($lists as $list) {
+            foreach ($list as $sku) {
+                $sku = \strtoupper(\trim((string) $sku));
+
+                if ('' !== $sku) {
+                    $skus[$sku] = true;
+                }
             }
         }
     }
+
+    $cache[$blog] = $skus;
 
     return $skus;
 }
