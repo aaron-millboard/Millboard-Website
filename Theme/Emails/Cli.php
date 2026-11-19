@@ -26,9 +26,18 @@ namespace Theme\Emails;
  * import the same way and is the real control: a partner who was never
  * imported cannot be mailed by a slip here.
  *
- * USE --sleep ON THE REAL RUN. 1,235 messages pushed through the mail provider
- * in one unbroken loop is how a sending account gets rate limited or throttled,
- * and a run that stalls halfway leaves the cohort part-mailed.
+ * USE --sleep ON THE REAL RUN. Post SMTP sends through smtp.office365.com,
+ * authenticating as one mailbox, and Exchange Online throttles a mailbox at
+ * roughly 30 messages a minute. An unbroken loop is how that account gets rate
+ * limited, and a run that stalls halfway leaves the cohort part-mailed, which
+ * is worse than a slow one. --sleep=2 holds the pace under the limit.
+ *
+ * ⚠ THE FROM ADDRESS IS NOT OURS TO SET. Post SMTP holds
+ * `prevent_sender_email_override = 1` and rewrites any From a plugin sets back
+ * to order.fulfilment.gb@millboard.com, which is also the mailbox it
+ * authenticates as; Exchange would refuse a From it has no Send As permission
+ * for in any case. PortalLaunch therefore sets REPLY-TO instead, which neither
+ * of those touches. See Theme\Emails\PortalLaunch::REPLY_TO.
  *
  * ⚠ In `## OPTIONS`, a wrapped description continues with INDENTATION, never
  * with another `: `. WP-CLI parses that block as the command synopsis and reads
@@ -137,16 +146,18 @@ class Cli
      *
      * [--sleep=<seconds>]
      * : Seconds to pause between sends, decimals allowed. Use it on the real
-     *   run: 1,235 messages in one unbroken loop is how a sending account gets
-     *   throttled. --sleep=0.5 puts the whole send at roughly ten minutes.
-     *   Default 0.
+     *   run. Post SMTP sends through smtp.office365.com, and Exchange Online
+     *   throttles a mailbox at about 30 messages a minute, so --sleep=2 is
+     *   the pace that fits: roughly 36 minutes for 1,100. Anything faster
+     *   risks being throttled part way, which leaves the cohort half mailed
+     *   and is worse than a slow run. Default 0.
      *
      * ## EXAMPLES
      *
      *     wp millboard portal-launch send --only=10 --live
-     *     wp millboard portal-launch send --limit=25 --live
-     *     wp millboard portal-launch send --live --sleep=0.5
-     *     wp millboard portal-launch send --audience=all --live --sleep=0.5
+     *     wp millboard portal-launch send --limit=25 --live --sleep=2
+     *     wp millboard portal-launch send --live --sleep=2
+     *     wp millboard portal-launch send --audience=partners --live --sleep=2
      *
      * @param array<int,string> $args
      * @param array<string,mixed> $assoc
