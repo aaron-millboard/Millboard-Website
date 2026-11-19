@@ -1,5 +1,5 @@
 {
- "_comment": "Per-SKU order limits in two tiers, plus the retired list. `limits` is the EXTERNAL tier and the default on purpose: if the staff override never runs, everyone gets the tighter partner number, which fails safe. `internal` is applied on top for Millboard staff by the mb_sof_sku_limits filter in the wc-account-sample-ordering component. `retired` lines are dropped from the tool entirely by that component's mb_sof_in_scope filter.",
+ "_comment": "Per-SKU order limits in two tiers, plus the retired list. `limits` is the EXTERNAL tier and the default on purpose: if the staff override never runs, everyone gets the tighter partner number, which fails safe. `internal` is applied on top for Millboard staff by the mb_sof_sku_limits filter in the wc-account-sample-ordering component. `retired` (every market) and `retired_by_site` (one market) are both dropped from the tool entirely by that component's mb_sof_catalogue filter. NOT mb_sof_in_scope: that returns true early for any name containing the word sample, so it can only widen the catalogue and never narrow it.",
  "_external_source": "Millboard_sample_ordering_audit_DH_updated.xlsx column I, signed off by Dan Hernandez. His scope: external requests from distributors and customers through the partner portal only. Unchanged from his 30 Sep sheet.",
  "_internal_source": "Dan Hernandez, 1 Oct 2026: 'I would just set their order allowance 3x the amount we allow for distributors as a general rule of thumb.' So this is external x 3, derived not hand-entered. Re-derive it if the external numbers change.",
  "_retired_source": "Column K, Dan Hernandez 1 Oct 2026. 23 marketing/POS lines and 1 presenter pack: 'I have retired some POS due to not knowing our position on the stands for next year.' Display racks and sample panels, so this is expected to be revisited.",
@@ -781,6 +781,36 @@
   "AMDR9",
   "APP3E"
  ],
+ "_retired_by_site_source": "Pierre, relayed by Maelle Haro 17 and 19 Nov 2026. France sells a narrower set than the UK. MOST OF THESE SKUS ARE PRODUCTS THE UK STILL SELLS, so they are per-site and must never move into the network-wide retired list. Working: Documents/millboard-ops/fr-sample-ordering/pierre-fr-final.csv",
+ "retired_by_site": {
+  "/fr-fr/": [
+   "AGN", "AGR", "AGRB100", "AKJKIT", "AMB6M2", "AMB6M3",
+   "AMB6M4", "AMB6M5", "AMB6M5B30", "AMB6M6", "AMB6M7", "AMB6M8",
+   "AMB7AP", "AMB7EG", "AMB7EGSB", "AMBB105A", "AMBB105B", "AMBB105H",
+   "AMBB105J", "AMBB105R", "AMBB105V", "AMBB105Y", "AMBB305A", "AMBB305B",
+   "AMBB305C", "AMBB305D", "AMBB305G", "AMBB305H", "AMBB305J", "AMBB305L",
+   "AMBB305R", "AMBB305V", "AMBB305Y", "AMBF105B", "AMBF105C", "AMBF105D",
+   "AMBF105G", "AMBF105H", "AMBF105J", "AMBF105L", "AMBF105V", "AMBF105Y",
+   "AMC5BFP", "AMC5LP", "AMCFE105A", "AMCFE105D", "AMCFE105G", "AMCFE105L",
+   "AMCFE105N", "AMCFE105R", "AMCFE105T", "AMCFH105A", "AMCFH105D", "AMCFH105G",
+   "AMCFH105L", "AMCFH105N", "AMCFH105R", "AMCFH105T", "AMCPTF105A", "AMCPTF105D",
+   "AMCPTF105G", "AMCPTF105J", "AMCPTF105L", "AMCPTF105R", "AMCR105A", "AMCR105D",
+   "AMCR105G", "AMCR105L", "AMCR105N", "AMCR105R", "AMCR105T", "AMDB01",
+   "AMDB01A", "AMDB01B", "AMDB01C", "AMDB01D", "AMDB01E", "AMDB02",
+   "AMDC116B", "AMDC116C", "AMDC116G", "AMDC132B", "AMDC132C", "AMDC132G",
+   "AMDS116B", "AMDS116C", "AMDS116G", "AMDS132B", "AMDS132C", "AMDS132G",
+   "AMF105B", "AMF105C", "AMF105D", "AMF105G", "AMF105H", "AMF105J",
+   "AMF105L", "AMF105V", "AMF105Y", "AMGP10L", "AMGT10J", "AMGT10L",
+   "AMUF105B", "AMUF105C", "AMUF105D", "AMUF105G", "AMUF105H", "AMUF105J",
+   "AMUF105L", "AMUF105V", "AMUF105Y", "ANPLA", "ANPLB", "ANPLC",
+   "ANPLD", "ANPLE", "ANPLG", "ANPLJ", "ANPLL", "ANPLM",
+   "ANPLR", "ANPLV", "ANPMA", "ANPMB", "ANPMC", "ANPMD",
+   "ANPME", "ANPMG", "ANPMJ", "ANPML", "ANPMM", "ANPMR",
+   "ANPMV", "APL0505300", "APL0603300", "APL1010300", "APL1205300", "APM100",
+   "APP3C", "APP3D", "APP3F", "APP3G", "APP3H", "APP3J",
+   "APP3K", "AUTE", "AUTM", "AYA", "AYR"
+  ]
+ },
  "_overrides": "AGN (Architect Guide with Notebook, Literature) is capped at 3 in BOTH tiers, Aaron 8 Oct 2026, so it deliberately breaks the internal = external x 3 rule. It was 22 external / 66 internal. Do NOT re-derive this one from the external figure: a re-derivation would silently put it back to 9.",
  "_inferred": "AMN305Y (Enhanced Grain 126mm Ebony Grey, 300mm sample) is NOT from Dan's sheet: it exists in WooCommerce but was absent from the portal export. Its five colour siblings AMN305H/B/R/C/G are all 5 external and 15 internal, so it is matched to them. Aaron confirmed it is a decking sample and approved the alignment, 2 Oct 2026. Without this it fell through to the numeric fallback and staff got 10 where the colours beside it give 15."
 }
