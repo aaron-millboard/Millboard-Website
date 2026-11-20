@@ -652,6 +652,27 @@ function tool_roles(): array
 const PORTAL_TYPE_EXPORT = 'export';
 
 /**
+ * Set by hand on a partner the UK store does not serve.
+ *
+ * ⚠️ A SECOND FLAG RATHER THAN RETAGGING `portal_type`, deliberately. That
+ * meta is `field_userType` carried across from the old portal, and
+ * overwriting it to `export` would destroy what the business actually calls
+ * these people -- 29 of the first batch are `premierKeyDistributors` -- and
+ * would quietly change anything else that reads it.
+ *
+ * ⚠️ IT IS A LIST AND IT WILL GO STALE. The honest signal would be the
+ * partner's country, and there is none to read: **1,083 of the 1,095 invited
+ * on 20 Nov 2026 have no billing country at all**, because the portal import
+ * brought no addresses. The email domain is a guess, not data, so a Canadian
+ * distributor on a .com address is not caught by anything here. Someone has
+ * to tag a new overseas partner by hand until addresses exist.
+ *
+ * Aaron, 20 Nov 2026, naming the markets: Jersey, Canada, Austria, Australia,
+ * New Zealand and the singles should not see sample ordering.
+ */
+const META_UK_STORE_EXCLUDED = 'millboard_uk_store_excluded';
+
+/**
  * Is this an international partner?
  *
  * Sam, through Aaron on 30 Oct 2026: international partners should not be
@@ -707,7 +728,18 @@ function is_international_partner(?int $user_id = null): bool
 
     $type = (string) \get_user_meta($user_id, \Theme\Accounts\PortalImport::META_TYPE, true);
 
-    return PORTAL_TYPE_EXPORT === $type;
+    if (PORTAL_TYPE_EXPORT === $type) {
+        return true;
+    }
+
+    /*
+     * Tagged by hand, for a market the portal's own classification does not
+     * separate. Checked AFTER the staff and fulfilment exits above, so the
+     * two traps those guard against are guarded here too: Millboard's own
+     * export desk and the WABE fulfilment accounts keep their tabs whatever
+     * this says.
+     */
+    return 'yes' === (string) \get_user_meta($user_id, META_UK_STORE_EXCLUDED, true);
 }
 
 /**
