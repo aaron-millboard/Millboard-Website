@@ -81,6 +81,20 @@ class PortalLaunch extends \WC_Email
         return \__('Your partner portal account is ready', 'granola');
     }
 
+    /*
+     * Replies already go to marketing@millboard.com. See
+     * get_reply_to_address() and get_reply_to_name() further down, which
+     * override WooCommerce's own per-email getters.
+     *
+     * ⚠️ DO NOT ADD A SECOND MECHANISM HERE. A get_headers() override setting
+     * Reply-To was written on 19 Nov 2026 by someone who had read the From
+     * address and not the rest of this class. It was redundant, and two
+     * Reply-To headers on one message is undefined behaviour that some
+     * transports reject outright -- the same fault that broke the ops
+     * new-order email on 6 Oct. Check get_reply_to_address() before concluding
+     * replies go somewhere they should not.
+     */
+
     /**
      * Is this an internal Millboard account?
      *
