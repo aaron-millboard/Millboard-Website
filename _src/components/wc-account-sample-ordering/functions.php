@@ -887,6 +887,75 @@ function sample_category_label(string $name): string
  * were still English matched nothing and emptied the whole French catalogue:
  * 350 lines to 0. Caught by the snapshot test, not by reading.
  */
+/**
+ * Germany reads the ranges in a set order, the rest follows as it was.
+ *
+ * Aaron, 24 Nov 2026: Enhanced Grain, Board & Batten, Shadowline, Weathered
+ * Oak, Lasta-Grip, "and then the other accordians". The same sequence the
+ * Musterbestand screen uses, so somebody moving between counting stock and
+ * ordering more finds the ranges in the same place on both.
+ *
+ * ⚠️ SCOPED TO de-de. `mb_sof_category_order` is network-wide and en-gb has
+ * its own order, signed off by Dan and expanded from the approved category
+ * list above. Reordering every market because one asked would be a visible
+ * change nobody requested.
+ *
+ * ⚠️ PRIORITY 50, which has to sit between two things. The expansion that
+ * turns a parent category into its ranges runs at 10, so running earlier
+ * would sort a list that does not have the ranges in it yet. The translation
+ * to German runs at 99, so running later would mean matching translated
+ * names. Fifty is the window where the names are the English ones AND the
+ * ranges exist.
+ *
+ * Matching is on a normalised name because the real ones carry a prefix, a
+ * board width and a plus sign: "Decking: Enhanced Grain 176mm",
+ * "Cladding: Board & Batten+".
+ */
+\add_filter('mb_sof_category_order', static function (array $order): array {
+    $site = \get_blog_details(\get_current_blog_id());
+    $path = $site ? \trailingslashit((string) $site->path) : '/';
+
+    if (!\in_array($path, \apply_filters('millboard_sample_range_order_sites', ['/de-de/']), true)) {
+        return $order;
+    }
+
+    $wanted = \apply_filters('millboard_sample_range_order', [
+        'enhancedgrain',
+        'boardbatten',
+        'shadowline',
+        'weatheredoak',
+        'lastagrip',
+    ]);
+
+    $rank = static function (string $name) use ($wanted): int {
+        $key = (string) \preg_replace('/[^a-z0-9]+/', '', \strtolower(
+            \html_entity_decode($name, ENT_QUOTES | ENT_HTML5, 'UTF-8')
+        ));
+
+        foreach (\array_values($wanted) as $i => $needle) {
+            if (false !== \strpos($key, $needle)) {
+                return $i;
+            }
+        }
+
+        return \count($wanted);
+    };
+
+    /*
+     * Stable: everything keeps its existing position within its own block,
+     * so the accordions after the five stay in the order they were in.
+     */
+    $decorated = [];
+
+    foreach (\array_values($order) as $i => $name) {
+        $decorated[] = [$rank((string) $name), $i, $name];
+    }
+
+    \usort($decorated, static fn (array $a, array $b): int => [$a[0], $a[1]] <=> [$b[0], $b[1]]);
+
+    return \array_column($decorated, 2);
+}, 50);
+
 \add_filter('mb_sof_category_order', static function (array $order): array {
     return \array_map(__NAMESPACE__ . '\\sample_category_label', $order);
 }, 99);
