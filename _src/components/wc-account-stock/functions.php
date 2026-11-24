@@ -45,10 +45,15 @@
  * The spreadsheet's rows name the customer products exactly -- "Enhanced Grain
  * Golden Oak", "Weathered Oak Vintage", "Board & Batten+ Golden Oak".
  *
- * ⚠️ ONE DELIBERATE DIFFERENCE FROM THE SHEET. Its "Boxes" column divides by
- * 10, 11 or 17, which are the pack sizes of the 100mm samples, so it only ever
- * tracked those. Aaron, 18 Nov 2026, asked for "one per colour per size", so
- * the large samples get their own rows with their own pack sizes.
+ * ⚠️ WHICH SAMPLES ARE COUNTED HAS CHANGED ONCE, AND THE SHEET WAS RIGHT
+ * FIRST TIME. Its "Boxes" column divides by 10, 11 or 17, the pack sizes of
+ * the 100mm samples, so it only ever tracked those. On 18 Nov Aaron asked
+ * for "one per colour per size" and the 300mm samples got rows of their own.
+ * On 24 Nov, with neither the 300mm samples nor the Enhanced Grain 126mm
+ * range actually available in Germany, both came off the ordering list and
+ * off this screen with them: counting an empty shelf is worse than not
+ * asking. See stocked(), which is filtered rather than fixed so the next
+ * market can hold a different set.
  *
  * ⚠️ Demand is COUNTED FROM REAL ORDERS, not typed in. In the sheet somebody
  * tallied the request column by hand. The German orders are in WordPress now,
@@ -405,6 +410,40 @@ function metrics(int $stock, int $recent, int $previous, int $per_box): array
 }
 
 /**
+ * Is this a sample the market actually holds, and therefore counts?
+ *
+ * Aaron, 24 Nov 2026: neither the 300mm samples nor the Enhanced Grain 126mm
+ * range is available in Germany. They came off the ordering list the same
+ * day, and a stock screen that still asks the agency to count them is asking
+ * about an empty shelf.
+ *
+ * ⚠️ TWO DIFFERENT MEASUREMENTS. 300mm is a sample piece LENGTH, carried by
+ * the `grosse-muster` size. 126mm is a board WIDTH, the name of an Enhanced
+ * Grain range, and it sits in the product title. Matching one rule against
+ * both would take out the wrong rows.
+ *
+ * Both lists are filters rather than literals in the loop, because the next
+ * market to want this screen will stock a different set, and because turning
+ * one back on should be one line rather than an edit to the query.
+ */
+function stocked(string $size, string $title): bool
+{
+    $sizes = \apply_filters('millboard_stock_sizes', ['handmuster']);
+
+    if (!\in_array(canonical_size($size), (array) $sizes, true)) {
+        return false;
+    }
+
+    foreach ((array) \apply_filters('millboard_stock_excluded_widths', ['126mm']) as $width) {
+        if (false !== \stripos($title, (string) $width)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+/**
  * Where a range sits in the order the agency wants to read it.
  *
  * Aaron, 24 Nov 2026: Enhanced Grain, Board & Batten, Shadowline, Weathered
@@ -509,6 +548,11 @@ function samples(): array
         $size = canonical_size((string) $row->size);
         $key = row_key($parent_id, $size);
         $vsku = \trim((string) $row->vsku);
+
+        // Not stocked here, so not counted here.
+        if (!stocked($size, (string) $row->title)) {
+            continue;
+        }
 
         $gathered[$key]['parent'] = $parent_id;
         $gathered[$key]['size'] = $size;
