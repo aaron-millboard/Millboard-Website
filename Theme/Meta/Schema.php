@@ -559,7 +559,7 @@ class Schema
     {
         switch (\get_post_type($post_id)) {
             case 'installer':
-                return !empty(\get_field('advanced_installer', $post_id))
+                return (!empty(\get_field('advanced_installer', $post_id)) || !empty(\get_field('advanced_cladding_installer', $post_id)))
                     ? \__('Millboard Advanced Installer', 'granola')
                     : \__('Approved Millboard Installer', 'granola');
 
