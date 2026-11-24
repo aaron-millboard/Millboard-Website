@@ -250,7 +250,7 @@ function listing_url(\WP_Post $wp_post): string
  * term (with a sensible default); Experience Centres and Showrooms use a fixed
  * label so customers can tell location types apart at a glance.
  */
-function get_type_label(\WP_Post $wp_post, bool $is_advanced_installer = false): string
+function get_type_label(\WP_Post $wp_post, bool $advanced_decking = false, bool $advanced_cladding = false): string
 {
     switch ($wp_post->post_type) {
         case 'distributor':
@@ -267,17 +267,40 @@ function get_type_label(\WP_Post $wp_post, bool $is_advanced_installer = false):
             // The installer_type taxonomy only describes the specialism, and
             // every term is worded "Approved ...", so an advanced installer would
             // otherwise be badged "Approved" on the card and in the map popup.
-            // Promote the tier while keeping the specialism, e.g.
-            // "Approved Decking Installer" -> "Advanced Decking Installer".
-            if ($is_advanced_installer) {
-                if ($label === '') {
-                    return \_x('Advanced Installer', 'Map listing type label', 'granola');
-                }
+            //
+            // Advanced is a tier per specialism, each with its own toggle, so an
+            // installer can be Advanced for decking and Approved for cladding. Only
+            // the specialisms they are listed for count: a toggle for work they do
+            // not do changes nothing, and "Advanced" is only claimed where it is true.
+            $advanced = ['decking' => $advanced_decking, 'cladding' => $advanced_cladding];
+            $tiers = [];
 
+            foreach (get_installer_specialisms($wp_post) as $specialism) {
+                $tiers[$specialism] = $advanced[$specialism];
+            }
+
+            if (!in_array(true, $tiers, true)) {
+                return $label;
+            }
+
+            if ($label === '') {
+                return \_x('Advanced Installer', 'Map listing type label', 'granola');
+            }
+
+            // Advanced at everything they do. Promote the tier, keep the specialism:
+            // "Approved Decking Installer" -> "Advanced Decking Installer".
+            if (!in_array(false, $tiers, true)) {
                 return preg_replace('/^Approved\b/i', \_x('Advanced', 'Installer tier', 'granola'), $label, 1);
             }
 
-            return $label;
+            // Advanced at one and Approved at the other:
+            // "Advanced Decking and Approved Cladding Installer".
+            return sprintf(
+                /* translators: 1: Advanced or Approved, for decking. 2: Advanced or Approved, for cladding. */
+                \_x('%1$s Decking and %2$s Cladding Installer', 'Installer with a different tier for each specialism', 'granola'),
+                $tiers['decking'] ? \_x('Advanced', 'Installer tier', 'granola') : \_x('Approved', 'Installer tier', 'granola'),
+                $tiers['cladding'] ? \_x('Advanced', 'Installer tier', 'granola') : \_x('Approved', 'Installer tier', 'granola')
+            );
 
         case 'experience_centre':
             return \_x('Experience Centre', 'Map listing type label', 'granola');
@@ -348,7 +371,11 @@ function get_item_data($args): array|null
         $address = \get_field('address', $wp_post_id);
         $lat = \get_field('address_lat', $wp_post_id);
         $lng = \get_field('address_lng', $wp_post_id);
+        // The Advanced DECKING flag. The field kept its original name when the admin label
+        // became "Advanced Decking Installer", so stored data and every reader still work.
+        // The pin, the sort and the Decking accreditation tiles all key on this one.
         $advanced_installer = !empty(\get_field('advanced_installer', $wp_post_id));
+        $advanced_cladding_installer = !empty(\get_field('advanced_cladding_installer', $wp_post_id));
 
         // Experience Centres and Showrooms are display venues by nature, so they
         // always hold a display regardless of the (distributor-only) flag.
@@ -395,7 +422,7 @@ function get_item_data($args): array|null
             'url' => listing_url($wp_post),
             'post' => $wp_post,
             'post_type' => $post_type,
-            'type_label' => get_type_label($wp_post, $advanced_installer),
+            'type_label' => get_type_label($wp_post, $advanced_installer, $advanced_cladding_installer),
             // One key drives the map pin, the key swatch and the card badge icon
             // so all three always agree.
             'marker' => ($post_type === 'installer' && $advanced_installer) ? 'installer-advanced' : $post_type,
