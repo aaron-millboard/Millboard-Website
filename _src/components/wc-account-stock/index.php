@@ -116,9 +116,20 @@ $mb_updated = stock_updated();
 
     <?php else : ?>
 
-        <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="mb-stock__form">
+        <?php
+        /*
+         * ⚠️ POSTS TO THIS PAGE, NOT TO admin-post.php.
+         *
+         * It used to post to admin-post.php and saved nothing for anybody.
+         * That file fires admin_init, where WooCommerce's lock-down redirects
+         * any user without edit_posts or manage_woocommerce out of wp-admin,
+         * and not one of the German fulfilment accounts holds either. The
+         * handler is on template_redirect in wc-account/hooks.php now.
+         */
+        ?>
+        <form method="post" action="<?php echo esc_url(wc_get_account_endpoint_url(\Granola\Components\WC_Account_Stock\ENDPOINT)); ?>" class="mb-stock__form">
             <?php wp_nonce_field('millboard_stock_save'); ?>
-            <input type="hidden" name="action" value="millboard_stock_save" />
+            <input type="hidden" name="millboard_stock_save" value="1" />
 
             <table class="mb-stock__table">
                 <thead>

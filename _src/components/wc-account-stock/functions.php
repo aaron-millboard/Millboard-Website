@@ -405,6 +405,43 @@ function metrics(int $stock, int $recent, int $previous, int $per_box): array
 }
 
 /**
+ * Where a range sits in the order the agency wants to read it.
+ *
+ * Aaron, 24 Nov 2026: Enhanced Grain, Board & Batten, Shadowline, Weathered
+ * Oak, Lasta-Grip. The same order the sample-ordering tab uses, so somebody
+ * moving between the two screens finds things in the same place.
+ *
+ * ⚠️ Matched on the NORMALISED title, because the real ones carry a board
+ * width, a registered-trade mark and a plus sign: "Enhanced Grain 176mm
+ * Golden Oak", "Lasta-Grip® 200mm Golden Oak", "Board & Batten+ Ashwood".
+ *
+ * Anything not on the list sorts after, in its own alphabetical block,
+ * rather than being dropped or silently landing first.
+ */
+function range_rank(string $title): int
+{
+    $key = (string) \preg_replace('/[^a-z0-9]+/', '', \strtolower(
+        \html_entity_decode($title, ENT_QUOTES | ENT_HTML5, 'UTF-8')
+    ));
+
+    $order = \apply_filters('millboard_stock_range_order', [
+        'enhancedgrain',
+        'boardbatten',
+        'shadowline',
+        'weatheredoak',
+        'lastagrip',
+    ]);
+
+    foreach (\array_values($order) as $i => $needle) {
+        if (false !== \strpos($key, $needle)) {
+            return $i;
+        }
+    }
+
+    return \count($order);
+}
+
+/**
  * The key one row is stored and posted under.
  *
  * The PARENT product id, not a SKU and not a variation id. A variation id
@@ -674,15 +711,19 @@ function rows(): array
     }
 
     /*
-     * Worst first. The whole point of the screen is "what do I need to order",
-     * and a list that opens on everything that is fine buries the four lines
-     * that are not.
+     * ⚠️ A FIXED ORDER BY RANGE, NOT WORST-FIRST.
+     *
+     * This used to sort by urgency, on the reasoning that the screen answers
+     * "what do I need to order". Aaron, 24 Nov 2026, asked for the ranges in
+     * a set order instead, and the counting is why: somebody walking the
+     * shelf works through it in a fixed sequence, and a list that reorders
+     * itself between visits means finding each colour again every time. The
+     * urgent lines are still called out by the Dringend count at the top and
+     * by the colour of the status, which is what that is for.
      */
-    $order = ['emergency' => 0, 'order' => 1, 'uncounted' => 2, 'ok' => 3, 'none' => 4];
-
-    \usort($rows, static function (array $a, array $b) use ($order): int {
-        return [$order[$a['status']] ?? 9, $a['weeks'] ?? PHP_INT_MAX, $a['title'], $a['length']]
-            <=> [$order[$b['status']] ?? 9, $b['weeks'] ?? PHP_INT_MAX, $b['title'], $b['length']];
+    \usort($rows, static function (array $a, array $b): int {
+        return [range_rank($a['title']), $a['title'], $a['length']]
+            <=> [range_rank($b['title']), $b['title'], $b['length']];
     });
 
     return $rows;
