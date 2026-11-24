@@ -45,10 +45,15 @@
  * The spreadsheet's rows name the customer products exactly -- "Enhanced Grain
  * Golden Oak", "Weathered Oak Vintage", "Board & Batten+ Golden Oak".
  *
- * ⚠️ ONE DELIBERATE DIFFERENCE FROM THE SHEET. Its "Boxes" column divides by
- * 10, 11 or 17, which are the pack sizes of the 100mm samples, so it only ever
- * tracked those. Aaron, 18 Nov 2026, asked for "one per colour per size", so
- * the large samples get their own rows with their own pack sizes.
+ * ⚠️ WHICH SAMPLES ARE COUNTED HAS CHANGED ONCE, AND THE SHEET WAS RIGHT
+ * FIRST TIME. Its "Boxes" column divides by 10, 11 or 17, the pack sizes of
+ * the 100mm samples, so it only ever tracked those. On 18 Nov Aaron asked
+ * for "one per colour per size" and the 300mm samples got rows of their own.
+ * On 24 Nov, with neither the 300mm samples nor the Enhanced Grain 126mm
+ * range actually available in Germany, both came off the ordering list and
+ * off this screen with them: counting an empty shelf is worse than not
+ * asking. See stocked(), which is filtered rather than fixed so the next
+ * market can hold a different set.
  *
  * ⚠️ Demand is COUNTED FROM REAL ORDERS, not typed in. In the sheet somebody
  * tallied the request column by hand. The German orders are in WordPress now,
@@ -405,6 +410,77 @@ function metrics(int $stock, int $recent, int $previous, int $per_box): array
 }
 
 /**
+ * Is this a sample the market actually holds, and therefore counts?
+ *
+ * Aaron, 24 Nov 2026: neither the 300mm samples nor the Enhanced Grain 126mm
+ * range is available in Germany. They came off the ordering list the same
+ * day, and a stock screen that still asks the agency to count them is asking
+ * about an empty shelf.
+ *
+ * ⚠️ TWO DIFFERENT MEASUREMENTS. 300mm is a sample piece LENGTH, carried by
+ * the `grosse-muster` size. 126mm is a board WIDTH, the name of an Enhanced
+ * Grain range, and it sits in the product title. Matching one rule against
+ * both would take out the wrong rows.
+ *
+ * Both lists are filters rather than literals in the loop, because the next
+ * market to want this screen will stock a different set, and because turning
+ * one back on should be one line rather than an edit to the query.
+ */
+function stocked(string $size, string $title): bool
+{
+    $sizes = \apply_filters('millboard_stock_sizes', ['handmuster']);
+
+    if (!\in_array(canonical_size($size), (array) $sizes, true)) {
+        return false;
+    }
+
+    foreach ((array) \apply_filters('millboard_stock_excluded_widths', ['126mm']) as $width) {
+        if (false !== \stripos($title, (string) $width)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+/**
+ * Where a range sits in the order the agency wants to read it.
+ *
+ * Aaron, 24 Nov 2026: Enhanced Grain, Board & Batten, Shadowline, Weathered
+ * Oak, Lasta-Grip. The same order the sample-ordering tab uses, so somebody
+ * moving between the two screens finds things in the same place.
+ *
+ * ⚠️ Matched on the NORMALISED title, because the real ones carry a board
+ * width, a registered-trade mark and a plus sign: "Enhanced Grain 176mm
+ * Golden Oak", "Lasta-Grip® 200mm Golden Oak", "Board & Batten+ Ashwood".
+ *
+ * Anything not on the list sorts after, in its own alphabetical block,
+ * rather than being dropped or silently landing first.
+ */
+function range_rank(string $title): int
+{
+    $key = (string) \preg_replace('/[^a-z0-9]+/', '', \strtolower(
+        \html_entity_decode($title, ENT_QUOTES | ENT_HTML5, 'UTF-8')
+    ));
+
+    $order = \apply_filters('millboard_stock_range_order', [
+        'enhancedgrain',
+        'boardbatten',
+        'shadowline',
+        'weatheredoak',
+        'lastagrip',
+    ]);
+
+    foreach (\array_values($order) as $i => $needle) {
+        if (false !== \strpos($key, $needle)) {
+            return $i;
+        }
+    }
+
+    return \count($order);
+}
+
+/**
  * The key one row is stored and posted under.
  *
  * The PARENT product id, not a SKU and not a variation id. A variation id
@@ -472,6 +548,11 @@ function samples(): array
         $size = canonical_size((string) $row->size);
         $key = row_key($parent_id, $size);
         $vsku = \trim((string) $row->vsku);
+
+        // Not stocked here, so not counted here.
+        if (!stocked($size, (string) $row->title)) {
+            continue;
+        }
 
         $gathered[$key]['parent'] = $parent_id;
         $gathered[$key]['size'] = $size;
@@ -674,15 +755,19 @@ function rows(): array
     }
 
     /*
-     * Worst first. The whole point of the screen is "what do I need to order",
-     * and a list that opens on everything that is fine buries the four lines
-     * that are not.
+     * ⚠️ A FIXED ORDER BY RANGE, NOT WORST-FIRST.
+     *
+     * This used to sort by urgency, on the reasoning that the screen answers
+     * "what do I need to order". Aaron, 24 Nov 2026, asked for the ranges in
+     * a set order instead, and the counting is why: somebody walking the
+     * shelf works through it in a fixed sequence, and a list that reorders
+     * itself between visits means finding each colour again every time. The
+     * urgent lines are still called out by the Dringend count at the top and
+     * by the colour of the status, which is what that is for.
      */
-    $order = ['emergency' => 0, 'order' => 1, 'uncounted' => 2, 'ok' => 3, 'none' => 4];
-
-    \usort($rows, static function (array $a, array $b) use ($order): int {
-        return [$order[$a['status']] ?? 9, $a['weeks'] ?? PHP_INT_MAX, $a['title'], $a['length']]
-            <=> [$order[$b['status']] ?? 9, $b['weeks'] ?? PHP_INT_MAX, $b['title'], $b['length']];
+    \usort($rows, static function (array $a, array $b): int {
+        return [range_rank($a['title']), $a['title'], $a['length']]
+            <=> [range_rank($b['title']), $b['title'], $b['length']];
     });
 
     return $rows;
