@@ -100,6 +100,7 @@ class SampleOrderCheckout
         \add_action('template_redirect', [__CLASS__, 'maybe_place'], 5);
         \add_filter('woocommerce_email_recipient_customer_processing_order', [__CLASS__, 'mail_customer_and_rep'], 10, 2);
         \add_filter('woocommerce_email_headers', [__CLASS__, 'reply_to_the_rep'], 10, 3);
+        \add_action('woocommerce_email_order_meta', [__CLASS__, 'email_sales_comments'], 10, 4);
 
         /*
          * Turn the Addressy/Loqate lookup on for this one screen.
@@ -527,6 +528,65 @@ class SampleOrderCheckout
         $to[] = $rep;
 
         return \implode(',', $to);
+    }
+
+    /**
+     * Put the rep's internal notes on the STAFF order email.
+     *
+     * Aaron, 24 Nov 2026: notes added on the internal sample form should
+     * reach the people who pack and send the order. They were being captured
+     * and then read by nobody until somebody opened the dispatch queue --
+     * SampleFulfilment seeds its own notes field from them, which is useful
+     * on screen and no use at all to whoever is working from the email.
+     *
+     * ⚠️ GATED ON $sent_to_admin, WHICH IS THE WHOLE POINT. These are things
+     * a rep writes about a customer, not to them: "chase before the Tuesday
+     * visit", "second request, first never arrived", "key account, handle
+     * carefully". On the customer's own confirmation they would range from
+     * odd to embarrassing. WooCommerce passes true only for the admin-facing
+     * mails, which is exactly the set that should see them.
+     *
+     * Every site, not just de-de: the field exists on every internal sample
+     * form and the reason holds wherever one is placed.
+     *
+     * @param mixed $order
+     * @param bool  $sent_to_admin
+     * @param bool  $plain_text
+     * @param mixed $email
+     */
+    public static function email_sales_comments($order, $sent_to_admin = false, $plain_text = false, $email = null): void
+    {
+        if (!$sent_to_admin || !$order instanceof \WC_Order) {
+            return;
+        }
+
+        $notes = \trim((string) $order->get_meta(self::META['sales_comments']));
+
+        if ('' === $notes) {
+            return;
+        }
+
+        $heading = \__('Internal notes', 'granola');
+
+        if ($plain_text) {
+            echo "\n\n" . \esc_html(\strtoupper($heading)) . "\n";
+            echo \esc_html($notes) . "\n";
+
+            return;
+        }
+
+        /*
+         * Inline styles because an email has no stylesheet, and wpautop so a
+         * rep who pressed Return twice does not get one run-on paragraph.
+         */
+        \printf(
+            '<div style="margin:16px 0;padding:12px 14px;border-left:3px solid #8a4b00;background:#fdf6ec">'
+                . '<p style="margin:0 0 6px;font-weight:600;color:#8a4b00">%s</p>'
+                . '<div style="margin:0;color:#333">%s</div>'
+                . '</div>',
+            \esc_html($heading),
+            \wp_kses_post(\wpautop($notes))
+        );
     }
 
     /**
