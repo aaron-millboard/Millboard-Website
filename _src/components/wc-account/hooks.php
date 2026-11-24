@@ -606,7 +606,40 @@ use function Granola\Components\WC_Account_Stock\can_work_stock;
  * say) would let anyone with an account post stock figures for a market they
  * cannot even see.
  */
-\add_action('admin_post_millboard_stock_save', function (): void {
+/*
+ * ⚠️⚠️ NOT `admin_post_`, AND THAT IS THE WHOLE POINT OF THIS HOOK.
+ *
+ * This form first posted to admin-post.php and silently saved nothing for
+ * every single person who uses the screen. admin-post.php fires `admin_init`,
+ * and WooCommerce hooks `prevent_admin_access` there: with
+ * `woocommerce_lock_down_admin` on, which it is, anyone holding neither
+ * `edit_posts` nor `manage_woocommerce` is redirected out of wp-admin before
+ * the action for our handler is ever reached.
+ *
+ * Nobody who works this screen holds either capability. Checked on
+ * production: Henrik, Thorsten, Tobias and both WABE accounts all fail both
+ * tests, so all five were bounced. The access log shows exactly that, a POST
+ * answered 302 and a redirect away from the page, which reads to the person
+ * pressing the button as "it did nothing".
+ *
+ * ⚠️ IT TESTED FINE BECAUSE THE TESTS CALLED save_stock() DIRECTLY. The
+ * saver, the field names and the permissions were all correct. The request
+ * never got to them. Test the ROUTE, not just the destination.
+ *
+ * So the save now happens on the front end, on the account page the form
+ * already lives on, and wp-admin is not involved.
+ */
+\add_action('template_redirect', function (): void {
+    global $wp;
+
+    if (!isset($wp->query_vars[STOCK_ENDPOINT])) {
+        return;
+    }
+
+    if (empty($_POST['millboard_stock_save'])) {
+        return;
+    }
+
     if (!can_work_stock()) {
         \wp_die(\esc_html__('Sie dürfen das nicht ändern.', 'granola'));
     }
