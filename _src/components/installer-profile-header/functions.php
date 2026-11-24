@@ -38,7 +38,10 @@ function filter_args(array $args): ?array
 
     // Tier — Approved vs Advanced — is derived, never typed by hand. The
     // advanced tier gets a distinct layout (full-bleed hero + stats card).
-    $is_advanced = !empty(\get_field('advanced_installer', $post_id));
+    // Advanced at either specialism gets the advanced layout. `advanced_installer` is the
+    // decking toggle and kept its name, so existing profiles are untouched.
+    $is_advanced = !empty(\get_field('advanced_installer', $post_id))
+        || !empty(\get_field('advanced_cladding_installer', $post_id));
     $args['is_advanced'] = $is_advanced;
     $args['tier'] = $is_advanced ? \__('Advanced', 'granola') : \__('Approved', 'granola');
     $args['classes'][] = $is_advanced

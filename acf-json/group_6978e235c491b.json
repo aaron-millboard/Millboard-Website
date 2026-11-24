@@ -4,8 +4,28 @@
     "fields": [
         {
             "key": "field_6978e235c8c97",
-            "label": "Advanced Installer",
+            "label": "Advanced Decking Installer",
             "name": "advanced_installer",
+            "aria-label": "",
+            "type": "true_false",
+            "instructions": "",
+            "required": false,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "message": "",
+            "default_value": 0,
+            "ui": 1,
+            "ui_on_text": "",
+            "ui_off_text": ""
+        },
+        {
+            "key": "field_b31a029c839a4",
+            "label": "Advanced Cladding Installer",
+            "name": "advanced_cladding_installer",
             "aria-label": "",
             "type": "true_false",
             "instructions": "",
@@ -119,5 +139,5 @@
     "show_in_rest": 1,
     "display_title": "",
     "granola_save_location": 0,
-    "modified": 1772150001
+    "modified": 1795512650
 }
