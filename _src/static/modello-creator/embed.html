@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Modello laying patterns</title>
+<link rel="stylesheet" href="modello-creator.css">
+<style>
+    html, body { margin: 0; background: transparent; }
+    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #151716; line-height: 1.5; }
+    .modello-creator__heading { font-size: clamp(1.5rem, 3vw, 2.25rem); font-weight: 400; letter-spacing: 0.04em; text-transform: uppercase; }
+</style>
+</head>
+<body>
+
+<!--
+    Hosted copy of the Millboard Modello pattern creator, for distributors to embed with an iframe.
+    Options go in the address, for example:
+    embed.html?lang=fr&collection=linear&colour=limed-oak&accent=78953c&ink=151716&bg=ffffff
+-->
+<div id="mc" data-modello-creator data-images="../../images/modello-creator/"></div>
+
+<script>
+    // Only these options are read from the address, and only in these forms, so a link can never put
+    // arbitrary wording on this page.
+    (function () {
+        var q = new URLSearchParams(location.search);
+        var el = document.getElementById('mc');
+        var lang = q.get('lang');
+
+        if (/^[a-z]{2}([-_][a-z]{2})?$/i.test(lang || '')) {
+            el.setAttribute('data-lang', lang);
+            document.documentElement.lang = lang;
+        }
+        if (/^(linear|contour)$/.test(q.get('collection') || '')) { el.setAttribute('data-collection', q.get('collection')); }
+        if (/^[a-z-]{3,20}$/.test(q.get('colour') || '')) { el.setAttribute('data-colour', q.get('colour')); }
+
+        var hex = function (v) { return /^[0-9a-f]{3}$|^[0-9a-f]{6}$/i.test(v || ''); };
+        if (hex(q.get('accent'))) { el.style.setProperty('--mc--accent', '#' + q.get('accent')); }
+        if (hex(q.get('ink'))) {
+            el.style.setProperty('--mc--ink', '#' + q.get('ink'));
+            el.style.setProperty('--mc--muted', 'color-mix(in srgb, #' + q.get('ink') + ' 66%, transparent)');
+            document.body.style.color = '#' + q.get('ink');
+        }
+        if (hex(q.get('bg'))) { document.body.style.background = '#' + q.get('bg'); }
+    }());
+</script>
+<script src="modello-creator.js"></script>
+<script>
+    // Tell the page that embeds this one how tall the tool is, so it can resize the iframe.
+    // The message carries a height in pixels and nothing else.
+    if (window.parent !== window && window.ResizeObserver) {
+        var send = function () {
+            window.parent.postMessage({ type: 'modello-creator-height', height: document.documentElement.scrollHeight }, '*');
+        };
+        new ResizeObserver(send).observe(document.body);
+        window.addEventListener('load', send);
+    }
+</script>
+
+</body>
+</html>
