@@ -53,10 +53,14 @@
     // Tell the page that embeds this one how tall the tool is, so it can resize the iframe.
     // The message carries a height in pixels and nothing else.
     if (window.parent !== window && window.ResizeObserver) {
+        // Measure the content itself. scrollHeight can never be smaller than the iframe, so a reading
+        // taken while the page was still loading would leave the iframe too tall for good.
         var send = function () {
-            window.parent.postMessage({ type: 'modello-creator-height', height: document.documentElement.scrollHeight }, '*');
+            window.parent.postMessage({ type: 'modello-creator-height', height: Math.ceil(document.body.getBoundingClientRect().height) }, '*');
         };
         new ResizeObserver(send).observe(document.body);
+        // Also report when the iframe itself is resized, so a height that is too big corrects itself.
+        window.addEventListener('resize', send);
         window.addEventListener('load', send);
     }
 </script>
