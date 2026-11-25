@@ -68,6 +68,43 @@ class SampleFulfilment
      */
     public const LIVE_FROM = '2026-10-26';
 
+    /**
+     * Where this feature exists at all.
+     *
+     * ⚠️ IT USED TO EXIST EVERYWHERE, AND THAT IS HOW GERMAN COLUMN HEADINGS
+     * REACHED THE UK ORDERS SCREEN. `init()` is called unconditionally from
+     * functions.php, nothing here asked which site it was on, and
+     * `manage_woocommerce_page_wc-orders_columns` fires on all thirteen. So
+     * every market's order list carried Versanddatum, Sendungsnummer and
+     * Anmerkungen, always empty, for every admin. Aaron found it on en-gb,
+     * 25 Nov 2026.
+     *
+     * ⚠️ The class said otherwise. register_role()'s own comment claimed
+     * "giving this only on de-de is what keeps them out of every other
+     * market" while the code added the role on every site it loaded on. A
+     * comment describing a gate that does not exist is worse than silence,
+     * because the next reader stops looking.
+     *
+     * Germany, because that is the market an outside agency fulfils.
+     * Filtered, so a second market costs no deploy.
+     */
+    public const SITES = ['/de-de/'];
+
+    /**
+     * Is this a market the agency fulfils?
+     *
+     * Asked INSIDE each callback rather than around the add_filter() calls,
+     * because init() runs while the theme is still loading and the answer
+     * must not depend on how early that happens.
+     */
+    public static function is_fulfilment_site(): bool
+    {
+        $site = \get_blog_details(\get_current_blog_id());
+        $path = $site ? \trailingslashit((string) $site->path) : '/';
+
+        return \in_array($path, (array) \apply_filters('millboard_fulfilment_sites', self::SITES), true);
+    }
+
     public static function init(): void
     {
         \add_action('init', [self::class, 'register_role']);
@@ -107,6 +144,13 @@ class SampleFulfilment
      */
     public static function register_role(): void
     {
+        // Roles are per site, and this one belongs to the German agency.
+        // The comment above has claimed this since the class was written;
+        // now the code does it.
+        if (!self::is_fulfilment_site()) {
+            return;
+        }
+
         if (\get_role(self::ROLE)) {
             return;
         }
@@ -127,6 +171,15 @@ class SampleFulfilment
      */
     public static function columns(array $columns): array
     {
+        /*
+         * Germany only. These are the agency's columns in the agency's
+         * language, and on any other market's order list they are three
+         * empty columns of German nobody asked for.
+         */
+        if (!self::is_fulfilment_site()) {
+            return $columns;
+        }
+
         // After the status, which is what the agency scans down.
         $out = [];
 
@@ -152,6 +205,10 @@ class SampleFulfilment
 
     public static function column(string $column, $order): void
     {
+        if (!self::is_fulfilment_site()) {
+            return;
+        }
+
         if (!$order instanceof \WC_Order) {
             $order = \wc_get_order($order);
         }
@@ -242,6 +299,13 @@ class SampleFulfilment
      */
     public static function ajax_done(): void
     {
+        // Nonce and capability are not enough on their own: an administrator
+        // on another market holds edit_shop_orders too, and this writes
+        // German fulfilment meta onto whatever order it is given.
+        if (!self::is_fulfilment_site()) {
+            \wp_send_json_error(['message' => 'not a fulfilment site'], 400);
+        }
+
         if (!\check_ajax_referer('mb_fulfil_inline', 'nonce', false)) {
             \wp_send_json_error(['message' => 'bad nonce'], 403);
         }
@@ -290,6 +354,10 @@ class SampleFulfilment
      */
     public static function admin_assets(string $hook): void
     {
+        if (!self::is_fulfilment_site()) {
+            return;
+        }
+
         if (!self::is_orders_screen($hook) || !\current_user_can('edit_shop_orders')) {
             return;
         }
@@ -542,6 +610,10 @@ JS;
      */
     public static function ajax_inline(): void
     {
+        if (!self::is_fulfilment_site()) {
+            \wp_send_json_error(['message' => 'not a fulfilment site'], 400);
+        }
+
         if (!\check_ajax_referer('mb_fulfil_inline', 'nonce', false)) {
             \wp_send_json_error(['message' => 'bad nonce'], 403);
         }
@@ -606,6 +678,11 @@ JS;
 
     public static function meta_box(): void
     {
+        // The agency types into this box, and only Germany has an agency.
+        if (!self::is_fulfilment_site()) {
+            return;
+        }
+
         $screen = \class_exists('\Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController')
             && \wc_get_container()
                 ->get(\Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController::class)
@@ -751,6 +828,20 @@ JS;
      */
     public static function suppress_retrospective_email(bool $enabled, $order): bool
     {
+        /*
+         * ⚠️ This gate is the whole point of the filter being safe.
+         *
+         * Without it this refuses the dispatch e-mail for ANY order on ANY
+         * market created before LIVE_FROM, because the only thing that earns
+         * an exemption below is a German fulfilment meta key that a UK,
+         * French, US, Irish or Australian order can never carry. The backstop
+         * for Germany's 1,387 unsent orders must not be a silent mail block
+         * on twelve other sites.
+         */
+        if (!self::is_fulfilment_site()) {
+            return $enabled;
+        }
+
         if (!$enabled || !$order instanceof \WC_Order) {
             return $enabled;
         }
