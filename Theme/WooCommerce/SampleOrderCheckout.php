@@ -94,6 +94,39 @@ class SampleOrderCheckout
      */
     public const MARKETING_OPT_OUT = 'marketing-opt-in';
 
+    /**
+     * Addresses that are ours, not a customer's.
+     *
+     * Aaron, 25 Nov 2026: staff were entering their own address when they had
+     * no address for the customer. That is not a tidiness problem. CRM Perks
+     * feed #8165 keys the HubSpot contact on `_billing_email`, so a rep's own
+     * address overwrites the REP's contact record with the customer's name.
+     *
+     * ⚠️ `.co.uk` AND `.com`. 75 network users are on millboard.com and 47
+     * on millboard.co.uk, and several reps hold one of each, so blocking only
+     * the .com leaves the obvious way round it open. Checked on production,
+     * 25 Nov 2026.
+     *
+     * millboardcayman.ky and sgc-agency.com also appear among users but are a
+     * distributor and an agency rather than us, so they are left alone.
+     */
+    public const INTERNAL_EMAIL_DOMAINS = [
+        'millboard.com',
+        'millboard.co.uk',
+        'elmdenegroup.co.uk',
+    ];
+
+    /**
+     * Shortest and longest run of digits a real number can be.
+     *
+     * 15 is E.164's hard ceiling for an international number. 9 is the
+     * shortest realistic national number across the markets this form runs
+     * in (UK, Ireland, France, Germany, US, Australia), so it rejects "." and
+     * "12345" without rejecting anybody's actual landline.
+     */
+    public const PHONE_MIN_DIGITS = 9;
+    public const PHONE_MAX_DIGITS = 15;
+
     public static function init(): void
     {
         \add_action('init', [__CLASS__, 'take_over_submit'], 20);
@@ -772,11 +805,159 @@ class SampleOrderCheckout
         // contact rather than failing.
         $email = \trim((string) ($p['customer_email'] ?? ''));
 
-        if ('' !== $email && !\is_email($email)) {
-            $missing[] = \__('Customer email address (that address is not valid)', 'granola');
+        if ('' !== $email && !self::is_customer_email($email)) {
+            $missing[] = self::is_internal_email($email)
+                ? \__('Customer email address (use the customer’s own address, not a Millboard one)', 'granola')
+                : \__('Customer email address (that address is not valid)', 'granola');
+        }
+
+        // "." passed this for as long as the form has existed, because the
+        // only test was that the box was not empty.
+        $phone = \trim((string) ($p['billing_phone'] ?? ''));
+
+        if ('' !== $phone && !self::is_plausible_phone($phone)) {
+            $missing[] = \__('Customer phone number (that number is not valid)', 'granola');
         }
 
         return $missing;
+    }
+
+    // ---------------------------------------------------------- validation
+
+    /**
+     * The internal domains, filtered so adding one costs no deploy.
+     *
+     * @return string[] Lower case, no leading @.
+     */
+    public static function internal_email_domains(): array
+    {
+        $domains = \apply_filters('mb_sof_internal_email_domains', self::INTERNAL_EMAIL_DOMAINS);
+
+        return \array_values(\array_filter(\array_map(
+            static fn ($d): string => \strtolower(\ltrim(\trim((string) $d), '@')),
+            (array) $domains
+        )));
+    }
+
+    public static function is_internal_email(string $email): bool
+    {
+        $at = \strrpos($email, '@');
+
+        if (false === $at) {
+            return false;
+        }
+
+        return \in_array(
+            \strtolower(\substr($email, $at + 1)),
+            self::internal_email_domains(),
+            true
+        );
+    }
+
+    /**
+     * Is this an address a customer could actually have?
+     *
+     * ⚠️ Three things, and no more than three. A regex cannot tell you an
+     * address is REAL -- test@test.com is perfectly well formed and belongs
+     * to nobody -- so this rejects what is provably wrong and makes no claim
+     * beyond that. Verifying the rest means sending to it.
+     */
+    public static function is_customer_email(string $email): bool
+    {
+        $email = \trim($email);
+
+        if (!\is_email($email)) {
+            return false;
+        }
+
+        /*
+         * WordPress's is_email() accepts a one-character top level domain, so
+         * a@b.c gets through it. Nothing real has one.
+         */
+        if (!\preg_match('/\.[A-Za-z]{2,}$/', $email)) {
+            return false;
+        }
+
+        return !self::is_internal_email($email);
+    }
+
+    /**
+     * Could this be somebody's phone number?
+     *
+     * Counts the DIGITS rather than the characters, because a character class
+     * alone would happily accept nine full stops.
+     */
+    public static function is_plausible_phone(string $phone): bool
+    {
+        $phone = \trim($phone);
+
+        // Only the characters a phone number is written with.
+        if (!\preg_match('/^\+?[0-9\s().\-]+$/', $phone)) {
+            return false;
+        }
+
+        $digits = \strlen((string) \preg_replace('/\D+/', '', $phone));
+
+        return $digits >= self::PHONE_MIN_DIGITS && $digits <= self::PHONE_MAX_DIGITS;
+    }
+
+    /*
+     * ⚠️ THE TWO PATTERNS BELOW EXIST TO SAVE THE BASKET, NOT TO SECURE
+     * ANYTHING.
+     *
+     * The server above is the guarantee. But a server rejection calls back(),
+     * which redirects to step one, and the selection and every typed field
+     * are gone: that is exactly what made the 24 Nov "order vanished" case so
+     * hard to explain. So the browser gets the same rules first, where the
+     * message appears against the field and nothing is lost.
+     *
+     * Both are generated from the same constants the server checks, because a
+     * browser that allows what the server refuses is worse than no browser
+     * check at all.
+     */
+
+    /**
+     * The `pattern` attribute for the email box.
+     */
+    public static function email_pattern(): string
+    {
+        $syntax = '[^@\s]+@[^@\s]+\.[A-Za-z]{2,}';
+        $domains = self::internal_email_domains();
+
+        if (!$domains) {
+            return $syntax;
+        }
+
+        /*
+         * HTML's pattern attribute is case SENSITIVE and has nowhere to put
+         * the i flag, so every letter becomes its own two-case class. Built
+         * here rather than written out, so it cannot drift from the list.
+         */
+        $blocked = \implode('|', \array_map(
+            static fn (string $domain): string => (string) \preg_replace_callback(
+                '/[a-z]/i',
+                static fn (array $m): string => '[' . \strtoupper($m[0]) . \strtolower($m[0]) . ']',
+                \preg_quote($domain, '/')
+            ),
+            $domains
+        ));
+
+        return \sprintf('(?!.*@(?:%s)$)%s', $blocked, $syntax);
+    }
+
+    /**
+     * The `pattern` attribute for the phone box.
+     */
+    public static function phone_pattern(): string
+    {
+        // The lookahead counts digits; the part after it limits the
+        // characters. Neither does the job alone: a character class accepts
+        // nine full stops, and a digit count accepts "call me on 07..".
+        return \sprintf(
+            '(?=(?:\D*\d){%1$d,%2$d}\D*$)\+?[0-9\s().\-]{%1$d,30}',
+            self::PHONE_MIN_DIGITS,
+            self::PHONE_MAX_DIGITS
+        );
     }
 
     // --------------------------------------------------------------- reuse
