@@ -5,7 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Modello laying patterns</title>
-<link rel="stylesheet" href="modello-creator.css">
+<!-- The site serves these files for ten years and strips ?ver, so change the mv number on both
+     addresses whenever modello-creator.js or modello-creator.css changes. -->
+<link rel="stylesheet" href="modello-creator.css?mv=1">
 <style>
     html, body { margin: 0; background: transparent; }
     body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #151716; line-height: 1.5; }
@@ -46,7 +48,7 @@
         if (hex(q.get('bg'))) { document.body.style.background = '#' + q.get('bg'); }
     }());
 </script>
-<script src="modello-creator.js"></script>
+<script src="modello-creator.js?mv=1"></script>
 <script>
     // Tell the page that embeds this one how tall the tool is, so it can resize the iframe.
     // The message carries a height in pixels and nothing else.
