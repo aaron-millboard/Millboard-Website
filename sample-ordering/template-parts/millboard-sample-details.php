@@ -70,13 +70,23 @@ $mb_row = static function ( string $key, string $label, string $width, string $c
 	);
 };
 
-$mb_input = static function ( string $key, bool $required = false, string $placeholder = '', string $type = 'text' ): string {
+/**
+ * @param array<string,string> $attrs Extra attributes, e.g. pattern and title.
+ */
+$mb_input = static function ( string $key, bool $required = false, string $placeholder = '', string $type = 'text', array $attrs = array() ): string {
+	$extra = '';
+
+	foreach ( $attrs as $mb_attr => $mb_value ) {
+		$extra .= sprintf( ' %s="%s"', esc_attr( $mb_attr ), esc_attr( $mb_value ) );
+	}
+
 	return sprintf(
-		'<input type="%1$s" class="input-text" name="%2$s" id="%2$s" value=""%3$s%4$s>',
+		'<input type="%1$s" class="input-text" name="%2$s" id="%2$s" value=""%3$s%4$s%5$s>',
 		esc_attr( $type ),
 		esc_attr( $key ),
 		$required ? ' required aria-required="true"' : '',
-		'' !== $placeholder ? ' placeholder="' . esc_attr( $placeholder ) . '"' : ''
+		'' !== $placeholder ? ' placeholder="' . esc_attr( $placeholder ) . '"' : '',
+		$extra
 	);
 };
 
@@ -235,14 +245,44 @@ $mb_select = static function ( string $key, array $options, bool $required = fal
 					'customer_email',
 					__( 'Email address', 'granola' ),
 					'first',
-					$mb_input( 'customer_email', true, '', 'email' ),
+					$mb_input(
+						'customer_email',
+						true,
+						'',
+						'email',
+						array(
+							// Same rules the server applies, so a rejection
+							// happens here rather than after the basket is gone.
+							'pattern' => Checkout::email_pattern(),
+							'title'   => __( 'Enter the customer’s own email address. A Millboard address is not accepted.', 'granola' ),
+						)
+					),
 					true,
 					__( 'The customer’s own address. This is what creates their record.', 'granola' )
 				);
 
 				$mb_row( 'billing_company', __( 'Company name', 'granola' ), 'last', $mb_input( 'billing_company' ) );
 
-				$mb_row( 'billing_phone', __( 'Phone number', 'granola' ), 'wide', $mb_input( 'billing_phone', true, '', 'tel' ), true, __( 'The customer’s own number, so a follow-up can reach them.', 'granola' ) );
+				// type="tel" validates nothing in any browser, it only changes
+				// the on-screen keyboard, so the pattern is doing all the work.
+				$mb_row(
+					'billing_phone',
+					__( 'Phone number', 'granola' ),
+					'wide',
+					$mb_input(
+						'billing_phone',
+						true,
+						'',
+						'tel',
+						array(
+							'pattern'   => Checkout::phone_pattern(),
+							'title'     => __( 'Enter a real contact number. Digits, spaces and + ( ) - only.', 'granola' ),
+							'inputmode' => 'tel',
+						)
+					),
+					true,
+					__( 'The customer’s own number, so a follow-up can reach them.', 'granola' )
+				);
 
 				$mb_row(
 					'follow_up',
