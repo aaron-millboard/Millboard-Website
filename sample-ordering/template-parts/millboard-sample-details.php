@@ -222,6 +222,8 @@ $mb_select = static function ( string $key, array $options, bool $required = fal
 	<form id="mb-sof-details-form" class="mb-sof-details__form" method="post" action="<?php echo esc_url( mb_sof_form_url() ); ?>">
 		<?php wp_nonce_field( Checkout::NONCE, 'mb_sof_nonce' ); ?>
 		<input type="hidden" name="mb_sof_action" value="place">
+		<?php // One use per rendering, so a repeat post is refused rather than placed twice: see SampleOrderCheckout::claim_submission(). ?>
+		<input type="hidden" name="mb_sof_token" value="<?php echo esc_attr( wp_generate_uuid4() ); ?>">
 
 		<?php foreach ( $lines as $mb_id => $mb_qty ) : ?>
 			<input type="hidden" name="qty[<?php echo esc_attr( $mb_id ); ?>]" value="<?php echo esc_attr( $mb_qty ); ?>">
@@ -462,7 +464,7 @@ $mb_select = static function ( string $key, array $options, bool $required = fal
 		</div>
 
 		<div class="mb-sof-details__actions">
-			<button type="submit" class="mb-account-btn"><?php esc_html_e( 'Place sample order', 'granola' ); ?></button>
+			<button type="submit" class="mb-account-btn" data-busy-label="<?php esc_attr_e( 'Placing order…', 'granola' ); ?>"><?php esc_html_e( 'Place sample order', 'granola' ); ?></button>
 			<a class="mb-account-btn mb-account-btn--ghost" href="<?php echo esc_url( mb_sof_form_url() ); ?>"><?php esc_html_e( 'Back to the catalogue', 'granola' ); ?></a>
 			<?php
 			// The same control again beside the submit button. This is the
