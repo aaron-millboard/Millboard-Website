@@ -293,3 +293,55 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 });
+
+/**
+ * One order per click.
+ *
+ * Placing the order does a lot before the page answers (the order, two e-mails,
+ * the CRM feed) and for those few seconds nothing on screen changes. People
+ * click again, and every click that reaches the server is another order: three
+ * in a row on 25 Nov 2026. Disabling the button says "working" and stops the
+ * repeat.
+ *
+ * The server refuses a repeat as well (SampleOrderCheckout::claim_submission),
+ * which covers what a button cannot: a second tab, or Back and Place again.
+ */
+function guardPlaceOrder() {
+    const form = document.getElementById('mb-sof-details-form');
+    const button = form ? form.querySelector('button[type="submit"]') : null;
+
+    if (!button) {
+        return;
+    }
+
+    const idle = button.textContent;
+    let placing = false;
+
+    form.addEventListener('submit', function (event) {
+        if (placing) {
+            event.preventDefault();
+
+            return;
+        }
+
+        placing = true;
+        button.disabled = true;
+        button.textContent = button.dataset.busyLabel || idle;
+    });
+
+    // Back can restore this page from memory with the button still busy, long
+    // after the server finished. Put it back, or the rep is stuck on it.
+    window.addEventListener('pageshow', function (event) {
+        if (event.persisted) {
+            placing = false;
+            button.disabled = false;
+            button.textContent = idle;
+        }
+    });
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', guardPlaceOrder);
+} else {
+    guardPlaceOrder();
+}

@@ -127,6 +127,13 @@ class SampleOrderCheckout
     public const PHONE_MIN_DIGITS = 9;
     public const PHONE_MAX_DIGITS = 15;
 
+    /**
+     * The one-use token each rendering of the details form carries, and the
+     * option-name prefix its claim is kept under. See claim_submission().
+     */
+    private const CLAIM_PREFIX = 'mb_sof_claim_';
+    private const TOKEN_PATTERN = '/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/';
+
     public static function init(): void
     {
         \add_action('init', [__CLASS__, 'take_over_submit'], 20);
@@ -325,6 +332,77 @@ class SampleOrderCheckout
 
     // ------------------------------------------------------------ the order
 
+    /**
+     * The token this rendering of the form was given, or '' if it had none.
+     */
+    private static function posted_token(): string
+    {
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- maybe_place() verified the nonce before this is reached.
+        return isset($_POST['mb_sof_token']) ? \sanitize_text_field(\wp_unslash($_POST['mb_sof_token'])) : '';
+    }
+
+    /**
+     * Take this form's one-use token, or report that somebody already has.
+     *
+     * The nonce cannot do this job: WordPress nonces stay valid for hours, so
+     * every repeat post of the same form used to be another order, whether it
+     * was a second click while the page was still answering, a second tab, or
+     * Back and Place again. 25 Nov 2026: UK-34933, UK-34934 and UK-34935, one
+     * second apart, the same customer and the same three samples.
+     *
+     * The claim is an INSERT IGNORE on the options table's unique key, which is
+     * the lock WordPress core takes for its own upgrader. Two posts landing in
+     * the same millisecond still have exactly one winner, which a transient
+     * (read, then write) cannot promise.
+     *
+     * A post with no usable token is let through, and so is a database error.
+     * The first is a page opened before this shipped; refusing it would lose a
+     * real order to stop a duplicate. One small row stays per order, and rows
+     * older than two days are cleared whenever a new one is claimed.
+     */
+    public static function claim_submission(string $token): bool
+    {
+        if (!\preg_match(self::TOKEN_PATTERN, $token)) {
+            return true;
+        }
+
+        global $wpdb;
+
+        $inserted = $wpdb->query($wpdb->prepare(
+            "INSERT IGNORE INTO {$wpdb->options} (option_name, option_value, autoload) VALUES (%s, %d, 'no')",
+            self::CLAIM_PREFIX . $token,
+            \time()
+        ));
+
+        // 0 rows: somebody else holds it. false is a database error.
+        if (0 === $inserted) {
+            return false;
+        }
+
+        $wpdb->query($wpdb->prepare(
+            "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s AND option_value < %d",
+            $wpdb->esc_like(self::CLAIM_PREFIX) . '%',
+            \time() - 2 * \DAY_IN_SECONDS
+        ));
+
+        return true;
+    }
+
+    /**
+     * Hand the token back when no order was made, so a retry from the same page
+     * is not told it was already placed.
+     */
+    public static function release_submission(string $token): void
+    {
+        if (!\preg_match(self::TOKEN_PATTERN, $token)) {
+            return;
+        }
+
+        global $wpdb;
+
+        $wpdb->delete($wpdb->options, ['option_name' => self::CLAIM_PREFIX . $token]);
+    }
+
     private static function place_order(): void
     {
         $lines = self::selection();
@@ -346,9 +424,20 @@ class SampleOrderCheckout
             self::back();
         }
 
+        // Claimed only now, after every rejection above. A post refused for a
+        // missing field must not burn its token: Back, fix the field and Place
+        // again has to still work.
+        $token = self::posted_token();
+
+        if (!self::claim_submission($token)) {
+            \wc_add_notice(\__('That sample order was already placed, so it was not sent a second time.', 'granola'), 'notice');
+            self::back();
+        }
+
         $order = \wc_create_order(['customer_id' => \get_current_user_id()]);
 
         if (\is_wp_error($order)) {
+            self::release_submission($token);
             \wc_add_notice(\__('The order could not be created. Please try again.', 'granola'), 'error');
             self::back();
         }
