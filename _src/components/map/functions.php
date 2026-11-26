@@ -165,22 +165,81 @@ function filter_args(array $args): ?array
         ],
     ];
 
-    // Selectable distance dropdown options.
-    $args['distances'] = [
-        10,
-        15,
-        25,
-        50,
-        100,
-        150,
-        250,
-        500,
-    ];
+    // Selectable distance dropdown options. The numbers are what the visitor reads, in the
+    // site's unit. Map.js filters in miles, so in kilometres the option value is the miles
+    // equivalent while the label stays the round kilometre figure.
+    $km = 'km' === distance_unit();
+    $args['distances'] = [];
+
+    foreach ([10, 15, 25, 50, 100, 150, 250, 500] as $amount) {
+        $args['distances'][] = [
+            'value' => $km ? round($amount / 1.609344, 4) : $amount,
+            'label' => $km
+                // translators: Distance amount in kilometres.
+                ? sprintf(\_x('%d km', 'Map distance selector option text', 'granola'), $amount)
+                // translators: Distance amount in miles.
+                : sprintf(\_x('%d miles', 'Map distance selector option text', 'granola'), $amount),
+        ];
+    }
 
     // -------------------------------------------------------------------------
     // Return the filtered args.
     // -------------------------------------------------------------------------
     return $args;
+}
+
+/**
+ * The unit the finder shows distances in: 'mi' or 'km'.
+ *
+ * Map.js holds every distance in miles (the sort and the radius filter both work in
+ * miles), so this only changes what is printed and which radius options are offered.
+ * The German site shows kilometres by default. Any site can be set without a deploy:
+ *
+ *     wp option update mb_map_distance_unit km --url=<site>
+ */
+function distance_unit(): string
+{
+    $unit = \get_option('mb_map_distance_unit');
+
+    if ('km' === $unit || 'mi' === $unit) {
+        return $unit;
+    }
+
+    return 0 === strpos(\determine_locale(), 'de') ? 'km' : 'mi';
+}
+
+/**
+ * Words Map.js writes into the page itself, printed as JSON in data-map-i18n so they go
+ * through Loco like every other string.
+ *
+ * @return array<string, string>
+ */
+function i18n_labels(): array
+{
+    $km = 'km' === distance_unit();
+
+    return [
+        'unit' => $km ? 'km' : 'mi',
+        // translators: %s is a distance by road, e.g. "12.5".
+        'roadDistance' => $km ? \__('%s km by road', 'granola') : \__('%s miles by road', 'granola'),
+        // translators: %s is a straight-line distance, e.g. "12.5".
+        'distanceAway' => $km ? \__('%s km away', 'granola') : \__('%s miles away', 'granola'),
+        // translators: 1: hours, 2: minutes. A drive time, e.g. "1 hr 5 min".
+        'hoursMinutes' => \__('%1$s hr %2$s min', 'granola'),
+        // translators: %s is a number of hours.
+        'hours' => \__('%s hr', 'granola'),
+        // translators: %s is a number of minutes.
+        'minutes' => \__('%s min', 'granola'),
+        'countOne' => \_n('Displaying: %1$s result', 'Displaying: %1$s results', 1, 'granola'),
+        'countOther' => \_n('Displaying: %1$s result', 'Displaying: %1$s results', 2, 'granola'),
+        // translators: %s is the number of results hidden behind the button.
+        'showMore' => \__('Show %s more', 'granola'),
+        'showFewer' => \__('Show fewer results', 'granola'),
+        'directions' => \_x('Directions', 'Map listing directions link', 'granola'),
+        // "Get " before "Directions" on narrow screens. Other languages word it without one.
+        'directionsPrefix' => 0 === strpos(\determine_locale(), 'en') ? 'Get ' : '',
+        'moreInfo' => \_x('More info', 'Map listing detail link', 'granola'),
+    ];
 }
 
 /**

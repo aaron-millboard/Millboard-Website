@@ -81,13 +81,13 @@ function filter_args(array $args): ?array
 
             // Prepare VIEW button args
             $args['files'][$key]['actions'][] = [
-                'content' => '<span>View</span>',
+                'content' => '<span>' . esc_html_x('View', 'Downloads: open the file', 'granola') . '</span>',
                 'icon' => \Granola\SVG::get('icons-custom/view.svg'),
                 'url' => $file_url,
                 'attributes' => [
                     'target' => '_blank',
                     'rel' => 'noopener noreferrer',
-                    'aria-label' => 'View ' . $file_label,
+                    'aria-label' => sprintf(__('View %s', 'granola'), $file_label),
                 ],
                 'classes' => [
                     'downloads__file-action',
@@ -98,12 +98,12 @@ function filter_args(array $args): ?array
 
             // Prepare download button args
             $args['files'][$key]['actions'][] = [
-                'content' => '<span>Download</span>',
+                'content' => '<span>' . esc_html__('Download', 'granola') . '</span>',
                 'icon' => \Granola\SVG::get('icons-custom/download.svg'),
                 'url' => $file_url,
                 'attributes' => [
                     'download' => '',
-                    'aria-label' => 'Download ' . $file_label,
+                    'aria-label' => sprintf(__('Download %s', 'granola'), $file_label),
                 ],
                 'classes' => [
                     'downloads__file-action',
@@ -115,13 +115,16 @@ function filter_args(array $args): ?array
             // Prepare SHARE button args (this will be a button element, not a link)
             $args['files'][$key]['actions'][] = [
                 'el' => 'button',
-                'content' => '<span>Share</span>',
+                'content' => '<span>' . esc_html__('Share', 'granola') . '</span>',
                 'icon' => \Granola\SVG::get('icons-custom/share.svg'),
                 'attributes' => [
                     'data-action' => 'share',
                     'data-url' => $file_url,
                     'data-title' => $file_label,
-                    'aria-label' => 'Share ' . $file_label,
+                    // Read by Downloads.js for the click feedback.
+                    'data-copied' => __('Link copied', 'granola'),
+                    'data-copy-failed' => __('Copy failed', 'granola'),
+                    'aria-label' => sprintf(__('Share %s', 'granola'), $file_label),
                 ],
                 'classes' => [
                     'downloads__file-action',

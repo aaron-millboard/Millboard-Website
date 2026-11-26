@@ -60,7 +60,7 @@ const WEEK_ORDER = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Sat
  * clock said when the cache entry was written and goes on highlighting a Sunday
  * for the rest of the week. The browser marks it instead, see OpeningStatus.js.
  *
- * @return array<int, array{day: string, closed: bool, hours: string}>
+ * @return array<int, array{day: string, label: string, closed: bool, hours: string}>
  */
 function week($rows): array
 {
@@ -91,6 +91,7 @@ function week($rows): array
 
         $week[] = [
             'day' => $day,
+            'label' => day_label($day),
             'closed' => $closed,
             // En dash for the range, per the design. Written as an escape so the
             // character survives whatever encoding this file is edited in.
@@ -99,6 +100,26 @@ function week($rows): array
     }
 
     return $week;
+}
+
+/**
+ * A weekday as the visitor reads it. The English name is the key everywhere else (the
+ * repeater, data-opening-day and the status script all match on it), so only the
+ * printed label goes through translation.
+ */
+function day_label(string $day): string
+{
+    $labels = [
+        'Monday' => \_x('Monday', 'Weekday', 'granola'),
+        'Tuesday' => \_x('Tuesday', 'Weekday', 'granola'),
+        'Wednesday' => \_x('Wednesday', 'Weekday', 'granola'),
+        'Thursday' => \_x('Thursday', 'Weekday', 'granola'),
+        'Friday' => \_x('Friday', 'Weekday', 'granola'),
+        'Saturday' => \_x('Saturday', 'Weekday', 'granola'),
+        'Sunday' => \_x('Sunday', 'Weekday', 'granola'),
+    ];
+
+    return $labels[$day] ?? $day;
 }
 
 /**

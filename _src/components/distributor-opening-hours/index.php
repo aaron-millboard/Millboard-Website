@@ -13,7 +13,7 @@
                 <?php foreach ($args['days'] as $row) { ?>
                     <div class="distributor-opening-hours__row" data-opening-day="<?= esc_attr($row['day']); ?>">
                         <dt class="distributor-opening-hours__day">
-                            <?= esc_html($row['day']); ?>
+                            <?= esc_html($row['label']); ?>
                             <span class="distributor-opening-hours__pill" data-opening-today-pill hidden><?= esc_html__('Today', 'granola'); ?></span>
                         </dt>
                         <dd class="distributor-opening-hours__hours<?= $row['closed'] ? ' distributor-opening-hours__hours--closed' : ''; ?>">
