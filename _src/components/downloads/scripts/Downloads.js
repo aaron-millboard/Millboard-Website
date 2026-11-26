@@ -66,7 +66,7 @@ export default class Downloads {
             // call clipboard API
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 await navigator.clipboard.writeText(url);
-                this.showFeedback(button, 'Link copied');
+                this.showFeedback(button, button.dataset.copied || 'Link copied');
             } else {
                 // Fallback for older browsers
                 const textArea = document.createElement('textarea');
@@ -80,17 +80,17 @@ export default class Downloads {
                 
                 try {
                     document.execCommand('copy');
-                    this.showFeedback(button, 'Link copied');
+                    this.showFeedback(button, button.dataset.copied || 'Link copied');
                 } catch (error) {
                     console.error('Copy failed:', error);
-                    this.showFeedback(button, 'Copy failed', true);
+                    this.showFeedback(button, button.dataset.copyFailed || 'Copy failed', true);
                 }
                 
                 document.body.removeChild(textArea);
             }
         } catch (error) {
             console.error('Copy to clipboard failed:', error);
-            this.showFeedback(button, 'Copy failed', true);
+            this.showFeedback(button, button.dataset.copyFailed || 'Copy failed', true);
         }
     }
 

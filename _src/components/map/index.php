@@ -2,7 +2,7 @@
     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
 <link rel="stylesheet" href="https://unpkg.com/leaflet.fullscreen/dist/Control.FullScreen.css" />
 
-<div <?= \Granola\Helpers::build_attributes($args['attributes']); ?>>
+<div <?= \Granola\Helpers::build_attributes($args['attributes']); ?> data-map-i18n="<?= esc_attr(\wp_json_encode(\Granola\Components\Map\i18n_labels())); ?>">
     <?php if (!empty($args['subtitle'])) { ?>
         <p class="map__subtitle alignwide">
             <?= esc_html($args['subtitle']); ?>
@@ -75,15 +75,9 @@
                         <?= esc_html_x('Any', 'Map distance selector default option text', 'granola'); ?>
                     </option>
 
-                    <?php foreach ($args['distances'] as $value) { ?>
-                        <option value="<?= esc_attr($value); ?>">
-                            <?= esc_html(
-                                sprintf(
-                                    // translators: Distance amount.
-                                    _x('%d miles', 'Map distance selector option text', 'granola'),
-                                    $value
-                                )
-                            ); ?>
+                    <?php foreach ($args['distances'] as $distance) { ?>
+                        <option value="<?= esc_attr($distance['value']); ?>">
+                            <?= esc_html($distance['label']); ?>
                         </option>
                     <?php } ?>
                 </select>

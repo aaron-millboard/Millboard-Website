@@ -165,7 +165,7 @@ function filter_args(array $args): ?array
     // -------------------------------------------------------------------------
     if ($args['heading_button'] === true) {
         $args['button'] = [
-            'content' => __('Expand menu for ' . $args['heading']),
+            'content' => sprintf(__('Expand menu for %s', 'granola'), $args['heading']),
             'visually_hidden_text' => true,
             'classes' => ['menu__heading__button', 'g-button', 'g-button--square', 'g-button--arrow'],
             'attributes' => [

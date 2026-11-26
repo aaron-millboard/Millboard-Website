@@ -11,6 +11,26 @@ const TOOLTIP_ICONS = {
     mail: '<svg class="map__marker-tooltip__icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16"></rect><path d="m2 7 10 6 10-6"></path></svg>',
 };
 
+// Words and the distance unit that PHP prints into data-map-i18n, so Loco can translate
+// them. These English values are only the fallback if that attribute is ever missing.
+const I18N_DEFAULTS = {
+    unit: 'mi',
+    roadDistance: '%s miles by road',
+    distanceAway: '%s miles away',
+    hoursMinutes: '%1$s hr %2$s min',
+    hours: '%s hr',
+    minutes: '%s min',
+    countOne: 'Displaying: %1$s result',
+    countOther: 'Displaying: %1$s results',
+    showMore: 'Show %s more',
+    showFewer: 'Show fewer results',
+    directions: 'Directions',
+    directionsPrefix: 'Get ',
+    moreInfo: 'More info',
+};
+
+const KM_PER_MILE = 1.609344;
+
 // https://leafletjs.com/reference.html
 class Map {
     constructor(element) {
@@ -32,6 +52,9 @@ class Map {
 
         // Distance.
         this.distanceSelect = this.el.querySelector('.map__distance__input');
+
+        // Translated words and the distance unit, printed by PHP.
+        this.i18n = this.readI18n();
 
         // Geolocate button.
         this.geolocateButton = this.el.querySelector('.map__search__geolocate');
@@ -1837,9 +1860,10 @@ let markerHtml = `
                 showButton.textContent = this.formatCount(showButton, 'template', markerCount);
             }
         } else if (this.listingsHeading) {
-            this.listingsHeading.textContent = markerCount === 1
-                ? `Displaying: ${markerCount} result`
-                : `Displaying: ${markerCount} results`;
+            this.listingsHeading.textContent = this.fill(
+                markerCount === 1 ? this.i18n.countOne : this.i18n.countOther,
+                markerCount
+            );
         }
 
         if (!this.listingContainer) {
@@ -1893,6 +1917,73 @@ let markerHtml = `
     }
 
     /**
+     * Reads the words and unit PHP printed into data-map-i18n (see i18n_labels()).
+     */
+    readI18n() {
+        let printed = {};
+
+        try {
+            printed = JSON.parse(this.el.dataset.mapI18n || '{}');
+        } catch (error) {
+            printed = {};
+        }
+
+        return {...I18N_DEFAULTS, ...printed};
+    }
+
+    /**
+     * Fills "%s" and "%1$s" placeholders in a template PHP translated, in order.
+     */
+    fill(template, ...values) {
+        let next = 0;
+
+        return String(template).replace(/%(?:(\d+)\$)?s/g, (match, position) => {
+            const value = values[position ? position - 1 : next++];
+
+            return value === undefined ? match : String(value);
+        });
+    }
+
+    /**
+     * A distance as the figure a visitor reads. Every distance is held in miles (the sort
+     * and the radius filter both work in miles), so kilometres are only ever a conversion
+     * at the point of display.
+     */
+    formatDistance(miles) {
+        if (this.i18n.unit !== 'km') {
+            return String(miles);
+        }
+
+        const km = miles * KM_PER_MILE;
+
+        try {
+            return new Intl.NumberFormat(document.documentElement.lang || undefined, {
+                maximumFractionDigits: km < 10 ? 1 : 0,
+            }).format(km);
+        } catch (error) {
+            return String(Math.round(km));
+        }
+    }
+
+    /**
+     * "48.34 miles by road · 1 hr 5 min", "12 km away", or '' when no distance is
+     * known (territory mode clears it on purpose).
+     */
+    distanceLabel(roadMiles, straightMiles, driveTime) {
+        if (Number.isFinite(roadMiles)) {
+            const road = this.fill(this.i18n.roadDistance, this.formatDistance(roadMiles));
+
+            return driveTime ? `${road} \u{00B7} ${driveTime}` : road;
+        }
+
+        if (Number.isFinite(straightMiles)) {
+            return this.fill(this.i18n.distanceAway, this.formatDistance(straightMiles));
+        }
+
+        return '';
+    }
+
+    /**
      * Human travel time, e.g. "2 hr 35 min" or "45 min".
      */
     formatDuration(seconds) {
@@ -1905,10 +1996,12 @@ let markerHtml = `
         const minutes = totalMinutes % 60;
 
         if (!hours) {
-            return `${minutes} min`;
+            return this.fill(this.i18n.minutes, minutes);
         }
 
-        return minutes ? `${hours} hr ${minutes} min` : `${hours} hr`;
+        return minutes
+            ? this.fill(this.i18n.hoursMinutes, hours, minutes)
+            : this.fill(this.i18n.hours, hours);
     }
 
     sortlistingEls(filteredLayers) {
@@ -2159,8 +2252,8 @@ let markerHtml = `
             || this.showMoreButton;
 
         labelEl.textContent = isExpanded
-            ? 'Show fewer results'
-            : `Show ${this.currentOverflowCount} more`;
+            ? this.i18n.showFewer
+            : this.fill(this.i18n.showMore, this.currentOverflowCount);
     }
 
     initShowMore() {
@@ -2191,19 +2284,8 @@ let markerHtml = `
         // time. Without it a Calais search reads as though it is out of order: Kent
         // at 52 road miles sits below Lille at 73, which only makes sense once you
         // can see Kent is two and a half hours away and Lille is one.
-        let distText;
-
-        if (Number.isFinite(roadMiles) && driveTime) {
-            distText = `${roadMiles} miles by road \u{00B7} ${driveTime}`; // TODO: translate
-        } else if (Number.isFinite(roadMiles)) {
-            distText = `${roadMiles} miles by road`; // TODO: translate
-        } else if (Number.isFinite(distMiles)) {
-            distText = `${distMiles} miles away`; // TODO: translate
-        } else {
-            // Territory mode clears the distance deliberately. Without this branch the
-            // template literal stringified the null and printed "null miles away".
-            distText = '';
-        }
+        // Territory mode clears the distance deliberately, which comes back as ''.
+        const distText = this.distanceLabel(roadMiles, distMiles, driveTime);
 
         let distanceEl = listingMetaEl.querySelector('.map__listing__distance');
 
@@ -2336,15 +2418,7 @@ let markerHtml = `
 
         const driveTime = this.formatDuration(marker.options.themeData.roadDurationInSeconds);
 
-        let distance = '';
-
-        if (Number.isFinite(roadDistanceInMiles) && driveTime) {
-            distance = `${roadDistanceInMiles} miles by road \u{00B7} ${driveTime}`;
-        } else if (Number.isFinite(roadDistanceInMiles)) {
-            distance = `${roadDistanceInMiles} miles by road`;
-        } else if (Number.isFinite(distanceInMiles)) {
-            distance = `${distanceInMiles} miles away`;
-        }
+        const distance = this.escapeHtml(this.distanceLabel(roadDistanceInMiles, distanceInMiles, driveTime));
 
         let linkHref = '';
         let linkText = '';
@@ -2417,14 +2491,19 @@ let markerHtml = `
             : '';
         const trackAttrs = `data-map-listing-name="${title}" data-map-listing-type="${postType}"`;
 
+        // "Get " before "Directions" on narrow screens; other languages word it without one.
+        const directionsPrefix = this.i18n.directionsPrefix
+            ? `<span class="map__marker-tooltip__btn-prefix">${this.escapeHtml(this.i18n.directionsPrefix)}</span>`
+            : '';
+
         html += '<div class="map__marker-tooltip__actions">';
 
         if (directionsHref) {
-            html += `<a class="map__marker-tooltip__btn map__marker-tooltip__btn--primary" href="${directionsHref}" target="_blank" rel="noopener noreferrer" data-map-action="directions" ${trackAttrs}>${TOOLTIP_ICONS.directions}<span class="map__marker-tooltip__btn-text"><span class="map__marker-tooltip__btn-prefix">Get </span>Directions</span></a>`; // TODO: translate
+            html += `<a class="map__marker-tooltip__btn map__marker-tooltip__btn--primary" href="${directionsHref}" target="_blank" rel="noopener noreferrer" data-map-action="directions" ${trackAttrs}>${TOOLTIP_ICONS.directions}<span class="map__marker-tooltip__btn-text">${directionsPrefix}${this.escapeHtml(this.i18n.directions)}</span></a>`;
         }
 
         if (safeLinkHref) {
-            html += `<a class="map__marker-tooltip__btn map__marker-tooltip__btn--secondary" href="${safeLinkHref}" data-map-action="contact" ${trackAttrs}><span class="map__marker-tooltip__btn-text">More info</span></a>`; // TODO: translate
+            html += `<a class="map__marker-tooltip__btn map__marker-tooltip__btn--secondary" href="${safeLinkHref}" data-map-action="contact" ${trackAttrs}><span class="map__marker-tooltip__btn-text">${this.escapeHtml(this.i18n.moreInfo)}</span></a>`;
         }
 
         html += '</div>';
