@@ -1105,6 +1105,58 @@ function flush_pos_ids(): void
 });
 
 /**
+ * France reads "échantillon 100 mm", not "— 100mm sample".
+ *
+ * ⚠️ THESE 90 LINES ARE VARIATIONS, AND THEIR NAME IS NOT A PRODUCT TITLE.
+ *
+ * `mb_sof_fetch_variations()` composes it as `<variation title> — 100mm
+ * sample`, with that suffix hardcoded in English at
+ * `sample-ordering/inc/mb-sof-catalogue.php:531`. So no amount of renaming
+ * products reaches it: for most of the French page the English word was
+ * never in the database at all. Maelle, 27 Nov 2026.
+ *
+ * ⚠️ HERE AND NOT EARLIER. `mb_sof_classify()` runs on the composed name
+ * during the build, and the package drops any row whose category is not in
+ * `mb_sof_category_order()`. Translating the name before that point is what
+ * once took the French catalogue from 350 lines to 0. `mb_sof_catalogue` is
+ * applied after the build and after the transient, on both the cache-hit and
+ * the cache-miss path, and it is the same list `mb_sof_catalogue_by_id()`
+ * hands the basket, so the two cannot disagree.
+ *
+ * Priority 99, so it runs after anything that still wants the English.
+ *
+ * Basalte is mine, not Maelle's. Anthracite and Vintage are the same word in
+ * French and Jarrah is a timber species, so they are left alone.
+ */
+\add_filter('mb_sof_catalogue', function (array $items): array {
+    $site = \get_blog_details(\get_current_blog_id());
+
+    if ('/fr-fr/' !== \trailingslashit((string) ($site->path ?? '/'))) {
+        return $items;
+    }
+
+    foreach ($items as &$item) {
+        $name = (string) ($item['name'] ?? '');
+
+        if ('' === $name) {
+            continue;
+        }
+
+        $name = \str_replace(
+            [' — 100mm sample', ' — 300mm sample'],
+            [' — échantillon 100 mm', ' — échantillon 300 mm'],
+            $name
+        );
+
+        $item['name'] = \preg_replace('/\bBasalt\b/u', 'Basalte', $name);
+    }
+
+    unset($item);
+
+    return $items;
+}, 99);
+
+/**
  * Recompute every line's ceiling for THIS viewer.
  *
  * The package writes `max_qty` into each row BEFORE `set_transient`, and that
