@@ -49,6 +49,7 @@ if (file_exists($autoloader = __DIR__ . '/vendor/autoload.php')) {
 \Theme\WordPress\Emails::init();
 \Theme\WordPress\Escaping::init();
 \Theme\WordPress\Excerpt::init();
+\Theme\WordPress\AuthorBio::init();
 \Theme\WordPress\FitText::init();
 \Theme\WordPress\Forms::init();
 \Theme\WordPress\Menus::init();
