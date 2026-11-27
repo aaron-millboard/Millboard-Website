@@ -399,7 +399,42 @@ function get_imported_skus(): array
         return $in_scope;
     }
 
-    return isset(get_imported_skus()[\strtoupper(\trim((string) $sku))]);
+    $sku = \strtoupper(\trim((string) $sku));
+
+    if (isset(get_imported_skus()[$sku])) {
+        return true;
+    }
+
+    /*
+     * ⚠️ ADMISSION MUST NOT DEPEND ON THE TITLE BEING ENGLISH.
+     *
+     * The package admits a product whose name contains the word "sample".
+     * That is the ONLY thing holding 90 of the 146 French lines on the page,
+     * so translating "— 100mm sample" into French silently removes them from
+     * French sample ordering. The same trap took the German content batch on
+     * 27 Nov 2026, and the French catalogue once went 350 lines to 0 a
+     * related way.
+     *
+     * Dan's audit assigned a category to each of the 374 SKUs, so "is in that
+     * map" is the honest answer to "is this a sample-catalogue product", and
+     * it is an answer in SKUs rather than in English.
+     *
+     * Measured on production before shipping: this admits nothing new on
+     * en-gb, en-us, de-de, fr-fr, en-ie or en-au. It is a no-op until a title
+     * stops saying "sample", which is exactly when it is needed.
+     * `millboard-ops/fr-sample-ordering/check-widen.php` re-runs that check.
+     */
+    static $approved = null;
+
+    if (null === $approved) {
+        $approved = [];
+
+        foreach (\array_keys(get_approved_categories()['map'] ?? []) as $key) {
+            $approved[\strtoupper(\trim((string) $key))] = true;
+        }
+    }
+
+    return isset($approved[$sku]);
 }, 10, 3);
 
 /**
