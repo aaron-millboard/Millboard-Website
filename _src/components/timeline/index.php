@@ -71,7 +71,7 @@
                             class="timeline__nav__item<?= $index === 0 ? ' timeline__nav__item--active' : ''; ?>" 
                             data-target="<?= esc_attr($item['id']); ?>"
                             data-index="<?= esc_attr($index); ?>"
-                            aria-label="Go to <?= esc_attr($item['year'] ?? 'timeline item ' . ($index + 1)); ?>"
+                            aria-label="<?= esc_attr(sprintf(__('Go to %s', 'granola'), $item['year'] ?? sprintf(__('timeline item %d', 'granola'), $index + 1))); ?>"
                         >
                             <?= esc_html($item['year'] ?? ($index + 1)); ?>
                         </button>
@@ -82,22 +82,22 @@
             <button 
                 class="timeline__nav__item timeline__nav__item--skip" 
                 data-skip="true"
-                aria-label="Skip timeline"
+                aria-label="<?= esc_attr__('Skip timeline', 'granola'); ?>"
             >
-                Skip timeline
+                <?= esc_html__('Skip timeline', 'granola'); ?>
             </button>
 
             <div class="timeline__nav__arrows">
                 <button 
                     class="timeline__nav__arrow timeline__nav__arrow--prev" 
-                    aria-label="Previous timeline item"
+                    aria-label="<?= esc_attr__('Previous timeline item', 'granola'); ?>"
                 >
                     <span class="timeline__nav__arrow-icon">&larr;</span>
                 </button>
                 
                 <button 
                     class="timeline__nav__arrow timeline__nav__arrow--next" 
-                    aria-label="Next timeline item"
+                    aria-label="<?= esc_attr__('Next timeline item', 'granola'); ?>"
                 >
                     <span class="timeline__nav__arrow-icon">&rarr;</span>
                 </button>
